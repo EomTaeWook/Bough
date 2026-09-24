@@ -3896,8 +3896,8 @@
   {
     "Id": 2729,
     "Name": "HistoryAuxiliaryFileHistory",
-    "Kor": "파일 기록 · {0} @ {1}",
-    "Eng": "File history · {0} @ {1}"
+    "Kor": "파일 히스토리 · {0} @ {1}",
+    "Eng": "History · {0} @ {1}"
   },
   {
     "Id": 2730,
@@ -3980,19 +3980,19 @@
   {
     "Id": 2743,
     "Name": "HistoryCommitListChanged",
-    "Kor": "커밋 목록이 변경되었습니다. 히스토리를 새로 고치고 다시 시도하세요.",
+    "Kor": "커밋 목록이 변경되었습니다. 히스토리를 새로 고친 뒤 다시 시도하세요.",
     "Eng": "The commit list changed. Refresh history and try again."
   },
   {
     "Id": 2744,
     "Name": "HistoryCommitRequired",
-    "Kor": "선택된 커밋이 없습니다.",
+    "Kor": "선택한 커밋이 없습니다.",
     "Eng": "No commit is selected."
   },
   {
     "Id": 2745,
     "Name": "HistoryComparedWithEmptyTree",
-    "Kor": "빈 트리와 비교(최초 커밋)",
+    "Kor": "빈 트리와 비교 (루트 커밋)",
     "Eng": "Compared with empty tree (root commit)"
   },
   {
@@ -4034,7 +4034,7 @@
   {
     "Id": 2752,
     "Name": "HistoryDetachedCheckoutSucceeded",
-    "Kor": "커밋 {0}에서 분리된 HEAD로 전환했습니다.",
+    "Kor": "{0} 커밋을 detached HEAD로 체크아웃했습니다.",
     "Eng": "Checked out {0} in detached HEAD."
   },
   {
@@ -4209,7 +4209,7 @@
     "Id": 2781,
     "Name": "HistoryPreviewFileAbsent",
     "Kor": "이 커밋에 파일이 없습니다.",
-    "Eng": "File is not present in this commit."
+    "Eng": "File is absent in this commit."
   },
   {
     "Id": 2782,
@@ -4274,8 +4274,8 @@
   {
     "Id": 2792,
     "Name": "HistoryResetSucceeded",
-    "Kor": "{0} 브랜치를 {1}(으)로 초기화했습니다.",
-    "Eng": "Reset {0} to {1}."
+    "Kor": "{0} 브랜치를 {1}로 초기화했습니다.",
+    "Eng": "Reset branch {0} to {1}."
   },
   {
     "Id": 2793,
@@ -4460,7 +4460,7 @@
   {
     "Id": 2823,
     "Name": "HistoryWorkingFileRestored",
-    "Kor": "작업 파일 {0}을(를) 복원했습니다.",
+    "Kor": "작업 파일 {0}을 복원했습니다.",
     "Eng": "Restored working file {0}."
   },
   {
