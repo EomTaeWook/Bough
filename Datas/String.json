@@ -4508,7 +4508,7 @@
   {
     "Id": 2831,
     "Name": "InspectionBlobSizeInvalid",
-    "Kor": "Git이 {0} 파일의 커밋 {1}에 잘못된 blob 크기를 반환했습니다.",
+    "Kor": "Git이 {1} 커밋의 {0} 파일에 잘못된 blob 크기를 반환했습니다.",
     "Eng": "Git returned an invalid blob size for {0} at {1}."
   },
   {
