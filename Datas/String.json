@@ -3075,13 +3075,13 @@
     "Id": 2592,
     "Name": "RemoteIncomingCountInvalid",
     "Kor": "받는 브랜치의 커밋 수를 확인하지 못했습니다.",
-    "Eng": "Could not determine the number of incoming commits."
+    "Eng": "Could not determine the incoming commit count."
   },
   {
     "Id": 2593,
     "Name": "RemoteIncomingSummaryUnavailable",
     "Kor": "받는 브랜치의 커밋 요약을 조회하지 못했습니다.",
-    "Eng": "Could not load the incoming commit summary."
+    "Eng": "Could not read the incoming commit summary."
   },
   {
     "Id": 2594,
@@ -3105,7 +3105,7 @@
     "Id": 2597,
     "Name": "RemoteNoRemotesConfigured",
     "Kor": "설정된 원격이 없습니다.",
-    "Eng": "No remotes configured."
+    "Eng": "No remotes are configured."
   },
   {
     "Id": 2598,
@@ -3183,13 +3183,13 @@
     "Id": 2610,
     "Name": "RemotePullApplyFailed",
     "Kor": "Pull {0}/{1} 실패: {2}",
-    "Eng": "Pull {0}/{1} failed: {2}"
+    "Eng": "Pull failed for {0}/{1}: {2}"
   },
   {
     "Id": 2611,
     "Name": "RemotePullApplyFailedWithoutOutput",
-    "Kor": "Pull {0}/{1} 실패: Git 종료 코드 {2}",
-    "Eng": "Pull {0}/{1} failed: Git exit code {2}"
+    "Kor": "Pull {0}/{1} 실패(종료 코드 {2}).",
+    "Eng": "Pull failed for {0}/{1} without an error message (exit code {2})."
   },
   {
     "Id": 2612,
@@ -3219,7 +3219,7 @@
     "Id": 2616,
     "Name": "RemotePullDetachedHead",
     "Kor": "Detached HEAD에서는 Pull할 수 없습니다.",
-    "Eng": "Cannot Pull in detached HEAD state."
+    "Eng": "Pull is unavailable in detached HEAD."
   },
   {
     "Id": 2617,
@@ -3231,13 +3231,13 @@
     "Id": 2618,
     "Name": "RemotePullFetchFailed",
     "Kor": "Pull {0}/{1} 가져오기 실패: {2}",
-    "Eng": "Pull {0}/{1} fetch failed: {2}"
+    "Eng": "Pull fetch failed for {0}/{1}: {2}"
   },
   {
     "Id": 2619,
     "Name": "RemotePullFetchFailedWithoutOutput",
-    "Kor": "Pull {0}/{1} 가져오기 실패: Git 종료 코드 {2}",
-    "Eng": "Pull {0}/{1} fetch failed: Git exit code {2}"
+    "Kor": "Pull {0}/{1} 가져오기 실패(종료 코드 {2}).",
+    "Eng": "Pull fetch failed for {0}/{1} without an error message (exit code {2})."
   },
   {
     "Id": 2620,
@@ -3351,19 +3351,19 @@
     "Id": 2638,
     "Name": "RemotePushDetachedHead",
     "Kor": "Detached HEAD에서는 Push할 수 없습니다.",
-    "Eng": "Cannot Push in detached HEAD state."
+    "Eng": "Push is unavailable in detached HEAD."
   },
   {
     "Id": 2639,
     "Name": "RemotePushFailed",
     "Kor": "Push {0}/{1} 실패: {2}",
-    "Eng": "Push {0}/{1} failed: {2}"
+    "Eng": "Push failed for {0}/{1}: {2}"
   },
   {
     "Id": 2640,
     "Name": "RemotePushFailedWithoutOutput",
-    "Kor": "Push {0}/{1} 실패: Git 종료 코드 {2}",
-    "Eng": "Push {0}/{1} failed: Git exit code {2}"
+    "Kor": "Push {0}/{1} 실패(종료 코드 {2}).",
+    "Eng": "Push failed for {0}/{1} without an error message (exit code {2})."
   },
   {
     "Id": 2641,
@@ -3387,7 +3387,7 @@
     "Id": 2644,
     "Name": "RemotePushNoCommit",
     "Kor": "Push할 커밋이 없습니다.",
-    "Eng": "There are no commits to Push."
+    "Eng": "There are no commits to push."
   },
   {
     "Id": 2645,
@@ -3404,8 +3404,8 @@
   {
     "Id": 2647,
     "Name": "RemotePushTargetConfirmationRequired",
-    "Kor": "Push의 원격과 대상 브랜치를 확인해야 합니다: {0}/{1}",
-    "Eng": "Confirm the remote and destination branch for Push: {0}/{1}"
+    "Kor": "Push 대상 {0}/{1}을(를) 확인해야 합니다.",
+    "Eng": "Confirm the Push destination {0}/{1}."
   },
   {
     "Id": 2648,
@@ -3435,7 +3435,7 @@
     "Id": 2652,
     "Name": "RemoteRepositoryChanged",
     "Kor": "원격 작업 대상 저장소가 변경되었습니다.",
-    "Eng": "The repository for this remote operation changed."
+    "Eng": "The repository for the remote operation changed."
   },
   {
     "Id": 2653,
@@ -3465,7 +3465,7 @@
     "Id": 2657,
     "Name": "RemoteSelectionNotFound",
     "Kor": "선택한 원격을 찾을 수 없습니다: {0}",
-    "Eng": "Could not find the selected remote: {0}"
+    "Eng": "The selected remote was not found: {0}"
   },
   {
     "Id": 2658,
@@ -3519,7 +3519,7 @@
     "Id": 2666,
     "Name": "RemoteStateOutputInvalid",
     "Kor": "Git 원격 상태 출력 형식이 올바르지 않습니다.",
-    "Eng": "Invalid Git remote state output."
+    "Eng": "Git remote state output has an invalid format."
   },
   {
     "Id": 2667,
@@ -3573,7 +3573,7 @@
     "Id": 2675,
     "Name": "RemoteSummaryMore",
     "Kor": "외 {0}개",
-    "Eng": "and {0} more"
+    "Eng": "{0} more"
   },
   {
     "Id": 2676,
@@ -3590,32 +3590,32 @@
   {
     "Id": 2678,
     "Name": "RemoteTransferCompressing",
-    "Kor": "Git 객체 전송 · 압축 중: {0}",
-    "Eng": "Git object transfer · Compressing: {0}"
+    "Kor": "Git 객체 전송 · 객체 압축: {0}",
+    "Eng": "Git transfer · Compressing objects: {0}"
   },
   {
     "Id": 2679,
     "Name": "RemoteTransferCounting",
-    "Kor": "Git 객체 전송 · 개수 확인 중: {0}",
-    "Eng": "Git object transfer · Counting: {0}"
+    "Kor": "Git 객체 전송 · 객체 개수 확인: {0}",
+    "Eng": "Git transfer · Counting objects: {0}"
   },
   {
     "Id": 2680,
     "Name": "RemoteTransferEnumerating",
-    "Kor": "Git 객체 전송 · 열거 중: {0}",
-    "Eng": "Git object transfer · Enumerating: {0}"
+    "Kor": "Git 객체 전송 · 객체 열거: {0}",
+    "Eng": "Git transfer · Enumerating objects: {0}"
   },
   {
     "Id": 2681,
     "Name": "RemoteTransferReceiving",
-    "Kor": "Git 객체 전송 · 받는 중: {0}",
-    "Eng": "Git object transfer · Receiving: {0}"
+    "Kor": "Git 객체 전송 · 객체 수신: {0}",
+    "Eng": "Git transfer · Receiving objects: {0}"
   },
   {
     "Id": 2682,
     "Name": "RemoteTransferResolving",
-    "Kor": "Git 객체 전송 · 델타 해결 중: {0}",
-    "Eng": "Git object transfer · Resolving deltas: {0}"
+    "Kor": "Git 객체 전송 · 델타 해석: {0}",
+    "Eng": "Git transfer · Resolving deltas: {0}"
   },
   {
     "Id": 2683,
@@ -3626,8 +3626,8 @@
   {
     "Id": 2684,
     "Name": "RemoteTransferWriting",
-    "Kor": "Git 객체 전송 · 쓰는 중: {0}",
-    "Eng": "Git object transfer · Writing: {0}"
+    "Kor": "Git 객체 전송 · 객체 기록: {0}",
+    "Eng": "Git transfer · Writing objects: {0}"
   },
   {
     "Id": 2685,
