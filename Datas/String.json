@@ -4136,13 +4136,13 @@
   {
     "Id": 2769,
     "Name": "HistoryInvalidUtf8",
-    "Kor": "파일이 올바른 UTF-8 텍스트가 아닙니다.",
+    "Kor": "파일이 유효한 UTF-8 텍스트가 아닙니다.",
     "Eng": "File is not valid UTF-8 text."
   },
   {
     "Id": 2770,
     "Name": "HistoryLfsPointer",
-    "Kor": "실제 파일 내용이 아닌 Git LFS 포인터입니다.",
+    "Kor": "Git LFS 포인터이며 파일 내용이 아닙니다.",
     "Eng": "Git LFS pointer, not the file contents."
   },
   {
@@ -4202,7 +4202,7 @@
   {
     "Id": 2780,
     "Name": "HistoryPathIsDirectory",
-    "Kor": "경로가 파일이 아닌 디렉터리입니다.",
+    "Kor": "경로가 파일이 아니라 디렉터리입니다.",
     "Eng": "Path is a directory, not a file."
   },
   {
@@ -4418,7 +4418,7 @@
   {
     "Id": 2816,
     "Name": "HistorySubmoduleGitlink",
-    "Kor": "서브모듈 Git 링크입니다. 대상 커밋은 객체 해시로 표시됩니다.",
+    "Kor": "서브모듈 참조입니다. 대상 커밋은 객체 해시로 표시됩니다.",
     "Eng": "Submodule gitlink; target commit is shown as the object hash."
   },
   {

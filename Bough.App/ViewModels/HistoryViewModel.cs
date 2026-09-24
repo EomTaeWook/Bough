@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Controls;
 using Bough.App.Localization;
 using Bough.Core.Git;
+using DataContainer.Generated;
 
 namespace Bough.App.ViewModels
 {
@@ -1514,11 +1516,20 @@ namespace Bough.App.ViewModels
             {
                 return string.Empty;
             }
+
+            StringTemplate template = TemplateContainer<StringTemplate>.Find(reasonCode);
+            if (template.Invalid())
+            {
+                return reasonCode;
+            }
+
+            string localized = _stringHelper.GetString(template);
             if (arguments.Count == 0)
             {
-                return _stringHelper.GetString(reasonCode);
+                return localized;
             }
-            return _stringHelper.Format(reasonCode, arguments.ToArray());
+
+            return string.Format(CultureInfo.CurrentCulture, localized, arguments.ToArray());
         }
 
         private bool CanLoadMore()
