@@ -3891,7 +3891,7 @@
     "Id": 2728,
     "Name": "HistoryAllReferencesHeading",
     "Kor": "전체 참조",
-    "Eng": "All references"
+    "Eng": "ALL REFERENCES"
   },
   {
     "Id": 2729,
@@ -4028,7 +4028,7 @@
   {
     "Id": 2751,
     "Name": "HistoryCreateBranchHere",
-    "Kor": "여기에 브랜치 만들기…",
+    "Kor": "여기서 브랜치 만들기…",
     "Eng": "Create branch here…"
   },
   {
@@ -4052,8 +4052,8 @@
   {
     "Id": 2755,
     "Name": "HistoryEmpty",
-    "Kor": "표시할 커밋이 없습니다.",
-    "Eng": "No commits to show."
+    "Kor": "아직 커밋이 없습니다",
+    "Eng": "No commits yet"
   },
   {
     "Id": 2756,
@@ -4088,14 +4088,14 @@
   {
     "Id": 2761,
     "Name": "HistoryExternalPhotosAccessible",
-    "Kor": "외부 작성자 사진 표시",
-    "Eng": "Show external author photos"
+    "Kor": "외부 작성자 사진 사용",
+    "Eng": "Use external author photos"
   },
   {
     "Id": 2762,
     "Name": "HistoryExternalPhotosTooltip",
-    "Kor": "Gravatar와 GitHub에서 작성자 사진을 조회합니다.",
-    "Eng": "Look up author photos from Gravatar and GitHub."
+    "Kor": "GitHub와 Gravatar에서 작성자 사진 조회",
+    "Eng": "Look up GitHub and Gravatar author photos"
   },
   {
     "Id": 2763,
@@ -4106,7 +4106,7 @@
   {
     "Id": 2764,
     "Name": "HistoryFileHistory",
-    "Kor": "파일 기록",
+    "Kor": "히스토리",
     "Eng": "History"
   },
   {
@@ -4130,7 +4130,7 @@
   {
     "Id": 2768,
     "Name": "HistoryHeading",
-    "Kor": "커밋 기록",
+    "Kor": "커밋 히스토리",
     "Eng": "Commit history"
   },
   {
@@ -4154,7 +4154,7 @@
   {
     "Id": 2772,
     "Name": "HistoryLoadingDiff",
-    "Kor": "Diff를 불러오는 중…",
+    "Kor": "diff를 불러오는 중…",
     "Eng": "Loading diff…"
   },
   {
@@ -4172,13 +4172,13 @@
   {
     "Id": 2775,
     "Name": "HistoryMoreReferencesTooltip",
-    "Kor": "모든 참조 보기",
+    "Kor": "전체 참조 보기",
     "Eng": "Show all references"
   },
   {
     "Id": 2776,
     "Name": "HistoryNoChanges",
-    "Kor": "이 부모 커밋과 비교할 파일 변경이 없습니다.",
+    "Kor": "이 부모 커밋과 비교할 변경 파일이 없습니다",
     "Eng": "No file changes against this parent"
   },
   {
@@ -4316,14 +4316,14 @@
   {
     "Id": 2799,
     "Name": "HistoryScopeAllAccessible",
-    "Kor": "모든 커밋 표시",
-    "Eng": "Show all commits"
+    "Kor": "전체 커밋",
+    "Eng": "All commits"
   },
   {
     "Id": 2800,
     "Name": "HistoryScopeAllTooltip",
-    "Kor": "모든 참조에서 도달 가능한 커밋을 표시합니다.",
-    "Eng": "Show commits reachable from all references."
+    "Kor": "모든 참조의 커밋 보기",
+    "Eng": "Show commits from all references"
   },
   {
     "Id": 2801,
@@ -4334,14 +4334,14 @@
   {
     "Id": 2802,
     "Name": "HistoryScopeCurrentAccessible",
-    "Kor": "현재 브랜치 커밋 표시",
-    "Eng": "Show current branch commits"
+    "Kor": "현재 브랜치 커밋",
+    "Eng": "Current branch commits"
   },
   {
     "Id": 2803,
     "Name": "HistoryScopeCurrentTooltip",
-    "Kor": "현재 HEAD에서 도달 가능한 커밋을 표시합니다.",
-    "Eng": "Show commits reachable from the current HEAD."
+    "Kor": "HEAD에서 도달 가능한 커밋 보기",
+    "Eng": "Show commits reachable from HEAD"
   },
   {
     "Id": 2804,
@@ -4358,8 +4358,8 @@
   {
     "Id": 2806,
     "Name": "HistorySelectCommit",
-    "Kor": "상세를 볼 커밋을 선택하세요.",
-    "Eng": "Select a commit to inspect."
+    "Kor": "자세히 볼 커밋을 선택하세요",
+    "Eng": "Select a commit to inspect it"
   },
   {
     "Id": 2807,
@@ -4370,13 +4370,13 @@
   {
     "Id": 2808,
     "Name": "HistoryShowExplorer",
-    "Kor": "파일 탐색기에 표시",
+    "Kor": "파일 탐색기에서 보기",
     "Eng": "Show in File Explorer"
   },
   {
     "Id": 2809,
     "Name": "HistoryShowTree",
-    "Kor": "파일 트리에 표시",
+    "Kor": "파일 트리에서 보기",
     "Eng": "Show in File Tree"
   },
   {
