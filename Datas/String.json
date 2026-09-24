@@ -4070,7 +4070,7 @@
   {
     "Id": 2758,
     "Name": "HistoryExportOverwriteMessage",
-    "Kor": "{0} 파일을 {1}(커밋 {2}) 내용으로 바꾸시겠습니까?",
+    "Kor": "{0} 파일을 커밋 {2}의 {1} 내용으로 바꾸시겠습니까?",
     "Eng": "Replace {0} with {1} from {2}?"
   },
   {
