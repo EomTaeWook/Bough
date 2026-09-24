@@ -1,0 +1,580 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Bough.App.ViewModels"
+             xmlns:git="using:Bough.Core.Git"
+             xmlns:controls="using:Bough.App.Controls"
+             xmlns:views="using:Bough.App.Views"
+             x:Class="Bough.App.Views.HistoryView"
+             x:DataType="vm:HistoryViewModel"
+             Background="{DynamicResource BoughBrushCanvas}">
+  <UserControl.Resources>
+    <views:AuthorPhotoSourceLabelConverter x:Key="PhotoSourceLabelConverter" />
+  </UserControl.Resources>
+  <UserControl.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="SelectableTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+    </Style>
+    <Style Selector="Button:disabled">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
+    </Style>
+    <Style Selector="Button /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushSelectionText}" />
+    </Style>
+    <Style Selector="Button:disabled /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
+    </Style>
+    <Style Selector="TabItem">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextMuted}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+    </Style>
+    <Style Selector="TabItem:pointerover">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="TabItem:selected">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="TabItem:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
+    </Style>
+    <Style Selector="TabItem /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextMuted}" />
+    </Style>
+    <Style Selector="TabItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="TabItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="Border.referenceBadge">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+    </Style>
+    <Style Selector="Border.referenceBadge.refCurrent">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="Border.referenceBadge.refLocal">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+    </Style>
+    <Style Selector="Border.referenceBadge.refRemote">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDiffHunkSurface}" />
+    </Style>
+    <Style Selector="Border.referenceBadge.refTag">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSuccessSurface}" />
+    </Style>
+    <Style Selector="TextBlock.referenceText">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="TextBlock.referenceText.refCurrent">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+    </Style>
+    <Style Selector="TextBlock.referenceText.refLocal">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushSelectionText}" />
+    </Style>
+    <Style Selector="TextBlock.referenceText.refRemote">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffHunk}" />
+    </Style>
+    <Style Selector="TextBlock.referenceText.refTag">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushSuccess}" />
+    </Style>
+    <Style Selector="TextBlock.fileStatus">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextMuted}" />
+    </Style>
+    <Style Selector="TextBlock.fileStatus.statusAdded">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffAdded}" />
+    </Style>
+    <Style Selector="TextBlock.fileStatus.statusDeleted">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffRemoved}" />
+    </Style>
+    <Style Selector="TextBlock.fileStatus.statusRenamed">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffHunk}" />
+    </Style>
+    <Style Selector="TextBlock.fileStatus.statusCopied">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="Border.diffLine">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
+    </Style>
+    <Style Selector="Border.diffLine.diffAdded">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDiffAddedSurface}" />
+    </Style>
+    <Style Selector="Border.diffLine.diffRemoved">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDiffRemovedSurface}" />
+    </Style>
+    <Style Selector="Border.diffLine.diffHunk">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDiffHunkSurface}" />
+    </Style>
+    <Style Selector="SelectableTextBlock.diffText">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="SelectableTextBlock.diffText.diffAdded">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffAdded}" />
+    </Style>
+    <Style Selector="SelectableTextBlock.diffText.diffRemoved">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffRemoved}" />
+    </Style>
+    <Style Selector="SelectableTextBlock.diffText.diffHunk">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffHunk}" />
+    </Style>
+    <Style Selector="Expander.commitFile">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="Expander.commitFile /template/ ToggleButton">
+      <Setter Property="Padding" Value="8,0,4,0" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="TabControl">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushCanvas}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="RadioButton">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="RadioButton /template/ ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="66,*">
+    <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="32,34" Margin="22,0" ColumnSpacing="14">
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Commit history" FontSize="18" FontWeight="SemiBold"
+                   Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Bottom" />
+        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <RadioButton Content="전체" GroupName="HistoryScope" IsChecked="{Binding IsAllScope, Mode=OneWay}"
+                       Click="AllScopeClicked" ToolTip.Tip="Show commits from all references"
+                       AutomationProperties.Name="All commits" />
+          <RadioButton Content="현재 브랜치" GroupName="HistoryScope" IsChecked="{Binding IsCurrentBranchScope, Mode=OneWay}"
+                       Click="CurrentBranchScopeClicked" ToolTip.Tip="Show commits reachable from HEAD"
+                       AutomationProperties.Name="Current branch commits" />
+        </StackPanel>
+        <CheckBox Grid.Column="1" Grid.RowSpan="2" Content="External author photos" IsChecked="{Binding ExternalAuthorPhotosEnabled, Mode=TwoWay}"
+                  Click="ExternalAuthorPhotosClicked"
+                  VerticalAlignment="Center" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11"
+                   ToolTip.Tip="Look up GitHub and Gravatar author photos"
+                  AutomationProperties.Name="Use external author photos" />
+        <Border Grid.Column="2" Grid.RowSpan="2" Background="{DynamicResource BoughBrushRaised}" CornerRadius="12" Padding="10,5" VerticalAlignment="Center">
+          <TextBlock Text="{Binding CountText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" />
+        </Border>
+      </Grid>
+    </Border>
+
+    <Grid x:Name="HistorySplitGrid" Grid.Row="1" SizeChanged="HistorySplitGridSizeChanged">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="72" MinHeight="64" />
+        <RowDefinition Height="8" />
+        <RowDefinition Height="*" MinHeight="310" />
+      </Grid.RowDefinitions>
+      <Grid Grid.Row="0" RowDefinitions="*,Auto" Background="{DynamicResource BoughBrushInset}">
+        <ListBox x:Name="HistoryCommitList" Grid.Row="0" ItemsSource="{Binding Commits}" SelectedItem="{Binding SelectedCommit, Mode=TwoWay}"
+                 Background="{DynamicResource BoughBrushInset}" Foreground="{DynamicResource BoughBrushText}" BorderThickness="0"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:HistoryCommitItem">
+              <Border MinHeight="30" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" ToolTip.Tip="{Binding ToolTipText}">
+                <Border.ContextMenu>
+                  <ContextMenu Opened="CommitContextOpened">
+                    <MenuItem Header="Copy SHA" Click="CopyCommitShaClicked" />
+                    <MenuItem Header="Create branch here..." Click="CreateCommitBranchClicked" />
+                    <MenuItem Header="Create tag here..." Tag="create-tag" Click="CreateCommitTagClicked" />
+                    <MenuItem Header="Check out this commit..." Click="CheckoutCommitClicked" />
+                    <Separator />
+                    <MenuItem Header="Reset current branch to this commit..." Tag="reset" Click="ResetCommitClicked" />
+                  </ContextMenu>
+                </Border.ContextMenu>
+                <Grid ColumnDefinitions="Auto,*" Margin="6,0,8,0">
+                  <controls:HistoryGraphControl Grid.Column="0" Row="{Binding Graph}" Width="{Binding GraphWidth}" ClipToBounds="True" />
+                  <Grid Grid.Column="1" VerticalAlignment="Center" ColumnDefinitions="Auto,Auto,Auto,*">
+                      <controls:AuthorIdenticon Grid.Column="0" Width="18" Height="18" Margin="0,0,6,0"
+                                                VerticalAlignment="Center" AuthorName="{Binding Author}" AuthorEmail="{Binding AuthorEmail}"
+                                                CommitHash="{Binding Hash}"
+                                                GitHubRemoteUrl="{Binding GitHubRemoteUrl}"
+                                                x:CompileBindings="False"
+                                                ExternalPhotosEnabled="{Binding ExternalPhotosEnabled}"
+                                                ToolTip.Tip="{Binding PhotoSource, RelativeSource={RelativeSource Self}, Converter={StaticResource PhotoSourceLabelConverter}}"
+                                                AutomationProperties.Name="{Binding AuthorDisplayName}" />
+                      <ItemsControl Grid.Column="1" ItemsSource="{Binding InlineReferences}" VerticalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:HistoryReferenceItem">
+                            <Border Classes="referenceBadge" Classes.refCurrent="{Binding IsCurrent}" Classes.refLocal="{Binding IsLocal}"
+                                    Classes.refRemote="{Binding IsRemote}" Classes.refTag="{Binding IsTag}"
+                                    CornerRadius="4" Padding="4,1" MaxWidth="100"
+                                    Margin="0,0,4,0" ToolTip.Tip="{Binding ToolTipText}">
+                              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="3">
+                                <TextBlock Classes="referenceText" Classes.refCurrent="{Binding IsCurrent}" Classes.refLocal="{Binding IsLocal}"
+                                           Classes.refRemote="{Binding IsRemote}" Classes.refTag="{Binding IsTag}"
+                                           Text="{Binding Symbol}" FontSize="10" />
+                                <TextBlock Grid.Column="1" Classes="referenceText" Classes.refCurrent="{Binding IsCurrent}" Classes.refLocal="{Binding IsLocal}"
+                                           Classes.refRemote="{Binding IsRemote}" Classes.refTag="{Binding IsTag}"
+                                           Text="{Binding Name}" FontSize="10"
+                                           FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                              </Grid>
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      <Button Grid.Column="2" Content="{Binding MoreReferencesText}" IsVisible="{Binding HasMoreReferences}"
+                              Padding="5,1" Margin="0,0,6,0" FontSize="10" VerticalAlignment="Center"
+                              ToolTip.Tip="Show all references">
+                        <Button.Flyout>
+                          <Flyout Placement="Bottom">
+                            <Border Background="{DynamicResource BoughBrushRaised}" Padding="12" CornerRadius="6" MinWidth="180">
+                              <StackPanel Spacing="8">
+                                <TextBlock Text="ALL REFERENCES" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="10" FontWeight="Bold" />
+                                <ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
+                                  <ItemsControl ItemsSource="{Binding References}">
+                                    <ItemsControl.ItemTemplate>
+                                      <DataTemplate x:DataType="vm:HistoryReferenceItem">
+                                        <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,0,5"
+                                                    ToolTip.Tip="{Binding ToolTipText}">
+                                          <Border Classes="referenceBadge" Classes.refCurrent="{Binding IsCurrent}" Classes.refLocal="{Binding IsLocal}"
+                                                  Classes.refRemote="{Binding IsRemote}" Classes.refTag="{Binding IsTag}"
+                                                  CornerRadius="4" Padding="5,2" VerticalAlignment="Center">
+                                            <TextBlock Classes="referenceText" Classes.refCurrent="{Binding IsCurrent}" Classes.refLocal="{Binding IsLocal}"
+                                                       Classes.refRemote="{Binding IsRemote}" Classes.refTag="{Binding IsTag}"
+                                                       Text="{Binding Symbol}" FontSize="11" />
+                                          </Border>
+                                          <StackPanel Spacing="1">
+                                            <TextBlock Text="{Binding Kind}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="9" />
+                                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource BoughBrushText}" FontSize="11"
+                                                       TextWrapping="Wrap" MaxWidth="360" />
+                                          </StackPanel>
+                                        </StackPanel>
+                                      </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                  </ItemsControl>
+                                </ScrollViewer>
+                              </StackPanel>
+                            </Border>
+                          </Flyout>
+                        </Button.Flyout>
+                      </Button>
+                      <TextBlock Grid.Column="3" Text="{Binding MessageFirstLine}" FontSize="12" Foreground="{DynamicResource BoughBrushText}"
+                                 FontWeight="Medium" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  </Grid>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <TextBlock Grid.Row="0" Text="No commits yet" IsVisible="{Binding IsEmpty}"
+                   Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <TextBlock Grid.Row="0" Text="{Binding ErrorText}" IsVisible="{Binding HasLoadError}"
+                   Foreground="{DynamicResource BoughBrushError}" FontSize="12" TextWrapping="Wrap" TextAlignment="Center"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24" />
+
+        <Border Grid.Row="1" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" Padding="12,5"
+                IsVisible="{Binding ShowPageStatus}">
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+            <TextBlock Text="Loading commits…" IsVisible="{Binding IsLoadingMore}"
+                       Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding PageErrorText}" IsVisible="{Binding HasPageError}"
+                       Foreground="{DynamicResource BoughBrushError}" FontSize="11" VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" MaxWidth="500" ToolTip.Tip="{Binding PageErrorText}" />
+            <Button Content="Retry" Command="{Binding RetryLoadMoreCommand}"
+                    IsVisible="{Binding HasPageError}" Padding="7,2" FontSize="11" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <GridSplitter Grid.Row="1" Height="8" HorizontalAlignment="Stretch"
+                    Background="{DynamicResource BoughBrushBorder}" Cursor="SizeNorthSouth"
+                    ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" KeyboardIncrement="16"
+                    PointerPressed="CommitSplitterPointerPressed" KeyDown="CommitSplitterKeyDown"
+                    Focusable="True" ToolTip.Tip="Resize commit list and details"
+                    AutomationProperties.Name="Resize commit list and details" />
+
+      <Border Grid.Row="2" Background="{DynamicResource BoughBrushCanvas}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
+        <Grid>
+          <TextBlock Text="Select a commit to inspect it" IsVisible="{Binding HasNoSelection}"
+                     Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <TabControl IsVisible="{Binding HasSelection}" SelectedIndex="{Binding SelectedTab, Mode=TwoWay}"
+                      Background="{DynamicResource BoughBrushCanvas}" Foreground="{DynamicResource BoughBrushText}" BorderThickness="0"
+                      HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+            <TabItem Header="Commit">
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="16" Spacing="13">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                    <StackPanel Grid.Column="0" Spacing="5">
+                      <SelectableTextBlock Text="{Binding SelectedMessage}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
+                      <SelectableTextBlock Text="{Binding AuthorDescription}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
+                      <SelectableTextBlock Text="{Binding AuthoredAtText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4" HorizontalAlignment="Right">
+                      <controls:AuthorIdenticon x:Name="DetailAuthorAvatar" Width="52" Height="52" HorizontalAlignment="Right"
+                                                AuthorName="{Binding SelectedCommit.Author}" AuthorEmail="{Binding SelectedCommit.AuthorEmail}"
+                                                CommitHash="{Binding SelectedCommit.Hash}" GitHubRemoteUrl="{Binding GitHubRemoteUrl}"
+                                                ExternalPhotosEnabled="{Binding ExternalAuthorPhotosEnabled}"
+                                                x:CompileBindings="False"
+                                                ToolTip.Tip="{Binding PhotoSource, RelativeSource={RelativeSource Self}, Converter={StaticResource PhotoSourceLabelConverter}}"
+                                                AutomationProperties.Name="{Binding SelectedCommit.AuthorDisplayName}" />
+                      <TextBlock Text="{Binding PhotoSource, ElementName=DetailAuthorAvatar, Converter={StaticResource PhotoSourceLabelConverter}}"
+                                 x:CompileBindings="False" FontSize="10" Foreground="{DynamicResource BoughBrushTextMuted}" HorizontalAlignment="Right" />
+                    </StackPanel>
+                  </Grid>
+                  <SelectableTextBlock Text="{Binding ReferencesText}" FontSize="11" Foreground="{DynamicResource BoughBrushSuccess}" TextWrapping="Wrap" />
+                  <Grid ColumnDefinitions="*,Auto">
+                    <SelectableTextBlock Text="{Binding Inspection.Hash}" FontFamily="Cascadia Mono, Menlo, monospace"
+                                         FontSize="11" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Inspection.Hash}" />
+                    <Button Grid.Column="1" Content="Copy SHA" Click="CopyHashClicked" Padding="7,3" FontSize="10" />
+                  </Grid>
+                  <ItemsControl ItemsSource="{Binding Inspection.Parents}" IsVisible="{Binding HasParents}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="x:String">
+                        <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,0,3">
+                          <Button Content="{Binding}" Click="ParentClicked" Padding="5,2" FontSize="10"
+                                  FontFamily="Cascadia Mono, Menlo, monospace" ToolTip.Tip="Go to parent commit" />
+                          <Button Content="Copy" Click="CopyParentClicked" Padding="5,2" FontSize="10" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <ComboBox ItemsSource="{Binding Inspection.Parents}" SelectedItem="{Binding SelectedParent, Mode=TwoWay}"
+                            IsVisible="{Binding HasMultipleParents}" />
+                  <TextBlock Text="{Binding ComparisonText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Expand all" Click="ExpandAllClicked" Padding="7,4" FontSize="11" />
+                    <Button Content="Collapse all" Click="CollapseAllClicked" Padding="7,4" FontSize="11" />
+                  </StackPanel>
+                  <TextBlock Text="No file changes against this parent" IsVisible="{Binding HasNoChangedFiles}"
+                             Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="11" />
+                  <ItemsControl ItemsSource="{Binding ChangedFiles}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:HistoryInspectionFileItem">
+                        <Expander Classes="commitFile" MinHeight="34" MinWidth="0" HorizontalAlignment="Stretch"
+                                  IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+                                  Expanded="DiffExpanded" Margin="0,0,0,3">
+                          <Expander.Header>
+                            <TextBlock Text="{Binding PathDescription}" TextTrimming="CharacterEllipsis"
+                                       Foreground="{DynamicResource BoughBrushText}"
+                                       TextWrapping="NoWrap" FontSize="11" VerticalAlignment="Center"
+                                       ToolTip.Tip="{Binding PathDescription}" />
+                          </Expander.Header>
+                          <Expander.ContextMenu>
+                            <ContextMenu Opened="FileContextOpened">
+                              <MenuItem Header="Open" Click="OpenFileClicked" />
+                              <MenuItem Header="Show in File Explorer" Click="ExplorerFileClicked" />
+                              <Separator />
+                              <MenuItem Header="History" Click="FileHistoryClicked" />
+                              <MenuItem Header="Show in File Tree" Click="ShowInTreeClicked" />
+                              <Separator />
+                              <MenuItem Header="Save as…" Click="SaveFileClicked" />
+                              <MenuItem Header="Copy Path" Click="CopyPathClicked" />
+                            </ContextMenu>
+                          </Expander.ContextMenu>
+                          <StackPanel Spacing="5">
+                            <TextBlock Classes="fileStatus" Classes.statusAdded="{Binding IsAdded}" Classes.statusDeleted="{Binding IsDeleted}"
+                                       Classes.statusRenamed="{Binding IsRenamed}" Classes.statusCopied="{Binding IsCopied}"
+                                       Text="{Binding StatusText}" FontSize="10" />
+                            <TextBlock Text="{Binding DiffReason}" FontSize="11" Foreground="{DynamicResource BoughBrushWarning}" TextWrapping="Wrap" />
+                            <TextBlock Text="Loading diff…" IsVisible="{Binding IsLoading}" FontSize="11" />
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                              <StackPanel>
+                              <ItemsControl ItemsSource="{Binding DiffLines}">
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:HistoryDiffLineItem">
+                                    <Border Classes="diffLine" Classes.diffAdded="{Binding IsAdded}" Classes.diffRemoved="{Binding IsRemoved}"
+                                            Classes.diffHunk="{Binding IsHunk}" Padding="3,1">
+                                      <Grid ColumnDefinitions="38,38,*">
+                                        <TextBlock Text="{Binding OldNumber}" FontSize="10" Foreground="{DynamicResource BoughBrushTextSubtle}"
+                                                   FontFamily="Cascadia Mono, Menlo, monospace" />
+                                        <TextBlock Grid.Column="1" Text="{Binding NewNumber}" FontSize="10" Foreground="{DynamicResource BoughBrushTextSubtle}"
+                                                   FontFamily="Cascadia Mono, Menlo, monospace" />
+                                        <SelectableTextBlock Grid.Column="2" Classes="diffText" Classes.diffAdded="{Binding IsAdded}"
+                                                             Classes.diffRemoved="{Binding IsRemoved}" Classes.diffHunk="{Binding IsHunk}"
+                                                             Text="{Binding Text}"
+                                                             FontSize="10" FontFamily="Cascadia Mono, Menlo, monospace" TextWrapping="NoWrap" />
+                                      </Grid>
+                                    </Border>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                              <SelectableTextBlock Text="{Binding DiffText}" IsVisible="{Binding HasRawDiff}"
+                                                   FontFamily="Cascadia Mono, Menlo, monospace" FontSize="10"
+                                                   TextWrapping="NoWrap" />
+                              </StackPanel>
+                            </ScrollViewer>
+                          </StackPanel>
+                        </Expander>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource BoughBrushError}" FontSize="11" TextWrapping="Wrap" />
+                </StackPanel>
+              </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Changes">
+              <Grid Margin="12">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="*" MinHeight="60" />
+                  <RowDefinition Height="6" />
+                  <RowDefinition Height="2*" MinHeight="90" />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Spacing="3" Margin="0,0,0,9">
+                  <TextBlock Text="{Binding MessageFirstLine}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Text="{Binding ChangesSummary}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" />
+                </StackPanel>
+                <TextBox Grid.Row="1" PlaceholderText="Search changed paths" Text="{Binding FileSearch, Mode=TwoWay}"
+                         Margin="0,0,0,8" />
+                <ListBox Grid.Row="2" ItemsSource="{Binding VisibleChangedFiles}"
+                         SelectedItem="{Binding SelectedChangedFile, Mode=TwoWay}"
+                         Background="{DynamicResource BoughBrushSurface}" Foreground="{DynamicResource BoughBrushText}"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:HistoryInspectionFileItem">
+                      <Border Padding="8,6" ToolTip.Tip="{Binding PathDescription}">
+                        <Border.ContextMenu>
+                          <ContextMenu Opened="FileContextOpened">
+                            <MenuItem Header="Open" Click="OpenFileClicked" />
+                            <MenuItem Header="Show in File Explorer" Click="ExplorerFileClicked" />
+                            <Separator />
+                            <MenuItem Header="History" Click="FileHistoryClicked" />
+                            <MenuItem Header="Show in File Tree" Click="ShowInTreeClicked" />
+                            <Separator />
+                            <MenuItem Header="Save as…" Click="SaveFileClicked" />
+                            <MenuItem Header="Copy Path" Click="CopyPathClicked" />
+                          </ContextMenu>
+                        </Border.ContextMenu>
+                        <Grid ColumnDefinitions="75,*">
+                          <TextBlock Classes="fileStatus" Classes.statusAdded="{Binding IsAdded}" Classes.statusDeleted="{Binding IsDeleted}"
+                                     Classes.statusRenamed="{Binding IsRenamed}" Classes.statusCopied="{Binding IsCopied}"
+                                     Text="{Binding StatusText}" FontSize="10" />
+                          <TextBlock Grid.Column="1" Text="{Binding PathDescription}" TextTrimming="CharacterEllipsis" FontSize="11" />
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <GridSplitter Grid.Row="3" Height="6" Background="{DynamicResource BoughBrushBorder}" Cursor="SizeNorthSouth"
+                              ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" KeyboardIncrement="12"
+                              Focusable="True" ToolTip.Tip="Resize changed files and preview"
+                              AutomationProperties.Name="Resize changed files and preview" />
+                <Grid Grid.Row="4" RowDefinitions="Auto,Auto,*" RowSpacing="4" Margin="0,4,0,0">
+                  <TextBlock Grid.Row="0" Text="{Binding PreviewPath}" FontWeight="SemiBold" FontSize="11"
+                             TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding PreviewPath}" />
+                  <TextBlock Grid.Row="1" Text="{Binding PreviewReason}" Foreground="{DynamicResource BoughBrushWarning}" FontSize="11"
+                             TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding PreviewReason}" />
+                  <TextBox Grid.Row="2" Text="{Binding PreviewText}" IsReadOnly="True" AcceptsReturn="True"
+                           TextWrapping="NoWrap" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="11"
+                           ScrollViewer.VerticalScrollBarVisibility="Auto"
+                           ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+                </Grid>
+              </Grid>
+            </TabItem>
+            <TabItem Header="File Tree">
+              <Grid Margin="12">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="*" MinHeight="60" />
+                  <RowDefinition Height="6" />
+                  <RowDefinition Height="2*" MinHeight="90" />
+                </Grid.RowDefinitions>
+                <TextBox Grid.Row="0" PlaceholderText="Search snapshot paths" Text="{Binding TreeSearch, Mode=TwoWay}" Margin="0,0,0,8" />
+                <TreeView Grid.Row="1" ItemsSource="{Binding VisibleTreeRoots}"
+                          SelectedItem="{Binding SelectedTreeFile, Mode=TwoWay}"
+                          Background="{DynamicResource BoughBrushSurface}" Foreground="{DynamicResource BoughBrushText}"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                  <TreeView.Styles>
+                    <Style Selector="TreeViewItem">
+                      <Setter Property="IsExpanded" Value="{ReflectionBinding IsExpanded, Mode=TwoWay}" />
+                    </Style>
+                  </TreeView.Styles>
+                  <TreeView.ItemTemplate>
+                    <TreeDataTemplate x:DataType="vm:HistoryTreeItem" ItemsSource="{Binding Children}">
+                      <Border Padding="3" ToolTip.Tip="{Binding Path}">
+                        <Border.ContextMenu>
+                          <ContextMenu Opened="FileContextOpened">
+                            <MenuItem Header="Open" Click="OpenFileClicked" />
+                            <MenuItem Header="Show in File Explorer" Click="ExplorerFileClicked" />
+                            <Separator />
+                            <MenuItem Header="History" Click="FileHistoryClicked" />
+                            <MenuItem Header="Show in File Tree" Click="ShowInTreeClicked" />
+                            <Separator />
+                            <MenuItem Header="Save as…" Click="SaveFileClicked" />
+                            <MenuItem Header="Copy Path" Click="CopyPathClicked" />
+                          </ContextMenu>
+                        </Border.ContextMenu>
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                          <TextBlock Text="{Binding Kind}" Foreground="{DynamicResource BoughBrushSuccess}" FontSize="10" />
+                          <TextBlock Text="{Binding Name}" FontSize="11" />
+                        </StackPanel>
+                      </Border>
+                    </TreeDataTemplate>
+                  </TreeView.ItemTemplate>
+                </TreeView>
+                <GridSplitter Grid.Row="2" Height="6" Background="{DynamicResource BoughBrushBorder}" Cursor="SizeNorthSouth"
+                              ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" KeyboardIncrement="12"
+                              Focusable="True" ToolTip.Tip="Resize file tree and preview"
+                              AutomationProperties.Name="Resize file tree and preview" />
+                <Grid Grid.Row="3" RowDefinitions="Auto,Auto,*" RowSpacing="4" Margin="0,4,0,0">
+                  <TextBlock Grid.Row="0" Text="{Binding PreviewPath}" FontWeight="SemiBold" FontSize="11"
+                             TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding PreviewPath}" />
+                  <TextBlock Grid.Row="1" Text="{Binding PreviewReason}" Foreground="{DynamicResource BoughBrushWarning}" FontSize="11"
+                             TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding PreviewReason}" />
+                  <TextBox Grid.Row="2" Text="{Binding PreviewText}" IsReadOnly="True" AcceptsReturn="True"
+                           TextWrapping="NoWrap" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="11"
+                           ScrollViewer.VerticalScrollBarVisibility="Auto"
+                           ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+                </Grid>
+              </Grid>
+            </TabItem>
+          </TabControl>
+          <Border Background="{DynamicResource BoughBrushRaised}" Padding="12" Margin="15" VerticalAlignment="Bottom"
+                  IsVisible="{Binding HasAuxiliary}" MaxHeight="340">
+            <Grid RowDefinitions="Auto,*">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding AuxiliaryTitle}" FontWeight="SemiBold" FontSize="11" />
+                <Button Grid.Column="1" Content="×" Click="CloseAuxiliaryClicked" Padding="4,1" />
+              </Grid>
+              <TextBox Grid.Row="1" Text="{Binding AuxiliaryText}" IsReadOnly="True" AcceptsReturn="True"
+                       TextWrapping="NoWrap" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="10" />
+            </Grid>
+          </Border>
+        </Grid>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

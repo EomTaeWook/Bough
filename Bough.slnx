@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Shared/">
+    <Project Path="DataContainer/DataContainer.csproj" />
+  </Folder>
+  <Project Path="Bough.App/Bough.App.csproj" />
+  <Project Path="Bough.Core/Bough.Core.csproj" />
+</Solution>

@@ -1,0 +1,232 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Bough.App.App"
+             RequestedThemeVariant="Light">
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="Window">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushCanvas}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+    </Style>
+    <Style Selector="Button:disabled">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="Button.primary:disabled">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+    </Style>
+    <Style Selector="TabItem">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextMuted}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+    </Style>
+    <Style Selector="TabItem:pointerover">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="TabItem:selected">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="TabItem:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
+    </Style>
+    <Style Selector="SelectableTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushInput}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushInput}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+    </Style>
+    <Style Selector="ContextMenu">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+    </Style>
+    <Style Selector="MenuItem">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="MenuItem:pointerover">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushSelectionText}" />
+    </Style>
+    <Style Selector="ToolTip">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+    </Style>
+    <Style Selector="TextBlock.boughError">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushError}" />
+    </Style>
+  </Application.Styles>
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+      <ResourceDictionary x:Key="Light">
+        <Color x:Key="BoughColorHeader">#A7C6DB</Color>
+        <SolidColorBrush x:Key="BoughBrushHeader" Color="#A7C6DB" />
+        <Color x:Key="BoughColorSubheader">#C8DBE9</Color>
+        <SolidColorBrush x:Key="BoughBrushSubheader" Color="#C8DBE9" />
+        <Color x:Key="BoughColorSidebar">#E6F0F7</Color>
+        <SolidColorBrush x:Key="BoughBrushSidebar" Color="#E6F0F7" />
+        <Color x:Key="BoughColorCanvas">#F7FAFC</Color>
+        <SolidColorBrush x:Key="BoughBrushCanvas" Color="#F7FAFC" />
+        <Color x:Key="BoughColorSurface">#FFFFFF</Color>
+        <SolidColorBrush x:Key="BoughBrushSurface" Color="#FFFFFF" />
+        <Color x:Key="BoughColorRaised">#F0F6FA</Color>
+        <SolidColorBrush x:Key="BoughBrushRaised" Color="#F0F6FA" />
+        <Color x:Key="BoughColorInset">#F0F5F9</Color>
+        <SolidColorBrush x:Key="BoughBrushInset" Color="#F0F5F9" />
+        <Color x:Key="BoughColorInput">#FFFFFF</Color>
+        <SolidColorBrush x:Key="BoughBrushInput" Color="#FFFFFF" />
+        <Color x:Key="BoughColorBorder">#C7D7E3</Color>
+        <SolidColorBrush x:Key="BoughBrushBorder" Color="#C7D7E3" />
+        <Color x:Key="BoughColorBorderStrong">#91AFC5</Color>
+        <SolidColorBrush x:Key="BoughBrushBorderStrong" Color="#91AFC5" />
+        <Color x:Key="BoughColorText">#1D3447</Color>
+        <SolidColorBrush x:Key="BoughBrushText" Color="#1D3447" />
+        <Color x:Key="BoughColorTextMuted">#425B70</Color>
+        <SolidColorBrush x:Key="BoughBrushTextMuted" Color="#425B70" />
+        <Color x:Key="BoughColorTextSubtle">#486176</Color>
+        <SolidColorBrush x:Key="BoughBrushTextSubtle" Color="#486176" />
+        <Color x:Key="BoughColorAccent">#285F88</Color>
+        <SolidColorBrush x:Key="BoughBrushAccent" Color="#285F88" />
+        <Color x:Key="BoughColorAccentText">#FFFFFF</Color>
+        <SolidColorBrush x:Key="BoughBrushAccentText" Color="#FFFFFF" />
+        <Color x:Key="BoughColorSelection">#D7E8F5</Color>
+        <SolidColorBrush x:Key="BoughBrushSelection" Color="#D7E8F5" />
+        <Color x:Key="BoughColorSelectionText">#183F5E</Color>
+        <SolidColorBrush x:Key="BoughBrushSelectionText" Color="#183F5E" />
+        <Color x:Key="BoughColorDisabled">#E6EDF2</Color>
+        <SolidColorBrush x:Key="BoughBrushDisabled" Color="#E6EDF2" />
+        <Color x:Key="BoughColorDisabledText">#536B7F</Color>
+        <SolidColorBrush x:Key="BoughBrushDisabledText" Color="#536B7F" />
+        <Color x:Key="BoughColorError">#A72F37</Color>
+        <SolidColorBrush x:Key="BoughBrushError" Color="#A72F37" />
+        <Color x:Key="BoughColorErrorSurface">#FDECEE</Color>
+        <SolidColorBrush x:Key="BoughBrushErrorSurface" Color="#FDECEE" />
+        <Color x:Key="BoughColorWarning">#8C5A08</Color>
+        <SolidColorBrush x:Key="BoughBrushWarning" Color="#8C5A08" />
+        <Color x:Key="BoughColorWarningSurface">#FFF4DB</Color>
+        <SolidColorBrush x:Key="BoughBrushWarningSurface" Color="#FFF4DB" />
+        <Color x:Key="BoughColorSuccess">#216642</Color>
+        <SolidColorBrush x:Key="BoughBrushSuccess" Color="#216642" />
+        <Color x:Key="BoughColorSuccessSurface">#E4F3E8</Color>
+        <SolidColorBrush x:Key="BoughBrushSuccessSurface" Color="#E4F3E8" />
+        <Color x:Key="BoughColorDiffAdded">#176D46</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffAdded" Color="#176D46" />
+        <Color x:Key="BoughColorDiffAddedSurface">#E3F5E8</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffAddedSurface" Color="#E3F5E8" />
+        <Color x:Key="BoughColorDiffRemoved">#AD3940</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffRemoved" Color="#AD3940" />
+        <Color x:Key="BoughColorDiffRemovedSurface">#FDE9E9</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffRemovedSurface" Color="#FDE9E9" />
+        <Color x:Key="BoughColorDiffHunk">#4B5D9C</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffHunk" Color="#4B5D9C" />
+        <Color x:Key="BoughColorDiffHunkSurface">#E8ECFA</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffHunkSurface" Color="#E8ECFA" />
+        <Color x:Key="BoughColorFocus">#216B9D</Color>
+        <SolidColorBrush x:Key="BoughBrushFocus" Color="#216B9D" />
+        <Color x:Key="BoughColorGraphOne">#136D90</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphOne" Color="#136D90" />
+        <Color x:Key="BoughColorGraphTwo">#9B4C8B</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphTwo" Color="#9B4C8B" />
+        <Color x:Key="BoughColorGraphThree">#B26F18</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphThree" Color="#B26F18" />
+        <Color x:Key="BoughColorGraphFour">#498043</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphFour" Color="#498043" />
+      </ResourceDictionary>
+      <ResourceDictionary x:Key="Dark">
+        <Color x:Key="BoughColorHeader">#151C19</Color>
+        <SolidColorBrush x:Key="BoughBrushHeader" Color="#151C19" />
+        <Color x:Key="BoughColorSubheader">#111816</Color>
+        <SolidColorBrush x:Key="BoughBrushSubheader" Color="#111816" />
+        <Color x:Key="BoughColorSidebar">#111816</Color>
+        <SolidColorBrush x:Key="BoughBrushSidebar" Color="#111816" />
+        <Color x:Key="BoughColorCanvas">#101514</Color>
+        <SolidColorBrush x:Key="BoughBrushCanvas" Color="#101514" />
+        <Color x:Key="BoughColorSurface">#151C19</Color>
+        <SolidColorBrush x:Key="BoughBrushSurface" Color="#151C19" />
+        <Color x:Key="BoughColorRaised">#1D2722</Color>
+        <SolidColorBrush x:Key="BoughBrushRaised" Color="#1D2722" />
+        <Color x:Key="BoughColorInset">#111816</Color>
+        <SolidColorBrush x:Key="BoughBrushInset" Color="#111816" />
+        <Color x:Key="BoughColorInput">#202A24</Color>
+        <SolidColorBrush x:Key="BoughBrushInput" Color="#202A24" />
+        <Color x:Key="BoughColorBorder">#34453A</Color>
+        <SolidColorBrush x:Key="BoughBrushBorder" Color="#34453A" />
+        <Color x:Key="BoughColorBorderStrong">#526758</Color>
+        <SolidColorBrush x:Key="BoughBrushBorderStrong" Color="#526758" />
+        <Color x:Key="BoughColorText">#E9F0EA</Color>
+        <SolidColorBrush x:Key="BoughBrushText" Color="#E9F0EA" />
+        <Color x:Key="BoughColorTextMuted">#B5C9B8</Color>
+        <SolidColorBrush x:Key="BoughBrushTextMuted" Color="#B5C9B8" />
+        <Color x:Key="BoughColorTextSubtle">#8FA596</Color>
+        <SolidColorBrush x:Key="BoughBrushTextSubtle" Color="#8FA596" />
+        <Color x:Key="BoughColorAccent">#D6F36A</Color>
+        <SolidColorBrush x:Key="BoughBrushAccent" Color="#D6F36A" />
+        <Color x:Key="BoughColorAccentText">#111511</Color>
+        <SolidColorBrush x:Key="BoughBrushAccentText" Color="#111511" />
+        <Color x:Key="BoughColorSelection">#284635</Color>
+        <SolidColorBrush x:Key="BoughBrushSelection" Color="#284635" />
+        <Color x:Key="BoughColorSelectionText">#F0F8E7</Color>
+        <SolidColorBrush x:Key="BoughBrushSelectionText" Color="#F0F8E7" />
+        <Color x:Key="BoughColorDisabled">#28332D</Color>
+        <SolidColorBrush x:Key="BoughBrushDisabled" Color="#28332D" />
+        <Color x:Key="BoughColorDisabledText">#87958B</Color>
+        <SolidColorBrush x:Key="BoughBrushDisabledText" Color="#87958B" />
+        <Color x:Key="BoughColorError">#EEA7A7</Color>
+        <SolidColorBrush x:Key="BoughBrushError" Color="#EEA7A7" />
+        <Color x:Key="BoughColorErrorSurface">#44272B</Color>
+        <SolidColorBrush x:Key="BoughBrushErrorSurface" Color="#44272B" />
+        <Color x:Key="BoughColorWarning">#E7C073</Color>
+        <SolidColorBrush x:Key="BoughBrushWarning" Color="#E7C073" />
+        <Color x:Key="BoughColorWarningSurface">#4A3A21</Color>
+        <SolidColorBrush x:Key="BoughBrushWarningSurface" Color="#4A3A21" />
+        <Color x:Key="BoughColorSuccess">#8DD5A0</Color>
+        <SolidColorBrush x:Key="BoughBrushSuccess" Color="#8DD5A0" />
+        <Color x:Key="BoughColorSuccessSurface">#1D3B2A</Color>
+        <SolidColorBrush x:Key="BoughBrushSuccessSurface" Color="#1D3B2A" />
+        <Color x:Key="BoughColorDiffAdded">#77D5B5</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffAdded" Color="#77D5B5" />
+        <Color x:Key="BoughColorDiffAddedSurface">#173A2D</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffAddedSurface" Color="#173A2D" />
+        <Color x:Key="BoughColorDiffRemoved">#F0A1A7</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffRemoved" Color="#F0A1A7" />
+        <Color x:Key="BoughColorDiffRemovedSurface">#44292D</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffRemovedSurface" Color="#44292D" />
+        <Color x:Key="BoughColorDiffHunk">#B5A5F0</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffHunk" Color="#B5A5F0" />
+        <Color x:Key="BoughColorDiffHunkSurface">#302A46</Color>
+        <SolidColorBrush x:Key="BoughBrushDiffHunkSurface" Color="#302A46" />
+        <Color x:Key="BoughColorFocus">#B5D869</Color>
+        <SolidColorBrush x:Key="BoughBrushFocus" Color="#B5D869" />
+        <Color x:Key="BoughColorGraphOne">#7FC5DD</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphOne" Color="#7FC5DD" />
+        <Color x:Key="BoughColorGraphTwo">#D5A0D0</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphTwo" Color="#D5A0D0" />
+        <Color x:Key="BoughColorGraphThree">#E8BD72</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphThree" Color="#E8BD72" />
+        <Color x:Key="BoughColorGraphFour">#A9D39C</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphFour" Color="#A9D39C" />
+      </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

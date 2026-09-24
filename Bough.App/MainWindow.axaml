@@ -1,0 +1,220 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Bough.App.ViewModels"
+        xmlns:views="using:Bough.App.Views"
+        x:Class="Bough.App.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Bough"
+        Width="1440"
+        Height="920"
+        MinWidth="1080"
+        MinHeight="700"
+        Background="{DynamicResource BoughBrushCanvas}">
+  <Window.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="Padding" Value="14,8" />
+      <Setter Property="CornerRadius" Value="7" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+    </Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+    </Style>
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.ours">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDiffAddedSurface}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushDiffAdded}" />
+    </Style>
+    <Style Selector="Button.theirs">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDiffHunkSurface}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushDiffHunk}" />
+    </Style>
+    <Style Selector="Button.repository">
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="10,6" />
+    </Style>
+    <Style Selector="Button.repository.active">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="Button.navigation">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="Padding" Value="12,7" />
+    </Style>
+    <Style Selector="Button.navigation.active">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="TextBox.code">
+      <Setter Property="FontFamily" Value="Cascadia Mono, Menlo, monospace" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushInset}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="14" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="0,0,0,6" />
+      <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,*">
+    <Border Grid.Row="0" Background="{DynamicResource BoughBrushHeader}" BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="0,0,0,1">
+      <Grid RowDefinitions="72,Auto">
+      <Grid Grid.Row="0" ColumnDefinitions="280,*,Auto" Margin="20,0">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="11">
+          <Border Width="34" Height="34" CornerRadius="10" Background="{DynamicResource BoughBrushAccent}">
+            <TextBlock Text="B" Foreground="{DynamicResource BoughBrushAccentText}" FontWeight="Bold" FontSize="18"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <TextBlock Text="Bough" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="18,0">
+          <TextBlock Text="{Binding RepositoryName}" FontSize="15" FontWeight="SemiBold"
+                     TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding RepositoryName}" />
+          <TextBlock Text="{Binding RepositoryMeta}" Foreground="{DynamicResource BoughBrushText}" FontSize="12"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+          <Button Content="Local Changes" Command="{Binding ShowLocalChangesCommand}" Classes="navigation"
+                  Classes.active="{Binding IsLocalChangesView}" />
+          <Button Content="All Commits" Command="{Binding ShowHistoryCommand}" Classes="navigation"
+                  Classes.active="{Binding IsHistoryView}" />
+          <Button Content="{Binding GitSettings.SettingsTitle}" Command="{Binding ShowGitSettingsCommand}" Classes="navigation"
+                  Classes.active="{Binding IsGitSettingsView}" />
+          <Border Width="1" Background="{DynamicResource BoughBrushBorder}" Margin="5,9" />
+          <Button IsEnabled="{Binding HasRepository}" Focusable="True" ToolTip.Tip="Open the current repository folder"
+                  AutomationProperties.Name="Open current repository in File Explorer" Padding="8,4">
+            <Button.Flyout>
+              <Flyout Placement="Bottom">
+                <Button Content="Open repository folder" Click="OpenFolderClicked" Focusable="True" />
+              </Flyout>
+            </Button.Flyout>
+            <StackPanel Spacing="0" HorizontalAlignment="Center">
+              <TextBlock Text="↗" FontSize="15" HorizontalAlignment="Center" />
+              <TextBlock Text="Open in ▾" FontSize="9" />
+            </StackPanel>
+          </Button>
+          <Button Command="{Binding References.OpenTerminalCommand}" Focusable="True"
+                  ToolTip.Tip="Open a console at the current repository root"
+                  AutomationProperties.Name="Open console at current repository root" Padding="8,4">
+            <StackPanel Spacing="0" HorizontalAlignment="Center">
+              <TextBlock Text="&gt;_" FontSize="14" HorizontalAlignment="Center" />
+              <TextBlock Text="Console" FontSize="9" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </Grid>
+      <Border Grid.Row="1" Background="{DynamicResource BoughBrushSubheader}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
+        <Grid>
+          <views:RemoteOperationsView x:Name="RemoteOperationsPanel" DataContext="{Binding RemoteOperations}" />
+          <ProgressBar IsVisible="{Binding IsRemoteLoading}" IsIndeterminate="True"
+                       Height="3" VerticalAlignment="Bottom" />
+        </Grid>
+      </Border>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="280,*">
+      <Border Grid.Column="0" Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,1,0">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="14">
+          <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="6,8,6,4">
+            <TextBlock Grid.Column="0" Text="{Binding RepositoryList.RepositoriesHeadingText}" FontSize="16" FontWeight="SemiBold"
+                       VerticalAlignment="Center" />
+            <Button Grid.Column="1" Content="{Binding RepositoryList.AddButtonText}" Click="OpenRepositoryClicked"
+                    Padding="9,5" ToolTip.Tip="{Binding RepositoryList.AddRepositoryTooltipText}" />
+          </Grid>
+
+          <ScrollViewer Grid.Row="1" MaxHeight="220" VerticalScrollBarVisibility="Auto"
+                        Margin="0,0,0,12">
+            <ItemsControl ItemsSource="{Binding RepositoryList.RepositoryGroups}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:RepositoryGroup">
+                  <StackPanel Margin="0,5,0,7" Spacing="2">
+                    <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{DynamicResource BoughBrushTextSubtle}" Margin="10,0,0,3"
+                               ToolTip.Tip="{Binding ParentPath}" />
+                    <ItemsControl ItemsSource="{Binding Repositories}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RepositoryItem">
+                          <Grid ColumnDefinitions="*,Auto">
+                            <Button Grid.Column="0" Classes="repository" Classes.active="{Binding IsActive}"
+                                    Content="{Binding Name}" Click="RepositoryClicked"
+                                    ToolTip.Tip="{Binding RootPath}" ToolTip.Placement="TopEdgeAlignedRight"
+                                    ToolTip.ShowDelay="1000" ToolTip.BetweenShowDelay="-1" />
+                            <Button Grid.Column="1" Content="×" Click="RemoveRepositoryClicked"
+                                    ToolTip.Tip="{ReflectionBinding $parent[Window].DataContext.RepositoryList.RemoveFromListTooltipText}" Padding="7,4"
+                                    Background="Transparent" BorderThickness="0" />
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+
+          <Border Grid.Row="2">
+            <Grid>
+              <views:ReferenceExplorerView DataContext="{Binding References}" />
+              <ProgressBar IsVisible="{Binding IsReferencesLoading}" IsIndeterminate="True"
+                           Height="3" VerticalAlignment="Top" />
+            </Grid>
+          </Border>
+          <Border Grid.Row="3" IsVisible="{Binding HasSidebarStatus}"
+                  Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}"
+                  BorderThickness="0,1,0,0" Padding="10,8">
+            <StackPanel Spacing="7">
+              <ScrollViewer IsVisible="{Binding HasSidebarStatusText}" MaxHeight="112"
+                            VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <TextBlock Text="{Binding SidebarStatusText}" TextWrapping="Wrap" FontSize="11"
+                           Foreground="{DynamicResource BoughBrushTextMuted}"
+                           ToolTip.Tip="{Binding SidebarStatusText}" />
+              </ScrollViewer>
+              <ProgressBar IsVisible="{Binding IsMainProgress}" IsIndeterminate="True" Height="3" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </Border>
+
+      <Border Grid.Column="1" IsVisible="{Binding IsHistoryView}">
+        <views:HistoryView DataContext="{Binding History}" />
+      </Border>
+      <Border Grid.Column="1" IsVisible="{Binding IsLocalChangesView}">
+        <Grid>
+          <views:LocalChangesView x:Name="LocalChangesPanel" DataContext="{Binding LocalChanges}" />
+          <ProgressBar IsVisible="{Binding IsLocalChangesLoading}" IsIndeterminate="True"
+                       Height="3" VerticalAlignment="Top" />
+        </Grid>
+      </Border>
+      <Border Grid.Column="1" IsVisible="{Binding IsStashView}">
+        <views:StashView DataContext="{Binding LocalChanges.Stashes}" />
+      </Border>
+      <Border Grid.Column="1" IsVisible="{Binding IsGitSettingsView}">
+        <views:GitSettingsView x:Name="GitSettingsPanel" DataContext="{Binding GitSettings}" />
+      </Border>
+    </Grid>
+
+  </Grid>
+</Window>

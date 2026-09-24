@@ -61,6 +61,8 @@ dotnet run --project Bough.App/Bough.App.csproj
 
 `Excel/String.xlsx`가 문자열 원본이며 `Datas/String.json`과 `DataContainer/Generated`는 생성물입니다. 변환기는 각 실행 파일이 있는 폴더에서 실행합니다.
 
+`JsonToCSharp.exe`는 Git LFS로 관리합니다. 처음 저장소를 받은 뒤 실행 파일이 내려오지 않았다면 Git LFS를 설치하고 저장소 루트에서 `git lfs pull`을 실행하세요.
+
 ```powershell
 cd ExportTools/ExcelToJson
 ./ExcelToJson.exe --no-pause

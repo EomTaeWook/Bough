@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Bough.App.ViewModels"
+        x:Class="Bough.App.Views.RemoteOperationWindow"
+        x:DataType="vm:RemoteOperationsViewModel"
+        Title="Remote operation" Width="560" Height="360" MinWidth="420" MinHeight="270"
+        CanResize="True" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{DynamicResource BoughBrushCanvas}">
+  <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12" Margin="20">
+    <StackPanel Grid.Row="0" Spacing="4">
+      <TextBlock x:Name="OperationNameText" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+      <TextBlock x:Name="TargetText" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" />
+    </StackPanel>
+    <StackPanel Grid.Row="1" Spacing="5">
+      <TextBlock x:Name="OutcomeText" Text="{Binding OperationOutcomeText}" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushAccent}" />
+      <TextBlock x:Name="QueueStatusText" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" TextTrimming="CharacterEllipsis" />
+      <TextBlock Text="{Binding OperationStageText}" Foreground="{DynamicResource BoughBrushText}" />
+      <TextBlock Text="{Binding TransferStatusText}" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11"
+                 ToolTip.Tip="Git 객체 전송 상태입니다. 파일별 다운로드 진행률이 아닙니다." />
+      <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="4" />
+      <TextBlock x:Name="ElapsedText" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="11" />
+    </StackPanel>
+    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+      <StackPanel Spacing="12">
+        <TextBlock x:Name="ResultText" Text="{Binding StatusText}" TextWrapping="Wrap"
+                   Foreground="{DynamicResource BoughBrushText}" AutomationProperties.Name="원격 작업 진행 상태와 결과" />
+        <Border IsVisible="{Binding HasPullSummary}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" Padding="10">
+          <StackPanel Spacing="5">
+            <TextBlock Text="확인된 커밋과 변경 파일" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushAccent}" />
+            <TextBlock Text="{Binding PullSummaryText}" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushText}"
+                       AutomationProperties.Name="Pull로 받은 커밋과 변경 파일 요약" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+      <Button x:Name="StopButton" Content="작업 중단" Click="StopClicked" Padding="12,5"
+              IsVisible="True" IsEnabled="True"
+              ToolTip.Tip="진행 중인 원격 작업에 중단을 요청합니다. 완료된 결과는 되돌리지 않습니다."
+              AutomationProperties.Name="진행 중인 원격 작업 중단" />
+      <Button x:Name="CloseButton" Content="닫기" Click="CloseClicked" Padding="12,5"
+              IsVisible="False" IsDefault="True" AutomationProperties.Name="원격 작업 결과 닫기" />
+    </StackPanel>
+  </Grid>
+</Window>

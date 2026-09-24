@@ -1,0 +1,157 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Bough.App.ViewModels"
+             xmlns:git="using:Bough.Core.Git"
+             x:Class="Bough.App.Views.GitSettingsView"
+             x:DataType="vm:GitSettingsViewModel"
+             Background="{DynamicResource BoughBrushCanvas}">
+  <UserControl.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="SelectableTextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="RadioButton">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+  </UserControl.Styles>
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="22,15">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0" Text="{Binding SettingsTitle}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+        <Button Grid.Column="1" Content="{Binding RefreshLabel}" Command="{Binding RefreshCommand}" />
+      </Grid>
+    </Border>
+
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="22" Spacing="20" MaxWidth="700" HorizontalAlignment="Left">
+        <StackPanel Spacing="8">
+          <TextBlock Text="{Binding AppearanceHeading}" FontSize="11" FontWeight="Bold"
+                     Foreground="{DynamicResource BoughBrushTextMuted}" />
+          <TextBlock Text="{Binding AppearanceDescription}" FontSize="11" TextWrapping="Wrap"
+                     Foreground="{DynamicResource BoughBrushTextSubtle}" />
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <RadioButton Content="{Binding AppearanceLightLabel}" GroupName="AppearanceTheme"
+                         IsChecked="{Binding IsLightAppearance, Mode=OneWay}" Click="LightAppearanceClicked"
+                         AutomationProperties.Name="{Binding AppearanceLightLabel}" />
+            <RadioButton Content="{Binding AppearanceDarkLabel}" GroupName="AppearanceTheme"
+                         IsChecked="{Binding IsDarkAppearance, Mode=OneWay}" Click="DarkAppearanceClicked"
+                         AutomationProperties.Name="{Binding AppearanceDarkLabel}" />
+            <RadioButton Content="{Binding AppearanceSystemLabel}" GroupName="AppearanceTheme"
+                         IsChecked="{Binding IsSystemAppearance, Mode=OneWay}" Click="SystemAppearanceClicked"
+                         AutomationProperties.Name="{Binding AppearanceSystemLabel}" />
+          </StackPanel>
+          <TextBlock Text="{Binding AppearanceStatus}" FontSize="11" TextWrapping="Wrap"
+                     Foreground="{DynamicResource BoughBrushError}" />
+        </StackPanel>
+
+        <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="{Binding GitExecutableHeading}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+          <TextBlock Text="{Binding GitPathHint}" FontSize="11" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBox Grid.Column="0" Text="{Binding GitPathInput, Mode=TwoWay}" PlaceholderText="{Binding GitPathPlaceholder}" />
+            <Button Grid.Column="1" Content="{Binding BrowseGitLabel}" Click="BrowseGitClicked" />
+          </Grid>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="{Binding TestGitLabel}" Command="{Binding TestGitCommand}" />
+            <Button Content="{Binding SaveGitPathLabel}" Command="{Binding SaveGitPathCommand}" />
+          </StackPanel>
+          <TextBlock Text="{Binding GitVersion}" FontSize="11" Foreground="{DynamicResource BoughBrushSuccess}" />
+        </StackPanel>
+
+        <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="{Binding CommitAuthorHeading}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+          <TextBlock Text="{Binding AuthorStatus}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding LocalAuthorHeading}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+          <TextBox Text="{Binding LocalName, Mode=TwoWay}" PlaceholderText="user.name" />
+          <TextBox Text="{Binding LocalEmail, Mode=TwoWay}" PlaceholderText="user.email" />
+          <Button Content="{Binding SaveLocalAuthorLabel}" Command="{Binding SaveLocalAuthorCommand}" HorizontalAlignment="Left" />
+          <TextBlock Text="{Binding GlobalAuthorHeading}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" Margin="0,8,0,0" />
+          <TextBox Text="{Binding GlobalName, Mode=TwoWay}" PlaceholderText="user.name" />
+          <TextBox Text="{Binding GlobalEmail, Mode=TwoWay}" PlaceholderText="user.email" />
+          <Button Content="{Binding SaveGlobalAuthorLabel}" Command="{Binding SaveGlobalAuthorCommand}" HorizontalAlignment="Left" />
+        </StackPanel>
+
+        <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="{Binding PhotoLinkHeading}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+          <TextBlock Text="{Binding PhotoLinkDescription}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding PhotoGitHubUserNameLabel}" FontSize="11" Foreground="{DynamicResource BoughBrushText}" />
+          <TextBox Text="{Binding PhotoGitHubUserName, Mode=TwoWay}" PlaceholderText="{Binding PhotoGitHubUserNameLabel}"
+                   AutomationProperties.Name="{Binding PhotoGitHubUserNameLabel}" />
+          <TextBlock Text="{Binding PhotoAuthorEmailLabel}" FontSize="11" Foreground="{DynamicResource BoughBrushText}" />
+          <TextBox Text="{Binding PhotoAuthorEmail, Mode=TwoWay}" PlaceholderText="user.email"
+                   AutomationProperties.Name="{Binding PhotoAuthorEmailLabel}" />
+          <Button Content="{Binding PhotoLinkSaveLabel}" Command="{Binding SavePhotoLinkCommand}" HorizontalAlignment="Left"
+                  AutomationProperties.Name="{Binding PhotoLinkSaveLabel}" />
+          <TextBlock Text="{Binding PhotoLinkClearHelp}" FontSize="11" Foreground="{DynamicResource BoughBrushTextSubtle}" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding PhotoLinkStatus}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="{Binding AccountsHeading}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+          <TextBlock Text="{Binding AccountsDescription}"
+                     FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding AccountsPurpose}"
+                     FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding AccountRepositoryText}" FontSize="11" Foreground="{DynamicResource BoughBrushText}" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding AccountStatusText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding AccountsQueueHint}"
+                     IsVisible="{Binding IsRemoteOperationBusy}" FontSize="11" Foreground="{DynamicResource BoughBrushWarning}" TextWrapping="Wrap" />
+          <ItemsControl ItemsSource="{Binding GitHubRemotes}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:GitHubRemoteAccountItem">
+                <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="5" Padding="12" Margin="0,4">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding RemoteName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+                    <TextBlock Text="{Binding FetchUrlText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding PushUrlText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding SelectedAccountText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding UnavailableReason}" IsVisible="{Binding HasUnavailableReason}"
+                               FontSize="11" Foreground="{DynamicResource BoughBrushWarning}" TextWrapping="Wrap" />
+                    <ComboBox ItemsSource="{Binding KnownAccounts}" SelectedItem="{Binding CandidateName, Mode=TwoWay}"
+                              IsEnabled="{Binding CanChange}" PlaceholderText="{Binding ExistingAccountPlaceholder}" />
+                    <TextBox Text="{Binding CandidateName, Mode=TwoWay}" IsEnabled="{Binding CanChange}"
+                             PlaceholderText="{Binding UserNamePlaceholder}" AutomationProperties.Name="{Binding RemoteUserNameAutomationName}" />
+                    <TextBlock Text="{Binding SelectionPreviewText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Button Content="{Binding SelectAccountLabel}" Click="ApplyGitHubAccountClicked" IsEnabled="{Binding CanApply}" />
+                      <Button Content="{Binding AddAccountLabel}" Click="LoginGitHubAccountClicked" IsEnabled="{Binding CanLogin}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" Margin="0,6,0,0" />
+          <TextBlock Text="{Binding CredentialHelperHeading}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+          <SelectableTextBlock Text="{Binding CredentialHelper}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding RemoteUrlsHeading}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+          <ItemsControl ItemsSource="{Binding Remotes}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="git:GitRemote">
+                <StackPanel Margin="0,3" Spacing="2">
+                  <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+                  <SelectableTextBlock Text="{Binding Url}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border Grid.Row="2" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" Padding="14,8">
+      <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+    </Border>
+  </Grid>
+</UserControl>

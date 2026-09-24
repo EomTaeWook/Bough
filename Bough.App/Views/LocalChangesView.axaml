@@ -1,0 +1,197 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Bough.App.ViewModels"
+             xmlns:git="using:Bough.Core.Git"
+             xmlns:views="using:Bough.App.Views"
+             x:Class="Bough.App.Views.LocalChangesView"
+             x:DataType="vm:LocalChangesViewModel"
+             Background="{DynamicResource BoughBrushCanvas}">
+  <UserControl.Styles>
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+    </Style>
+    <Style Selector="Button.danger">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushError}" />
+    </Style>
+    <Style Selector="Button.danger:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
+    </Style>
+  </UserControl.Styles>
+  <Grid x:Name="LayoutGrid">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="64" />
+      <RowDefinition Height="*" MinHeight="180" />
+      <RowDefinition Height="6" />
+      <RowDefinition Height="190" MinHeight="190" MaxHeight="420" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto" Margin="20,0">
+        <StackPanel VerticalAlignment="Center" Spacing="3">
+          <TextBlock Text="{Binding HeadingText}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+          <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Content="{Binding Stashes.SaveHeadingText}" Click="OpenStashClicked" IsEnabled="{Binding HasRepository}" />
+          <Button Content="{Binding RefreshText}" Command="{Binding RefreshCommand}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid x:Name="WorkAreaGrid" Grid.Row="1" SizeChanged="WorkAreaSizeChanged">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="310" MinWidth="260" />
+        <ColumnDefinition Width="6" />
+        <ColumnDefinition Width="*" MinWidth="220" />
+      </Grid.ColumnDefinitions>
+      <Grid x:Name="FileSectionsGrid" Grid.Column="0" Background="{DynamicResource BoughBrushSidebar}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" MinHeight="42" />
+          <RowDefinition Height="6" />
+          <RowDefinition Height="*" MinHeight="42" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" RowDefinitions="42,*">
+          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="10,4">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4">
+              <TextBlock Text="{Binding StagedHeadingText}" Foreground="{DynamicResource BoughBrushTextMuted}" FontWeight="Bold" VerticalAlignment="Center"
+                         TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StagedHeadingText}" />
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                <Button Content="↓" Width="32" Padding="4,3" Command="{Binding UnstageSelectedCommand}"
+                        ToolTip.Tip="{Binding UnstageSelectedText}" AutomationProperties.Name="{Binding UnstageSelectedText}" />
+                <Button Content="↓↓" Width="32" Padding="4,3" Command="{Binding UnstageAllCommand}"
+                        ToolTip.Tip="{Binding UnstageAllText}" AutomationProperties.Name="{Binding UnstageAllText}" />
+              </StackPanel>
+            </Grid>
+          </Border>
+          <ListBox x:Name="StagedList" Grid.Row="1" ItemsSource="{Binding StagedFiles}" SelectedItem="{Binding SelectedStagedFile, Mode=TwoWay}"
+                   PointerPressed="StagedPointerPressed" IsVisible="{Binding HasStagedFiles}" Background="Transparent" BorderThickness="0">
+            <ListBox.ContextMenu>
+              <ContextMenu Opened="StagedContextOpened" Background="{DynamicResource BoughBrushSurface}">
+                <MenuItem x:Name="StagedUnstageItem" Click="UnstageContextClicked" />
+              </ContextMenu>
+            </ListBox.ContextMenu>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="git:GitWorktreeFile">
+                <StackPanel Margin="12,7" Spacing="2">
+                  <TextBlock Text="{Binding DisplayPath}" Foreground="{DynamicResource BoughBrushText}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayPath}" />
+                  <TextBlock Text="{Binding DisplayStatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="10" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+
+        <GridSplitter x:Name="FileSectionsSplitter" Grid.Row="1" Height="6" Background="{DynamicResource BoughBrushBorderStrong}" Cursor="SizeNorthSouth"
+                      ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" KeyboardIncrement="12" Focusable="True"
+                      DragCompleted="FileSectionsSplitterDragCompleted" KeyUp="FileSectionsSplitterKeyUp" />
+
+        <Border Grid.Row="2" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
+        <Grid RowDefinitions="42,*">
+          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="10,4">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4">
+              <TextBlock Text="{Binding UnstagedHeadingText}" Foreground="{DynamicResource BoughBrushTextMuted}" FontWeight="Bold" VerticalAlignment="Center"
+                         TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding UnstagedHeadingText}" />
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                <Button Content="↑" Width="32" Padding="4,3" Command="{Binding StageSelectedCommand}"
+                        ToolTip.Tip="{Binding StageSelectedText}" AutomationProperties.Name="{Binding StageSelectedText}" />
+                <Button Content="↑↑" Width="32" Padding="4,3" Command="{Binding StageAllCommand}"
+                        ToolTip.Tip="{Binding StageAllText}" AutomationProperties.Name="{Binding StageAllText}" />
+                <Button Content="X" Width="32" Padding="4,3" Command="{Binding DiscardSelectedCommand}" Classes="danger"
+                        ToolTip.Tip="{Binding DiscardSelectionText}" AutomationProperties.Name="{Binding DiscardSelectionText}" />
+              </StackPanel>
+            </Grid>
+          </Border>
+          <ListBox x:Name="UnstagedList" Grid.Row="1" ItemsSource="{Binding UnstagedFiles}" SelectedItem="{Binding SelectedUnstagedFile, Mode=TwoWay}"
+                   SelectionMode="Multiple" SelectionChanged="UnstagedSelectionChanged" KeyDown="UnstagedKeyDown" PointerPressed="UnstagedPointerPressed"
+                   IsVisible="{Binding HasUnstagedFiles}" Background="Transparent" BorderThickness="0">
+            <ListBox.ContextMenu>
+              <ContextMenu Opened="UnstagedContextOpened" Background="{DynamicResource BoughBrushSurface}">
+                <MenuItem x:Name="DiscardContextItem" Click="DiscardContextClicked" />
+                <MenuItem x:Name="IgnoreContextItem">
+                  <MenuItem x:Name="IgnoreRepositoryItem" Click="IgnoreRepositoryClicked" />
+                  <MenuItem x:Name="IgnoreLocalItem" Click="IgnoreLocalClicked" />
+                </MenuItem>
+              </ContextMenu>
+            </ListBox.ContextMenu>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="git:GitWorktreeFile">
+                <StackPanel Margin="12,7" Spacing="2">
+                  <TextBlock Text="{Binding DisplayPath}" Foreground="{DynamicResource BoughBrushText}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayPath}" />
+                  <TextBlock Text="{Binding DisplayStatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="10" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+        </Border>
+
+        <Border Grid.Row="3" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" Padding="12,8" IsVisible="{Binding HasConflicts}">
+        <Grid RowDefinitions="Auto,Auto,Auto">
+          <TextBlock Text="{Binding ConflictsHeadingText}" Foreground="{DynamicResource BoughBrushError}" FontWeight="Bold" />
+          <ListBox Grid.Row="1" ItemsSource="{Binding ConflictFiles}" SelectedItem="{Binding SelectedConflictFile, Mode=TwoWay}"
+                   MaxHeight="115" Background="Transparent" BorderThickness="0">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="git:GitWorktreeFile">
+                <TextBlock Text="{Binding DisplayPath}" Foreground="{DynamicResource BoughBrushError}" Margin="4,5" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayPath}" />
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Button Grid.Row="2" Content="{Binding OpenResolveText}" Command="{Binding OpenResolveCommand}" HorizontalAlignment="Left" />
+        </Grid>
+        </Border>
+      </Grid>
+
+      <GridSplitter Grid.Column="1" Width="6" Background="{DynamicResource BoughBrushBorderStrong}" Cursor="SizeWestEast"
+                    ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" KeyboardIncrement="16"
+                    Focusable="True"
+                    DragCompleted="FileListSplitterDragCompleted" KeyUp="FileListSplitterKeyUp" />
+
+      <Grid Grid.Column="2" RowDefinitions="54,*" Background="{DynamicResource BoughBrushInset}">
+        <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="16,10">
+          <TextBlock Text="{Binding PreviewDescription}" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+        </Border>
+        <ScrollViewer Grid.Row="1" Background="{DynamicResource BoughBrushInset}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+          <views:DiffPreviewTextBlock DiffText="{Binding PreviewText}" IsUnifiedDiff="{Binding PreviewIsUnifiedDiff}"
+                                      FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" TextWrapping="NoWrap"
+                                      Foreground="{DynamicResource BoughBrushText}" Padding="14" />
+        </ScrollViewer>
+      </Grid>
+
+    </Grid>
+
+    <GridSplitter x:Name="CommitSplitter" Grid.Row="2" Height="6" Background="{DynamicResource BoughBrushBorderStrong}" Cursor="SizeNorthSouth"
+                  ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" KeyboardIncrement="12" Focusable="True"
+                  DragCompleted="CommitSplitterDragCompleted" KeyUp="CommitSplitterKeyUp" />
+
+    <Grid Grid.Row="3" RowDefinitions="Auto,*" Background="{DynamicResource BoughBrushSurface}">
+      <Border Grid.Row="0" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,1" Padding="14,5">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Text="{Binding CommitHeadingText}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Center" />
+          <Button x:Name="CommitToggle" Grid.Column="1" Content="⌄" Click="CommitToggleClicked" Padding="10,2" />
+        </Grid>
+      </Border>
+      <Grid x:Name="CommitBody" Grid.Row="1" RowDefinitions="*,Auto,Auto" RowSpacing="4" Margin="14,4,14,5">
+        <TextBox x:Name="CommitMessageInput" Grid.Row="0" Text="{Binding CommitMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 PlaceholderText="{Binding CommitMessagePlaceholderText}" IsEnabled="{Binding IsCommitMessageEditable}"
+                 AcceptsReturn="True" TextWrapping="Wrap" MinHeight="32"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto" />
+        <ScrollViewer Grid.Row="1" MaxHeight="34" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <TextBlock x:Name="CommitHintText" Text="{Binding CommitHint}" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+        </ScrollViewer>
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <CheckBox x:Name="AmendCheckBox" IsChecked="{Binding Amend, Mode=TwoWay}" Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Center">
+            <TextBlock Text="{Binding AmendPreviousCommitText}" TextWrapping="Wrap" />
+          </CheckBox>
+          <Button x:Name="CommitActionButton" Grid.Column="1" Content="{Binding CommitButtonText}" Command="{Binding CommitCommand}"
+                  Classes="primary" VerticalAlignment="Center" />
+        </Grid>
+      </Grid>
+    </Grid>
+
+    <Border Grid.Row="4" Background="{DynamicResource BoughBrushErrorSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" Padding="14,8" IsVisible="{Binding HasError}">
+      <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource BoughBrushError}" TextWrapping="Wrap" />
+    </Border>
+  </Grid>
+</UserControl>

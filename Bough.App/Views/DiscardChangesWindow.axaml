@@ -1,0 +1,40 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Bough.App.Views.DiscardChangesWindow"
+        Width="620" Height="440" MinWidth="420" MinHeight="300"
+        WindowStartupLocation="CenterOwner" Background="{DynamicResource BoughBrushCanvas}">
+  <Window.Styles>
+    <Style Selector="Button.danger">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushErrorSurface}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushError}" />
+    </Style>
+    <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushErrorSurface}" />
+    </Style>
+    <Style Selector="Button.danger:disabled">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+    </Style>
+  </Window.Styles>
+  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="20" RowSpacing="12">
+    <TextBlock x:Name="Heading" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" TextWrapping="Wrap" />
+    <TextBlock x:Name="PathLabel" Grid.Row="1" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" />
+    <ListBox x:Name="FilesList" Grid.Row="2" Background="{DynamicResource BoughBrushInset}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding}" Foreground="{DynamicResource BoughBrushText}" Margin="8,5" ToolTip.Tip="{Binding}" />
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+    <ScrollViewer Grid.Row="3" MaxHeight="120" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <TextBlock x:Name="Impact" Foreground="{DynamicResource BoughBrushError}" TextWrapping="Wrap" />
+    </ScrollViewer>
+    <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button x:Name="CancelButton" Click="CancelClicked" IsCancel="True" />
+      <Button x:Name="ConfirmButton" Click="ConfirmClicked" Classes="danger" />
+    </StackPanel>
+  </Grid>
+</Window>

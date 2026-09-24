@@ -1,0 +1,106 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Bough.App.ViewModels"
+             xmlns:git="using:Bough.Core.Git"
+             x:Class="Bough.App.Views.ReferenceExplorerView"
+             x:DataType="vm:ReferenceExplorerViewModel"
+             Background="{DynamicResource BoughBrushSidebar}">
+  <UserControl.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="Button.referenceBranchAdd">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="5,2" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="Button.referenceBranchAdd:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+    </Style>
+    <Style Selector="Button.referenceBranchAdd:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto,*">
+    <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="10,7">
+      <StackPanel Spacing="2">
+        <TextBlock Text="Git references" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}"
+                   TextTrimming="CharacterEllipsis" ToolTip.Tip="Git references" />
+        <TextBlock Text="{Binding CurrentBranch}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}"
+                   TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding CurrentBranch}" />
+      </StackPanel>
+    </Border>
+
+    <TreeView x:Name="ReferenceTree" Grid.Row="1" ItemsSource="{Binding TreeRoots}"
+              SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}"
+              KeyDown="TreeKeyDown" Margin="3,5,3,5"
+              Background="{DynamicResource BoughBrushSidebar}" Foreground="{DynamicResource BoughBrushText}"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+              ScrollViewer.VerticalScrollBarVisibility="Auto"
+              AutomationProperties.Name="Git reference tree">
+      <TreeView.Styles>
+        <Style Selector="TreeViewItem">
+          <Setter Property="IsExpanded" Value="{ReflectionBinding IsExpanded, Mode=TwoWay}" />
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="HorizontalAlignment" Value="Stretch" />
+          <Setter Property="MinHeight" Value="23" />
+        </Style>
+        <Style Selector="TextBlock.referenceSection">
+          <Setter Property="FontWeight" Value="SemiBold" />
+          <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+        </Style>
+        <Style Selector="TextBlock.referenceCurrent">
+          <Setter Property="FontWeight" Value="Bold" />
+          <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+        </Style>
+        <Style Selector="TextBlock.referenceEmpty">
+          <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextSubtle}" />
+          <Setter Property="FontStyle" Value="Italic" />
+        </Style>
+      </TreeView.Styles>
+      <TreeView.ItemTemplate>
+        <TreeDataTemplate x:DataType="vm:ReferenceTreeNode" ItemsSource="{Binding Children}">
+          <Border Padding="2,1,24,1" HorizontalAlignment="Stretch" Background="Transparent"
+                  Tapped="TreeNodeTapped"
+                  ToolTip.Tip="{Binding ToolTipText}"
+                  AutomationProperties.Name="{Binding AccessibleLabel}">
+            <Border.ContextMenu>
+              <ContextMenu Placement="RightEdgeAlignedTop" Opened="TreeContextOpened" Closed="TreeContextClosed">
+                <MenuItem Header="Create branch..." Click="CreateBranchSectionClicked" />
+                <MenuItem Header="Create tag..." Click="CreateTagSectionClicked" />
+                <MenuItem Header="Open stashes" Click="OpenStashesClicked" />
+                <MenuItem Header="Switch to this branch" Click="SwitchMenuBranchClicked" />
+                <MenuItem Header="Create branch from here..." Click="CreateFromBranchClicked" />
+                <MenuItem Header="Check out remote branch..." Click="TrackMenuRemoteClicked" />
+                <MenuItem Header="Copy name" Click="CopyTreeNameClicked" />
+              </ContextMenu>
+            </Border.ContextMenu>
+            <Grid ColumnDefinitions="17,*,Auto" MinWidth="0" MinHeight="19">
+              <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="12"
+                         VerticalAlignment="Center" Foreground="{DynamicResource BoughBrushTextMuted}" />
+              <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="12"
+                         MinWidth="0" ToolTip.Tip="{Binding ToolTipText}"
+                         Classes.referenceSection="{Binding IsSection}"
+                         Classes.referenceCurrent="{Binding IsCurrent}"
+                         Classes.referenceEmpty="{Binding IsEmpty}"
+                         TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+              <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="✓" IsVisible="{Binding IsCurrent}" Foreground="{DynamicResource BoughBrushAccent}" FontSize="11"
+                           Margin="4,0" ToolTip.Tip="{Binding CurrentBranchText}" />
+                <Button Classes="referenceBranchAdd" Content="+" Click="CreateSectionAddClicked"
+                        Tapped="IgnoreTreeTap"
+                        IsVisible="{Binding HasSectionAction}" Padding="3,0" MinWidth="18" MinHeight="18"
+                        ToolTip.Tip="{Binding ActionText}" AutomationProperties.Name="{Binding ActionText}"
+                        Focusable="True" />
+              </StackPanel>
+            </Grid>
+          </Border>
+        </TreeDataTemplate>
+      </TreeView.ItemTemplate>
+    </TreeView>
+
+  </Grid>
+</UserControl>
