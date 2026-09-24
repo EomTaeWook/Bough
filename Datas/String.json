@@ -3668,14 +3668,14 @@
   {
     "Id": 2691,
     "Name": "CommitAncestryCheckFailed",
-    "Kor": "커밋의 선후 관계를 확인하지 못했습니다: {0}",
-    "Eng": "Could not verify commit ancestry: {0}"
+    "Kor": "커밋 관계를 확인하지 못했습니다: {0}",
+    "Eng": "Could not check the commit relationship: {0}"
   },
   {
     "Id": 2692,
     "Name": "CommitBranchChanged",
-    "Kor": "메뉴를 연 뒤 브랜치가 변경되었습니다: {0}",
-    "Eng": "The branch changed after the menu opened: {0}"
+    "Kor": "브랜치가 메뉴를 연 뒤 변경되었습니다: {0}",
+    "Eng": "The branch changed after the menu opened: {0}."
   },
   {
     "Id": 2693,
@@ -3717,91 +3717,91 @@
     "Id": 2699,
     "Name": "CommitHashHexInvalid",
     "Kor": "커밋 해시가 16진수 형식이 아닙니다: {0}",
-    "Eng": "Commit hash is not hexadecimal: {0}"
+    "Eng": "Commit hash is not hexadecimal: {0}."
   },
   {
     "Id": 2700,
     "Name": "CommitHashLengthInvalid",
     "Kor": "커밋 해시 길이가 올바르지 않습니다: {0}",
-    "Eng": "Invalid commit hash length: {0}"
+    "Eng": "Invalid commit hash length: {0}."
   },
   {
     "Id": 2701,
     "Name": "CommitHashRequired",
-    "Kor": "커밋 해시가 필요합니다.",
+    "Kor": "커밋 해시가 없습니다.",
     "Eng": "A commit hash is required."
   },
   {
     "Id": 2702,
     "Name": "CommitReferenceNotFound",
     "Kor": "참조를 찾을 수 없습니다: {0}",
-    "Eng": "Reference not found: {0}"
+    "Eng": "Git reference was not found: {0}."
   },
   {
     "Id": 2703,
     "Name": "CommitRemoteBranchChanged",
-    "Kor": "메뉴를 연 뒤 원격 브랜치가 변경되었습니다: {0}",
-    "Eng": "The remote branch changed after the menu opened: {0}"
+    "Kor": "원격 브랜치가 메뉴를 연 뒤 변경되었습니다: {0}",
+    "Eng": "The remote branch changed after the menu opened: {0}."
   },
   {
     "Id": 2704,
     "Name": "CommitResetBranchChanged",
-    "Kor": "확인한 뒤 현재 브랜치가 변경되었습니다.",
+    "Kor": "현재 브랜치가 확인 이후 변경되었습니다.",
     "Eng": "The current branch changed after confirmation."
   },
   {
     "Id": 2705,
     "Name": "CommitResetContentChanged",
-    "Kor": "확인한 뒤 작업 파일 또는 인덱스 내용이 변경되었습니다.",
-    "Eng": "Working file or index contents changed after confirmation."
+    "Kor": "작업 파일 또는 인덱스 내용이 확인 이후 변경되었습니다.",
+    "Eng": "Working files or index contents changed after confirmation."
   },
   {
     "Id": 2706,
     "Name": "CommitResetDetachedHead",
-    "Kor": "분리된 HEAD에서는 현재 브랜치를 초기화할 수 없습니다.",
-    "Eng": "Cannot reset the current branch from detached HEAD."
+    "Kor": "Detached HEAD에서는 현재 브랜치를 초기화할 수 없습니다.",
+    "Eng": "The current branch cannot be reset in detached HEAD."
   },
   {
     "Id": 2707,
     "Name": "CommitResetHardConfirmationRequired",
     "Kor": "Hard 초기화에는 추가 확인이 필요합니다.",
-    "Eng": "Hard reset requires an additional confirmation."
+    "Eng": "Hard reset requires another confirmation."
   },
   {
     "Id": 2708,
     "Name": "CommitResetHeadChanged",
-    "Kor": "확인한 뒤 HEAD가 변경되었습니다.",
+    "Kor": "HEAD가 확인 이후 변경되었습니다.",
     "Eng": "HEAD changed after confirmation."
   },
   {
     "Id": 2709,
     "Name": "CommitResetHeadNotBranch",
     "Kor": "현재 HEAD가 브랜치를 가리키지 않습니다.",
-    "Eng": "The current HEAD does not point to a branch."
+    "Eng": "HEAD does not point to a branch."
   },
   {
     "Id": 2710,
     "Name": "CommitResetRepositoryChanged",
-    "Kor": "초기화 대상 저장소가 변경되었습니다.",
-    "Eng": "The repository selected for reset changed."
+    "Kor": "초기화 대상 저장소가 바뀌었습니다.",
+    "Eng": "The reset repository changed after confirmation."
   },
   {
     "Id": 2711,
     "Name": "CommitResetStatusChanged",
-    "Kor": "확인한 뒤 작업 트리 또는 인덱스가 변경되었습니다.",
+    "Kor": "작업 트리 또는 인덱스가 확인 이후 변경되었습니다.",
     "Eng": "The working tree or index changed after confirmation."
   },
   {
     "Id": 2712,
     "Name": "CommitResetTargetChanged",
-    "Kor": "확인한 뒤 대상 커밋이 변경되었습니다.",
+    "Kor": "대상 커밋이 확인 이후 변경되었습니다.",
     "Eng": "The target commit changed after confirmation."
   },
   {
     "Id": 2713,
     "Name": "CommitResetTargetIsHead",
     "Kor": "대상 커밋이 현재 HEAD와 같습니다.",
-    "Eng": "The target commit is the current HEAD."
+    "Eng": "The target commit is already HEAD."
   },
   {
     "Id": 2714,
@@ -3812,14 +3812,14 @@
   {
     "Id": 2715,
     "Name": "CommitSourceBranchChanged",
-    "Kor": "메뉴를 연 뒤 시작 브랜치가 변경되었습니다: {0}",
-    "Eng": "The source branch changed after the menu opened: {0}"
+    "Kor": "시작 브랜치가 메뉴를 연 뒤 변경되었습니다: {0}",
+    "Eng": "The source branch changed after the menu opened: {0}."
   },
   {
     "Id": 2716,
     "Name": "CommitTargetNotFound",
     "Kor": "대상 커밋을 찾을 수 없습니다: {0}",
-    "Eng": "Target commit not found: {0}"
+    "Eng": "Target commit was not found: {0}."
   },
   {
     "Id": 2717,
@@ -3921,7 +3921,7 @@
     "Id": 2733,
     "Name": "HistoryChangedFileFormatInvalid",
     "Kor": "Git 변경 파일 출력 형식이 올바르지 않습니다.",
-    "Eng": "Git returned an invalid changed-file format."
+    "Eng": "Invalid Git changed-file output format."
   },
   {
     "Id": 2734,
@@ -3968,14 +3968,14 @@
   {
     "Id": 2741,
     "Name": "HistoryCommitDateInvalid",
-    "Kor": "Git이 잘못된 커밋 날짜를 반환했습니다: {0}",
-    "Eng": "Git returned an invalid commit date: {0}"
+    "Kor": "Git 커밋 날짜가 올바르지 않습니다: {0}",
+    "Eng": "Invalid Git commit date: {0}."
   },
   {
     "Id": 2742,
     "Name": "HistoryCommitHashRequired",
-    "Kor": "커밋 해시가 필요합니다.",
-    "Eng": "A commit hash is required."
+    "Kor": "전체 커밋 해시가 필요합니다.",
+    "Eng": "A full commit hash is required."
   },
   {
     "Id": 2743,
@@ -4160,8 +4160,8 @@
   {
     "Id": 2773,
     "Name": "HistoryLogFormatInvalid",
-    "Kor": "Git 로그 출력 형식이 올바르지 않습니다.",
-    "Eng": "Git returned an invalid log format."
+    "Kor": "Git 커밋 기록 출력 형식이 올바르지 않습니다.",
+    "Eng": "Invalid Git commit history output format."
   },
   {
     "Id": 2774,
@@ -4256,8 +4256,8 @@
   {
     "Id": 2789,
     "Name": "HistoryRemoteUrlsUnreadable",
-    "Kor": "원격 URL을 읽지 못했습니다: {0}",
-    "Eng": "Could not read remote URLs: {0}"
+    "Kor": "저장소 원격 주소를 읽지 못했습니다: {0}",
+    "Eng": "Could not read repository remote URLs: {0}"
   },
   {
     "Id": 2790,
@@ -4658,8 +4658,8 @@
   {
     "Id": 2856,
     "Name": "ReferenceBranchSwitchMismatch",
-    "Kor": "브랜치 전환 뒤 현재 브랜치가 예상과 다릅니다. 요청: {0}, 현재: {1}",
-    "Eng": "The current branch after switching differs from the request. Requested: {0}; current: {1}."
+    "Kor": "브랜치 전환 후 현재 브랜치가 예상과 다릅니다: 요청 {0}, 현재 {1}",
+    "Eng": "Current branch after switch differs: requested {0}, current {1}."
   },
   {
     "Id": 2857,
@@ -4683,7 +4683,7 @@
     "Id": 2860,
     "Name": "ReferenceOutputInvalid",
     "Kor": "Git 참조 출력 형식이 올바르지 않습니다.",
-    "Eng": "Git returned an invalid reference format."
+    "Eng": "Invalid Git reference output format."
   },
   {
     "Id": 2861,
@@ -4707,7 +4707,7 @@
     "Id": 2864,
     "Name": "ReferenceRemoteUrlUnreadable",
     "Kor": "{0} 원격 URL을 읽지 못했습니다: {1}",
-    "Eng": "Could not read URL for remote {0}: {1}"
+    "Eng": "Could not read the URL for remote {0}: {1}"
   },
   {
     "Id": 2865,
@@ -4719,13 +4719,13 @@
     "Id": 2866,
     "Name": "ReferenceStartCommitNotFound",
     "Kor": "시작 커밋을 찾을 수 없습니다: {0}",
-    "Eng": "Starting commit not found: {0}"
+    "Eng": "Start commit was not found: {0}."
   },
   {
     "Id": 2867,
     "Name": "ReferenceStartPointInvalid",
     "Kor": "시작점이 올바르지 않습니다: {0}",
-    "Eng": "Invalid start point: {0}"
+    "Eng": "Invalid start point: {0}."
   },
   {
     "Id": 2868,
@@ -4736,7 +4736,7 @@
   {
     "Id": 2869,
     "Name": "ReferenceSubmoduleConfigInvalid",
-    "Kor": ".gitmodules 출력 형식이 올바르지 않습니다.",
+    "Kor": ".gitmodules의 출력 형식이 올바르지 않습니다.",
     "Eng": "Invalid .gitmodules output format."
   },
   {
@@ -4761,7 +4761,7 @@
     "Id": 2873,
     "Name": "ReferenceSubmoduleOutsideRepository",
     "Kor": "서브모듈 경로가 저장소 밖을 가리킵니다: {0}",
-    "Eng": "Submodule path points outside the repository: {0}"
+    "Eng": "Submodule path points outside the repository: {0}."
   },
   {
     "Id": 2874,
@@ -4778,8 +4778,8 @@
   {
     "Id": 2876,
     "Name": "ReferenceTagExists",
-    "Kor": "'{0}' 태그가 이미 있습니다. 기존 태그를 덮어쓰지 않습니다.",
-    "Eng": "Tag '{0}' already exists. The existing tag will not be overwritten."
+    "Kor": "{0} 태그가 이미 있습니다. 기존 태그를 덮어쓰지 않습니다.",
+    "Eng": "Tag {0} already exists. It will not be overwritten."
   },
   {
     "Id": 2877,
@@ -4791,7 +4791,7 @@
     "Id": 2878,
     "Name": "ReferenceTagNameInvalid",
     "Kor": "태그 이름이 올바르지 않습니다: {0}",
-    "Eng": "Invalid tag name: {0}"
+    "Eng": "Invalid tag name: {0}."
   },
   {
     "Id": 2879,
@@ -4821,13 +4821,13 @@
     "Id": 2883,
     "Name": "ReferenceTagTargetHashInvalid",
     "Kor": "태그 대상 커밋 해시가 올바르지 않습니다: {0}",
-    "Eng": "Invalid tag target commit hash: {0}"
+    "Eng": "Invalid tag target commit hash: {0}."
   },
   {
     "Id": 2884,
     "Name": "ReferenceTagTargetNotFound",
     "Kor": "태그 대상 커밋을 찾을 수 없습니다: {0}",
-    "Eng": "Tag target commit not found: {0}"
+    "Eng": "Tag target commit was not found: {0}."
   },
   {
     "Id": 2885,
