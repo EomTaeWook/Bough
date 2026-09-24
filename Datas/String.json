@@ -4472,19 +4472,19 @@
   {
     "Id": 2825,
     "Name": "InspectionBlameAuthorTimeInvalid",
-    "Kor": "{0} 파일의 커밋 {1}에 잘못된 Blame 작성 시각 {2}이(가) 있습니다.",
-    "Eng": "Git returned an invalid blame author time for {0} at {1}: {2}."
+    "Kor": "{1} 커밋의 {0} 파일에 잘못된 Blame 작성 시각 {2}이(가) 있습니다.",
+    "Eng": "Git returned an invalid blame author time {2} for {0} at {1}."
   },
   {
     "Id": 2826,
     "Name": "InspectionBlameHeaderInvalid",
-    "Kor": "Git이 {0} 파일의 커밋 {1}에 잘못된 Blame 머리글을 반환했습니다.",
+    "Kor": "Git이 {1} 커밋의 {0} 파일에 잘못된 Blame 머리글을 반환했습니다.",
     "Eng": "Git returned a malformed blame header for {0} at {1}."
   },
   {
     "Id": 2827,
     "Name": "InspectionBlameInvalidUtf8",
-    "Kor": "{0} 파일의 커밋 {1}에 대한 Git Blame 출력이 올바른 UTF-8이 아닙니다.",
+    "Kor": "{1} 커밋의 {0} 파일에 대한 Git Blame 출력이 올바른 UTF-8이 아닙니다.",
     "Eng": "Git blame output is not valid UTF-8 for {0} at {1}."
   },
   {
@@ -4496,13 +4496,13 @@
   {
     "Id": 2829,
     "Name": "InspectionBlameRecordIncomplete",
-    "Kor": "Git이 {0} 파일의 커밋 {1}에 불완전한 Blame 레코드를 반환했습니다.",
+    "Kor": "Git이 {1} 커밋의 {0} 파일에 불완전한 Blame 레코드를 반환했습니다.",
     "Eng": "Git returned an incomplete blame record for {0} at {1}."
   },
   {
     "Id": 2830,
     "Name": "InspectionBlameUnavailable",
-    "Kor": "{0} 파일의 커밋 {1}에는 텍스트가 없어 Blame을 볼 수 없습니다.",
+    "Kor": "{1} 커밋의 {0} 파일은 텍스트가 없어 Blame을 볼 수 없습니다.",
     "Eng": "Cannot blame {0} at {1} because the file has no text."
   },
   {
