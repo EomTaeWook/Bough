@@ -4550,7 +4550,7 @@
   {
     "Id": 2838,
     "Name": "InspectionFileHistoryInvalidUtf8",
-    "Kor": "{0} 파일의 커밋 {1} 기록 출력이 올바른 UTF-8이 아닙니다.",
+    "Kor": "{1} 커밋의 {0} 파일 기록 출력이 올바른 UTF-8이 아닙니다.",
     "Eng": "Git file history output is not valid UTF-8 for {0} at {1}."
   },
   {
