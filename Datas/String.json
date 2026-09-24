@@ -3806,7 +3806,7 @@
   {
     "Id": 2714,
     "Name": "CommitResetWorktreeSummary",
-    "Kor": "스테이징 {0}개, 작업 파일 {1}개, 미추적 {2}개",
+    "Kor": "스테이징 {0}개, 작업 파일 {1}개, 추적되지 않은 파일 {2}개",
     "Eng": "Staged {0}, working files {1}, untracked {2}"
   },
   {

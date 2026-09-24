@@ -343,7 +343,7 @@ namespace Bough.App.Views
             return await dialog.ShowDialog<bool>(owner);
         }
 
-        public static async Task<GitResetChoice> RequestResetAsync(Window owner, GitResetPreview preview, StringHelper stringHelper = null)
+        public static async Task<GitResetChoice> RequestResetAsync(Window owner, GitResetPreview preview, StringHelper stringHelper)
         {
             Window dialog = CreateWindow(TagText("GitResetTitle", stringHelper));
             TextBlock target = new()
@@ -351,7 +351,7 @@ namespace Bough.App.Views
                 Text = FormatText("GitResetTargetDescription", stringHelper, preview.BranchName, preview.ShortHash, preview.TargetSubject),
                 TextWrapping = Avalonia.Media.TextWrapping.Wrap
             };
-            TextBlock status = new() { Text = FormatText("CommitResetWorktreeSummary", stringHelper, preview.StagedCount, preview.WorkingCount, preview.UntrackedCount), TextWrapping = Avalonia.Media.TextWrapping.Wrap };
+            TextBlock status = new() { Text = stringHelper.Format("CommitResetWorktreeSummary", preview.StagedCount, preview.WorkingCount, preview.UntrackedCount), TextWrapping = Avalonia.Media.TextWrapping.Wrap };
             string direction = TagText("GitResetAncestorDirection", stringHelper);
             if (preview.IsAncestor == false)
             {
