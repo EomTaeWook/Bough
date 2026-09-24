@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using Bough.Core.Git;
+using DataContainer.Generated;
 using Dignus.DependencyInjection.Attributes;
 
 namespace Bough.App.Localization
@@ -48,6 +49,18 @@ namespace Bough.App.Localization
 
         private static string GetEnglishFallback(string errorCode)
         {
+            StringTemplate template = TemplateContainer<StringTemplate>.Find(errorCode);
+            if (template != null)
+            {
+                if (template.Invalid() == false)
+                {
+                    if (string.IsNullOrWhiteSpace(template.Eng) == false)
+                    {
+                        return template.Eng;
+                    }
+                }
+            }
+
             if (errorCode == GitException.ProcessStartFailedCode)
             {
                 return "Could not start Git: {0}";
