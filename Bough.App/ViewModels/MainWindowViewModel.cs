@@ -98,6 +98,16 @@ namespace Bough.App.ViewModels
         public GitSettingsViewModel GitSettings { get; }
         public LocalChangesViewModel LocalChanges { get; }
 
+        public string LocalChangesNavigationText { get { return _stringHelper.GetString("LocalChangesHeading"); } }
+        public string AllCommitsNavigationText { get { return _stringHelper.GetString("MainAllCommitsNavigation"); } }
+        public string OpenFolderToolTipText { get { return _stringHelper.GetString("MainOpenFolderToolTip"); } }
+        public string OpenFolderAutomationName { get { return _stringHelper.GetString("MainOpenFolderAutomationName"); } }
+        public string OpenFolderActionText { get { return _stringHelper.GetString("MainOpenFolderAction"); } }
+        public string OpenInText { get { return _stringHelper.GetString("MainOpenIn"); } }
+        public string ConsoleToolTipText { get { return _stringHelper.GetString("MainConsoleToolTip"); } }
+        public string ConsoleAutomationName { get { return _stringHelper.GetString("MainConsoleAutomationName"); } }
+        public string ConsoleText { get { return _stringHelper.GetString("MainConsole"); } }
+
         public string CurrentRepositoryRoot { get { return _repository?.RootPath; } }
         public int RepositoryRequestVersion { get { return _repositoryRequestVersion; } }
         public bool IsRepositoryMutationInProgress
@@ -326,7 +336,7 @@ namespace Bough.App.ViewModels
         {
             if (string.IsNullOrWhiteSpace(path) == true)
             {
-                StatusMessage = "Select a repository path.";
+                StatusMessage = _stringHelper.GetString("MainSelectRepositoryPath");
                 return;
             }
             string requestedPath;
@@ -334,19 +344,19 @@ namespace Bough.App.ViewModels
             {
                 requestedPath = Path.GetFullPath(path);
             }
-            catch (ArgumentException exception)
+            catch (ArgumentException)
             {
-                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                StatusMessage = _stringHelper.Format("MainInvalidRepositoryPath", path);
                 return;
             }
-            catch (NotSupportedException exception)
+            catch (NotSupportedException)
             {
-                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                StatusMessage = _stringHelper.Format("MainInvalidRepositoryPath", path);
                 return;
             }
-            catch (PathTooLongException exception)
+            catch (PathTooLongException)
             {
-                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                StatusMessage = _stringHelper.Format("MainInvalidRepositoryPath", path);
                 return;
             }
 
@@ -636,7 +646,7 @@ namespace Bough.App.ViewModels
                     return;
                 }
                 await RefreshConflictsFromLocalChangesAsync(requestRepository);
-                SetStatusMessage($"Restored working file {path}.", false);
+                SetStatusMessage(_stringHelper.Format("MainWorkingFileRestored", path), false);
             }
             catch (Exception exception)
             {
@@ -863,7 +873,7 @@ namespace Bough.App.ViewModels
                     _ = ObserveRepositoryAreaAsync(() => History.LoadAsync(updated), request, null);
                 }
                 await RefreshConflictsFromLocalChangesAsync(updated);
-                SetStatusMessage($"Committed {commitHash}.", false);
+                SetStatusMessage(_stringHelper.Format("MainCommitCompleted", commitHash), false);
             }
             catch (Exception exception)
             {

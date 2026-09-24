@@ -33,7 +33,7 @@ namespace Bough.Core.Git
                 string parentPath = Path.GetDirectoryName(Path.GetFullPath(path));
                 if (parentPath == null)
                 {
-                    throw new ArgumentException("The selected file has no parent directory.", nameof(path));
+                    throw new GitException("RepositorySelectedFileNoParent", null, path);
                 }
 
                 candidate = parentPath;
@@ -67,7 +67,8 @@ namespace Bough.Core.Git
             return paths;
         }
 
-        public async Task<GitConflictFile> LoadConflictAsync(GitRepository repository, string relativePath, CancellationToken cancellationToken = default)
+        public async Task<GitConflictFile> LoadConflictAsync(GitRepository repository, string relativePath,
+            string incomingChangeLabel, string incomingIndexStageLabel, CancellationToken cancellationToken = default)
         {
             string fullPath = ResolvePath(repository.RootPath, relativePath);
             byte[] originalBytes = await File.ReadAllBytesAsync(fullPath, cancellationToken);
@@ -89,13 +90,13 @@ namespace Bough.Core.Git
             }
             catch (DecoderFallbackException exception)
             {
-                throw new NotSupportedException($"'{relativePath}' is not valid UTF-8 text.", exception);
+                throw new GitException("RepositoryConflictInvalidUtf8", exception, relativePath);
             }
             string baseText = await ReadStageAsync(repository, 1, relativePath, cancellationToken);
             string oursText = await ReadStageAsync(repository, 2, relativePath, cancellationToken);
             string theirsText = await ReadStageAsync(repository, 3, relativePath, cancellationToken);
             string oursSource = await DescribeRevisionAsync(repository, "HEAD", repository.CurrentBranch, cancellationToken);
-            string theirsSource = await DescribeIncomingRevisionAsync(repository, cancellationToken);
+            string theirsSource = await DescribeIncomingRevisionAsync(repository, incomingChangeLabel, incomingIndexStageLabel, cancellationToken);
 
             return new GitConflictFile(relativePath, workingText, baseText, oursText, theirsText, oursSource, theirsSource, Convert.ToHexString(SHA256.HashData(originalBytes)), hasUtf8Bom);
         }
@@ -107,7 +108,7 @@ namespace Bough.Core.Git
             string currentHash = Convert.ToHexString(SHA256.HashData(currentBytes));
             if (currentHash != conflict.OriginalContentHash)
             {
-                throw new IOException($"'{conflict.RelativePath}' changed on disk. Refresh before saving.");
+                throw new GitException("RepositoryConflictFileChanged", null, conflict.RelativePath);
             }
 
             UTF8Encoding encoding = new(conflict.HasUtf8Bom, true);
@@ -128,7 +129,8 @@ namespace Bough.Core.Git
             return string.Empty;
         }
 
-        private async Task<string> DescribeIncomingRevisionAsync(GitRepository repository, CancellationToken cancellationToken)
+        private async Task<string> DescribeIncomingRevisionAsync(GitRepository repository, string incomingChangeLabel,
+            string incomingIndexStageLabel, CancellationToken cancellationToken)
         {
             foreach (string revision in _incomingRevisions)
             {
@@ -136,11 +138,11 @@ namespace Bough.Core.Git
 
                 if (verifyResult.ExitCode == 0)
                 {
-                    return await DescribeRevisionAsync(repository, revision, "Incoming change", cancellationToken);
+                    return await DescribeRevisionAsync(repository, revision, incomingChangeLabel, cancellationToken);
                 }
             }
 
-            return "Incoming change · index stage 3";
+            return incomingIndexStageLabel;
         }
 
         private async Task<string> DescribeRevisionAsync(GitRepository repository, string revision, string defaultDescription, CancellationToken cancellationToken)
@@ -159,7 +161,7 @@ namespace Bough.Core.Git
         {
             if (Path.IsPathRooted(relativePath) == true)
             {
-                throw new ArgumentException("A repository-relative path is required.", nameof(relativePath));
+                throw new GitException("RepositoryRelativePathRequired", null, relativePath);
             }
 
             string root = Path.GetFullPath(repositoryRoot);
@@ -168,13 +170,13 @@ namespace Bough.Core.Git
 
             if (relative == "..")
             {
-                throw new ArgumentException("The path is outside the repository.", nameof(relativePath));
+                throw new GitException("RepositoryPathOutsideRoot", null, relativePath);
             }
 
             string parentPrefix = $"..{Path.DirectorySeparatorChar}";
             if (relative.StartsWith(parentPrefix, StringComparison.Ordinal) == true)
             {
-                throw new ArgumentException("The path is outside the repository.", nameof(relativePath));
+                throw new GitException("RepositoryPathOutsideRoot", null, relativePath);
             }
 
             return fullPath;

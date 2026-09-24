@@ -36,7 +36,7 @@ namespace Bough.Core.Git
             }
             if (result.ExitCode != 0)
             {
-                throw new GitException("저장소 원격 주소를 읽지 못했습니다.");
+                throw new GitException("HistoryRemoteUrlsUnreadable", null, result.Error.Trim());
             }
 
             ArrayQueue<string> origin = [];
@@ -113,14 +113,14 @@ namespace Bough.Core.Git
             string[] fields = result.Output.Split('\0');
             if (fields[^1].Length != 0 || (fields.Length - 1) % 7 != 0)
             {
-                throw new GitException("Git returned an unexpected commit history format.");
+                throw new GitException("HistoryLogFormatInvalid", null, Array.Empty<object>());
             }
 
             for (int index = 0; index < fields.Length - 1; index += 7)
             {
                 if (DateTimeOffset.TryParse(fields[index + 5], CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset authoredAt) == false)
                 {
-                    throw new GitException($"Git returned an invalid commit date for {fields[index]}.");
+                    throw new GitException("HistoryCommitDateInvalid", null, fields[index]);
                 }
 
                 string[] parents = fields[index + 1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -138,7 +138,7 @@ namespace Bough.Core.Git
             string hash = commit.Hash;
             if (hash.Length != 40 && hash.Length != 64)
             {
-                throw new ArgumentException("A full commit hash is required.", nameof(hash));
+                throw new GitException("HistoryCommitHashRequired", null, Array.Empty<object>());
             }
 
             GitCommandResult bodyResult = await _runner.RunAsync(repository.RootPath,
@@ -159,7 +159,7 @@ namespace Bough.Core.Git
             string[] parts = filesResult.Output.Split('\0', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length % 2 != 0)
             {
-                throw new GitException("Git returned an unexpected changed-file format.");
+                throw new GitException("HistoryChangedFileFormatInvalid", null, Array.Empty<object>());
             }
 
             for (int index = 0; index < parts.Length; index += 2)

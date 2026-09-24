@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using Bough.Core.Git;
 
 namespace Bough.App.Controls
 {
@@ -72,18 +73,18 @@ namespace Bough.App.Controls
 
             if (IsValidEmail(authorEmail) == false)
             {
-                throw new ArgumentException("A valid Git author email is required.", nameof(authorEmail));
+                throw new GitException("GitHubPhotoAuthorEmailInvalid", null, Array.Empty<object>());
             }
 
             if (GitHubRepositoryAddress.IsValidUserName(userName) == false)
             {
-                throw new ArgumentException("A valid GitHub user name is required.", nameof(userName));
+                throw new GitException("GitHubPhotoUserNameInvalid", null, Array.Empty<object>());
             }
 
             string directory = Path.GetDirectoryName(_filePath);
             if (directory == null)
             {
-                throw new IOException("The local settings path has no directory.");
+                throw new GitException("GitHubPhotoSettingsPathInvalid", null, _filePath);
             }
 
             Directory.CreateDirectory(directory);

@@ -20,12 +20,27 @@ namespace Bough.Core.Git
                 }
                 catch (Win32Exception)
                 {
-                    Start(CreateProcessInfo("powershell.exe", repository.RootPath, _powershellArguments));
+                    try
+                    {
+                        Start(CreateProcessInfo("powershell.exe", repository.RootPath, _powershellArguments));
+                    }
+                    catch (Win32Exception exception)
+                    {
+                        throw new GitException("TerminalStartFailed", exception, "powershell.exe");
+                    }
                     return;
                 }
             }
 
-            Start(CreateStartInfo(repository));
+            ProcessStartInfo startInfo = CreateStartInfo(repository);
+            try
+            {
+                Start(startInfo);
+            }
+            catch (Win32Exception exception)
+            {
+                throw new GitException("TerminalStartFailed", exception, startInfo.FileName);
+            }
         }
 
         public ProcessStartInfo CreateStartInfo(GitRepository repository)
@@ -33,7 +48,7 @@ namespace Bough.Core.Git
             ArgumentNullException.ThrowIfNull(repository);
             if (Directory.Exists(repository.RootPath) == false)
             {
-                throw new DirectoryNotFoundException($"저장소 폴더를 찾을 수 없습니다: {repository.RootPath}");
+                throw new GitException("RepositoryFolderMissing", null, repository.RootPath);
             }
 
             if (OperatingSystem.IsWindows() == true)
@@ -60,7 +75,7 @@ namespace Bough.Core.Git
                 return CreateProcessInfo("x-terminal-emulator", repository.RootPath, Array.Empty<string>());
             }
 
-            throw new PlatformNotSupportedException("이 운영체제의 터미널 실행 방식은 지원하지 않습니다.");
+            throw new GitException("TerminalPlatformUnsupported", null, Array.Empty<object>());
         }
 
         private static ProcessStartInfo CreateProcessInfo(string executable, string workingDirectory, string[] arguments)
@@ -84,7 +99,7 @@ namespace Bough.Core.Git
             Process process = Process.Start(info);
             if (process == null)
             {
-                throw new InvalidOperationException($"터미널을 실행하지 못했습니다: {info.FileName}");
+                throw new GitException("TerminalStartFailed", null, info.FileName);
             }
 
             process.Dispose();

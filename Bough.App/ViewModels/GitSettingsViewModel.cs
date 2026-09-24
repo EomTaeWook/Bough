@@ -448,7 +448,12 @@ namespace Bough.App.ViewModels
                 LocalEmail = snapshot.LocalEmail;
                 GlobalName = snapshot.GlobalName;
                 GlobalEmail = snapshot.GlobalEmail;
-                CredentialHelper = snapshot.CredentialHelper;
+                string credentialHelper = snapshot.CredentialHelper;
+                if (credentialHelper.Length == 0)
+                {
+                    credentialHelper = _stringHelper.GetString("NotConfigured");
+                }
+                CredentialHelper = credentialHelper;
                 _remotes.Clear();
                 foreach (GitRemote remote in snapshot.Remotes) { _remotes.Add(remote); }
                 AuthorStatus = GetAuthorStatus(snapshot);

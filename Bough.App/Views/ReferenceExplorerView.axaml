@@ -27,10 +27,10 @@
   <Grid RowDefinitions="Auto,*">
     <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="10,7">
       <StackPanel Spacing="2">
-        <TextBlock Text="Git references" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}"
-                   TextTrimming="CharacterEllipsis" ToolTip.Tip="Git references" />
-        <TextBlock Text="{Binding CurrentBranch}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}"
-                   TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding CurrentBranch}" />
+        <TextBlock Text="{Binding ReferenceTitle}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}"
+                   TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding ReferenceTitle}" />
+        <TextBlock Text="{Binding CurrentBranchDisplay}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}"
+                   TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding CurrentBranchDisplay}" />
       </StackPanel>
     </Border>
 
@@ -40,7 +40,7 @@
               Background="{DynamicResource BoughBrushSidebar}" Foreground="{DynamicResource BoughBrushText}"
               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
               ScrollViewer.VerticalScrollBarVisibility="Auto"
-              AutomationProperties.Name="Git reference tree">
+              AutomationProperties.Name="{Binding ReferenceTreeAccessibleName}">
       <TreeView.Styles>
         <Style Selector="TreeViewItem">
           <Setter Property="IsExpanded" Value="{ReflectionBinding IsExpanded, Mode=TwoWay}" />
@@ -69,13 +69,13 @@
                   AutomationProperties.Name="{Binding AccessibleLabel}">
             <Border.ContextMenu>
               <ContextMenu Placement="RightEdgeAlignedTop" Opened="TreeContextOpened" Closed="TreeContextClosed">
-                <MenuItem Header="Create branch..." Click="CreateBranchSectionClicked" />
-                <MenuItem Header="Create tag..." Click="CreateTagSectionClicked" />
-                <MenuItem Header="Open stashes" Click="OpenStashesClicked" />
-                <MenuItem Header="Switch to this branch" Click="SwitchMenuBranchClicked" />
-                <MenuItem Header="Create branch from here..." Click="CreateFromBranchClicked" />
-                <MenuItem Header="Check out remote branch..." Click="TrackMenuRemoteClicked" />
-                <MenuItem Header="Copy name" Click="CopyTreeNameClicked" />
+                <MenuItem Click="CreateBranchSectionClicked" />
+                <MenuItem Click="CreateTagSectionClicked" />
+                <MenuItem Click="OpenStashesClicked" />
+                <MenuItem Click="SwitchMenuBranchClicked" />
+                <MenuItem Click="CreateFromBranchClicked" />
+                <MenuItem Click="TrackMenuRemoteClicked" />
+                <MenuItem Click="CopyTreeNameClicked" />
               </ContextMenu>
             </Border.ContextMenu>
             <Grid ColumnDefinitions="17,*,Auto" MinWidth="0" MinHeight="19">

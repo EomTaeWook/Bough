@@ -42,7 +42,10 @@ namespace Bough.App
                 bool discard;
                 try
                 {
-                    discard = await GitActionDialogs.ConfirmAsync(this, "Discard resolution edits?", "The result has unsaved edits. Close the conflict window and discard them?", "Discard edits");
+                    discard = await GitActionDialogs.ConfirmAsync(this,
+                        _viewModel.DiscardResolutionTitle,
+                        _viewModel.DiscardResolutionCloseMessage,
+                        _viewModel.DiscardResolutionConfirmText);
                 }
                 finally
                 {

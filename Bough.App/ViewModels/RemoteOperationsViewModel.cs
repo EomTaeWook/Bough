@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Bough.App.Localization;
 using Bough.Core.Git;
 
 namespace Bough.App.ViewModels
@@ -98,6 +100,8 @@ namespace Bough.App.ViewModels
     {
         private readonly GitRemoteOperationService _service;
         private readonly GitRepositoryService _repositoryService;
+        private readonly StringHelper _strings;
+        private readonly GitErrorLocalizer _errors;
         private readonly ObservableCollection<string> _remotes;
         private readonly Dictionary<string, string> _selectedRemotesByRepository;
         private CancellationTokenSource _cancellation;
@@ -117,10 +121,12 @@ namespace Bough.App.ViewModels
         private bool _showPullStrategies;
         private int _requestVersion;
 
-        public RemoteOperationsViewModel(GitRemoteOperationService service, GitRepositoryService repositoryService)
+        public RemoteOperationsViewModel(GitRemoteOperationService service, GitRepositoryService repositoryService, StringHelper strings, GitErrorLocalizer errors)
         {
             _service = service;
             _repositoryService = repositoryService;
+            _strings = strings;
+            _errors = errors;
             _remotes = [];
             StringComparer repositoryComparer = StringComparer.Ordinal;
             if (OperatingSystem.IsWindows())
@@ -130,7 +136,7 @@ namespace Bough.App.ViewModels
             _selectedRemotesByRepository = new Dictionary<string, string>(repositoryComparer);
             Remotes = new ReadOnlyObservableCollection<string>(_remotes);
             _selectedRemote = string.Empty;
-            _statusText = "Select a repository.";
+            _statusText = _strings.GetString("RemoteSelectRepository");
             _operationOutcomeText = string.Empty;
             _operationStageText = string.Empty;
             _transferStatusText = string.Empty;
@@ -174,9 +180,9 @@ namespace Bough.App.ViewModels
                 }
                 if (_state.Behind > 0)
                 {
-                    return $"보낼 새 커밋 없음 · upstream보다 {_state.Behind}개 뒤처짐";
+                    return _strings.Format("RemotePushNoNewCommitsBehind", _state.Behind);
                 }
-                return "보낼 새 커밋 없음";
+                return _strings.GetString("RemotePushNoNewCommits");
             }
         }
         public bool CanCancel { get { return IsBusy && _cancellation != null && _cancellation.IsCancellationRequested == false; } }
@@ -186,7 +192,7 @@ namespace Bough.App.ViewModels
             get
             {
                 if (_state != null && _state.BranchName.Length > 0) { return _state.BranchName; }
-                return "Detached HEAD / no commits";
+                return _strings.GetString("RemoteDetachedOrNoCommits");
             }
         }
         public string UpstreamText
@@ -194,15 +200,15 @@ namespace Bough.App.ViewModels
             get
             {
                 if (_state != null && _state.UpstreamName.Length > 0) { return _state.UpstreamName; }
-                return "No upstream";
+                return _strings.GetString("RemoteNoUpstream");
             }
         }
         public string AheadBehindText
         {
             get
             {
-                if (_state == null || _state.HasUpstream == false) { return "Ahead / behind unavailable"; }
-                if (_state.Ahead < 0 || _state.Behind < 0) { return "Ahead / behind unavailable"; }
+                if (_state == null || _state.HasUpstream == false) { return _strings.GetString("RemoteAheadBehindUnavailable"); }
+                if (_state.Ahead < 0 || _state.Behind < 0) { return _strings.GetString("RemoteAheadBehindUnavailable"); }
                 return $"↑{_state.Ahead} ↓{_state.Behind}";
             }
         }
@@ -219,13 +225,13 @@ namespace Bough.App.ViewModels
                 }
                 switch (value)
                 {
-                    case RemoteOperationOutcome.Running: OperationOutcomeText = "진행 중"; break;
-                    case RemoteOperationOutcome.Succeeded: OperationOutcomeText = "성공"; break;
-                    case RemoteOperationOutcome.Failed: OperationOutcomeText = "실패"; break;
-                    case RemoteOperationOutcome.Canceled: OperationOutcomeText = "중단됨"; break;
-                    case RemoteOperationOutcome.PartiallySucceeded: OperationOutcomeText = "부분 성공"; break;
-                    case RemoteOperationOutcome.RefreshFailed: OperationOutcomeText = "상태 갱신 실패"; break;
-                    case RemoteOperationOutcome.NoNewCommits: OperationOutcomeText = "보낼 새 커밋 없음"; break;
+                    case RemoteOperationOutcome.Running: OperationOutcomeText = _strings.GetString("RemoteOutcomeRunning"); break;
+                    case RemoteOperationOutcome.Succeeded: OperationOutcomeText = _strings.GetString("RemoteOutcomeSucceeded"); break;
+                    case RemoteOperationOutcome.Failed: OperationOutcomeText = _strings.GetString("RemoteOutcomeFailed"); break;
+                    case RemoteOperationOutcome.Canceled: OperationOutcomeText = _strings.GetString("RemoteOutcomeCanceled"); break;
+                    case RemoteOperationOutcome.PartiallySucceeded: OperationOutcomeText = _strings.GetString("RemoteOutcomePartiallySucceeded"); break;
+                    case RemoteOperationOutcome.RefreshFailed: OperationOutcomeText = _strings.GetString("RemoteOutcomeRefreshFailed"); break;
+                    case RemoteOperationOutcome.NoNewCommits: OperationOutcomeText = _strings.GetString("RemotePushNoNewCommits"); break;
                     default: OperationOutcomeText = string.Empty; break;
                 }
             }
@@ -303,10 +309,10 @@ namespace Bough.App.ViewModels
             NotifyState();
             if (repository == null)
             {
-                StatusText = "Select a repository.";
+                StatusText = _strings.GetString("RemoteSelectRepository");
                 return;
             }
-            StatusText = "Loading remote state...";
+            StatusText = _strings.GetString("RemoteLoadingState");
         }
 
         public async Task<bool> ExecuteRequestAsync(RemoteOperationRequest request)
@@ -323,7 +329,7 @@ namespace Bough.App.ViewModels
             {
                 if (_state.BranchName != request.LocalBranch)
                 {
-                    StatusText = $"요청한 브랜치 {request.LocalBranch}이(가) 현재 체크아웃되어 있지 않습니다. 현재 브랜치: {_state.BranchName}.";
+                    StatusText = _strings.Format("RemoteRequestedBranchChanged", request.LocalBranch, _state.BranchName);
                     LastOperationOutcome = RemoteOperationOutcome.Failed;
                     return false;
                 }
@@ -415,7 +421,7 @@ namespace Bough.App.ViewModels
             _loadCancellation = cancellation;
             int request = ++_requestVersion;
             IsLoading = true;
-            StatusText = "Loading remote state...";
+            StatusText = _strings.GetString("RemoteLoadingState");
             try
             {
                 GitRemoteState state = await _service.GetStateAsync(repository, cancellation.Token);
@@ -428,10 +434,10 @@ namespace Bough.App.ViewModels
                     return;
                 }
                 ApplyState(state);
-                if (state.Remotes.Count == 0) { StatusText = "No remotes configured."; }
-                else if (state.IsDetached == true) { StatusText = "Detached HEAD: Fetch is available; Pull and Push require a branch."; }
-                else if (state.HasUpstream == false) { StatusText = "Choose an existing remote branch for Pull or confirm a destination for the first Push."; }
-                else { StatusText = "Remote state refreshed."; }
+                if (state.Remotes.Count == 0) { StatusText = _strings.GetString("RemoteNoRemotesConfigured"); }
+                else if (state.IsDetached == true) { StatusText = _strings.GetString("RemoteDetachedHint"); }
+                else if (state.HasUpstream == false) { StatusText = _strings.GetString("RemoteNoUpstreamHint"); }
+                else { StatusText = _strings.GetString("RemoteStateRefreshed"); }
             }
             catch (OperationCanceledException)
             {
@@ -440,7 +446,7 @@ namespace Bough.App.ViewModels
             {
                 if (request == _requestVersion)
                 {
-                    StatusText = exception.Message;
+                    StatusText = _errors.GetDisplayMessage(exception);
                 }
             }
             finally
@@ -460,24 +466,39 @@ namespace Bough.App.ViewModels
         {
             string remote = SelectedRemote;
             bool prune = Prune;
-            string target = remote;
+            string progress = _strings.Format("RemoteFetchingFrom", remote);
             if (fetchAll == true)
             {
-                target = "all remotes";
+                progress = _strings.GetString("RemoteFetchingAll");
             }
-            return await RunAsync($"Fetching from {target}...", async (repository, state, token) =>
+            return await RunAsync(progress, async (repository, state, token) =>
             {
                 GitFetchResult result = await _service.FetchAsync(repository, state, remote, fetchAll, prune, token);
                 string succeeded = string.Join(", ", result.SucceededRemotes);
-                string updated = "No ref changes";
-                if (result.UpdatedReferences.Count > 0)
+                List<string> changed = new(result.UpdatedReferences);
+                foreach (string removed in result.RemovedReferences)
                 {
-                    updated = string.Join(", ", result.UpdatedReferences);
+                    changed.Add(_strings.Format("RemoteRemovedReference", removed));
                 }
-                string message = $"Fetched: {succeeded}. Updated: {updated}.";
+                string updated = _strings.GetString("RemoteNoReferenceChanges");
+                if (changed.Count > 0)
+                {
+                    updated = string.Join(", ", changed);
+                }
+                string message = _strings.Format("RemoteFetchResult", succeeded, updated);
                 if (result.FailedRemotes.Count > 0)
                 {
-                    message += $" Failed: {string.Join("; ", result.FailedRemotes)}";
+                    List<string> failures = [];
+                    foreach (GitFetchFailure failure in result.FailedRemotes)
+                    {
+                        string reason = failure.Error;
+                        if (reason.Length == 0)
+                        {
+                            reason = _strings.Format("RemoteGitExitWithoutOutput", failure.ExitCode);
+                        }
+                        failures.Add(_strings.Format("RemoteFetchFailureItem", failure.Remote, reason));
+                    }
+                    message += _strings.Format("RemoteFetchFailures", string.Join("; ", failures));
                     if (result.SucceededRemotes.Count > 0)
                     {
                         return new OperationExecutionResult(message, RemoteOperationOutcome.PartiallySucceeded);
@@ -508,7 +529,7 @@ namespace Bough.App.ViewModels
             GitRepository repository = _repository;
             if (repository == null)
             {
-                throw new GitException("저장소를 선택하세요.");
+                throw new GitException("RemoteSelectRepository", null, Array.Empty<object>());
             }
             GitRemoteState state = _state;
             if (state == null)
@@ -523,10 +544,10 @@ namespace Bough.App.ViewModels
         {
             int request = _requestVersion + 1;
             IProgress<GitPullProgress> progress = new Progress<GitPullProgress>(update => ApplyPullProgress(request, update));
-            return await RunAsync($"Pulling from {remote}/{branch}...", async (repository, state, token) =>
+            return await RunAsync(_strings.Format("RemotePullingFrom", remote, branch), async (repository, state, token) =>
             {
-                string summary = await _service.PullWithProgressAsync(repository, state, remote, branch, strategy, progress, token);
-                string resultText = $"Pull {strategy} completed from {remote}/{branch}.";
+                IReadOnlyList<GitRemoteMessage> summary = await _service.PullWithProgressAsync(repository, state, remote, branch, strategy, progress, token);
+                string resultText = _strings.Format("RemotePullCompleted", FormatStrategy(strategy), remote, branch);
                 if (request != _requestVersion)
                 {
                     return new OperationExecutionResult(resultText, RemoteOperationOutcome.Succeeded);
@@ -535,7 +556,7 @@ namespace Bough.App.ViewModels
                 {
                     return new OperationExecutionResult(resultText, RemoteOperationOutcome.Succeeded);
                 }
-                PullSummaryText = summary;
+                PullSummaryText = FormatSummary(summary);
                 return new OperationExecutionResult(resultText, RemoteOperationOutcome.Succeeded);
             });
         }
@@ -548,7 +569,7 @@ namespace Bough.App.ViewModels
             }
             if (progress.IncomingSummary != null)
             {
-                PullSummaryText = progress.IncomingSummary;
+                PullSummaryText = FormatSummary(progress.IncomingSummary);
             }
             if (IsBusy == false)
             {
@@ -556,32 +577,32 @@ namespace Bough.App.ViewModels
             }
             if (progress.Stage == GitPullStage.Fetching)
             {
-                OperationStageText = "가져오는 중";
+                OperationStageText = _strings.GetString("RemoteStageFetching");
             }
             if (progress.Stage == GitPullStage.Inspecting)
             {
-                OperationStageText = "받은 커밋과 파일 확인 중";
+                OperationStageText = _strings.GetString("RemoteStageInspecting");
             }
             if (progress.Stage == GitPullStage.Applying)
             {
-                OperationStageText = "브랜치에 반영 중";
+                OperationStageText = _strings.GetString("RemoteStageApplying");
             }
             if (progress.TransferStatus != null)
             {
-                TransferStatusText = progress.TransferStatus;
+                TransferStatusText = _strings.Format(progress.TransferStatus.Key, progress.TransferStatus.Arguments.ToArray());
             }
         }
 
         public async Task<bool> PushAsync(string remote, string branch, bool targetConfirmed)
         {
-            return await RunAsync($"Pushing to {remote}/{branch}...", async (repository, state, token) =>
+            return await RunAsync(_strings.Format("RemotePushingTo", remote, branch), async (repository, state, token) =>
             {
                 bool pushed = await _service.PushAsync(repository, state, remote, branch, targetConfirmed, token);
                 if (pushed == false)
                 {
-                    return new OperationExecutionResult("보낼 새 커밋 없음", RemoteOperationOutcome.NoNewCommits);
+                    return new OperationExecutionResult(_strings.GetString("RemotePushNoNewCommits"), RemoteOperationOutcome.NoNewCommits);
                 }
-                return new OperationExecutionResult($"Pushed to {remote}/{branch}.", RemoteOperationOutcome.Succeeded);
+                return new OperationExecutionResult(_strings.Format("RemotePushCompleted", remote, branch), RemoteOperationOutcome.Succeeded);
             });
         }
 
@@ -619,7 +640,7 @@ namespace Bough.App.ViewModels
             _loadCancellation = cancellation;
             int request = ++_requestVersion;
             IsLoading = true;
-            StatusText = "Push 상태 확인 중...";
+            StatusText = _strings.GetString("RemoteCheckingPushState");
             LastOperationOutcome = RemoteOperationOutcome.None;
             try
             {
@@ -636,17 +657,17 @@ namespace Bough.App.ViewModels
                 ApplyState(latest);
                 if (latest.BranchName != previous.BranchName)
                 {
-                    StatusText = "현재 브랜치가 변경되었습니다. Push 대상을 다시 확인하세요.";
+                    StatusText = _strings.GetString("RemotePushBranchChanged");
                     return false;
                 }
                 if (latest.UpstreamRemote != remote)
                 {
-                    StatusText = "Upstream이 변경되었습니다. Push 대상을 다시 확인하세요.";
+                    StatusText = _strings.GetString("RemotePushUpstreamChanged");
                     return false;
                 }
                 if (latest.UpstreamBranch != branch)
                 {
-                    StatusText = "Upstream이 변경되었습니다. Push 대상을 다시 확인하세요.";
+                    StatusText = _strings.GetString("RemotePushUpstreamChanged");
                     return false;
                 }
                 if (HasNoOutgoingPushCommits)
@@ -655,7 +676,7 @@ namespace Bough.App.ViewModels
                     LastOperationOutcome = RemoteOperationOutcome.NoNewCommits;
                     return false;
                 }
-                StatusText = "Push할 새 커밋을 확인했습니다.";
+                StatusText = _strings.GetString("RemotePushCommitsConfirmed");
                 return true;
             }
             catch (OperationCanceledException)
@@ -666,7 +687,7 @@ namespace Bough.App.ViewModels
             {
                 if (request == _requestVersion)
                 {
-                    StatusText = exception.Message;
+                    StatusText = _errors.GetDisplayMessage(exception);
                 }
                 return false;
             }
@@ -697,7 +718,7 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
-            StatusText = "원격 작업 중단을 요청했습니다. 종료를 기다리는 중...";
+            StatusText = _strings.GetString("RemoteCancelRequested");
             _cancellation.Cancel();
             OnPropertyChanged(nameof(CanCancel));
         }
@@ -744,7 +765,7 @@ namespace Bough.App.ViewModels
                 }
                 if (OperationStageText.Length > 0)
                 {
-                    OperationStageText = "저장소 상태 확인 중";
+                    OperationStageText = _strings.GetString("RemoteStageCheckingState");
                 }
                 GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellation.Token);
                 GitRemoteState updatedState = await _service.GetStateAsync(updated, cancellation.Token);
@@ -768,7 +789,7 @@ namespace Bough.App.ViewModels
                 }
                 if (OperationStageText.Length > 0)
                 {
-                    OperationStageText = "완료";
+                    OperationStageText = _strings.GetString("RemoteStageComplete");
                 }
                 if (completedResult.Outcome == RemoteOperationOutcome.Succeeded || completedResult.Outcome == RemoteOperationOutcome.PartiallySucceeded)
                 {
@@ -788,17 +809,17 @@ namespace Bough.App.ViewModels
                     string refreshError = await RefreshAfterOutcomeAsync(repository, request);
                     if (completedResult == null)
                     {
-                        StatusText = "원격 작업이 중단되었습니다. 이미 적용된 변경은 되돌리지 않습니다.";
+                        StatusText = _strings.GetString("RemoteOperationCanceled");
                         LastOperationOutcome = RemoteOperationOutcome.Canceled;
                     }
                     else
                     {
-                        StatusText = $"{completedResult.Message} 상태 확인 중 중단되었습니다.";
+                        StatusText = _strings.Format("RemoteStateCheckCanceled", completedResult.Message);
                         LastOperationOutcome = RemoteOperationOutcome.RefreshFailed;
                     }
                     if (refreshError.Length > 0)
                     {
-                        StatusText += $" Refresh failed: {refreshError}";
+                        StatusText += _strings.Format("RemoteRefreshFailedSuffix", refreshError);
                     }
                 }
                 return false;
@@ -808,21 +829,21 @@ namespace Bough.App.ViewModels
                 if (request == _requestVersion)
                 {
                     string refreshError = await RefreshAfterOutcomeAsync(repository, request);
-                    StatusText = exception.Message;
+                    StatusText = _errors.GetDisplayMessage(exception);
                     if (completedResult == null)
                     {
                         LastOperationOutcome = RemoteOperationOutcome.Failed;
                     }
                     else
                     {
-                        StatusText = $"{completedResult.Message} 상태 갱신 실패: {exception.Message}";
+                        StatusText = _strings.Format("RemoteStateRefreshFailed", completedResult.Message, _errors.GetDisplayMessage(exception));
                         LastOperationOutcome = RemoteOperationOutcome.RefreshFailed;
                     }
                     if (refreshError.Length > 0)
                     {
-                        StatusText += $" Refresh failed: {refreshError}";
+                        StatusText += _strings.Format("RemoteRefreshFailedSuffix", refreshError);
                     }
-                    if (exception.Message.Contains("fast-forward", StringComparison.OrdinalIgnoreCase) == true || exception.Message.Contains("divergent", StringComparison.OrdinalIgnoreCase) == true)
+                    if (IsPullDivergence(exception))
                     {
                         _showPullStrategies = true;
                         OnPropertyChanged(nameof(ShowPullStrategies));
@@ -865,8 +886,53 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                return exception.Message;
+                return _errors.GetDisplayMessage(exception);
             }
+        }
+
+        private string FormatStrategy(GitPullStrategy strategy)
+        {
+            if (strategy == GitPullStrategy.Merge)
+            {
+                return _strings.GetString("RemoteStrategyMerge");
+            }
+            if (strategy == GitPullStrategy.Rebase)
+            {
+                return _strings.GetString("RemoteStrategyRebase");
+            }
+            return _strings.GetString("RemoteStrategyFastForward");
+        }
+
+        private string FormatSummary(IReadOnlyList<GitRemoteMessage> messages)
+        {
+            List<string> lines = [];
+            foreach (GitRemoteMessage message in messages)
+            {
+                if (message.Key == null)
+                {
+                    lines.Add(message.Arguments[0]?.ToString() ?? string.Empty);
+                    continue;
+                }
+                lines.Add(_strings.Format(message.Key, message.Arguments.ToArray()));
+            }
+            return string.Join(Environment.NewLine, lines);
+        }
+
+        private static bool IsPullDivergence(Exception exception)
+        {
+            string diagnostic = exception.Message;
+            if (exception is GitException gitException)
+            {
+                foreach (object argument in gitException.Arguments)
+                {
+                    if (argument is string value)
+                    {
+                        diagnostic += " " + value;
+                    }
+                }
+            }
+            return diagnostic.Contains("fast-forward", StringComparison.OrdinalIgnoreCase)
+                || diagnostic.Contains("divergent", StringComparison.OrdinalIgnoreCase);
         }
 
         private void NotifyState()

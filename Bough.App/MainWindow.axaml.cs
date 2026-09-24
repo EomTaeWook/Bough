@@ -90,7 +90,10 @@ namespace Bough.App
                 bool discard;
                 try
                 {
-                    discard = await GitActionDialogs.ConfirmAsync(this, "Discard resolution edits?", "Closing Bough will discard unsaved resolution edits.", "Discard edits");
+                    discard = await GitActionDialogs.ConfirmAsync(this,
+                        _stringHelper.GetString("DiscardResolutionTitle"),
+                        _stringHelper.GetString("DiscardResolutionCloseAppMessage"),
+                        _stringHelper.GetString("DiscardResolutionConfirm"));
                 }
                 finally
                 {
@@ -358,7 +361,10 @@ namespace Bough.App
                 bool discard;
                 try
                 {
-                    discard = await GitActionDialogs.ConfirmAsync(this, "Discard resolution edits?", "Changing repositories will discard unsaved resolution edits.", "Discard edits");
+                    discard = await GitActionDialogs.ConfirmAsync(this,
+                        _stringHelper.GetString("DiscardResolutionTitle"),
+                        _stringHelper.GetString("DiscardResolutionChangeRepositoryMessage"),
+                        _stringHelper.GetString("DiscardResolutionConfirm"));
                 }
                 finally
                 {

@@ -48,56 +48,45 @@ namespace Bough.Core.Git
 
         public bool IsPartiallyStaged { get { return IsStaged == true && IsUnstaged == true; } }
 
-        public string StatusText
+        public string StatusCode
         {
             get
             {
                 if (IsConflict == true)
                 {
-                    return "Conflict";
+                    return "WorktreeStatusConflict";
                 }
 
                 if (IsUntracked == true)
                 {
-                    return "Untracked";
+                    return "WorktreeStatusUntracked";
                 }
 
                 if (IndexStatus == 'R' || WorktreeStatus == 'R')
                 {
-                    return "Renamed";
+                    return "WorktreeStatusRenamed";
                 }
 
                 if (IndexStatus == 'A' || WorktreeStatus == 'A')
                 {
-                    return "Added";
+                    return "WorktreeStatusAdded";
                 }
 
                 if (IndexStatus == 'D' || WorktreeStatus == 'D')
                 {
-                    return "Deleted";
+                    return "WorktreeStatusDeleted";
                 }
 
                 if (IndexStatus == 'C' || WorktreeStatus == 'C')
                 {
-                    return "Copied";
+                    return "WorktreeStatusCopied";
                 }
 
-                return "Modified";
+                return "WorktreeStatusModified";
             }
         }
 
-        public string DisplayStatusText
-        {
-            get
-            {
-                if (IsPartiallyStaged == true)
-                {
-                    return $"{StatusText} · partially staged";
-                }
-
-                return StatusText;
-            }
-        }
+        public string DisplayStatusText { get; set; } = string.Empty;
 
         public string DisplayPath
         {

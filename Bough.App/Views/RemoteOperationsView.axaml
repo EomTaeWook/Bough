@@ -23,7 +23,7 @@
   </UserControl.Styles>
   <Grid RowDefinitions="Auto,Auto,Auto" Margin="18,5" RowSpacing="4">
     <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="14">
-      <TextBlock Text="Upstream" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+      <TextBlock x:Name="UpstreamLabel" Foreground="{DynamicResource BoughBrushTextSubtle}" />
       <TextBlock Text="{Binding UpstreamText}" Foreground="{DynamicResource BoughBrushTextMuted}"
                  MaxWidth="220" TextTrimming="CharacterEllipsis"
                  ToolTip.Tip="{Binding UpstreamText}" />
@@ -32,34 +32,30 @@
     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
       <Border BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
         <Grid ColumnDefinitions="Auto,1,Auto">
-          <Button Grid.Column="0" Classes="remoteActionSegment" Content="Fetch" Click="FetchClicked"
-                  IsEnabled="{Binding CanFetch}" Padding="12,3" AutomationProperties.Name="Fetch" />
+          <Button x:Name="FetchButton" Grid.Column="0" Classes="remoteActionSegment" Click="FetchClicked"
+                  IsEnabled="{Binding CanFetch}" Padding="12,3" />
           <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorderStrong}" />
-          <Button Grid.Column="2" Classes="remoteActionSegment" Content="▾" Click="FetchMenuClicked"
-                  IsEnabled="{Binding CanFetchAll}" Padding="6,3"
-                  ToolTip.Tip="모든 원격 가져오기, 원격 선택, 삭제된 브랜치 정리" AutomationProperties.Name="Fetch 메뉴" />
+          <Button x:Name="FetchMenuButton" Grid.Column="2" Classes="remoteActionSegment" Content="▾" Click="FetchMenuClicked"
+                  IsEnabled="{Binding CanFetchAll}" Padding="6,3" />
         </Grid>
       </Border>
       <Border BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
         <Grid ColumnDefinitions="Auto,1,Auto">
-          <Button Grid.Column="0" Classes="remoteActionSegment" Content="Pull" Click="PullClicked"
-                  IsEnabled="{Binding CanPull}" Padding="12,3" AutomationProperties.Name="Pull (Fast-forward only)"
-                  ToolTip.Tip="Fast-forward only · upstream이 없으면 받을 원격 브랜치를 선택합니다." />
+          <Button x:Name="PullButton" Grid.Column="0" Classes="remoteActionSegment" Click="PullClicked"
+                  IsEnabled="{Binding CanPull}" Padding="12,3" />
           <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorderStrong}" />
-          <Button Grid.Column="2" Classes="remoteActionSegment" Content="▾" Click="PullMenuClicked"
-                  IsEnabled="{Binding CanPull}" Padding="6,3"
-                  ToolTip.Tip="받을 브랜치 선택, 병합해서 받기, 재배치해서 받기" AutomationProperties.Name="Pull 메뉴" />
+          <Button x:Name="PullMenuButton" Grid.Column="2" Classes="remoteActionSegment" Content="▾" Click="PullMenuClicked"
+                  IsEnabled="{Binding CanPull}" Padding="6,3" />
         </Grid>
       </Border>
       <Border BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
         <Grid ColumnDefinitions="Auto,1,Auto">
-          <Button Grid.Column="0" Classes="remoteActionSegment" Content="Push" Click="PushClicked"
-                  IsEnabled="{Binding CanPush}" Padding="12,3" AutomationProperties.Name="Push"
+          <Button x:Name="PushButton" Grid.Column="0" Classes="remoteActionSegment" Click="PushClicked"
+                  IsEnabled="{Binding CanPush}" Padding="12,3"
                   ToolTip.Tip="{Binding PushAvailabilityText}" />
           <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorderStrong}" />
-          <Button Grid.Column="2" Classes="remoteActionSegment" Content="▾" Click="PushMenuClicked"
-                  IsEnabled="{Binding CanPushTo}" Padding="6,3"
-                  ToolTip.Tip="보낼 대상 선택" AutomationProperties.Name="Push 메뉴" />
+          <Button x:Name="PushMenuButton" Grid.Column="2" Classes="remoteActionSegment" Content="▾" Click="PushMenuClicked"
+                  IsEnabled="{Binding CanPushTo}" Padding="6,3" />
         </Grid>
       </Border>
     </StackPanel>

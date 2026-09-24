@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using Bough.Core.Git;
 
 namespace Bough.App.ViewModels
 {
@@ -45,7 +46,7 @@ namespace Bough.App.ViewModels
             string directoryPath = Path.GetDirectoryName(_filePath);
             if (directoryPath == null)
             {
-                throw new InvalidOperationException($"Repository list path has no directory: {_filePath}");
+                throw new GitException("RepositoryListPathInvalid", null, _filePath);
             }
 
             Directory.CreateDirectory(directoryPath);

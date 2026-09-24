@@ -1918,5 +1918,2957 @@
     "Name": "SettingsTitle",
     "Kor": "\uC124\uC815",
     "Eng": "Settings"
+  },
+  {
+    "Id": 2400,
+    "Name": "MainAllCommitsNavigation",
+    "Kor": "\uBAA8\uB4E0 \uCEE4\uBC0B",
+    "Eng": "All Commits"
+  },
+  {
+    "Id": 2401,
+    "Name": "MainOpenFolderToolTip",
+    "Kor": "\uD604\uC7AC \uC800\uC7A5\uC18C \uD3F4\uB354 \uC5F4\uAE30",
+    "Eng": "Open the current repository folder"
+  },
+  {
+    "Id": 2402,
+    "Name": "MainOpenFolderAutomationName",
+    "Kor": "\uD30C\uC77C \uD0D0\uC0C9\uAE30\uC5D0\uC11C \uD604\uC7AC \uC800\uC7A5\uC18C \uC5F4\uAE30",
+    "Eng": "Open the current repository in the file manager"
+  },
+  {
+    "Id": 2403,
+    "Name": "MainOpenFolderAction",
+    "Kor": "\uC800\uC7A5\uC18C \uD3F4\uB354 \uC5F4\uAE30",
+    "Eng": "Open repository folder"
+  },
+  {
+    "Id": 2404,
+    "Name": "MainOpenIn",
+    "Kor": "\uC5F4\uAE30 \u25BE",
+    "Eng": "Open in \u25BE"
+  },
+  {
+    "Id": 2405,
+    "Name": "MainConsoleToolTip",
+    "Kor": "\uD604\uC7AC \uC800\uC7A5\uC18C \uB8E8\uD2B8\uC5D0\uC11C \uCF58\uC194 \uC5F4\uAE30",
+    "Eng": "Open a console at the current repository root"
+  },
+  {
+    "Id": 2406,
+    "Name": "MainConsoleAutomationName",
+    "Kor": "\uD604\uC7AC \uC800\uC7A5\uC18C \uB8E8\uD2B8\uC5D0\uC11C \uCF58\uC194 \uC5F4\uAE30",
+    "Eng": "Open a console at the current repository root"
+  },
+  {
+    "Id": 2407,
+    "Name": "MainConsole",
+    "Kor": "\uCF58\uC194",
+    "Eng": "Console"
+  },
+  {
+    "Id": 2408,
+    "Name": "ConflictWindowTitle",
+    "Kor": "\uCDA9\uB3CC \uD574\uACB0",
+    "Eng": "Resolve conflicts"
+  },
+  {
+    "Id": 2409,
+    "Name": "DiscardResolutionTitle",
+    "Kor": "\uD574\uACB0 \uC911\uC778 \uBCC0\uACBD\uC744 \uD3D0\uAE30\uD560\uAE4C\uC694?",
+    "Eng": "Discard resolution edits?"
+  },
+  {
+    "Id": 2410,
+    "Name": "DiscardResolutionCloseAppMessage",
+    "Kor": "Bough\uB97C \uB2EB\uC73C\uBA74 \uC800\uC7A5\uD558\uC9C0 \uC54A\uC740 \uCDA9\uB3CC \uD574\uACB0 \uB0B4\uC6A9\uC774 \uD3D0\uAE30\uB429\uB2C8\uB2E4.",
+    "Eng": "Closing Bough will discard unsaved resolution edits."
+  },
+  {
+    "Id": 2411,
+    "Name": "DiscardResolutionChangeRepositoryMessage",
+    "Kor": "\uC800\uC7A5\uC18C\uB97C \uBC14\uAFB8\uBA74 \uC800\uC7A5\uD558\uC9C0 \uC54A\uC740 \uCDA9\uB3CC \uD574\uACB0 \uB0B4\uC6A9\uC774 \uD3D0\uAE30\uB429\uB2C8\uB2E4.",
+    "Eng": "Changing repositories will discard unsaved resolution edits."
+  },
+  {
+    "Id": 2412,
+    "Name": "DiscardResolutionCloseConflictMessage",
+    "Kor": "\uACB0\uACFC \uD30C\uC77C\uC5D0 \uC800\uC7A5\uD558\uC9C0 \uC54A\uC740 \uBCC0\uACBD\uC774 \uC788\uC2B5\uB2C8\uB2E4. \uCDA9\uB3CC \uCC3D\uC744 \uB2EB\uACE0 \uBCC0\uACBD\uC744 \uD3D0\uAE30\uD560\uAE4C\uC694?",
+    "Eng": "The result has unsaved edits. Close the conflict window and discard them?"
+  },
+  {
+    "Id": 2413,
+    "Name": "DiscardResolutionConfirm",
+    "Kor": "\uBCC0\uACBD \uD3D0\uAE30",
+    "Eng": "Discard edits"
+  },
+  {
+    "Id": 2414,
+    "Name": "MainSelectRepositoryPath",
+    "Kor": "\uC800\uC7A5\uC18C \uACBD\uB85C\uB97C \uC120\uD0DD\uD558\uC138\uC694.",
+    "Eng": "Select a repository path."
+  },
+  {
+    "Id": 2415,
+    "Name": "MainWorkingFileRestored",
+    "Kor": "\uC791\uC5C5 \uD30C\uC77C {0}\uC744(\uB97C) \uBCF5\uC6D0\uD588\uC2B5\uB2C8\uB2E4.",
+    "Eng": "Restored working file {0}."
+  },
+  {
+    "Id": 2416,
+    "Name": "MainCommitCompleted",
+    "Kor": "{0} \uCEE4\uBC0B\uC744 \uB9CC\uB4E4\uC5C8\uC2B5\uB2C8\uB2E4.",
+    "Eng": "Committed {0}."
+  },
+  {
+    "Id": 2417,
+    "Name": "ConflictResolvedExternallyWithUnsavedEdits",
+    "Kor": "\uCDA9\uB3CC\uC774 Bough \uBC16\uC5D0\uC11C \uD574\uACB0\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC800\uC7A5\uD558\uC9C0 \uC54A\uC740 \uB0B4\uC6A9\uC744 \uD3D0\uAE30\uD558\uB824\uBA74 \uC774 \uCC3D\uC744 \uB2EB\uC73C\uC138\uC694.",
+    "Eng": "The conflict was resolved outside Bough. Close this window to discard unsaved edits."
+  },
+  {
+    "Id": 2418,
+    "Name": "ConflictMarkerMissing",
+    "Kor": "{0}\uD589\uC5D0\uC11C \uC2DC\uC791\uD558\uB294 \uCDA9\uB3CC\uC5D0 {1} \uB9C8\uCEE4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Eng": "Conflict beginning at line {0} has no {1} marker."
+  },
+  {
+    "Id": 2419,
+    "Name": "ConflictTextMarkersMissing",
+    "Kor": "{0} \uD30C\uC77C\uC5D0 \uD14D\uC2A4\uD2B8 \uCDA9\uB3CC \uB9C8\uCEE4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Eng": "{0} does not contain text conflict markers."
+  },
+  {
+    "Id": 2420,
+    "Name": "ConflictBinaryFileCannotEdit",
+    "Kor": "{0}\uC740(\uB294) \uBC14\uC774\uB108\uB9AC \uD30C\uC77C\uC774\uB77C \uD14D\uC2A4\uD2B8\uB85C \uD3B8\uC9D1\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Eng": "{0} is a binary file and cannot be edited as text."
+  },
+  {
+    "Id": 2421,
+    "Name": "RepositorySelectedFileNoParent",
+    "Kor": "\uC120\uD0DD\uD55C \uD30C\uC77C {0}\uC758 \uC0C1\uC704 \uD3F4\uB354\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Eng": "The selected file {0} has no parent directory."
+  },
+  {
+    "Id": 2422,
+    "Name": "RepositoryConflictInvalidUtf8",
+    "Kor": "{0}\uC740(\uB294) \uC720\uD6A8\uD55C UTF-8 \uD14D\uC2A4\uD2B8\uAC00 \uC544\uB2D9\uB2C8\uB2E4.",
+    "Eng": "{0} is not valid UTF-8 text."
+  },
+  {
+    "Id": 2423,
+    "Name": "RepositoryConflictFileChanged",
+    "Kor": "{0} \uD30C\uC77C\uC774 \uB514\uC2A4\uD06C\uC5D0\uC11C \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC800\uC7A5\uD558\uAE30 \uC804\uC5D0 \uC0C8\uB85C \uACE0\uCE58\uC138\uC694.",
+    "Eng": "{0} changed on disk. Refresh before saving."
+  },
+  {
+    "Id": 2424,
+    "Name": "RepositoryRelativePathRequired",
+    "Kor": "\uC800\uC7A5\uC18C \uC0C1\uB300 \uACBD\uB85C\uAC00 \uD544\uC694\uD569\uB2C8\uB2E4: {0}.",
+    "Eng": "A repository-relative path is required: {0}."
+  },
+  {
+    "Id": 2425,
+    "Name": "RepositoryPathOutsideRoot",
+    "Kor": "\uACBD\uB85C\uAC00 \uC800\uC7A5\uC18C \uBC16\uC744 \uAC00\uB9AC\uD0B5\uB2C8\uB2E4: {0}.",
+    "Eng": "The path is outside the repository: {0}."
+  },
+  {
+    "Id": 2426,
+    "Name": "ConflictIncomingIndexStage3",
+    "Kor": "\uBC1B\uB294 \uBCC0\uACBD \u00B7 \uC778\uB371\uC2A4 \uB2E8\uACC4 3",
+    "Eng": "Incoming change \u00B7 index stage 3"
+  },
+  {
+    "Id": 2427,
+    "Name": "MainInvalidRepositoryPath",
+    "Kor": "\uC800\uC7A5\uC18C \uACBD\uB85C\uAC00 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4: {0}",
+    "Eng": "Invalid repository path: {0}"
+  },
+  {
+    "Id": 2428,
+    "Name": "GitExecutableAbsolutePathRequired",
+    "Kor": "Git 실행 파일의 절대 경로를 입력하세요: {0}",
+    "Eng": "Enter an absolute path to Git: {0}"
+  },
+  {
+    "Id": 2429,
+    "Name": "GitExecutableSettingsPathInvalid",
+    "Kor": "Git 설정 파일 경로가 올바르지 않습니다: {0}",
+    "Eng": "The Git settings file path is invalid: {0}"
+  },
+  {
+    "Id": 2430,
+    "Name": "GitExecutableNotFound",
+    "Kor": "Git 실행 파일을 찾을 수 없습니다: {0}",
+    "Eng": "Could not find the Git executable: {0}"
+  },
+  {
+    "Id": 2431,
+    "Name": "GitExecutableVersionInvalid",
+    "Kor": "선택한 파일의 Git 버전을 확인할 수 없습니다: {0}",
+    "Eng": "Could not verify the Git version of the selected file: {0}"
+  },
+  {
+    "Id": 2432,
+    "Name": "GitCredentialHelperReadFailed",
+    "Kor": "credential.helper 설정을 읽지 못했습니다: {0}",
+    "Eng": "Could not read credential.helper: {0}"
+  },
+  {
+    "Id": 2433,
+    "Name": "GitSettingsRemoteUrlReadFailed",
+    "Kor": "{0} 원격 URL을 읽지 못했습니다: {1}",
+    "Eng": "Could not read the URL for remote {0}: {1}"
+  },
+  {
+    "Id": 2434,
+    "Name": "GitConfigReadFailed",
+    "Kor": "{0} {1} 설정을 읽지 못했습니다: {2}",
+    "Eng": "Could not read {0} {1}: {2}"
+  },
+  {
+    "Id": 2435,
+    "Name": "GitConfigUnsetFailed",
+    "Kor": "{0} {1} 설정을 지우지 못했습니다: {2}",
+    "Eng": "Could not unset {0} {1}: {2}"
+  },
+  {
+    "Id": 2436,
+    "Name": "RepositoryFolderMissing",
+    "Kor": "저장소 폴더를 찾을 수 없습니다: {0}",
+    "Eng": "Repository folder not found: {0}"
+  },
+  {
+    "Id": 2437,
+    "Name": "TerminalPlatformUnsupported",
+    "Kor": "이 운영체제의 터미널 실행 방식은 지원하지 않습니다.",
+    "Eng": "Opening a terminal is not supported on this operating system."
+  },
+  {
+    "Id": 2438,
+    "Name": "TerminalStartFailed",
+    "Kor": "터미널을 실행하지 못했습니다: {0}",
+    "Eng": "Could not start the terminal: {0}"
+  },
+  {
+    "Id": 2439,
+    "Name": "ExplorerStartFailed",
+    "Kor": "파일 탐색기를 실행하지 못했습니다: {0}",
+    "Eng": "Could not start the file manager: {0}"
+  },
+  {
+    "Id": 2440,
+    "Name": "ExplorerPlatformUnsupported",
+    "Kor": "이 운영체제의 파일 탐색기 실행 방식은 지원하지 않습니다.",
+    "Eng": "Opening the file manager is not supported on this operating system."
+  },
+  {
+    "Id": 2441,
+    "Name": "CommitMessageFullHashRequired",
+    "Kor": "전체 커밋 해시가 필요합니다: {0}",
+    "Eng": "A full commit hash is required: {0}."
+  },
+  {
+    "Id": 2442,
+    "Name": "CommitMessageIncomplete",
+    "Kor": "Git이 {0} 커밋의 메시지를 완전하게 반환하지 않았습니다.",
+    "Eng": "Git returned an incomplete commit message for {0}."
+  },
+  {
+    "Id": 2443,
+    "Name": "CommitMessageInvalidUtf8",
+    "Kor": "{0} 커밋의 메시지가 유효한 UTF-8이 아닙니다.",
+    "Eng": "Commit message is not valid UTF-8 for {0}."
+  },
+  {
+    "Id": 2444,
+    "Name": "StashListFormatInvalid",
+    "Kor": "Git이 예상하지 못한 스태시 목록 형식을 반환했습니다.",
+    "Eng": "Git returned an unexpected stash-list format."
+  },
+  {
+    "Id": 2445,
+    "Name": "StashDateInvalid",
+    "Kor": "{0} 스태시의 날짜가 올바르지 않습니다.",
+    "Eng": "Git returned an invalid stash date for {0}."
+  },
+  {
+    "Id": 2446,
+    "Name": "StashFileListInvalid",
+    "Kor": "{0} 스태시의 파일 목록 형식이 올바르지 않습니다.",
+    "Eng": "Git returned a malformed file list for {0}."
+  },
+  {
+    "Id": 2447,
+    "Name": "StashResolveConflictsFirst",
+    "Kor": "스태시를 만들기 전에 충돌을 해결하세요.",
+    "Eng": "Resolve conflicts before creating a stash."
+  },
+  {
+    "Id": 2448,
+    "Name": "StashNoSelectedChanges",
+    "Kor": "스태시에 보관할 변경이 없습니다.",
+    "Eng": "There are no selected changes to stash."
+  },
+  {
+    "Id": 2449,
+    "Name": "StashCreationMissing",
+    "Kor": "Git이 새 스태시를 만들지 않았습니다. 작업 트리를 새로 고치고 다시 시도하세요.",
+    "Eng": "Git did not create a new stash. Refresh the working tree and try again."
+  },
+  {
+    "Id": 2450,
+    "Name": "StashReferenceInvalid",
+    "Kor": "스태시 참조가 올바르지 않습니다: {0}.",
+    "Eng": "Invalid stash reference: {0}."
+  },
+  {
+    "Id": 2451,
+    "Name": "StashSelectionChanged",
+    "Kor": "{0} 스태시가 변경되었거나 삭제되었습니다. 목록을 새로 고치고 다시 시도하세요.",
+    "Eng": "{0} changed or was removed. Refresh the stash list before continuing."
+  },
+  {
+    "Id": 2452,
+    "Name": "IgnoreSelectUntrackedFile",
+    "Kor": "무시할 미추적 파일을 하나 이상 선택하세요.",
+    "Eng": "Select at least one untracked file to ignore."
+  },
+  {
+    "Id": 2453,
+    "Name": "IgnoreSelectedFileMissing",
+    "Kor": "선택한 무시 대상 파일이 없습니다.",
+    "Eng": "A selected ignore file is missing."
+  },
+  {
+    "Id": 2454,
+    "Name": "IgnoreDuplicateSelection",
+    "Kor": "같은 파일을 두 번 이상 선택했습니다: {0}.",
+    "Eng": "A file was selected more than once: {0}."
+  },
+  {
+    "Id": 2455,
+    "Name": "IgnoreTrackedFile",
+    "Kor": "미추적 파일만 무시할 수 있습니다: {0}.",
+    "Eng": "Only untracked files can be ignored: {0}."
+  },
+  {
+    "Id": 2456,
+    "Name": "IgnoreSelectedFileChanged",
+    "Kor": "무시하기 전에 선택한 파일이 변경되었습니다: {0}.",
+    "Eng": "The selected file changed before ignore: {0}."
+  },
+  {
+    "Id": 2457,
+    "Name": "IgnoreFileNowTracked",
+    "Kor": "선택한 파일이 이제 Git에서 추적됩니다: {0}.",
+    "Eng": "The selected file is now tracked: {0}."
+  },
+  {
+    "Id": 2458,
+    "Name": "IgnoreUntrackedFileMissing",
+    "Kor": "선택한 미추적 파일을 찾을 수 없습니다: {0}.",
+    "Eng": "The selected untracked file is missing: {0}."
+  },
+  {
+    "Id": 2459,
+    "Name": "IgnoreSymlinkUnsafe",
+    "Kor": "심볼릭 링크는 안전하게 무시할 수 없습니다: {0}.",
+    "Eng": "A symbolic link cannot be ignored safely: {0}."
+  },
+  {
+    "Id": 2460,
+    "Name": "IgnoreSelf",
+    "Kor": "무시 규칙 파일은 자기 자신을 무시할 수 없습니다: {0}.",
+    "Eng": "The ignore file cannot ignore itself: {0}."
+  },
+  {
+    "Id": 2461,
+    "Name": "IgnoreExistingRuleUntracked",
+    "Kor": "정확한 무시 규칙이 있지만 파일이 여전히 미추적 상태입니다: {0}.",
+    "Eng": "An exact ignore rule already exists, but the file is still untracked: {0}."
+  },
+  {
+    "Id": 2462,
+    "Name": "IgnoreLocationChanged",
+    "Kor": "확인 전에 Git 무시 위치가 변경되었습니다.",
+    "Eng": "The Git ignore location changed before confirmation."
+  },
+  {
+    "Id": 2463,
+    "Name": "IgnoreFileChangedBeforeConfirmation",
+    "Kor": "확인 전에 무시 규칙 파일이 변경되었습니다. 새로 고치고 다시 시도하세요.",
+    "Eng": "The ignore file changed before confirmation. Refresh and try again."
+  },
+  {
+    "Id": 2464,
+    "Name": "IgnoreSelectedFilesChanged",
+    "Kor": "확인 전에 선택한 파일들이 변경되었습니다.",
+    "Eng": "The selected files changed before confirmation."
+  },
+  {
+    "Id": 2465,
+    "Name": "IgnoreExcludePathMissing",
+    "Kor": "Git이 로컬 제외 규칙 경로를 제공하지 않았습니다.",
+    "Eng": "Git did not provide its local exclude path."
+  },
+  {
+    "Id": 2466,
+    "Name": "IgnoreExcludePathUnexpected",
+    "Kor": "Git이 예상하지 못한 제외 규칙 경로를 반환했습니다: {0}.",
+    "Eng": "Git returned an unexpected exclude path: {0}."
+  },
+  {
+    "Id": 2467,
+    "Name": "IgnoreRelativePathMissing",
+    "Kor": "선택한 파일에 저장소 상대 경로가 없습니다.",
+    "Eng": "The selected file has no repository-relative path."
+  },
+  {
+    "Id": 2468,
+    "Name": "IgnorePathOutsideRoot",
+    "Kor": "선택한 경로가 저장소 밖을 가리킵니다: {0}.",
+    "Eng": "The selected path is outside the repository: {0}."
+  },
+  {
+    "Id": 2469,
+    "Name": "IgnoreRootDisallowed",
+    "Kor": "저장소 루트는 무시할 수 없습니다.",
+    "Eng": "The repository root cannot be ignored."
+  },
+  {
+    "Id": 2470,
+    "Name": "IgnoreMetadataDisallowed",
+    "Kor": "Git 메타데이터는 무시할 수 없습니다: {0}.",
+    "Eng": "Git metadata cannot be ignored: {0}."
+  },
+  {
+    "Id": 2471,
+    "Name": "IgnoreParentMissing",
+    "Kor": "선택한 파일의 상위 폴더가 더 이상 없습니다: {0}.",
+    "Eng": "A selected file parent no longer exists: {0}."
+  },
+  {
+    "Id": 2472,
+    "Name": "IgnorePathSymlink",
+    "Kor": "선택한 경로가 심볼릭 링크를 통과합니다: {0}.",
+    "Eng": "The selected path crosses a symbolic link: {0}."
+  },
+  {
+    "Id": 2473,
+    "Name": "IgnoreOnlyFiles",
+    "Kor": "파일만 무시할 수 있습니다: {0}.",
+    "Eng": "Only files can be ignored: {0}."
+  },
+  {
+    "Id": 2474,
+    "Name": "IgnoreFileNameUnsafe",
+    "Kor": "파일 이름을 gitignore 규칙으로 안전하게 표현할 수 없습니다: {0}.",
+    "Eng": "A file name cannot be represented safely in gitignore: {0}."
+  },
+  {
+    "Id": 2475,
+    "Name": "IgnoreDirectoryMissing",
+    "Kor": "무시 규칙 폴더가 없습니다: {0}.",
+    "Eng": "The ignore directory does not exist: {0}."
+  },
+  {
+    "Id": 2476,
+    "Name": "IgnoreDirectorySymlink",
+    "Kor": "무시 규칙 폴더가 심볼릭 링크입니다: {0}.",
+    "Eng": "The ignore directory is a symbolic link: {0}."
+  },
+  {
+    "Id": 2477,
+    "Name": "IgnoreTargetDirectory",
+    "Kor": "무시 규칙 대상이 폴더입니다: {0}.",
+    "Eng": "The ignore target is a directory: {0}."
+  },
+  {
+    "Id": 2478,
+    "Name": "IgnoreTargetSymlink",
+    "Kor": "무시 규칙 대상이 심볼릭 링크입니다: {0}.",
+    "Eng": "The ignore target is a symbolic link: {0}."
+  },
+  {
+    "Id": 2479,
+    "Name": "IgnoreFileTooLarge",
+    "Kor": "무시 규칙 파일이 너무 커서 안전하게 편집할 수 없습니다: {0}.",
+    "Eng": "The ignore file is too large to edit safely: {0}."
+  },
+  {
+    "Id": 2480,
+    "Name": "IgnoreFileGrewTooLarge",
+    "Kor": "무시 규칙 파일이 너무 커져 안전하게 편집할 수 없습니다: {0}.",
+    "Eng": "The ignore file grew too large to edit safely: {0}."
+  },
+  {
+    "Id": 2481,
+    "Name": "IgnoreFileInvalidUtf8",
+    "Kor": "무시 규칙 파일이 UTF-8이 아니어서 안전하게 편집할 수 없습니다.",
+    "Eng": "The ignore file is not UTF-8 and cannot be edited safely."
+  },
+  {
+    "Id": 2482,
+    "Name": "IgnoreRuleAlreadyExists",
+    "Kor": "정확한 무시 규칙이 이미 있습니다: {0}.",
+    "Eng": "An exact ignore rule already exists: {0}."
+  },
+  {
+    "Id": 2483,
+    "Name": "IgnoreDirectoryRemoved",
+    "Kor": "무시 규칙 폴더가 더 이상 없습니다: {0}.",
+    "Eng": "The ignore directory no longer exists: {0}."
+  },
+  {
+    "Id": 2484,
+    "Name": "IgnoreFileDisappeared",
+    "Kor": "쓰기 전에 무시 규칙 파일이 사라졌습니다.",
+    "Eng": "The ignore file disappeared before writing."
+  },
+  {
+    "Id": 2485,
+    "Name": "IgnoreFileBecameSymlink",
+    "Kor": "쓰기 전에 무시 규칙 파일이 심볼릭 링크로 바뀌었습니다.",
+    "Eng": "The ignore file became a symbolic link before writing."
+  },
+  {
+    "Id": 2486,
+    "Name": "IgnoreTargetAppeared",
+    "Kor": "쓰기 전에 무시 규칙 대상이 생성되었습니다.",
+    "Eng": "The ignore target appeared before writing."
+  },
+  {
+    "Id": 2487,
+    "Name": "IgnoreFileChangedBeforeWriting",
+    "Kor": "쓰기 전에 무시 규칙 파일이 변경되었습니다. 새로 고치고 다시 시도하세요.",
+    "Eng": "The ignore file changed before writing. Refresh and try again."
+  },
+  {
+    "Id": 2488,
+    "Name": "WorkingStatusMissingNul",
+    "Kor": "Git 상태 출력이 NUL 구분자로 끝나지 않았습니다.",
+    "Eng": "Git status did not end with a NUL separator."
+  },
+  {
+    "Id": 2489,
+    "Name": "WorkingStatusEntryInvalid",
+    "Kor": "Git이 {0} 위치에 올바르지 않은 상태 항목을 반환했습니다.",
+    "Eng": "Git returned an invalid status entry at position {0}."
+  },
+  {
+    "Id": 2490,
+    "Name": "WorkingRenameOriginalMissing",
+    "Kor": "Git이 원래 경로가 없는 이름 변경을 반환했습니다: {0}.",
+    "Eng": "Git returned a rename without its original path: {0}."
+  },
+  {
+    "Id": 2491,
+    "Name": "WorkingResolveBeforeStage",
+    "Kor": "스테이징하기 전에 충돌을 해결하세요: {0}.",
+    "Eng": "Resolve the conflict before staging: {0}."
+  },
+  {
+    "Id": 2492,
+    "Name": "WorkingResolveBeforeDiscard",
+    "Kor": "변경을 폐기하기 전에 충돌을 해결하세요: {0}.",
+    "Eng": "Resolve the conflict before discarding changes: {0}."
+  },
+  {
+    "Id": 2493,
+    "Name": "WorkingNoUnstagedChanges",
+    "Kor": "폐기할 미스테이징 변경이 없습니다: {0}.",
+    "Eng": "The file has no unstaged changes to discard: {0}."
+  },
+  {
+    "Id": 2494,
+    "Name": "WorkingCaseRenameUnsafe",
+    "Kor": "대소문자만 바뀐 이름 변경은 안전하게 폐기할 수 없습니다: {0}.",
+    "Eng": "A case-only rename cannot be discarded safely: {0}."
+  },
+  {
+    "Id": 2495,
+    "Name": "WorkingOriginalPathOccupied",
+    "Kor": "이름 변경 전 경로에 이미 파일이 있습니다: {0}.",
+    "Eng": "The original rename path is occupied: {0}."
+  },
+  {
+    "Id": 2496,
+    "Name": "WorkingOnlyFileDiscard",
+    "Kor": "파일만 폐기할 수 있습니다: {0}.",
+    "Eng": "Only a file can be discarded: {0}."
+  },
+  {
+    "Id": 2497,
+    "Name": "WorkingUntrackedFileMissing",
+    "Kor": "미추적 파일을 더 이상 사용할 수 없습니다: {0}.",
+    "Eng": "The untracked file is no longer available: {0}."
+  },
+  {
+    "Id": 2498,
+    "Name": "WorkingRenamedFileMissing",
+    "Kor": "이름이 바뀐 파일을 더 이상 사용할 수 없습니다: {0}.",
+    "Eng": "The renamed file is no longer available: {0}."
+  },
+  {
+    "Id": 2499,
+    "Name": "WorkingSymlinkDiscardUnsafe",
+    "Kor": "심볼릭 링크는 안전하게 폐기할 수 없습니다: {0}.",
+    "Eng": "A symbolic link cannot be discarded safely: {0}."
+  },
+  {
+    "Id": 2500,
+    "Name": "WorkingSelectDiscardFile",
+    "Kor": "폐기할 파일을 하나 이상 선택하세요.",
+    "Eng": "Select at least one file to discard."
+  },
+  {
+    "Id": 2501,
+    "Name": "WorkingDuplicateSelection",
+    "Kor": "같은 파일을 두 번 이상 선택했습니다: {0}.",
+    "Eng": "A file was selected more than once: {0}."
+  },
+  {
+    "Id": 2502,
+    "Name": "WorkingSelectedFileChanged",
+    "Kor": "폐기하기 전에 선택한 파일이 변경되었습니다: {0}.",
+    "Eng": "The selected file changed before discard: {0}."
+  },
+  {
+    "Id": 2503,
+    "Name": "WorkingIndexChanged",
+    "Kor": "폐기하기 전에 인덱스가 변경되었습니다: {0}.",
+    "Eng": "The index changed before discard: {0}."
+  },
+  {
+    "Id": 2504,
+    "Name": "WorkingRenamedDestinationTracked",
+    "Kor": "이름 변경 대상이 추적 중이므로 삭제할 수 없습니다: {0}.",
+    "Eng": "The renamed destination is tracked and cannot be deleted: {0}."
+  },
+  {
+    "Id": 2505,
+    "Name": "WorkingRenamedFileChanged",
+    "Kor": "삭제하기 전에 이름이 바뀐 파일이 변경되었습니다: {0}.",
+    "Eng": "The renamed file changed before deletion: {0}."
+  },
+  {
+    "Id": 2506,
+    "Name": "WorkingUntrackedFileChanged",
+    "Kor": "삭제하기 전에 미추적 파일이 변경되었습니다: {0}.",
+    "Eng": "The untracked file changed before deletion: {0}."
+  },
+  {
+    "Id": 2507,
+    "Name": "WorkingSelectedPathRequired",
+    "Kor": "선택한 경로가 필요합니다.",
+    "Eng": "A selected path is required."
+  },
+  {
+    "Id": 2508,
+    "Name": "WorkingStageStateChanged",
+    "Kor": "스테이징 확인을 기다리는 동안 작업 트리가 변경되었습니다. 새로 고치고 다시 시도하세요.",
+    "Eng": "Working tree changed while staging was awaiting confirmation. Refresh and try again."
+  },
+  {
+    "Id": 2509,
+    "Name": "WorkingNewFileDisappeared",
+    "Kor": "스테이징 전에 새 파일이 사라졌습니다: {0}.",
+    "Eng": "New file disappeared before staging: {0}."
+  },
+  {
+    "Id": 2510,
+    "Name": "WorkingStageFileUnavailable",
+    "Kor": "스테이징할 파일을 더 이상 사용할 수 없습니다: {0}.",
+    "Eng": "File is no longer available to stage: {0}."
+  },
+  {
+    "Id": 2511,
+    "Name": "WorkingNoPreviousCommit",
+    "Kor": "수정할 이전 커밋이 없습니다.",
+    "Eng": "There is no previous commit to amend."
+  },
+  {
+    "Id": 2512,
+    "Name": "WorkingPreviousMessageInvalidUtf8",
+    "Kor": "이전 커밋 메시지가 유효한 UTF-8이 아닙니다.",
+    "Eng": "The previous commit message is not valid UTF-8."
+  },
+  {
+    "Id": 2513,
+    "Name": "WorkingCommitMessageBoundaryMissing",
+    "Kor": "Git이 메시지 경계가 없는 커밋을 반환했습니다.",
+    "Eng": "Git returned a commit without a message boundary."
+  },
+  {
+    "Id": 2514,
+    "Name": "WorkingCommitMessageRequired",
+    "Kor": "커밋 메시지를 입력하세요.",
+    "Eng": "Enter a commit message."
+  },
+  {
+    "Id": 2515,
+    "Name": "WorkingCommitSummaryRequired",
+    "Kor": "커밋 메시지의 첫 줄을 입력하세요.",
+    "Eng": "Enter the first line of the commit message."
+  },
+  {
+    "Id": 2516,
+    "Name": "WorkingStageBeforeCommit",
+    "Kor": "커밋하기 전에 파일을 하나 이상 스테이징하세요.",
+    "Eng": "Stage at least one file before committing."
+  },
+  {
+    "Id": 2517,
+    "Name": "WorkingResolveBeforeCommit",
+    "Kor": "커밋하기 전에 모든 충돌을 해결하세요.",
+    "Eng": "Resolve all conflicts before committing."
+  },
+  {
+    "Id": 2518,
+    "Name": "WorkingAuthorRequired",
+    "Kor": "커밋하기 전에 Git user.name과 user.email을 설정하세요.",
+    "Eng": "Set Git user.name and user.email before committing."
+  },
+  {
+    "Id": 2519,
+    "Name": "WorkingRelativePathMissing",
+    "Kor": "선택한 파일에 저장소 상대 경로가 없습니다.",
+    "Eng": "The selected file has no repository-relative path."
+  },
+  {
+    "Id": 2520,
+    "Name": "WorkingPathOutsideRoot",
+    "Kor": "선택한 파일 경로가 저장소 밖을 가리킵니다: {0}.",
+    "Eng": "The selected file path is outside the repository: {0}."
+  },
+  {
+    "Id": 2521,
+    "Name": "WorkingRootDiscardDenied",
+    "Kor": "저장소 루트는 폐기할 수 없습니다.",
+    "Eng": "The repository root cannot be discarded."
+  },
+  {
+    "Id": 2522,
+    "Name": "WorkingMetadataDiscardDenied",
+    "Kor": "Git 메타데이터는 폐기할 수 없습니다: {0}.",
+    "Eng": "Git metadata cannot be discarded: {0}."
+  },
+  {
+    "Id": 2523,
+    "Name": "WorkingFileParentInvalid",
+    "Kor": "선택한 경로의 상위 항목이 파일입니다: {0}.",
+    "Eng": "The selected file path has a file parent: {0}."
+  },
+  {
+    "Id": 2524,
+    "Name": "WorkingPathSymlink",
+    "Kor": "선택한 파일 경로가 심볼릭 링크를 통과합니다: {0}.",
+    "Eng": "The selected file path crosses a symbolic link: {0}."
+  },
+  {
+    "Id": 2525,
+    "Name": "WorktreeStatusConflict",
+    "Kor": "충돌",
+    "Eng": "Conflict"
+  },
+  {
+    "Id": 2526,
+    "Name": "WorktreeStatusUntracked",
+    "Kor": "미추적",
+    "Eng": "Untracked"
+  },
+  {
+    "Id": 2527,
+    "Name": "WorktreeStatusRenamed",
+    "Kor": "이름 변경",
+    "Eng": "Renamed"
+  },
+  {
+    "Id": 2528,
+    "Name": "WorktreeStatusAdded",
+    "Kor": "추가됨",
+    "Eng": "Added"
+  },
+  {
+    "Id": 2529,
+    "Name": "WorktreeStatusDeleted",
+    "Kor": "삭제됨",
+    "Eng": "Deleted"
+  },
+  {
+    "Id": 2530,
+    "Name": "WorktreeStatusCopied",
+    "Kor": "복사됨",
+    "Eng": "Copied"
+  },
+  {
+    "Id": 2531,
+    "Name": "WorktreeStatusModified",
+    "Kor": "수정됨",
+    "Eng": "Modified"
+  },
+  {
+    "Id": 2532,
+    "Name": "WorktreeStatusPartiallyStaged",
+    "Kor": "{0} · 일부 스테이징됨",
+    "Eng": "{0} · partially staged"
+  },
+  {
+    "Id": 2533,
+    "Name": "WorktreePreviewConflict",
+    "Kor": "해결되지 않은 충돌입니다. 충돌 해결 화면에서 최종 내용을 선택하세요.",
+    "Eng": "Unresolved conflict. Open Resolve to choose the final content."
+  },
+  {
+    "Id": 2534,
+    "Name": "WorktreePreviewBinaryChanged",
+    "Kor": "바이너리 파일이 변경되었습니다(작업 트리 {0}바이트).",
+    "Eng": "Binary file changed ({0} bytes in working tree)."
+  },
+  {
+    "Id": 2535,
+    "Name": "WorktreePreviewNoTextDiff",
+    "Kor": "이 변경 구간의 텍스트 차이를 표시할 수 없습니다.",
+    "Eng": "No text diff is available for this side of the change."
+  },
+  {
+    "Id": 2536,
+    "Name": "WorktreeStatusConflictPreview",
+    "Kor": "충돌 · 작업 트리 {0}바이트",
+    "Eng": "Conflict · {0} bytes in working tree"
+  },
+  {
+    "Id": 2537,
+    "Name": "WorktreeStatusUntrackedPreview",
+    "Kor": "미추적 · 작업 트리 {0}바이트",
+    "Eng": "Untracked · {0} bytes in working tree"
+  },
+  {
+    "Id": 2538,
+    "Name": "WorktreeStatusRenamedPreview",
+    "Kor": "이름 변경 · 작업 트리 {0}바이트",
+    "Eng": "Renamed · {0} bytes in working tree"
+  },
+  {
+    "Id": 2539,
+    "Name": "WorktreeStatusAddedPreview",
+    "Kor": "추가됨 · 작업 트리 {0}바이트",
+    "Eng": "Added · {0} bytes in working tree"
+  },
+  {
+    "Id": 2540,
+    "Name": "WorktreeStatusDeletedPreview",
+    "Kor": "삭제됨 · 작업 트리 {0}바이트",
+    "Eng": "Deleted · {0} bytes in working tree"
+  },
+  {
+    "Id": 2541,
+    "Name": "WorktreeStatusCopiedPreview",
+    "Kor": "복사됨 · 작업 트리 {0}바이트",
+    "Eng": "Copied · {0} bytes in working tree"
+  },
+  {
+    "Id": 2542,
+    "Name": "WorktreeStatusModifiedPreview",
+    "Kor": "수정됨 · 작업 트리 {0}바이트",
+    "Eng": "Modified · {0} bytes in working tree"
+  },
+  {
+    "Id": 2543,
+    "Name": "WorktreePreviewNewFileTooLarge",
+    "Kor": "새 파일 크기는 {0}바이트입니다. 미리보기는 1 MiB까지만 지원합니다.",
+    "Eng": "New file is {0} bytes. Preview is limited to 1 MiB."
+  },
+  {
+    "Id": 2544,
+    "Name": "WorktreePreviewNewBinaryFile",
+    "Kor": "새 바이너리 파일({0}바이트)",
+    "Eng": "New binary file ({0} bytes)."
+  },
+  {
+    "Id": 2545,
+    "Name": "WorktreePreviewNewTextFile",
+    "Kor": "새 텍스트 파일({0}바이트)",
+    "Eng": "New text file ({0} bytes)."
+  },
+  {
+    "Id": 2546,
+    "Name": "WorktreePreviewNewBinaryOrInvalidUtf8",
+    "Kor": "새 바이너리 파일 또는 UTF-8이 아닌 파일({0}바이트)",
+    "Eng": "New binary or non-UTF-8 file ({0} bytes)."
+  },
+  {
+    "Id": 2547,
+    "Name": "GitHubPhotoAuthorEmailInvalid",
+    "Kor": "올바른 Git 커밋 작성자 이메일을 입력하세요.",
+    "Eng": "A valid Git author email is required."
+  },
+  {
+    "Id": 2548,
+    "Name": "GitHubPhotoUserNameInvalid",
+    "Kor": "올바른 GitHub 사용자명을 입력하세요.",
+    "Eng": "A valid GitHub user name is required."
+  },
+  {
+    "Id": 2549,
+    "Name": "GitHubPhotoSettingsPathInvalid",
+    "Kor": "로컬 사진 설정 파일 경로에 상위 폴더가 없습니다: {0}.",
+    "Eng": "The local photo settings path has no directory: {0}."
+  },
+  {
+    "Id": 2550,
+    "Name": "GitProcessStartFailed",
+    "Kor": "Git을 실행하지 못했습니다: {0}",
+    "Eng": "Could not start Git: {0}"
+  },
+  {
+    "Id": 2551,
+    "Name": "GitExitedWithoutErrorMessage",
+    "Kor": "Git이 오류 문구 없이 종료했습니다(코드 {0}).",
+    "Eng": "Git exited without an error message (code {0})."
+  },
+  {
+    "Id": 2552,
+    "Name": "RepositoryListPathInvalid",
+    "Kor": "저장소 목록 파일 경로에 상위 폴더가 없습니다: {0}.",
+    "Eng": "The repository list path has no directory: {0}."
+  },
+  {
+    "Id": 2553,
+    "Name": "Cancel",
+    "Kor": "취소",
+    "Eng": "Cancel"
+  },
+  {
+    "Id": 2554,
+    "Name": "RemoteAheadBehindUnavailable",
+    "Kor": "앞섬/뒤처짐 정보 없음",
+    "Eng": "Ahead / behind unavailable"
+  },
+  {
+    "Id": 2555,
+    "Name": "RemoteAllRemotes",
+    "Kor": "모든 원격",
+    "Eng": "All remotes"
+  },
+  {
+    "Id": 2556,
+    "Name": "RemoteBranchChanged",
+    "Kor": "현재 브랜치가 확인 이후 변경되었습니다: {0} → {1}",
+    "Eng": "The current branch changed after confirmation: {0} → {1}"
+  },
+  {
+    "Id": 2557,
+    "Name": "RemoteBranchNameInvalid",
+    "Kor": "브랜치 이름이 올바르지 않습니다: {0}",
+    "Eng": "Invalid branch name: {0}"
+  },
+  {
+    "Id": 2558,
+    "Name": "RemoteCancelRequested",
+    "Kor": "원격 작업 중단을 요청했습니다. 종료를 기다리는 중...",
+    "Eng": "Cancellation requested. Waiting for the remote operation to stop..."
+  },
+  {
+    "Id": 2559,
+    "Name": "RemoteChangedFileCount",
+    "Kor": "변경 파일 {0}개",
+    "Eng": "{0} changed files"
+  },
+  {
+    "Id": 2560,
+    "Name": "RemoteChangedFilesNoCommonAncestor",
+    "Kor": "변경 파일은 공통 조상을 찾지 못해 조회할 수 없습니다.",
+    "Eng": "Changed files cannot be listed because no common ancestor was found."
+  },
+  {
+    "Id": 2561,
+    "Name": "RemoteChangedFilesUnavailable",
+    "Kor": "변경 파일을 조회하지 못했습니다.",
+    "Eng": "Could not list changed files."
+  },
+  {
+    "Id": 2562,
+    "Name": "RemoteCheckingPushState",
+    "Kor": "Push 상태 확인 중...",
+    "Eng": "Checking Push state..."
+  },
+  {
+    "Id": 2563,
+    "Name": "RemoteChooseRemoteAndBranch",
+    "Kor": "원격과 기존 브랜치를 선택하세요.",
+    "Eng": "Choose a remote and an existing branch."
+  },
+  {
+    "Id": 2564,
+    "Name": "RemoteChooseRemotePlaceholder",
+    "Kor": "(원격 선택)",
+    "Eng": "(choose remote)"
+  },
+  {
+    "Id": 2565,
+    "Name": "RemoteCloseAction",
+    "Kor": "닫기",
+    "Eng": "Close"
+  },
+  {
+    "Id": 2566,
+    "Name": "RemoteCloseAutomation",
+    "Kor": "원격 작업 결과 닫기",
+    "Eng": "Close remote operation result"
+  },
+  {
+    "Id": 2567,
+    "Name": "RemoteConfirmPushAction",
+    "Kor": "Push 확인",
+    "Eng": "Confirm Push"
+  },
+  {
+    "Id": 2568,
+    "Name": "RemoteCurrentBranch",
+    "Kor": "현재 브랜치: {0}",
+    "Eng": "Current branch: {0}"
+  },
+  {
+    "Id": 2569,
+    "Name": "RemoteDestinationBranchLabel",
+    "Kor": "대상 브랜치",
+    "Eng": "Destination branch"
+  },
+  {
+    "Id": 2570,
+    "Name": "RemoteDestinationRemoteLabel",
+    "Kor": "대상 원격",
+    "Eng": "Destination remote"
+  },
+  {
+    "Id": 2571,
+    "Name": "RemoteDetachedHint",
+    "Kor": "Detached HEAD: Fetch는 가능하며 Pull과 Push에는 브랜치가 필요합니다.",
+    "Eng": "Detached HEAD: Fetch is available; Pull and Push require a branch."
+  },
+  {
+    "Id": 2572,
+    "Name": "RemoteDetachedOrNoCommits",
+    "Kor": "Detached HEAD / 커밋 없음",
+    "Eng": "Detached HEAD / no commits"
+  },
+  {
+    "Id": 2573,
+    "Name": "RemoteDialogRepositoryChanged",
+    "Kor": "선택한 저장소가 변경되었습니다. 선택 창을 다시 여세요.",
+    "Eng": "The selected repository changed. Open the selection again."
+  },
+  {
+    "Id": 2574,
+    "Name": "RemoteElapsedTime",
+    "Kor": "경과 시간 {0}",
+    "Eng": "Elapsed {0}"
+  },
+  {
+    "Id": 2575,
+    "Name": "RemoteExistingBranchLabel",
+    "Kor": "기존 원격 브랜치",
+    "Eng": "Existing remote branch"
+  },
+  {
+    "Id": 2576,
+    "Name": "RemoteExistingUpstreamRemains",
+    "Kor": "기존 upstream {0}이(가) 유지됩니다.",
+    "Eng": "Existing upstream remains {0}."
+  },
+  {
+    "Id": 2577,
+    "Name": "RemoteFetchAction",
+    "Kor": "Fetch",
+    "Eng": "Fetch"
+  },
+  {
+    "Id": 2578,
+    "Name": "RemoteFetchAllAction",
+    "Kor": "모든 원격 가져오기",
+    "Eng": "Fetch all remotes"
+  },
+  {
+    "Id": 2579,
+    "Name": "RemoteFetchAllTip",
+    "Kor": "등록된 모든 원격에서 Fetch를 바로 실행합니다.",
+    "Eng": "Fetch from all configured remotes now."
+  },
+  {
+    "Id": 2580,
+    "Name": "RemoteFetchFailureItem",
+    "Kor": "{0}: {1}",
+    "Eng": "{0}: {1}"
+  },
+  {
+    "Id": 2581,
+    "Name": "RemoteFetchFailures",
+    "Kor": " 실패: {0}",
+    "Eng": " Failed: {0}"
+  },
+  {
+    "Id": 2582,
+    "Name": "RemoteFetchingAll",
+    "Kor": "모든 원격에서 가져오는 중...",
+    "Eng": "Fetching from all remotes..."
+  },
+  {
+    "Id": 2583,
+    "Name": "RemoteFetchingFrom",
+    "Kor": "{0}에서 가져오는 중...",
+    "Eng": "Fetching from {0}..."
+  },
+  {
+    "Id": 2584,
+    "Name": "RemoteFetchMenuAutomation",
+    "Kor": "Fetch 메뉴",
+    "Eng": "Fetch menu"
+  },
+  {
+    "Id": 2585,
+    "Name": "RemoteFetchMenuTip",
+    "Kor": "모든 원격 가져오기, 원격 선택, 삭제된 브랜치 정리",
+    "Eng": "Fetch all, select remote, and prune removed branches"
+  },
+  {
+    "Id": 2586,
+    "Name": "RemoteFetchRemoteItemTip",
+    "Kor": "다음 Fetch에 사용할 원격으로 선택합니다. 지금 Fetch를 실행하지 않습니다.",
+    "Eng": "Select this remote for the next Fetch without running Fetch now."
+  },
+  {
+    "Id": 2587,
+    "Name": "RemoteFetchResult",
+    "Kor": "가져옴: {0}. 갱신됨: {1}.",
+    "Eng": "Fetched: {0}. Updated: {1}."
+  },
+  {
+    "Id": 2588,
+    "Name": "RemoteFirstPushSetsUpstream",
+    "Kor": "첫 Push가 성공하면 이 대상을 upstream으로 설정합니다.",
+    "Eng": "A successful first Push will set this destination as upstream."
+  },
+  {
+    "Id": 2589,
+    "Name": "RemoteGitExitWithoutOutput",
+    "Kor": "Git이 오류 문구 없이 종료했습니다(코드 {0}).",
+    "Eng": "Git exited without an error message (code {0})."
+  },
+  {
+    "Id": 2590,
+    "Name": "RemoteHeadChanged",
+    "Kor": "HEAD가 확인 이후 변경되었습니다. 새로 고친 뒤 다시 시도하세요.",
+    "Eng": "HEAD changed after confirmation. Refresh and try again."
+  },
+  {
+    "Id": 2591,
+    "Name": "RemoteIncomingCommitCount",
+    "Kor": "받는 브랜치의 새 커밋 {0}개",
+    "Eng": "{0} new commits on the incoming branch"
+  },
+  {
+    "Id": 2592,
+    "Name": "RemoteIncomingCountInvalid",
+    "Kor": "받는 브랜치의 커밋 수를 확인하지 못했습니다.",
+    "Eng": "Could not determine the number of incoming commits."
+  },
+  {
+    "Id": 2593,
+    "Name": "RemoteIncomingSummaryUnavailable",
+    "Kor": "받는 브랜치의 커밋 요약을 조회하지 못했습니다.",
+    "Eng": "Could not load the incoming commit summary."
+  },
+  {
+    "Id": 2594,
+    "Name": "RemoteLoadingState",
+    "Kor": "원격 상태 불러오는 중...",
+    "Eng": "Loading remote state..."
+  },
+  {
+    "Id": 2595,
+    "Name": "RemoteNoBranchesFetchFirst",
+    "Kor": "사용할 수 있는 원격 브랜치가 없습니다. 먼저 해당 원격을 Fetch하세요.",
+    "Eng": "No remote branches are available. Fetch this remote first."
+  },
+  {
+    "Id": 2596,
+    "Name": "RemoteNoReferenceChanges",
+    "Kor": "참조 변경 없음",
+    "Eng": "No ref changes"
+  },
+  {
+    "Id": 2597,
+    "Name": "RemoteNoRemotesConfigured",
+    "Kor": "설정된 원격이 없습니다.",
+    "Eng": "No remotes configured."
+  },
+  {
+    "Id": 2598,
+    "Name": "RemoteNoUpstream",
+    "Kor": "Upstream 없음",
+    "Eng": "No upstream"
+  },
+  {
+    "Id": 2599,
+    "Name": "RemoteNoUpstreamHint",
+    "Kor": "Pull할 기존 원격 브랜치를 선택하거나 첫 Push 대상을 확인하세요.",
+    "Eng": "Choose an existing remote branch for Pull or confirm a destination for the first Push."
+  },
+  {
+    "Id": 2600,
+    "Name": "RemoteOperationCanceled",
+    "Kor": "원격 작업이 중단되었습니다. 이미 적용된 변경은 되돌리지 않습니다.",
+    "Eng": "The remote operation was canceled. Changes already applied remain in place."
+  },
+  {
+    "Id": 2601,
+    "Name": "RemoteOutcomeCanceled",
+    "Kor": "중단됨",
+    "Eng": "Canceled"
+  },
+  {
+    "Id": 2602,
+    "Name": "RemoteOutcomeFailed",
+    "Kor": "실패",
+    "Eng": "Failed"
+  },
+  {
+    "Id": 2603,
+    "Name": "RemoteOutcomePartiallySucceeded",
+    "Kor": "부분 성공",
+    "Eng": "Partially succeeded"
+  },
+  {
+    "Id": 2604,
+    "Name": "RemoteOutcomeRefreshFailed",
+    "Kor": "상태 갱신 실패",
+    "Eng": "State refresh failed"
+  },
+  {
+    "Id": 2605,
+    "Name": "RemoteOutcomeRunning",
+    "Kor": "진행 중",
+    "Eng": "Running"
+  },
+  {
+    "Id": 2606,
+    "Name": "RemoteOutcomeSucceeded",
+    "Kor": "성공",
+    "Eng": "Succeeded"
+  },
+  {
+    "Id": 2607,
+    "Name": "RemotePruneOption",
+    "Kor": "삭제된 브랜치 정리",
+    "Eng": "Prune removed branches"
+  },
+  {
+    "Id": 2608,
+    "Name": "RemotePruneOptionTip",
+    "Kor": "다음 Fetch 때 삭제된 원격 추적 표시를 정리합니다. 로컬 브랜치와 작업 파일은 삭제하지 않습니다.",
+    "Eng": "Prune removed remote tracking references on the next Fetch. Local branches and working files are preserved."
+  },
+  {
+    "Id": 2609,
+    "Name": "RemotePullAction",
+    "Kor": "Pull",
+    "Eng": "Pull"
+  },
+  {
+    "Id": 2610,
+    "Name": "RemotePullApplyFailed",
+    "Kor": "Pull {0}/{1} 실패: {2}",
+    "Eng": "Pull {0}/{1} failed: {2}"
+  },
+  {
+    "Id": 2611,
+    "Name": "RemotePullApplyFailedWithoutOutput",
+    "Kor": "Pull {0}/{1} 실패: Git 종료 코드 {2}",
+    "Eng": "Pull {0}/{1} failed: Git exit code {2}"
+  },
+  {
+    "Id": 2612,
+    "Name": "RemotePullChooseBranch",
+    "Kor": "받을 브랜치 선택",
+    "Eng": "Choose branch to pull"
+  },
+  {
+    "Id": 2613,
+    "Name": "RemotePullChooseBranchTip",
+    "Kor": "원격 브랜치를 고른 뒤 Fast-forward only로 Pull합니다.",
+    "Eng": "Choose a remote branch and pull with fast-forward only."
+  },
+  {
+    "Id": 2614,
+    "Name": "RemotePullCompleted",
+    "Kor": "Pull {0} 완료: {1}/{2}.",
+    "Eng": "Pull {0} completed from {1}/{2}."
+  },
+  {
+    "Id": 2615,
+    "Name": "RemotePullDefaultTip",
+    "Kor": "Fast-forward only · upstream이 없으면 받을 원격 브랜치를 선택합니다.",
+    "Eng": "Fast-forward only · choose a remote branch when there is no upstream."
+  },
+  {
+    "Id": 2616,
+    "Name": "RemotePullDetachedHead",
+    "Kor": "Detached HEAD에서는 Pull할 수 없습니다.",
+    "Eng": "Cannot Pull in detached HEAD state."
+  },
+  {
+    "Id": 2617,
+    "Name": "RemotePullFastForwardAutomation",
+    "Kor": "Fast-forward only로 Pull",
+    "Eng": "Pull with fast-forward only"
+  },
+  {
+    "Id": 2618,
+    "Name": "RemotePullFetchFailed",
+    "Kor": "Pull {0}/{1} 가져오기 실패: {2}",
+    "Eng": "Pull {0}/{1} fetch failed: {2}"
+  },
+  {
+    "Id": 2619,
+    "Name": "RemotePullFetchFailedWithoutOutput",
+    "Kor": "Pull {0}/{1} 가져오기 실패: Git 종료 코드 {2}",
+    "Eng": "Pull {0}/{1} fetch failed: Git exit code {2}"
+  },
+  {
+    "Id": 2620,
+    "Name": "RemotePullingFrom",
+    "Kor": "{0}/{1}에서 Pull하는 중...",
+    "Eng": "Pulling from {0}/{1}..."
+  },
+  {
+    "Id": 2621,
+    "Name": "RemotePullMenuAutomation",
+    "Kor": "Pull 메뉴",
+    "Eng": "Pull menu"
+  },
+  {
+    "Id": 2622,
+    "Name": "RemotePullMenuTip",
+    "Kor": "받을 브랜치 선택, 병합해서 받기, 재배치해서 받기",
+    "Eng": "Choose branch, pull with merge, or pull with rebase"
+  },
+  {
+    "Id": 2623,
+    "Name": "RemotePullMergeAction",
+    "Kor": "병합해서 받기",
+    "Eng": "Pull with merge"
+  },
+  {
+    "Id": 2624,
+    "Name": "RemotePullMergeTip",
+    "Kor": "현재 upstream에서 Merge 방식으로 Pull합니다. upstream이 없으면 받을 원격 브랜치를 선택합니다.",
+    "Eng": "Pull from the current upstream using Merge. Choose a remote branch if there is no upstream."
+  },
+  {
+    "Id": 2625,
+    "Name": "RemotePullOperationTitle",
+    "Kor": "Pull · {0}",
+    "Eng": "Pull · {0}"
+  },
+  {
+    "Id": 2626,
+    "Name": "RemotePullRebaseAction",
+    "Kor": "재배치해서 받기",
+    "Eng": "Pull with rebase"
+  },
+  {
+    "Id": 2627,
+    "Name": "RemotePullRebaseTip",
+    "Kor": "현재 upstream에서 Rebase 방식으로 Pull합니다. upstream이 없으면 받을 원격 브랜치를 선택합니다.",
+    "Eng": "Pull from the current upstream using Rebase. Choose a remote branch if there is no upstream."
+  },
+  {
+    "Id": 2628,
+    "Name": "RemotePullSourceTitle",
+    "Kor": "Pull 원본 선택",
+    "Eng": "Choose Pull source"
+  },
+  {
+    "Id": 2629,
+    "Name": "RemotePullSummaryAutomation",
+    "Kor": "Pull로 받은 커밋과 변경 파일 요약",
+    "Eng": "Incoming commits and changed files summary"
+  },
+  {
+    "Id": 2630,
+    "Name": "RemotePullSummaryHeading",
+    "Kor": "확인된 커밋과 변경 파일",
+    "Eng": "Incoming commits and changed files"
+  },
+  {
+    "Id": 2631,
+    "Name": "RemotePushAction",
+    "Kor": "Push",
+    "Eng": "Push"
+  },
+  {
+    "Id": 2632,
+    "Name": "RemotePushBranchChanged",
+    "Kor": "현재 브랜치가 변경되었습니다. Push 대상을 다시 확인하세요.",
+    "Eng": "The current branch changed. Confirm the Push destination again."
+  },
+  {
+    "Id": 2633,
+    "Name": "RemotePushChooseTarget",
+    "Kor": "보낼 대상 선택",
+    "Eng": "Choose Push destination"
+  },
+  {
+    "Id": 2634,
+    "Name": "RemotePushChooseTargetTip",
+    "Kor": "보낼 원격과 대상 브랜치를 확인한 뒤 Push합니다.",
+    "Eng": "Confirm the remote and destination branch before Push."
+  },
+  {
+    "Id": 2635,
+    "Name": "RemotePushCommitsConfirmed",
+    "Kor": "Push할 새 커밋을 확인했습니다.",
+    "Eng": "New commits to Push have been confirmed."
+  },
+  {
+    "Id": 2636,
+    "Name": "RemotePushCompleted",
+    "Kor": "{0}/{1}에 Push했습니다.",
+    "Eng": "Pushed to {0}/{1}."
+  },
+  {
+    "Id": 2637,
+    "Name": "RemotePushDestinationTitle",
+    "Kor": "Push 대상 확인",
+    "Eng": "Confirm Push destination"
+  },
+  {
+    "Id": 2638,
+    "Name": "RemotePushDetachedHead",
+    "Kor": "Detached HEAD에서는 Push할 수 없습니다.",
+    "Eng": "Cannot Push in detached HEAD state."
+  },
+  {
+    "Id": 2639,
+    "Name": "RemotePushFailed",
+    "Kor": "Push {0}/{1} 실패: {2}",
+    "Eng": "Push {0}/{1} failed: {2}"
+  },
+  {
+    "Id": 2640,
+    "Name": "RemotePushFailedWithoutOutput",
+    "Kor": "Push {0}/{1} 실패: Git 종료 코드 {2}",
+    "Eng": "Push {0}/{1} failed: Git exit code {2}"
+  },
+  {
+    "Id": 2641,
+    "Name": "RemotePushingTo",
+    "Kor": "{0}/{1}에 Push하는 중...",
+    "Eng": "Pushing to {0}/{1}..."
+  },
+  {
+    "Id": 2642,
+    "Name": "RemotePushMenuAutomation",
+    "Kor": "Push 메뉴",
+    "Eng": "Push menu"
+  },
+  {
+    "Id": 2643,
+    "Name": "RemotePushMenuTip",
+    "Kor": "보낼 대상 선택",
+    "Eng": "Choose Push destination"
+  },
+  {
+    "Id": 2644,
+    "Name": "RemotePushNoCommit",
+    "Kor": "Push할 커밋이 없습니다.",
+    "Eng": "There are no commits to Push."
+  },
+  {
+    "Id": 2645,
+    "Name": "RemotePushNoNewCommits",
+    "Kor": "보낼 새 커밋 없음",
+    "Eng": "No new commits to Push"
+  },
+  {
+    "Id": 2646,
+    "Name": "RemotePushNoNewCommitsBehind",
+    "Kor": "보낼 새 커밋 없음 · upstream보다 {0}개 뒤처짐",
+    "Eng": "No new commits to Push · {0} behind upstream"
+  },
+  {
+    "Id": 2647,
+    "Name": "RemotePushTargetConfirmationRequired",
+    "Kor": "Push의 원격과 대상 브랜치를 확인해야 합니다: {0}/{1}",
+    "Eng": "Confirm the remote and destination branch for Push: {0}/{1}"
+  },
+  {
+    "Id": 2648,
+    "Name": "RemotePushUpstreamChanged",
+    "Kor": "Upstream이 변경되었습니다. Push 대상을 다시 확인하세요.",
+    "Eng": "Upstream changed. Confirm the Push destination again."
+  },
+  {
+    "Id": 2649,
+    "Name": "RemoteRefreshFailedSuffix",
+    "Kor": " 상태 갱신 실패: {0}",
+    "Eng": " Refresh failed: {0}"
+  },
+  {
+    "Id": 2650,
+    "Name": "RemoteRemoteLabel",
+    "Kor": "원격",
+    "Eng": "Remote"
+  },
+  {
+    "Id": 2651,
+    "Name": "RemoteRemovedReference",
+    "Kor": "{0} (삭제됨)",
+    "Eng": "{0} (removed)"
+  },
+  {
+    "Id": 2652,
+    "Name": "RemoteRepositoryChanged",
+    "Kor": "원격 작업 대상 저장소가 변경되었습니다.",
+    "Eng": "The repository for this remote operation changed."
+  },
+  {
+    "Id": 2653,
+    "Name": "RemoteRequestedBranchChanged",
+    "Kor": "요청한 브랜치 {0}이(가) 현재 체크아웃되어 있지 않습니다. 현재 브랜치: {1}.",
+    "Eng": "The requested branch {0} is no longer checked out. Current branch: {1}."
+  },
+  {
+    "Id": 2654,
+    "Name": "RemoteResultAutomation",
+    "Kor": "원격 작업 진행 상태와 결과",
+    "Eng": "Remote operation progress and result"
+  },
+  {
+    "Id": 2655,
+    "Name": "RemoteSelectFetchRemote",
+    "Kor": "원격 선택",
+    "Eng": "Select remote"
+  },
+  {
+    "Id": 2656,
+    "Name": "RemoteSelectFetchRemoteTip",
+    "Kor": "다음 Fetch에 사용할 원격을 선택합니다. 선택만으로 작업은 실행되지 않습니다.",
+    "Eng": "Select the remote for the next Fetch. Selection alone does not run a Git operation."
+  },
+  {
+    "Id": 2657,
+    "Name": "RemoteSelectionNotFound",
+    "Kor": "선택한 원격을 찾을 수 없습니다: {0}",
+    "Eng": "Could not find the selected remote: {0}"
+  },
+  {
+    "Id": 2658,
+    "Name": "RemoteSelectionRequired",
+    "Kor": "원격을 선택하세요.",
+    "Eng": "Select a remote."
+  },
+  {
+    "Id": 2659,
+    "Name": "RemoteSelectRepository",
+    "Kor": "저장소를 선택하세요.",
+    "Eng": "Select a repository."
+  },
+  {
+    "Id": 2660,
+    "Name": "RemoteStageApplying",
+    "Kor": "브랜치에 반영 중",
+    "Eng": "Applying to branch"
+  },
+  {
+    "Id": 2661,
+    "Name": "RemoteStageCheckingState",
+    "Kor": "저장소 상태 확인 중",
+    "Eng": "Checking repository state"
+  },
+  {
+    "Id": 2662,
+    "Name": "RemoteStageComplete",
+    "Kor": "완료",
+    "Eng": "Complete"
+  },
+  {
+    "Id": 2663,
+    "Name": "RemoteStageFetching",
+    "Kor": "가져오는 중",
+    "Eng": "Fetching"
+  },
+  {
+    "Id": 2664,
+    "Name": "RemoteStageInspecting",
+    "Kor": "받은 커밋과 파일 확인 중",
+    "Eng": "Inspecting incoming commits and files"
+  },
+  {
+    "Id": 2665,
+    "Name": "RemoteStateCheckCanceled",
+    "Kor": "{0} 상태 확인 중 중단되었습니다.",
+    "Eng": "{0} Canceled while checking state."
+  },
+  {
+    "Id": 2666,
+    "Name": "RemoteStateOutputInvalid",
+    "Kor": "Git 원격 상태 출력 형식이 올바르지 않습니다.",
+    "Eng": "Invalid Git remote state output."
+  },
+  {
+    "Id": 2667,
+    "Name": "RemoteStateRefreshed",
+    "Kor": "원격 상태를 새로 고쳤습니다.",
+    "Eng": "Remote state refreshed."
+  },
+  {
+    "Id": 2668,
+    "Name": "RemoteStateRefreshFailed",
+    "Kor": "{0} 상태 갱신 실패: {1}",
+    "Eng": "{0} State refresh failed: {1}"
+  },
+  {
+    "Id": 2669,
+    "Name": "RemoteStopAction",
+    "Kor": "작업 중단",
+    "Eng": "Stop operation"
+  },
+  {
+    "Id": 2670,
+    "Name": "RemoteStopAutomation",
+    "Kor": "진행 중인 원격 작업 중단",
+    "Eng": "Stop running remote operation"
+  },
+  {
+    "Id": 2671,
+    "Name": "RemoteStopTip",
+    "Kor": "진행 중인 원격 작업에 중단을 요청합니다. 완료된 결과는 되돌리지 않습니다.",
+    "Eng": "Request cancellation of the running remote operation. Completed changes remain in place."
+  },
+  {
+    "Id": 2672,
+    "Name": "RemoteStrategyFastForward",
+    "Kor": "Fast-forward only",
+    "Eng": "Fast-forward only"
+  },
+  {
+    "Id": 2673,
+    "Name": "RemoteStrategyMerge",
+    "Kor": "Merge",
+    "Eng": "Merge"
+  },
+  {
+    "Id": 2674,
+    "Name": "RemoteStrategyRebase",
+    "Kor": "Rebase",
+    "Eng": "Rebase"
+  },
+  {
+    "Id": 2675,
+    "Name": "RemoteSummaryMore",
+    "Kor": "외 {0}개",
+    "Eng": "and {0} more"
+  },
+  {
+    "Id": 2676,
+    "Name": "RemoteTargetBranchRequired",
+    "Kor": "대상 브랜치 이름을 입력하세요.",
+    "Eng": "Enter a destination branch name."
+  },
+  {
+    "Id": 2677,
+    "Name": "RemoteTargetBranchSelectionRequired",
+    "Kor": "대상 원격 브랜치를 선택하세요.",
+    "Eng": "Select a destination remote branch."
+  },
+  {
+    "Id": 2678,
+    "Name": "RemoteTransferCompressing",
+    "Kor": "Git 객체 전송 · 압축 중: {0}",
+    "Eng": "Git object transfer · Compressing: {0}"
+  },
+  {
+    "Id": 2679,
+    "Name": "RemoteTransferCounting",
+    "Kor": "Git 객체 전송 · 개수 확인 중: {0}",
+    "Eng": "Git object transfer · Counting: {0}"
+  },
+  {
+    "Id": 2680,
+    "Name": "RemoteTransferEnumerating",
+    "Kor": "Git 객체 전송 · 열거 중: {0}",
+    "Eng": "Git object transfer · Enumerating: {0}"
+  },
+  {
+    "Id": 2681,
+    "Name": "RemoteTransferReceiving",
+    "Kor": "Git 객체 전송 · 받는 중: {0}",
+    "Eng": "Git object transfer · Receiving: {0}"
+  },
+  {
+    "Id": 2682,
+    "Name": "RemoteTransferResolving",
+    "Kor": "Git 객체 전송 · 델타 해결 중: {0}",
+    "Eng": "Git object transfer · Resolving deltas: {0}"
+  },
+  {
+    "Id": 2683,
+    "Name": "RemoteTransferStatusTip",
+    "Kor": "Git 객체 전송 상태입니다. 파일별 다운로드 진행률이 아닙니다.",
+    "Eng": "Git object transfer status, not per-file download progress."
+  },
+  {
+    "Id": 2684,
+    "Name": "RemoteTransferWriting",
+    "Kor": "Git 객체 전송 · 쓰는 중: {0}",
+    "Eng": "Git object transfer · Writing: {0}"
+  },
+  {
+    "Id": 2685,
+    "Name": "RemoteUpstreamChanged",
+    "Kor": "Upstream이 확인 이후 변경되었습니다: {0} → {1}",
+    "Eng": "Upstream changed after confirmation: {0} → {1}"
+  },
+  {
+    "Id": 2686,
+    "Name": "RemoteUpstreamLabel",
+    "Kor": "Upstream",
+    "Eng": "Upstream"
+  },
+  {
+    "Id": 2687,
+    "Name": "AuthorPhotoGitHubCommit",
+    "Kor": "GitHub 커밋 작성자 사진",
+    "Eng": "GitHub commit author photo"
+  },
+  {
+    "Id": 2688,
+    "Name": "AuthorPhotoGitHubLinkedAccount",
+    "Kor": "설정한 GitHub 프로필 사진",
+    "Eng": "Configured GitHub profile photo"
+  },
+  {
+    "Id": 2689,
+    "Name": "AuthorPhotoGravatar",
+    "Kor": "Gravatar 사진",
+    "Eng": "Gravatar photo"
+  },
+  {
+    "Id": 2690,
+    "Name": "AuthorPhotoLocalIcon",
+    "Kor": "로컬 아이콘",
+    "Eng": "Local icon"
+  },
+  {
+    "Id": 2691,
+    "Name": "CommitAncestryCheckFailed",
+    "Kor": "커밋의 선후 관계를 확인하지 못했습니다: {0}",
+    "Eng": "Could not verify commit ancestry: {0}"
+  },
+  {
+    "Id": 2692,
+    "Name": "CommitBranchChanged",
+    "Kor": "메뉴를 연 뒤 브랜치가 변경되었습니다: {0}",
+    "Eng": "The branch changed after the menu opened: {0}"
+  },
+  {
+    "Id": 2693,
+    "Name": "CommitBranchNameInvalid",
+    "Kor": "브랜치 이름이 올바르지 않습니다: {0}. {1}",
+    "Eng": "Invalid branch name: {0}. {1}"
+  },
+  {
+    "Id": 2694,
+    "Name": "CommitFileAbsentAtRevision",
+    "Kor": "{0} 파일이 {1} 커밋에 없습니다.",
+    "Eng": "{0} is not present in {1}."
+  },
+  {
+    "Id": 2695,
+    "Name": "CommitFileExportLimitExceeded",
+    "Kor": "{0} 파일이 내보내기 제한 {1}MB를 초과합니다.",
+    "Eng": "{0} exceeds the {1} MB export limit."
+  },
+  {
+    "Id": 2696,
+    "Name": "CommitFileNotRegularAtRevision",
+    "Kor": "{0}은(는) {1} 커밋의 일반 파일이 아닙니다.",
+    "Eng": "{0} is not a regular file in {1}."
+  },
+  {
+    "Id": 2697,
+    "Name": "CommitFileOutsideRepository",
+    "Kor": "경로가 저장소 밖을 가리킵니다: {0}",
+    "Eng": "Path is outside the repository: {0}"
+  },
+  {
+    "Id": 2698,
+    "Name": "CommitFilePathInvalid",
+    "Kor": "저장소 상대 경로가 올바르지 않습니다: {0}",
+    "Eng": "Invalid repository-relative path: {0}"
+  },
+  {
+    "Id": 2699,
+    "Name": "CommitHashHexInvalid",
+    "Kor": "커밋 해시가 16진수 형식이 아닙니다: {0}",
+    "Eng": "Commit hash is not hexadecimal: {0}"
+  },
+  {
+    "Id": 2700,
+    "Name": "CommitHashLengthInvalid",
+    "Kor": "커밋 해시 길이가 올바르지 않습니다: {0}",
+    "Eng": "Invalid commit hash length: {0}"
+  },
+  {
+    "Id": 2701,
+    "Name": "CommitHashRequired",
+    "Kor": "커밋 해시가 필요합니다.",
+    "Eng": "A commit hash is required."
+  },
+  {
+    "Id": 2702,
+    "Name": "CommitReferenceNotFound",
+    "Kor": "참조를 찾을 수 없습니다: {0}",
+    "Eng": "Reference not found: {0}"
+  },
+  {
+    "Id": 2703,
+    "Name": "CommitRemoteBranchChanged",
+    "Kor": "메뉴를 연 뒤 원격 브랜치가 변경되었습니다: {0}",
+    "Eng": "The remote branch changed after the menu opened: {0}"
+  },
+  {
+    "Id": 2704,
+    "Name": "CommitResetBranchChanged",
+    "Kor": "확인한 뒤 현재 브랜치가 변경되었습니다.",
+    "Eng": "The current branch changed after confirmation."
+  },
+  {
+    "Id": 2705,
+    "Name": "CommitResetContentChanged",
+    "Kor": "확인한 뒤 작업 파일 또는 인덱스 내용이 변경되었습니다.",
+    "Eng": "Working file or index contents changed after confirmation."
+  },
+  {
+    "Id": 2706,
+    "Name": "CommitResetDetachedHead",
+    "Kor": "분리된 HEAD에서는 현재 브랜치를 초기화할 수 없습니다.",
+    "Eng": "Cannot reset the current branch from detached HEAD."
+  },
+  {
+    "Id": 2707,
+    "Name": "CommitResetHardConfirmationRequired",
+    "Kor": "Hard 초기화에는 추가 확인이 필요합니다.",
+    "Eng": "Hard reset requires an additional confirmation."
+  },
+  {
+    "Id": 2708,
+    "Name": "CommitResetHeadChanged",
+    "Kor": "확인한 뒤 HEAD가 변경되었습니다.",
+    "Eng": "HEAD changed after confirmation."
+  },
+  {
+    "Id": 2709,
+    "Name": "CommitResetHeadNotBranch",
+    "Kor": "현재 HEAD가 브랜치를 가리키지 않습니다.",
+    "Eng": "The current HEAD does not point to a branch."
+  },
+  {
+    "Id": 2710,
+    "Name": "CommitResetRepositoryChanged",
+    "Kor": "초기화 대상 저장소가 변경되었습니다.",
+    "Eng": "The repository selected for reset changed."
+  },
+  {
+    "Id": 2711,
+    "Name": "CommitResetStatusChanged",
+    "Kor": "확인한 뒤 작업 트리 또는 인덱스가 변경되었습니다.",
+    "Eng": "The working tree or index changed after confirmation."
+  },
+  {
+    "Id": 2712,
+    "Name": "CommitResetTargetChanged",
+    "Kor": "확인한 뒤 대상 커밋이 변경되었습니다.",
+    "Eng": "The target commit changed after confirmation."
+  },
+  {
+    "Id": 2713,
+    "Name": "CommitResetTargetIsHead",
+    "Kor": "대상 커밋이 현재 HEAD와 같습니다.",
+    "Eng": "The target commit is the current HEAD."
+  },
+  {
+    "Id": 2714,
+    "Name": "CommitResetWorktreeSummary",
+    "Kor": "스테이징 {0}개, 작업 파일 {1}개, 미추적 {2}개",
+    "Eng": "Staged {0}, working files {1}, untracked {2}"
+  },
+  {
+    "Id": 2715,
+    "Name": "CommitSourceBranchChanged",
+    "Kor": "메뉴를 연 뒤 시작 브랜치가 변경되었습니다: {0}",
+    "Eng": "The source branch changed after the menu opened: {0}"
+  },
+  {
+    "Id": 2716,
+    "Name": "CommitTargetNotFound",
+    "Kor": "대상 커밋을 찾을 수 없습니다: {0}",
+    "Eng": "Target commit not found: {0}"
+  },
+  {
+    "Id": 2717,
+    "Name": "GitResetAncestorDirection",
+    "Kor": "브랜치가 이전 커밋으로 이동합니다.",
+    "Eng": "The branch will move to an earlier commit."
+  },
+  {
+    "Id": 2718,
+    "Name": "GitResetContinue",
+    "Kor": "계속",
+    "Eng": "Continue"
+  },
+  {
+    "Id": 2719,
+    "Name": "GitResetDifferentDirection",
+    "Kor": "대상이 HEAD의 조상이 아닙니다. 브랜치가 다른 커밋으로 이동합니다.",
+    "Eng": "The target is not an ancestor of HEAD. The branch will move to a different commit."
+  },
+  {
+    "Id": 2720,
+    "Name": "GitResetImpactHard",
+    "Kor": "Hard는 인덱스와 작업 파일을 대상으로 초기화합니다. 로컬 파일 변경이 손실될 수 있습니다.",
+    "Eng": "Hard resets the index and working files to the target. Local file changes can be lost."
+  },
+  {
+    "Id": 2721,
+    "Name": "GitResetImpactMixed",
+    "Kor": "Mixed는 인덱스를 대상으로 초기화하고 작업 파일은 유지합니다.",
+    "Eng": "Mixed resets the index to the target. Working files remain."
+  },
+  {
+    "Id": 2722,
+    "Name": "GitResetImpactSoft",
+    "Kor": "Soft는 인덱스와 작업 파일을 유지합니다.",
+    "Eng": "Soft keeps the index and working files."
+  },
+  {
+    "Id": 2723,
+    "Name": "GitResetModeHard",
+    "Kor": "Hard",
+    "Eng": "Hard"
+  },
+  {
+    "Id": 2724,
+    "Name": "GitResetModeMixed",
+    "Kor": "Mixed",
+    "Eng": "Mixed"
+  },
+  {
+    "Id": 2725,
+    "Name": "GitResetModeSoft",
+    "Kor": "Soft",
+    "Eng": "Soft"
+  },
+  {
+    "Id": 2726,
+    "Name": "GitResetTargetDescription",
+    "Kor": "현재 브랜치: {0}\n대상: {1} {2}",
+    "Eng": "Current branch: {0}\nTarget: {1} {2}"
+  },
+  {
+    "Id": 2727,
+    "Name": "GitResetTitle",
+    "Kor": "현재 브랜치 초기화",
+    "Eng": "Reset current branch"
+  },
+  {
+    "Id": 2728,
+    "Name": "HistoryAllReferencesHeading",
+    "Kor": "전체 참조",
+    "Eng": "All references"
+  },
+  {
+    "Id": 2729,
+    "Name": "HistoryAuxiliaryFileHistory",
+    "Kor": "파일 기록 · {0} @ {1}",
+    "Eng": "File history · {0} @ {1}"
+  },
+  {
+    "Id": 2730,
+    "Name": "HistoryBinaryFile",
+    "Kor": "바이너리 파일입니다.",
+    "Eng": "Binary file."
+  },
+  {
+    "Id": 2731,
+    "Name": "HistoryBranchCreated",
+    "Kor": "{0} 브랜치를 만들었습니다.",
+    "Eng": "Created branch {0}."
+  },
+  {
+    "Id": 2732,
+    "Name": "HistoryBranchCreateRepositoryChanged",
+    "Kor": "브랜치를 만드는 동안 저장소가 변경되었습니다. 히스토리를 새로 고치고 다시 시도하세요.",
+    "Eng": "The repository changed while creating the branch. Refresh history and try again."
+  },
+  {
+    "Id": 2733,
+    "Name": "HistoryChangedFileFormatInvalid",
+    "Kor": "Git 변경 파일 출력 형식이 올바르지 않습니다.",
+    "Eng": "Git returned an invalid changed-file format."
+  },
+  {
+    "Id": 2734,
+    "Name": "HistoryCheckoutCommit",
+    "Kor": "이 커밋 체크아웃…",
+    "Eng": "Check out this commit…"
+  },
+  {
+    "Id": 2735,
+    "Name": "HistoryCheckoutConfirmAction",
+    "Kor": "체크아웃",
+    "Eng": "Check out"
+  },
+  {
+    "Id": 2736,
+    "Name": "HistoryCheckoutConfirmMessage",
+    "Kor": "커밋 {0}에서 분리된 HEAD로 전환하시겠습니까? 현재 브랜치 위치는 유지됩니다.",
+    "Eng": "Switch to detached HEAD at {0}? The current branch will stay where it is."
+  },
+  {
+    "Id": 2737,
+    "Name": "HistoryCheckoutConfirmTitle",
+    "Kor": "커밋 체크아웃",
+    "Eng": "Check out commit"
+  },
+  {
+    "Id": 2738,
+    "Name": "HistoryCloseAuxiliary",
+    "Kor": "보조 패널 닫기",
+    "Eng": "Close auxiliary panel"
+  },
+  {
+    "Id": 2739,
+    "Name": "HistoryCollapseAll",
+    "Kor": "모두 접기",
+    "Eng": "Collapse all"
+  },
+  {
+    "Id": 2740,
+    "Name": "HistoryCommitCount",
+    "Kor": "커밋 {0}개",
+    "Eng": "{0} commits"
+  },
+  {
+    "Id": 2741,
+    "Name": "HistoryCommitDateInvalid",
+    "Kor": "Git이 잘못된 커밋 날짜를 반환했습니다: {0}",
+    "Eng": "Git returned an invalid commit date: {0}"
+  },
+  {
+    "Id": 2742,
+    "Name": "HistoryCommitHashRequired",
+    "Kor": "커밋 해시가 필요합니다.",
+    "Eng": "A commit hash is required."
+  },
+  {
+    "Id": 2743,
+    "Name": "HistoryCommitListChanged",
+    "Kor": "커밋 목록이 변경되었습니다. 히스토리를 새로 고치고 다시 시도하세요.",
+    "Eng": "The commit list changed. Refresh history and try again."
+  },
+  {
+    "Id": 2744,
+    "Name": "HistoryCommitRequired",
+    "Kor": "선택된 커밋이 없습니다.",
+    "Eng": "No commit is selected."
+  },
+  {
+    "Id": 2745,
+    "Name": "HistoryComparedWithEmptyTree",
+    "Kor": "빈 트리와 비교(최초 커밋)",
+    "Eng": "Compared with empty tree (root commit)"
+  },
+  {
+    "Id": 2746,
+    "Name": "HistoryComparedWithParent",
+    "Kor": "부모 커밋 {0}과 비교",
+    "Eng": "Compared with parent {0}"
+  },
+  {
+    "Id": 2747,
+    "Name": "HistoryCopy",
+    "Kor": "복사",
+    "Eng": "Copy"
+  },
+  {
+    "Id": 2748,
+    "Name": "HistoryCopyPath",
+    "Kor": "경로 복사",
+    "Eng": "Copy Path"
+  },
+  {
+    "Id": 2749,
+    "Name": "HistoryCopySha",
+    "Kor": "SHA 복사",
+    "Eng": "Copy SHA"
+  },
+  {
+    "Id": 2750,
+    "Name": "HistoryCreateBranchAtCommitTitle",
+    "Kor": "커밋에서 브랜치 만들기",
+    "Eng": "Create branch at commit"
+  },
+  {
+    "Id": 2751,
+    "Name": "HistoryCreateBranchHere",
+    "Kor": "여기에 브랜치 만들기…",
+    "Eng": "Create branch here…"
+  },
+  {
+    "Id": 2752,
+    "Name": "HistoryDetachedCheckoutSucceeded",
+    "Kor": "커밋 {0}에서 분리된 HEAD로 전환했습니다.",
+    "Eng": "Checked out {0} in detached HEAD."
+  },
+  {
+    "Id": 2753,
+    "Name": "HistoryDiffExceedsBytes",
+    "Kor": "Diff가 {0}바이트 제한을 초과합니다.",
+    "Eng": "Diff exceeds {0} bytes."
+  },
+  {
+    "Id": 2754,
+    "Name": "HistoryDiffInvalidUtf8",
+    "Kor": "Diff가 올바른 UTF-8 텍스트가 아닙니다.",
+    "Eng": "Diff is not valid UTF-8 text."
+  },
+  {
+    "Id": 2755,
+    "Name": "HistoryEmpty",
+    "Kor": "표시할 커밋이 없습니다.",
+    "Eng": "No commits to show."
+  },
+  {
+    "Id": 2756,
+    "Name": "HistoryExpandAll",
+    "Kor": "모두 펼치기",
+    "Eng": "Expand all"
+  },
+  {
+    "Id": 2757,
+    "Name": "HistoryExportOverwriteAction",
+    "Kor": "바꾸기",
+    "Eng": "Replace"
+  },
+  {
+    "Id": 2758,
+    "Name": "HistoryExportOverwriteMessage",
+    "Kor": "{0} 파일을 {1}(커밋 {2}) 내용으로 바꾸시겠습니까?",
+    "Eng": "Replace {0} with {1} from {2}?"
+  },
+  {
+    "Id": 2759,
+    "Name": "HistoryExportOverwriteTitle",
+    "Kor": "내보낸 파일 덮어쓰기",
+    "Eng": "Overwrite exported file"
+  },
+  {
+    "Id": 2760,
+    "Name": "HistoryExternalPhotos",
+    "Kor": "외부 작성자 사진",
+    "Eng": "External author photos"
+  },
+  {
+    "Id": 2761,
+    "Name": "HistoryExternalPhotosAccessible",
+    "Kor": "외부 작성자 사진 표시",
+    "Eng": "Show external author photos"
+  },
+  {
+    "Id": 2762,
+    "Name": "HistoryExternalPhotosTooltip",
+    "Kor": "Gravatar와 GitHub에서 작성자 사진을 조회합니다.",
+    "Eng": "Look up author photos from Gravatar and GitHub."
+  },
+  {
+    "Id": 2763,
+    "Name": "HistoryFileExceedsBytes",
+    "Kor": "파일이 {0}바이트 제한을 초과합니다.",
+    "Eng": "File exceeds {0} bytes."
+  },
+  {
+    "Id": 2764,
+    "Name": "HistoryFileHistory",
+    "Kor": "파일 기록",
+    "Eng": "History"
+  },
+  {
+    "Id": 2765,
+    "Name": "HistoryHardResetConfirmAction",
+    "Kor": "Hard 초기화",
+    "Eng": "Hard reset"
+  },
+  {
+    "Id": 2766,
+    "Name": "HistoryHardResetConfirmMessage",
+    "Kor": "{0} 브랜치를 {1}(으)로 Hard 초기화하시겠습니까? 스테이징된 변경과 작업 파일을 덮어쓸 수 있습니다. 앱에서 되돌릴 수 없습니다.",
+    "Eng": "Hard reset {0} to {1}? Staged changes and working files can be overwritten. This cannot be undone from the app."
+  },
+  {
+    "Id": 2767,
+    "Name": "HistoryHardResetConfirmTitle",
+    "Kor": "Hard 초기화 확인",
+    "Eng": "Confirm hard reset"
+  },
+  {
+    "Id": 2768,
+    "Name": "HistoryHeading",
+    "Kor": "커밋 기록",
+    "Eng": "Commit history"
+  },
+  {
+    "Id": 2769,
+    "Name": "HistoryInvalidUtf8",
+    "Kor": "파일이 올바른 UTF-8 텍스트가 아닙니다.",
+    "Eng": "File is not valid UTF-8 text."
+  },
+  {
+    "Id": 2770,
+    "Name": "HistoryLfsPointer",
+    "Kor": "실제 파일 내용이 아닌 Git LFS 포인터입니다.",
+    "Eng": "Git LFS pointer, not the file contents."
+  },
+  {
+    "Id": 2771,
+    "Name": "HistoryLoadingCommits",
+    "Kor": "커밋을 불러오는 중…",
+    "Eng": "Loading commits…"
+  },
+  {
+    "Id": 2772,
+    "Name": "HistoryLoadingDiff",
+    "Kor": "Diff를 불러오는 중…",
+    "Eng": "Loading diff…"
+  },
+  {
+    "Id": 2773,
+    "Name": "HistoryLogFormatInvalid",
+    "Kor": "Git 로그 출력 형식이 올바르지 않습니다.",
+    "Eng": "Git returned an invalid log format."
+  },
+  {
+    "Id": 2774,
+    "Name": "HistoryMenuRepositoryChanged",
+    "Kor": "메뉴를 연 저장소가 변경되었습니다.",
+    "Eng": "The repository changed after the menu opened."
+  },
+  {
+    "Id": 2775,
+    "Name": "HistoryMoreReferencesTooltip",
+    "Kor": "모든 참조 보기",
+    "Eng": "Show all references"
+  },
+  {
+    "Id": 2776,
+    "Name": "HistoryNoChanges",
+    "Kor": "이 부모 커밋과 비교할 파일 변경이 없습니다.",
+    "Eng": "No file changes against this parent"
+  },
+  {
+    "Id": 2777,
+    "Name": "HistoryNoChangesAgainstParent",
+    "Kor": "선택한 부모 커밋과 비교할 변경 사항이 없습니다.",
+    "Eng": "No changes against the selected parent."
+  },
+  {
+    "Id": 2778,
+    "Name": "HistoryOpen",
+    "Kor": "열기",
+    "Eng": "Open"
+  },
+  {
+    "Id": 2779,
+    "Name": "HistoryParentTooltip",
+    "Kor": "부모 커밋으로 이동",
+    "Eng": "Go to parent commit"
+  },
+  {
+    "Id": 2780,
+    "Name": "HistoryPathIsDirectory",
+    "Kor": "경로가 파일이 아닌 디렉터리입니다.",
+    "Eng": "Path is a directory, not a file."
+  },
+  {
+    "Id": 2781,
+    "Name": "HistoryPreviewFileAbsent",
+    "Kor": "이 커밋에 파일이 없습니다.",
+    "Eng": "File is not present in this commit."
+  },
+  {
+    "Id": 2782,
+    "Name": "HistoryPreviewLoading",
+    "Kor": "파일을 불러오는 중…",
+    "Eng": "Loading file…"
+  },
+  {
+    "Id": 2783,
+    "Name": "HistoryPreviewTarget",
+    "Kor": "{0} 대상: {1}",
+    "Eng": "{0} Target: {1}"
+  },
+  {
+    "Id": 2784,
+    "Name": "HistoryReferenceCurrentBranch",
+    "Kor": "현재 브랜치",
+    "Eng": "Current branch"
+  },
+  {
+    "Id": 2785,
+    "Name": "HistoryReferenceGeneric",
+    "Kor": "참조",
+    "Eng": "Reference"
+  },
+  {
+    "Id": 2786,
+    "Name": "HistoryReferenceLocalBranch",
+    "Kor": "로컬 브랜치",
+    "Eng": "Local branch"
+  },
+  {
+    "Id": 2787,
+    "Name": "HistoryReferenceRemoteBranch",
+    "Kor": "원격 브랜치",
+    "Eng": "Remote branch"
+  },
+  {
+    "Id": 2788,
+    "Name": "HistoryReferenceTag",
+    "Kor": "태그",
+    "Eng": "Tag"
+  },
+  {
+    "Id": 2789,
+    "Name": "HistoryRemoteUrlsUnreadable",
+    "Kor": "원격 URL을 읽지 못했습니다: {0}",
+    "Eng": "Could not read remote URLs: {0}"
+  },
+  {
+    "Id": 2790,
+    "Name": "HistoryRepositoryRequired",
+    "Kor": "저장소를 선택하세요.",
+    "Eng": "Select a repository."
+  },
+  {
+    "Id": 2791,
+    "Name": "HistoryResetCommit",
+    "Kor": "현재 브랜치를 이 커밋으로 초기화…",
+    "Eng": "Reset current branch to this commit…"
+  },
+  {
+    "Id": 2792,
+    "Name": "HistoryResetSucceeded",
+    "Kor": "{0} 브랜치를 {1}(으)로 초기화했습니다.",
+    "Eng": "Reset {0} to {1}."
+  },
+  {
+    "Id": 2793,
+    "Name": "HistoryResizeChanges",
+    "Kor": "변경 파일 목록과 미리보기 높이 조절",
+    "Eng": "Resize changed files and preview"
+  },
+  {
+    "Id": 2794,
+    "Name": "HistoryResizeHistory",
+    "Kor": "커밋 목록과 상세 높이 조절",
+    "Eng": "Resize commit list and details"
+  },
+  {
+    "Id": 2795,
+    "Name": "HistoryResizeTree",
+    "Kor": "파일 트리와 미리보기 높이 조절",
+    "Eng": "Resize file tree and preview"
+  },
+  {
+    "Id": 2796,
+    "Name": "HistoryRetry",
+    "Kor": "다시 시도",
+    "Eng": "Retry"
+  },
+  {
+    "Id": 2797,
+    "Name": "HistorySaveAs",
+    "Kor": "다른 이름으로 저장…",
+    "Eng": "Save as…"
+  },
+  {
+    "Id": 2798,
+    "Name": "HistoryScopeAll",
+    "Kor": "전체",
+    "Eng": "All"
+  },
+  {
+    "Id": 2799,
+    "Name": "HistoryScopeAllAccessible",
+    "Kor": "모든 커밋 표시",
+    "Eng": "Show all commits"
+  },
+  {
+    "Id": 2800,
+    "Name": "HistoryScopeAllTooltip",
+    "Kor": "모든 참조에서 도달 가능한 커밋을 표시합니다.",
+    "Eng": "Show commits reachable from all references."
+  },
+  {
+    "Id": 2801,
+    "Name": "HistoryScopeCurrent",
+    "Kor": "현재 브랜치",
+    "Eng": "Current branch"
+  },
+  {
+    "Id": 2802,
+    "Name": "HistoryScopeCurrentAccessible",
+    "Kor": "현재 브랜치 커밋 표시",
+    "Eng": "Show current branch commits"
+  },
+  {
+    "Id": 2803,
+    "Name": "HistoryScopeCurrentTooltip",
+    "Kor": "현재 HEAD에서 도달 가능한 커밋을 표시합니다.",
+    "Eng": "Show commits reachable from the current HEAD."
+  },
+  {
+    "Id": 2804,
+    "Name": "HistorySearchChangedPaths",
+    "Kor": "변경 파일 경로 검색",
+    "Eng": "Search changed paths"
+  },
+  {
+    "Id": 2805,
+    "Name": "HistorySearchSnapshotPaths",
+    "Kor": "스냅샷 경로 검색",
+    "Eng": "Search snapshot paths"
+  },
+  {
+    "Id": 2806,
+    "Name": "HistorySelectCommit",
+    "Kor": "상세를 볼 커밋을 선택하세요.",
+    "Eng": "Select a commit to inspect."
+  },
+  {
+    "Id": 2807,
+    "Name": "HistorySelectedCommitChanged",
+    "Kor": "선택한 커밋이 변경되었습니다.",
+    "Eng": "The selected commit changed."
+  },
+  {
+    "Id": 2808,
+    "Name": "HistoryShowExplorer",
+    "Kor": "파일 탐색기에 표시",
+    "Eng": "Show in File Explorer"
+  },
+  {
+    "Id": 2809,
+    "Name": "HistoryShowTree",
+    "Kor": "파일 트리에 표시",
+    "Eng": "Show in File Tree"
+  },
+  {
+    "Id": 2810,
+    "Name": "HistoryStatusAdded",
+    "Kor": "추가됨",
+    "Eng": "Added"
+  },
+  {
+    "Id": 2811,
+    "Name": "HistoryStatusCopied",
+    "Kor": "복사됨",
+    "Eng": "Copied"
+  },
+  {
+    "Id": 2812,
+    "Name": "HistoryStatusDeleted",
+    "Kor": "삭제됨",
+    "Eng": "Deleted"
+  },
+  {
+    "Id": 2813,
+    "Name": "HistoryStatusModified",
+    "Kor": "수정됨",
+    "Eng": "Modified"
+  },
+  {
+    "Id": 2814,
+    "Name": "HistoryStatusRenamed",
+    "Kor": "이름 변경됨",
+    "Eng": "Renamed"
+  },
+  {
+    "Id": 2815,
+    "Name": "HistoryStatusTypeChanged",
+    "Kor": "유형 변경됨",
+    "Eng": "Type changed"
+  },
+  {
+    "Id": 2816,
+    "Name": "HistorySubmoduleGitlink",
+    "Kor": "서브모듈 Git 링크입니다. 대상 커밋은 객체 해시로 표시됩니다.",
+    "Eng": "Submodule gitlink; target commit is shown as the object hash."
+  },
+  {
+    "Id": 2817,
+    "Name": "HistoryTabChanges",
+    "Kor": "변경 사항",
+    "Eng": "Changes"
+  },
+  {
+    "Id": 2818,
+    "Name": "HistoryTabCommit",
+    "Kor": "커밋",
+    "Eng": "Commit"
+  },
+  {
+    "Id": 2819,
+    "Name": "HistoryTabFileTree",
+    "Kor": "파일 트리",
+    "Eng": "File Tree"
+  },
+  {
+    "Id": 2820,
+    "Name": "HistoryUnknownAuthor",
+    "Kor": "알 수 없는 작성자",
+    "Eng": "Unknown author"
+  },
+  {
+    "Id": 2821,
+    "Name": "HistoryWorkingFileAbsent",
+    "Kor": "{0} 파일이 현재 작업 폴더에 없습니다.",
+    "Eng": "{0} is absent from the working folder."
+  },
+  {
+    "Id": 2822,
+    "Name": "HistoryWorkingFileAbsentTooltip",
+    "Kor": "현재 작업 폴더에 파일이 없습니다.",
+    "Eng": "File is absent from the current working folder."
+  },
+  {
+    "Id": 2823,
+    "Name": "HistoryWorkingFileRestored",
+    "Kor": "작업 파일 {0}을(를) 복원했습니다.",
+    "Eng": "Restored working file {0}."
+  },
+  {
+    "Id": 2824,
+    "Name": "InspectionAuthorTimezoneInvalid",
+    "Kor": "Git이 잘못된 작성자 시간대 {0}을(를) 반환했습니다.",
+    "Eng": "Git returned an invalid author timezone: {0}."
+  },
+  {
+    "Id": 2825,
+    "Name": "InspectionBlameAuthorTimeInvalid",
+    "Kor": "{0} 파일의 커밋 {1}에 잘못된 Blame 작성 시각 {2}이(가) 있습니다.",
+    "Eng": "Git returned an invalid blame author time for {0} at {1}: {2}."
+  },
+  {
+    "Id": 2826,
+    "Name": "InspectionBlameHeaderInvalid",
+    "Kor": "Git이 {0} 파일의 커밋 {1}에 잘못된 Blame 머리글을 반환했습니다.",
+    "Eng": "Git returned a malformed blame header for {0} at {1}."
+  },
+  {
+    "Id": 2827,
+    "Name": "InspectionBlameInvalidUtf8",
+    "Kor": "{0} 파일의 커밋 {1}에 대한 Git Blame 출력이 올바른 UTF-8이 아닙니다.",
+    "Eng": "Git blame output is not valid UTF-8 for {0} at {1}."
+  },
+  {
+    "Id": 2828,
+    "Name": "InspectionBlameOutputLimit",
+    "Kor": "{0} 파일의 Blame 출력이 {1}바이트 제한을 초과합니다.",
+    "Eng": "Blame output for {0} exceeds {1} bytes."
+  },
+  {
+    "Id": 2829,
+    "Name": "InspectionBlameRecordIncomplete",
+    "Kor": "Git이 {0} 파일의 커밋 {1}에 불완전한 Blame 레코드를 반환했습니다.",
+    "Eng": "Git returned an incomplete blame record for {0} at {1}."
+  },
+  {
+    "Id": 2830,
+    "Name": "InspectionBlameUnavailable",
+    "Kor": "{0} 파일의 커밋 {1}에는 텍스트가 없어 Blame을 볼 수 없습니다.",
+    "Eng": "Cannot blame {0} at {1} because the file has no text."
+  },
+  {
+    "Id": 2831,
+    "Name": "InspectionBlobSizeInvalid",
+    "Kor": "Git이 {0} 파일의 커밋 {1}에 잘못된 blob 크기를 반환했습니다.",
+    "Eng": "Git returned an invalid blob size for {0} at {1}."
+  },
+  {
+    "Id": 2832,
+    "Name": "InspectionChangedFileRecordInvalid",
+    "Kor": "Git이 {0} 커밋에 잘못된 변경 파일 레코드를 반환했습니다.",
+    "Eng": "Git returned an invalid changed-file record for {0}."
+  },
+  {
+    "Id": 2833,
+    "Name": "InspectionChangedFilesUnterminatedRecord",
+    "Kor": "{0} 커밋의 변경 파일 출력에 종료 NUL이 없습니다.",
+    "Eng": "Git returned an unterminated NUL record for changed files of {0}."
+  },
+  {
+    "Id": 2834,
+    "Name": "InspectionCommitAuthorDateInvalid",
+    "Kor": "Git이 {0} 커밋에 잘못된 작성자 날짜를 반환했습니다.",
+    "Eng": "Git returned an invalid author date for {0}."
+  },
+  {
+    "Id": 2835,
+    "Name": "InspectionCommitFormatInvalid",
+    "Kor": "Git이 {0} 커밋에 예상과 다른 형식을 반환했습니다.",
+    "Eng": "Git returned an unexpected commit format for {0}."
+  },
+  {
+    "Id": 2836,
+    "Name": "InspectionCommitHashRequired",
+    "Kor": "전체 커밋 해시가 필요합니다: {0}",
+    "Eng": "A full commit hash is required: {0}."
+  },
+  {
+    "Id": 2837,
+    "Name": "InspectionDiffHunkLineInvalid",
+    "Kor": "Git Diff의 hunk 줄 번호가 올바르지 않습니다: {0}",
+    "Eng": "Git returned an invalid diff hunk line number: {0}"
+  },
+  {
+    "Id": 2838,
+    "Name": "InspectionFileHistoryInvalidUtf8",
+    "Kor": "{0} 파일의 커밋 {1} 기록 출력이 올바른 UTF-8이 아닙니다.",
+    "Eng": "Git file history output is not valid UTF-8 for {0} at {1}."
+  },
+  {
+    "Id": 2839,
+    "Name": "InspectionFileHistoryOutputLimit",
+    "Kor": "{0} 파일의 기록 출력이 {1}바이트 제한을 초과합니다.",
+    "Eng": "File history output for {0} exceeds {1} bytes."
+  },
+  {
+    "Id": 2840,
+    "Name": "InspectionGitPathNotNormalized",
+    "Kor": "정규화된 Git 경로가 필요합니다: {0}",
+    "Eng": "A normalized Git path is required: {0}."
+  },
+  {
+    "Id": 2841,
+    "Name": "InspectionGitPathRequired",
+    "Kor": "저장소 상대 Git 경로가 필요합니다: {0}",
+    "Eng": "A repository-relative Git path is required: {0}."
+  },
+  {
+    "Id": 2842,
+    "Name": "InspectionHistoryDateInvalid",
+    "Kor": "Git이 {0} 커밋에 잘못된 기록 날짜를 반환했습니다.",
+    "Eng": "Git returned an invalid history date for {0}."
+  },
+  {
+    "Id": 2843,
+    "Name": "InspectionHistoryRecordIncomplete",
+    "Kor": "Git이 {0} 파일에 불완전한 기록 레코드를 반환했습니다.",
+    "Eng": "Git returned an incomplete history record for {0}."
+  },
+  {
+    "Id": 2844,
+    "Name": "InspectionHistoryStatusIncomplete",
+    "Kor": "Git이 {0} 커밋에 불완전한 기록 상태를 반환했습니다.",
+    "Eng": "Git returned an incomplete history status for {0}."
+  },
+  {
+    "Id": 2845,
+    "Name": "InspectionHistoryUnterminatedRecord",
+    "Kor": "{0} 파일 기록 출력에 종료 NUL이 없습니다.",
+    "Eng": "Git returned an unterminated NUL record for history of {0}."
+  },
+  {
+    "Id": 2846,
+    "Name": "InspectionParentNotFound",
+    "Kor": "{0}은(는) {1} 커밋의 부모가 아닙니다.",
+    "Eng": "{0} is not a parent of {1}."
+  },
+  {
+    "Id": 2847,
+    "Name": "InspectionRenameHistoryIncomplete",
+    "Kor": "Git이 {0} 커밋에 불완전한 이름 변경 기록을 반환했습니다.",
+    "Eng": "Git returned an incomplete rename history for {0}."
+  },
+  {
+    "Id": 2848,
+    "Name": "InspectionRenameRecordIncomplete",
+    "Kor": "Git이 {0} 커밋에 불완전한 이름 변경 레코드를 반환했습니다.",
+    "Eng": "Git returned an incomplete rename record for {0}."
+  },
+  {
+    "Id": 2849,
+    "Name": "InspectionTreeEntryHeaderInvalid",
+    "Kor": "Git이 잘못된 트리 항목 머리글을 반환했습니다.",
+    "Eng": "Git returned a malformed tree entry header."
+  },
+  {
+    "Id": 2850,
+    "Name": "InspectionTreePathUnterminatedRecord",
+    "Kor": "{0} 트리 경로 출력에 종료 NUL이 없습니다.",
+    "Eng": "Git returned an unterminated NUL record for tree path {0}."
+  },
+  {
+    "Id": 2851,
+    "Name": "InspectionTreeRecordInvalid",
+    "Kor": "Git이 잘못된 트리 레코드를 반환했습니다.",
+    "Eng": "Git returned a malformed tree record."
+  },
+  {
+    "Id": 2852,
+    "Name": "InspectionTreeUnterminatedRecord",
+    "Kor": "{0} 트리 출력에 종료 NUL이 없습니다.",
+    "Eng": "Git returned an unterminated NUL record for tree {0}."
+  },
+  {
+    "Id": 2853,
+    "Name": "ReferenceBranchCreated",
+    "Kor": "{0} 브랜치를 만들었습니다.",
+    "Eng": "Created branch {0}."
+  },
+  {
+    "Id": 2854,
+    "Name": "ReferenceBranchCreatedAndSwitched",
+    "Kor": "{0} 브랜치를 만들고 전환했습니다.",
+    "Eng": "Created and switched to branch {0}."
+  },
+  {
+    "Id": 2855,
+    "Name": "ReferenceBranchNameRejected",
+    "Kor": "브랜치 이름이 올바르지 않습니다: {0}. {1}",
+    "Eng": "Invalid branch name: {0}. {1}"
+  },
+  {
+    "Id": 2856,
+    "Name": "ReferenceBranchSwitchMismatch",
+    "Kor": "브랜치 전환 뒤 현재 브랜치가 예상과 다릅니다. 요청: {0}, 현재: {1}",
+    "Eng": "The current branch after switching differs from the request. Requested: {0}; current: {1}."
+  },
+  {
+    "Id": 2857,
+    "Name": "ReferenceDetachedHead",
+    "Kor": "분리된 HEAD",
+    "Eng": "Detached HEAD"
+  },
+  {
+    "Id": 2858,
+    "Name": "ReferenceFolderOpened",
+    "Kor": "{0} 폴더를 열었습니다.",
+    "Eng": "Opened folder {0}."
+  },
+  {
+    "Id": 2859,
+    "Name": "ReferenceLoading",
+    "Kor": "참조 목록을 불러오는 중입니다.",
+    "Eng": "Loading references…"
+  },
+  {
+    "Id": 2860,
+    "Name": "ReferenceOutputInvalid",
+    "Kor": "Git 참조 출력 형식이 올바르지 않습니다.",
+    "Eng": "Git returned an invalid reference format."
+  },
+  {
+    "Id": 2861,
+    "Name": "ReferenceRemoteBranchRequired",
+    "Kor": "원격 브랜치가 선택되지 않았습니다.",
+    "Eng": "No remote branch is selected."
+  },
+  {
+    "Id": 2862,
+    "Name": "ReferenceRemoteCheckoutFailed",
+    "Kor": "{0} 전환을 준비하지 못했습니다. 현재 브랜치: {1}. 이유: {2}",
+    "Eng": "Could not prepare checkout of {0}. Current branch: {1}. Reason: {2}"
+  },
+  {
+    "Id": 2863,
+    "Name": "ReferenceRemoteTrackingSwitched",
+    "Kor": "{0}을(를) 추적하는 {1} 브랜치로 전환했습니다.",
+    "Eng": "Switched from remote branch {0} to its tracking local branch {1}."
+  },
+  {
+    "Id": 2864,
+    "Name": "ReferenceRemoteUrlUnreadable",
+    "Kor": "{0} 원격 URL을 읽지 못했습니다: {1}",
+    "Eng": "Could not read URL for remote {0}: {1}"
+  },
+  {
+    "Id": 2865,
+    "Name": "ReferenceSourceBranchRequired",
+    "Kor": "시작 브랜치가 선택되지 않았습니다.",
+    "Eng": "No source branch is selected."
+  },
+  {
+    "Id": 2866,
+    "Name": "ReferenceStartCommitNotFound",
+    "Kor": "시작 커밋을 찾을 수 없습니다: {0}",
+    "Eng": "Starting commit not found: {0}"
+  },
+  {
+    "Id": 2867,
+    "Name": "ReferenceStartPointInvalid",
+    "Kor": "시작점이 올바르지 않습니다: {0}",
+    "Eng": "Invalid start point: {0}"
+  },
+  {
+    "Id": 2868,
+    "Name": "ReferenceSubmoduleCheckoutUnavailable",
+    "Kor": "체크아웃 확인 실패",
+    "Eng": "Could not inspect checkout"
+  },
+  {
+    "Id": 2869,
+    "Name": "ReferenceSubmoduleConfigInvalid",
+    "Kor": ".gitmodules 출력 형식이 올바르지 않습니다.",
+    "Eng": "Invalid .gitmodules output format."
+  },
+  {
+    "Id": 2870,
+    "Name": "ReferenceSubmoduleConfigUnreadable",
+    "Kor": ".gitmodules를 읽지 못했습니다: {0}",
+    "Eng": "Could not read .gitmodules: {0}"
+  },
+  {
+    "Id": 2871,
+    "Name": "ReferenceSubmoduleDifferentCommit",
+    "Kor": "다른 커밋",
+    "Eng": "Different commit"
+  },
+  {
+    "Id": 2872,
+    "Name": "ReferenceSubmoduleMatchingCommit",
+    "Kor": "일치",
+    "Eng": "Matching commit"
+  },
+  {
+    "Id": 2873,
+    "Name": "ReferenceSubmoduleOutsideRepository",
+    "Kor": "서브모듈 경로가 저장소 밖을 가리킵니다: {0}",
+    "Eng": "Submodule path points outside the repository: {0}"
+  },
+  {
+    "Id": 2874,
+    "Name": "ReferenceSubmoduleTooltip",
+    "Kor": "{0}\n{1}\nURL: {2}\n예상 커밋: {3}\n체크아웃 커밋: {4}",
+    "Eng": "{0}\n{1}\nURL: {2}\nExpected commit: {3}\nChecked out commit: {4}"
+  },
+  {
+    "Id": 2875,
+    "Name": "ReferenceSubmoduleUninitialized",
+    "Kor": "초기화되지 않음",
+    "Eng": "Not initialized"
+  },
+  {
+    "Id": 2876,
+    "Name": "ReferenceTagExists",
+    "Kor": "'{0}' 태그가 이미 있습니다. 기존 태그를 덮어쓰지 않습니다.",
+    "Eng": "Tag '{0}' already exists. The existing tag will not be overwritten."
+  },
+  {
+    "Id": 2877,
+    "Name": "ReferenceTagLookupFailed",
+    "Kor": "기존 태그를 확인하지 못했습니다: {0}",
+    "Eng": "Could not check existing tags: {0}"
+  },
+  {
+    "Id": 2878,
+    "Name": "ReferenceTagNameInvalid",
+    "Kor": "태그 이름이 올바르지 않습니다: {0}",
+    "Eng": "Invalid tag name: {0}"
+  },
+  {
+    "Id": 2879,
+    "Name": "ReferenceTagNameRejected",
+    "Kor": "태그 이름이 올바르지 않습니다: {0}. {1}",
+    "Eng": "Invalid tag name: {0}. {1}"
+  },
+  {
+    "Id": 2880,
+    "Name": "ReferenceTagNavigate",
+    "Kor": "{0} 태그의 커밋으로 이동합니다.",
+    "Eng": "Navigating to the commit for tag {0}."
+  },
+  {
+    "Id": 2881,
+    "Name": "ReferenceTagNoCommit",
+    "Kor": "{0} 태그는 커밋을 가리키지 않습니다.",
+    "Eng": "Tag {0} does not point to a commit."
+  },
+  {
+    "Id": 2882,
+    "Name": "ReferenceTagRefreshFailed",
+    "Kor": "{0} 참조 목록은 다시 새로 고쳐 주세요. {1}",
+    "Eng": "{0} Refresh the references again. {1}"
+  },
+  {
+    "Id": 2883,
+    "Name": "ReferenceTagTargetHashInvalid",
+    "Kor": "태그 대상 커밋 해시가 올바르지 않습니다: {0}",
+    "Eng": "Invalid tag target commit hash: {0}"
+  },
+  {
+    "Id": 2884,
+    "Name": "ReferenceTagTargetNotFound",
+    "Kor": "태그 대상 커밋을 찾을 수 없습니다: {0}",
+    "Eng": "Tag target commit not found: {0}"
+  },
+  {
+    "Id": 2885,
+    "Name": "ReferenceTerminalOpened",
+    "Kor": "{0}에서 터미널을 열었습니다.",
+    "Eng": "Opened a terminal in {0}."
+  },
+  {
+    "Id": 2886,
+    "Name": "ReferenceTitle",
+    "Kor": "Git 참조",
+    "Eng": "Git references"
+  },
+  {
+    "Id": 2887,
+    "Name": "ReferenceTreeAccessibleName",
+    "Kor": "Git 참조 트리",
+    "Eng": "Git reference tree"
+  },
+  {
+    "Id": 2888,
+    "Name": "HistoryTreeFile",
+    "Kor": "파일",
+    "Eng": "File"
+  },
+  {
+    "Id": 2889,
+    "Name": "HistoryTreeFolder",
+    "Kor": "폴더",
+    "Eng": "Folder"
+  },
+  {
+    "Id": 2890,
+    "Name": "HistoryTreeLoading",
+    "Kor": "불러오는 중…",
+    "Eng": "Loading…"
+  },
+  {
+    "Id": 2891,
+    "Name": "HistoryTreeSubmodule",
+    "Kor": "서브모듈",
+    "Eng": "Submodule"
   }
 ]

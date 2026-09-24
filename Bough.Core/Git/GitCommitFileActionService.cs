@@ -18,16 +18,32 @@ namespace Bough.Core.Git
 
         public string GetWorkingPath(GitRepository repository, string path)
         {
-            if (string.IsNullOrWhiteSpace(path) == true || Path.IsPathRooted(path) == true || path.Contains('\\') == true)
+            if (string.IsNullOrWhiteSpace(path) == true)
             {
-                throw new GitException($"Invalid repository-relative path: {path}");
+                throw new GitException("CommitFilePathInvalid", null, path);
+            }
+            if (Path.IsPathRooted(path) == true)
+            {
+                throw new GitException("CommitFilePathInvalid", null, path);
+            }
+            if (path.Contains('\\') == true)
+            {
+                throw new GitException("CommitFilePathInvalid", null, path);
             }
             string root = Path.GetFullPath(repository.RootPath);
             string absolute = Path.GetFullPath(Path.Combine(root, path.Replace('/', Path.DirectorySeparatorChar)));
             string relative = Path.GetRelativePath(root, absolute);
-            if (relative == ".." || relative.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal) == true || Path.IsPathRooted(relative) == true)
+            if (relative == "..")
             {
-                throw new GitException($"Path is outside the repository: {path}");
+                throw new GitException("CommitFileOutsideRepository", null, path);
+            }
+            if (relative.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal) == true)
+            {
+                throw new GitException("CommitFileOutsideRepository", null, path);
+            }
+            if (Path.IsPathRooted(relative) == true)
+            {
+                throw new GitException("CommitFileOutsideRepository", null, path);
             }
             return absolute;
         }
@@ -36,19 +52,34 @@ namespace Bough.Core.Git
         {
             GetWorkingPath(repository, path);
             GitCommitFileContent content = await _inspectionService.GetFileContentAsync(repository, commitHash, path, cancellationToken);
-            if (content.ObjectHash.Length == 0 || content.Reason.StartsWith("File is not present", StringComparison.Ordinal) == true)
+            if (content.ObjectHash.Length == 0)
             {
-                throw new GitException($"{path} is not present in {commitHash}.");
+                throw new GitException("CommitFileAbsentAtRevision", null, path, commitHash);
             }
-            if (content.Reason.StartsWith("Submodule", StringComparison.Ordinal) == true || content.Reason.StartsWith("Path is a directory", StringComparison.Ordinal) == true)
+            if (content.ReasonCode == "HistoryPreviewFileAbsent")
             {
-                throw new GitException($"{path} is not a regular file in {commitHash}.");
+                throw new GitException("CommitFileAbsentAtRevision", null, path, commitHash);
+            }
+            if (content.ReasonCode == "HistorySubmoduleGitlink")
+            {
+                throw new GitException("CommitFileNotRegularAtRevision", null, path, commitHash);
+            }
+            if (content.ReasonCode == "HistoryPathIsDirectory")
+            {
+                throw new GitException("CommitFileNotRegularAtRevision", null, path, commitHash);
             }
             if (content.Size > 50 * 1024 * 1024)
             {
-                throw new GitException($"{path} exceeds the 50 MB export limit.");
+                throw new GitException("CommitFileExportLimitExceeded", null, path, 50);
             }
-            return await _runner.RunBytesAsync(repository.RootPath, new string[] { "cat-file", "blob", content.ObjectHash }, 50 * 1024 * 1024, cancellationToken);
+            try
+            {
+                return await _runner.RunBytesAsync(repository.RootPath, new string[] { "cat-file", "blob", content.ObjectHash }, 50 * 1024 * 1024, cancellationToken);
+            }
+            catch (GitOutputLimitException exception)
+            {
+                throw new GitException("CommitFileExportLimitExceeded", exception, path, 50);
+            }
         }
     }
 

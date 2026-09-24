@@ -22,13 +22,13 @@ namespace Bough.Core.Git
         {
             if (Regex.IsMatch(commitHash ?? string.Empty, "^([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$", RegexOptions.CultureInvariant) == false)
             {
-                throw new ArgumentException($"A full commit hash is required: {commitHash}.", nameof(commitHash));
+                throw new GitException("CommitMessageFullHashRequired", null, commitHash);
             }
 
             byte[] bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "show", "-s", "--format=format:%B%x00", commitHash }, 2 * 1024 * 1024, cancellationToken);
             if (bytes.Length == 0 || bytes[bytes.Length - 1] != 0)
             {
-                throw new GitException($"Git returned an incomplete commit message for {commitHash}.");
+                throw new GitException("CommitMessageIncomplete", null, commitHash);
             }
 
             try
@@ -37,7 +37,7 @@ namespace Bough.Core.Git
             }
             catch (DecoderFallbackException exception)
             {
-                throw new GitException($"Commit message is not valid UTF-8 for {commitHash}.", exception);
+                throw new GitException("CommitMessageInvalidUtf8", exception, commitHash);
             }
         }
 

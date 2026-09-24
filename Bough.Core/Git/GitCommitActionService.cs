@@ -16,7 +16,7 @@ namespace Bough.Core.Git
 
     public class GitResetPreview
     {
-        public GitResetPreview(string repositoryRoot, string branchName, string headHash, string targetHash, string targetSubject, string statusSnapshot, string stateFingerprint, string statusDescription, bool isAncestor)
+        public GitResetPreview(string repositoryRoot, string branchName, string headHash, string targetHash, string targetSubject, string statusSnapshot, string stateFingerprint, int stagedCount, int workingCount, int untrackedCount, bool isAncestor)
         {
             RepositoryRoot = repositoryRoot;
             BranchName = branchName;
@@ -25,7 +25,9 @@ namespace Bough.Core.Git
             TargetSubject = targetSubject;
             StatusSnapshot = statusSnapshot;
             StateFingerprint = stateFingerprint;
-            StatusDescription = statusDescription;
+            StagedCount = stagedCount;
+            WorkingCount = workingCount;
+            UntrackedCount = untrackedCount;
             IsAncestor = isAncestor;
         }
 
@@ -36,7 +38,9 @@ namespace Bough.Core.Git
         public string TargetSubject { get; }
         public string StatusSnapshot { get; }
         public string StateFingerprint { get; }
-        public string StatusDescription { get; }
+        public int StagedCount { get; }
+        public int WorkingCount { get; }
+        public int UntrackedCount { get; }
         public bool IsAncestor { get; }
         public string ShortHash { get { return TargetHash.Substring(0, 8); } }
     }
@@ -97,7 +101,7 @@ namespace Bough.Core.Git
             string currentHash = await ReadRefAsync(repository, $"refs/heads/{branchName}", cancellationToken);
             if (currentHash != expectedHash)
             {
-                throw new GitException($"브랜치가 메뉴를 연 뒤 변경되었습니다: {branchName}");
+                throw new GitException("CommitBranchChanged", null, branchName);
             }
 
             await _runner.RunAsync(repository.RootPath, new string[] { "switch", branchName }, false, cancellationToken);
@@ -109,7 +113,7 @@ namespace Bough.Core.Git
             string currentHash = await ReadRefAsync(repository, $"refs/heads/{sourceBranch}", cancellationToken);
             if (currentHash != expectedHash)
             {
-                throw new GitException($"시작 브랜치가 메뉴를 연 뒤 변경되었습니다: {sourceBranch}");
+                throw new GitException("CommitSourceBranchChanged", null, sourceBranch);
             }
             return await CreateBranchAsync(repository, newBranch, expectedHash, switchToBranch, cancellationToken);
         }
@@ -120,7 +124,7 @@ namespace Bough.Core.Git
             string currentHash = await ReadRefAsync(repository, $"refs/remotes/{branch.FullName}", cancellationToken);
             if (currentHash != branch.CommitHash)
             {
-                throw new GitException($"원격 브랜치가 메뉴를 연 뒤 변경되었습니다: {branch.FullName}");
+                throw new GitException("CommitRemoteBranchChanged", null, branch.FullName);
             }
 
             await VerifyBranchNameAsync(repository, localName, cancellationToken);
@@ -134,20 +138,20 @@ namespace Bough.Core.Git
             GitCommandResult branchResult = await _runner.RunAsync(repository.RootPath, _currentBranchArguments, true, cancellationToken);
             if (branchResult.ExitCode != 0)
             {
-                throw new GitException("Detached HEAD에서는 현재 브랜치를 초기화할 수 없습니다.");
+                throw new GitException("CommitResetDetachedHead", null, Array.Empty<object>());
             }
 
             string branch = branchResult.Output.Trim();
             string head = await ReadRefAsync(repository, "HEAD", cancellationToken);
             if (head == target)
             {
-                throw new GitException("대상 커밋이 현재 HEAD와 같습니다.");
+                throw new GitException("CommitResetTargetIsHead", null, Array.Empty<object>());
             }
 
             GitCommandResult ancestor = await _runner.RunAsync(repository.RootPath, new string[] { "merge-base", "--is-ancestor", target, head }, true, cancellationToken);
             if (ancestor.ExitCode != 0 && ancestor.ExitCode != 1)
             {
-                throw new GitException($"커밋 관계를 확인하지 못했습니다: {ancestor.Error.Trim()}");
+                throw new GitException("CommitAncestryCheckFailed", null, ancestor.Error.Trim());
             }
 
             GitCommandResult subject = await _runner.RunAsync(repository.RootPath, new string[] { "show", "-s", "--format=%s", target }, false, cancellationToken);
@@ -156,8 +160,8 @@ namespace Bough.Core.Git
             GitCommandResult working = await _runner.RunAsync(repository.RootPath, _workingNamesArguments, false, cancellationToken);
             GitCommandResult untracked = await _runner.RunAsync(repository.RootPath, _untrackedNamesArguments, false, cancellationToken);
             string fingerprint = await ReadStateFingerprintAsync(repository, status.Output, cancellationToken);
-            string description = $"Staged {CountNames(staged.Output)}, working files {CountNames(working.Output)}, untracked {CountNames(untracked.Output)}";
-            return new GitResetPreview(repository.RootPath, branch, head, target, subject.Output.Trim(), status.Output, fingerprint, description, ancestor.ExitCode == 0);
+            return new GitResetPreview(repository.RootPath, branch, head, target, subject.Output.Trim(), status.Output, fingerprint,
+                CountNames(staged.Output), CountNames(working.Output), CountNames(untracked.Output), ancestor.ExitCode == 0);
         }
 
         public async Task<GitRepository> ResetAsync(GitRepository repository, GitResetPreview preview, GitResetMode mode, bool hardConfirmed, CancellationToken cancellationToken = default)
@@ -166,11 +170,11 @@ namespace Bough.Core.Git
             ArgumentNullException.ThrowIfNull(preview);
             if (repository.RootPath != preview.RepositoryRoot)
             {
-                throw new GitException("초기화 대상 저장소가 바뀌었습니다.");
+                throw new GitException("CommitResetRepositoryChanged", null, Array.Empty<object>());
             }
             if (mode == GitResetMode.Hard && hardConfirmed == false)
             {
-                throw new GitException("Hard 초기화에는 추가 확인이 필요합니다.");
+                throw new GitException("CommitResetHardConfirmationRequired", null, Array.Empty<object>());
             }
             if (Enum.IsDefined(mode) == false)
             {
@@ -180,31 +184,31 @@ namespace Bough.Core.Git
             GitCommandResult branch = await _runner.RunAsync(repository.RootPath, _currentBranchArguments, true, cancellationToken);
             if (branch.ExitCode != 0)
             {
-                throw new GitException("현재 HEAD가 브랜치를 가리키지 않습니다.");
+                throw new GitException("CommitResetHeadNotBranch", null, Array.Empty<object>());
             }
             if (branch.Output.Trim() != preview.BranchName)
             {
-                throw new GitException("현재 브랜치가 확인 이후 변경되었습니다.");
+                throw new GitException("CommitResetBranchChanged", null, Array.Empty<object>());
             }
             string head = await ReadRefAsync(repository, "HEAD", cancellationToken);
             if (head != preview.HeadHash)
             {
-                throw new GitException("HEAD가 확인 이후 변경되었습니다.");
+                throw new GitException("CommitResetHeadChanged", null, Array.Empty<object>());
             }
             string target = await VerifyCommitAsync(repository, preview.TargetHash, cancellationToken);
             if (target != preview.TargetHash)
             {
-                throw new GitException("대상 커밋이 확인 이후 변경되었습니다.");
+                throw new GitException("CommitResetTargetChanged", null, Array.Empty<object>());
             }
             GitCommandResult status = await _runner.RunAsync(repository.RootPath, _statusArguments, false, cancellationToken);
             if (status.Output != preview.StatusSnapshot)
             {
-                throw new GitException("작업 트리 또는 인덱스가 확인 이후 변경되었습니다.");
+                throw new GitException("CommitResetStatusChanged", null, Array.Empty<object>());
             }
             string fingerprint = await ReadStateFingerprintAsync(repository, status.Output, cancellationToken);
             if (fingerprint != preview.StateFingerprint)
             {
-                throw new GitException("작업 파일 또는 인덱스 내용이 확인 이후 변경되었습니다.");
+                throw new GitException("CommitResetContentChanged", null, Array.Empty<object>());
             }
 
             string option = "--soft";
@@ -225,21 +229,21 @@ namespace Bough.Core.Git
             ArgumentNullException.ThrowIfNull(repository);
             if (commitHash == null)
             {
-                throw new ArgumentException("커밋 해시가 없습니다.", nameof(commitHash));
+                throw new GitException("CommitHashRequired", null, Array.Empty<object>());
             }
             if (commitHash.Length != 40 && commitHash.Length != 64)
             {
-                throw new ArgumentException($"커밋 해시 길이가 올바르지 않습니다: {commitHash.Length}", nameof(commitHash));
+                throw new GitException("CommitHashLengthInvalid", null, commitHash.Length);
             }
             if (commitHash.All(Uri.IsHexDigit) == false)
             {
-                throw new ArgumentException($"커밋 해시가 16진수 형식이 아닙니다: {commitHash}", nameof(commitHash));
+                throw new GitException("CommitHashHexInvalid", null, commitHash);
             }
 
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "rev-parse", "--verify", "--quiet", $"{commitHash}^{{commit}}" }, true, cancellationToken);
             if (result.ExitCode != 0)
             {
-                throw new GitException($"대상 커밋을 찾을 수 없습니다: {commitHash}");
+                throw new GitException("CommitTargetNotFound", null, commitHash);
             }
             return result.Output.Trim();
         }
@@ -250,7 +254,7 @@ namespace Bough.Core.Git
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "check-ref-format", "--branch", branchName }, true, cancellationToken);
             if (result.ExitCode != 0)
             {
-                throw new GitException($"브랜치 이름이 올바르지 않습니다: {branchName}. {result.Error.Trim()}");
+                throw new GitException("CommitBranchNameInvalid", null, branchName, result.Error.Trim());
             }
         }
 
@@ -259,7 +263,7 @@ namespace Bough.Core.Git
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "rev-parse", "--verify", "--quiet", reference }, true, cancellationToken);
             if (result.ExitCode != 0)
             {
-                throw new GitException($"참조를 찾을 수 없습니다: {reference}");
+                throw new GitException("CommitReferenceNotFound", null, reference);
             }
             return result.Output.Trim();
         }

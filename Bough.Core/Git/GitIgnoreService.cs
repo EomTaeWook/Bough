@@ -30,7 +30,7 @@ namespace Bough.Core.Git
             ArgumentNullException.ThrowIfNull(files);
             if (files.Count == 0)
             {
-                throw new GitException("Select at least one untracked file to ignore.");
+                throw new GitException("IgnoreSelectUntrackedFile", null, Array.Empty<object>());
             }
 
             string targetPath = await GetTargetPathAsync(repository, location, cancellationToken);
@@ -43,44 +43,44 @@ namespace Bough.Core.Git
                 cancellationToken.ThrowIfCancellationRequested();
                 if (file == null)
                 {
-                    throw new GitException("A selected ignore file is missing.");
+                    throw new GitException("IgnoreSelectedFileMissing", null, Array.Empty<object>());
                 }
 
                 if (paths.Add(file.Path) == false)
                 {
-                    throw new GitException($"A file was selected more than once: {file.Path}.");
+                    throw new GitException("IgnoreDuplicateSelection", null, file.Path);
                 }
 
                 if (file.IsUntracked == false)
                 {
-                    throw new GitException($"Only untracked files can be ignored: {file.Path}.");
+                    throw new GitException("IgnoreTrackedFile", null, file.Path);
                 }
 
                 if (currentFiles.TryGetValue(file.Path, out GitWorktreeFile current) == false)
                 {
-                    throw new GitException($"The selected file changed before ignore: {file.Path}.");
+                    throw new GitException("IgnoreSelectedFileChanged", null, file.Path);
                 }
 
                 if (current.IsUntracked == false)
                 {
-                    throw new GitException($"The selected file is now tracked: {file.Path}.");
+                    throw new GitException("IgnoreFileNowTracked", null, file.Path);
                 }
 
                 string fullPath = ResolveFilePath(repository, file.Path);
                 FileInfo information = new(fullPath);
                 if (information.Exists == false)
                 {
-                    throw new GitException($"The selected untracked file is missing: {file.Path}.");
+                    throw new GitException("IgnoreUntrackedFileMissing", null, file.Path);
                 }
 
                 if ((information.Attributes & FileAttributes.ReparsePoint) != 0)
                 {
-                    throw new GitException($"A symbolic link cannot be ignored safely: {file.Path}.");
+                    throw new GitException("IgnoreSymlinkUnsafe", null, file.Path);
                 }
 
                 if (Path.GetFullPath(fullPath).Equals(targetPath, StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    throw new GitException($"The ignore file cannot ignore itself: {file.Path}.");
+                    throw new GitException("IgnoreSelf", null, file.Path);
                 }
 
                 entries.Add(new GitIgnoreEntry(file.Path, CreateRule(file.Path)));
@@ -93,7 +93,7 @@ namespace Bough.Core.Git
             {
                 if (existingRules.Contains(entry.Rule) == true)
                 {
-                    throw new GitException($"An exact ignore rule already exists, but the file is still untracked: {entry.Path}.");
+                    throw new GitException("IgnoreExistingRuleUntracked", null, entry.Path);
                 }
             }
 
@@ -118,24 +118,24 @@ namespace Bough.Core.Git
             GitIgnorePlan current = await PrepareAsync(repository, files, plan.Location, cancellationToken);
             if (current.TargetPath != plan.TargetPath)
             {
-                throw new GitException("The Git ignore location changed before confirmation.");
+                throw new GitException("IgnoreLocationChanged", null, Array.Empty<object>());
             }
 
             if (OriginalBytesMatch(current.OriginalBytes, plan.OriginalBytes) == false)
             {
-                throw new GitException("The ignore file changed before confirmation. Refresh and try again.");
+                throw new GitException("IgnoreFileChangedBeforeConfirmation", null, Array.Empty<object>());
             }
 
             if (current.Entries.Count != plan.Entries.Count)
             {
-                throw new GitException("The selected files changed before confirmation.");
+                throw new GitException("IgnoreSelectedFilesChanged", null, Array.Empty<object>());
             }
 
             for (int index = 0; index < current.Entries.Count; index++)
             {
                 if (current.Entries[index].Path != plan.Entries[index].Path)
                 {
-                    throw new GitException($"The selected file changed before ignore: {plan.Entries[index].Path}.");
+                    throw new GitException("IgnoreSelectedFileChanged", null, plan.Entries[index].Path);
                 }
             }
 
@@ -158,18 +158,18 @@ namespace Bough.Core.Git
             string gitPath = result.Output.TrimEnd('\r', '\n');
             if (string.IsNullOrWhiteSpace(gitPath) == true)
             {
-                throw new GitException("Git did not provide its local exclude path.");
+                throw new GitException("IgnoreExcludePathMissing", null, Array.Empty<object>());
             }
 
             string targetPath = Path.GetFullPath(Path.Combine(repository.RootPath, gitPath));
             if (Path.GetFileName(targetPath) != "exclude")
             {
-                throw new GitException($"Git returned an unexpected exclude path: {targetPath}.");
+                throw new GitException("IgnoreExcludePathUnexpected", null, targetPath);
             }
 
             if (Path.GetFileName(Path.GetDirectoryName(targetPath)) != "info")
             {
-                throw new GitException($"Git returned an unexpected exclude path: {targetPath}.");
+                throw new GitException("IgnoreExcludePathUnexpected", null, targetPath);
             }
 
             return targetPath;
@@ -179,12 +179,12 @@ namespace Bough.Core.Git
         {
             if (string.IsNullOrWhiteSpace(path) == true)
             {
-                throw new GitException("The selected file has no repository-relative path.");
+                throw new GitException("IgnoreRelativePathMissing", null, Array.Empty<object>());
             }
 
             if (Path.IsPathRooted(path) == true)
             {
-                throw new GitException($"The selected path is outside the repository: {path}.");
+                throw new GitException("IgnorePathOutsideRoot", null, path);
             }
 
             string root = Path.GetFullPath(repository.RootPath);
@@ -192,22 +192,22 @@ namespace Bough.Core.Git
             string relativePath = Path.GetRelativePath(root, fullPath);
             if (relativePath == ".")
             {
-                throw new GitException("The repository root cannot be ignored.");
+                throw new GitException("IgnoreRootDisallowed", null, Array.Empty<object>());
             }
 
             if (relativePath == "..")
             {
-                throw new GitException($"The selected path is outside the repository: {path}.");
+                throw new GitException("IgnorePathOutsideRoot", null, path);
             }
 
             if (Path.IsPathRooted(relativePath) == true)
             {
-                throw new GitException($"The selected path is outside the repository: {path}.");
+                throw new GitException("IgnorePathOutsideRoot", null, path);
             }
 
             if (relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) == true)
             {
-                throw new GitException($"The selected path is outside the repository: {path}.");
+                throw new GitException("IgnorePathOutsideRoot", null, path);
             }
 
             string parent = root;
@@ -216,7 +216,7 @@ namespace Bough.Core.Git
             {
                 if (segments[index].Equals(".git", StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    throw new GitException($"Git metadata cannot be ignored: {path}.");
+                    throw new GitException("IgnoreMetadataDisallowed", null, path);
                 }
 
                 if (index == segments.Length - 1)
@@ -227,18 +227,18 @@ namespace Bough.Core.Git
                 parent = Path.Combine(parent, segments[index]);
                 if (Directory.Exists(parent) == false)
                 {
-                    throw new GitException($"A selected file parent no longer exists: {path}.");
+                    throw new GitException("IgnoreParentMissing", null, path);
                 }
 
                 if ((File.GetAttributes(parent) & FileAttributes.ReparsePoint) != 0)
                 {
-                    throw new GitException($"The selected path crosses a symbolic link: {path}.");
+                    throw new GitException("IgnorePathSymlink", null, path);
                 }
             }
 
             if (Directory.Exists(fullPath) == true)
             {
-                throw new GitException($"Only files can be ignored: {path}.");
+                throw new GitException("IgnoreOnlyFiles", null, path);
             }
 
             return fullPath;
@@ -251,7 +251,7 @@ namespace Bough.Core.Git
             {
                 if (char.IsControl(character) == true)
                 {
-                    throw new GitException($"A file name cannot be represented safely in gitignore: {path}.");
+                    throw new GitException("IgnoreFileNameUnsafe", null, path);
                 }
 
                 switch (character)
@@ -282,17 +282,17 @@ namespace Bough.Core.Git
             string parent = Path.GetDirectoryName(targetPath);
             if (Directory.Exists(parent) == false)
             {
-                throw new GitException($"The ignore directory does not exist: {parent}.");
+                throw new GitException("IgnoreDirectoryMissing", null, parent);
             }
 
             if ((File.GetAttributes(parent) & FileAttributes.ReparsePoint) != 0)
             {
-                throw new GitException($"The ignore directory is a symbolic link: {parent}.");
+                throw new GitException("IgnoreDirectorySymlink", null, parent);
             }
 
             if (Directory.Exists(targetPath) == true)
             {
-                throw new GitException($"The ignore target is a directory: {targetPath}.");
+                throw new GitException("IgnoreTargetDirectory", null, targetPath);
             }
 
             if (File.Exists(targetPath) == false)
@@ -303,18 +303,18 @@ namespace Bough.Core.Git
             FileInfo information = new(targetPath);
             if ((information.Attributes & FileAttributes.ReparsePoint) != 0)
             {
-                throw new GitException($"The ignore target is a symbolic link: {targetPath}.");
+                throw new GitException("IgnoreTargetSymlink", null, targetPath);
             }
 
             if (information.Length > _maximumIgnoreFileBytes)
             {
-                throw new GitException($"The ignore file is too large to edit safely: {targetPath}.");
+                throw new GitException("IgnoreFileTooLarge", null, targetPath);
             }
 
             byte[] bytes = await File.ReadAllBytesAsync(targetPath, cancellationToken);
             if (bytes.Length > _maximumIgnoreFileBytes)
             {
-                throw new GitException($"The ignore file grew too large to edit safely: {targetPath}.");
+                throw new GitException("IgnoreFileGrewTooLarge", null, targetPath);
             }
 
             return bytes;
@@ -342,7 +342,7 @@ namespace Bough.Core.Git
             }
             catch (DecoderFallbackException exception)
             {
-                throw new GitException("The ignore file is not UTF-8 and cannot be edited safely.", exception);
+                throw new GitException("IgnoreFileInvalidUtf8", exception, Array.Empty<object>());
             }
         }
 
@@ -372,7 +372,7 @@ namespace Bough.Core.Git
             {
                 if (existingRules.Add(entry.Rule) == false)
                 {
-                    throw new GitException($"An exact ignore rule already exists: {entry.Path}.");
+                    throw new GitException("IgnoreRuleAlreadyExists", null, entry.Path);
                 }
 
                 additions.Add(entry.Rule);
@@ -401,24 +401,24 @@ namespace Bough.Core.Git
             string parent = Path.GetDirectoryName(plan.TargetPath);
             if (Directory.Exists(parent) == false)
             {
-                throw new GitException($"The ignore directory no longer exists: {parent}.");
+                throw new GitException("IgnoreDirectoryRemoved", null, parent);
             }
 
             if ((File.GetAttributes(parent) & FileAttributes.ReparsePoint) != 0)
             {
-                throw new GitException($"The ignore directory is a symbolic link: {parent}.");
+                throw new GitException("IgnoreDirectorySymlink", null, parent);
             }
 
             if (existed == true)
             {
                 if (File.Exists(plan.TargetPath) == false)
                 {
-                    throw new GitException("The ignore file disappeared before writing.");
+                    throw new GitException("IgnoreFileDisappeared", null, Array.Empty<object>());
                 }
 
                 if ((File.GetAttributes(plan.TargetPath) & FileAttributes.ReparsePoint) != 0)
                 {
-                    throw new GitException("The ignore file became a symbolic link before writing.");
+                    throw new GitException("IgnoreFileBecameSymlink", null, Array.Empty<object>());
                 }
             }
 
@@ -431,13 +431,13 @@ namespace Bough.Core.Git
                 {
                     if ((File.GetAttributes(plan.TargetPath) & FileAttributes.ReparsePoint) != 0)
                     {
-                        throw new GitException("The ignore file became a symbolic link before writing.");
+                        throw new GitException("IgnoreFileBecameSymlink", null, Array.Empty<object>());
                     }
                 }
 
                 if (stream.Length > _maximumIgnoreFileBytes)
                 {
-                    throw new GitException($"The ignore file is too large to edit safely: {plan.TargetPath}.");
+                    throw new GitException("IgnoreFileTooLarge", null, plan.TargetPath);
                 }
 
                 byte[] currentBytes = new byte[(int)stream.Length];
@@ -446,12 +446,12 @@ namespace Bough.Core.Git
                 {
                     if (currentBytes.Length != 0)
                     {
-                        throw new GitException("The ignore target appeared before writing.");
+                        throw new GitException("IgnoreTargetAppeared", null, Array.Empty<object>());
                     }
                 }
                 else if (OriginalBytesMatch(expectedBytes, currentBytes) == false)
                 {
-                    throw new GitException("The ignore file changed before writing. Refresh and try again.");
+                    throw new GitException("IgnoreFileChangedBeforeWriting", null, Array.Empty<object>());
                 }
 
                 stream.Seek(0, SeekOrigin.End);

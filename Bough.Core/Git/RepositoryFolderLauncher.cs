@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 
@@ -9,10 +10,18 @@ namespace Bough.Core.Git
         public void Open(GitRepository repository)
         {
             ProcessStartInfo startInfo = CreateStartInfo(repository);
-            Process process = Process.Start(startInfo);
+            Process process;
+            try
+            {
+                process = Process.Start(startInfo);
+            }
+            catch (Win32Exception exception)
+            {
+                throw new GitException("ExplorerStartFailed", exception, startInfo.FileName);
+            }
             if (process == null)
             {
-                throw new InvalidOperationException($"파일 탐색기를 실행하지 못했습니다: {startInfo.FileName}");
+                throw new GitException("ExplorerStartFailed", null, startInfo.FileName);
             }
             process.Dispose();
         }
@@ -22,7 +31,7 @@ namespace Bough.Core.Git
             ArgumentNullException.ThrowIfNull(repository);
             if (Directory.Exists(repository.RootPath) == false)
             {
-                throw new DirectoryNotFoundException($"저장소 폴더를 찾을 수 없습니다: {repository.RootPath}");
+                throw new GitException("RepositoryFolderMissing", null, repository.RootPath);
             }
 
             ProcessStartInfo startInfo = new()
@@ -44,7 +53,7 @@ namespace Bough.Core.Git
             }
             else
             {
-                throw new PlatformNotSupportedException("이 운영체제의 파일 탐색기 실행 방식은 지원하지 않습니다.");
+                throw new GitException("ExplorerPlatformUnsupported", null, Array.Empty<object>());
             }
             startInfo.ArgumentList.Add(repository.RootPath);
             return startInfo;

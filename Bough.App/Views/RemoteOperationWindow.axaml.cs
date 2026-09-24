@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -15,6 +16,7 @@ namespace Bough.App.Views
         private readonly RemoteOperationsViewModel _viewModel;
         private readonly Func<Task<bool>> _operation;
         private readonly GitErrorLocalizer _errorLocalizer;
+        private readonly StringHelper _strings;
         private readonly CancellationTokenSource _cancellation;
         private readonly GitOperationQueue _operationQueue;
         private readonly string _repositoryRoot;
@@ -33,12 +35,13 @@ namespace Bough.App.Views
             Closed += OperationClosed;
         }
 
-        public RemoteOperationWindow(RemoteOperationsViewModel viewModel, string operationName, string target, Func<Task<bool>> operation, bool closeOnSuccess, GitErrorLocalizer errorLocalizer, CancellationTokenSource cancellation, GitOperationQueue operationQueue, string repositoryRoot)
+        public RemoteOperationWindow(RemoteOperationsViewModel viewModel, string operationName, string target, Func<Task<bool>> operation, bool closeOnSuccess, StringHelper strings, GitErrorLocalizer errorLocalizer, CancellationTokenSource cancellation, GitOperationQueue operationQueue, string repositoryRoot)
             : this()
         {
             _viewModel = viewModel;
             _operation = operation;
             _errorLocalizer = errorLocalizer;
+            _strings = strings;
             _cancellation = cancellation;
             _operationQueue = operationQueue;
             _repositoryRoot = repositoryRoot;
@@ -48,6 +51,15 @@ namespace Bough.App.Views
             Title = operationName;
             OperationNameText.Text = operationName;
             TargetText.Text = target;
+            ToolTip.SetTip(TransferStatusBlock, strings.GetString("RemoteTransferStatusTip"));
+            AutomationProperties.SetName(ResultText, strings.GetString("RemoteResultAutomation"));
+            PullSummaryHeading.Text = strings.GetString("RemotePullSummaryHeading");
+            AutomationProperties.SetName(PullSummaryBlock, strings.GetString("RemotePullSummaryAutomation"));
+            StopButton.Content = strings.GetString("RemoteStopAction");
+            ToolTip.SetTip(StopButton, strings.GetString("RemoteStopTip"));
+            AutomationProperties.SetName(StopButton, strings.GetString("RemoteStopAutomation"));
+            CloseButton.Content = strings.GetString("RemoteCloseAction");
+            AutomationProperties.SetName(CloseButton, strings.GetString("RemoteCloseAutomation"));
         }
 
         protected override void OnClosing(WindowClosingEventArgs eventArgs)
@@ -81,14 +93,14 @@ namespace Bough.App.Views
             {
                 succeeded = await _operation();
             }
-            catch (OperationCanceledException exception)
+            catch (OperationCanceledException)
             {
-                OutcomeText.Text = "Canceled";
-                ResultText.Text = _errorLocalizer.GetDisplayMessage(exception);
+                OutcomeText.Text = _strings.GetString("RemoteOutcomeCanceled");
+                ResultText.Text = _strings.GetString("RemoteOperationCanceled");
             }
             catch (Exception exception)
             {
-                OutcomeText.Text = "실패";
+                OutcomeText.Text = _strings.GetString("RemoteOutcomeFailed");
                 ResultText.Text = _errorLocalizer.GetDisplayMessage(exception);
             }
             finally
@@ -118,7 +130,7 @@ namespace Bough.App.Views
         private void UpdateElapsed()
         {
             TimeSpan elapsed = DateTimeOffset.UtcNow - _startedAt;
-            ElapsedText.Text = $"경과 시간 {(int)elapsed.TotalMinutes:00}:{elapsed.Seconds:00}";
+            ElapsedText.Text = _strings.Format("RemoteElapsedTime", $"{(int)elapsed.TotalMinutes:00}:{elapsed.Seconds:00}");
         }
 
         private void StopClicked(object sender, RoutedEventArgs eventArgs)

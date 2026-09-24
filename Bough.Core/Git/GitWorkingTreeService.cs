@@ -38,7 +38,7 @@ namespace Bough.Core.Git
             string[] entries = result.Output.Split('\0');
             if (entries[entries.Length - 1].Length != 0)
             {
-                throw new GitException("Git status did not end with a NUL separator.");
+                throw new GitException("WorkingStatusMissingNul", null, Array.Empty<object>());
             }
 
             for (int index = 0; index < entries.Length - 1; index++)
@@ -46,7 +46,7 @@ namespace Bough.Core.Git
                 string entry = entries[index];
                 if (entry.Length < 4 || entry[2] != ' ')
                 {
-                    throw new GitException($"Git returned an invalid status entry at position {index}.");
+                    throw new GitException("WorkingStatusEntryInvalid", null, index);
                 }
 
                 char indexStatus = entry[0];
@@ -58,7 +58,7 @@ namespace Bough.Core.Git
                     index++;
                     if (index >= entries.Length - 1)
                     {
-                        throw new GitException($"Git returned a rename without its original path: {path}.");
+                        throw new GitException("WorkingRenameOriginalMissing", null, path);
                     }
 
                     originalPath = entries[index];
@@ -74,7 +74,7 @@ namespace Bough.Core.Git
         {
             if (file.IsConflict == true)
             {
-                return new GitFilePreview(string.Empty, "Unresolved conflict. Open Resolve to choose the final content.", false, 0);
+                return new GitFilePreview(string.Empty, "WorktreePreviewConflict", false, 0);
             }
 
             if (file.IsUntracked == true && staged == false)
@@ -106,22 +106,22 @@ namespace Bough.Core.Git
             long size = GetWorkingFileSize(repository, file.Path);
             if (isBinary == true)
             {
-                return new GitFilePreview(string.Empty, $"Binary file changed ({size} bytes in working tree).", true, size);
+                return new GitFilePreview(string.Empty, "WorktreePreviewBinaryChanged", true, size, size);
             }
 
             if (result.Output.Length == 0)
             {
-                return new GitFilePreview(string.Empty, "No text diff is available for this side of the change.", false, size);
+                return new GitFilePreview(string.Empty, "WorktreePreviewNoTextDiff", false, size);
             }
 
-            return new GitFilePreview(result.Output, $"{file.StatusText} · {size} bytes in working tree", false, size);
+            return new GitFilePreview(result.Output, $"{file.StatusCode}Preview", false, size, size);
         }
 
         public async Task StageAsync(GitRepository repository, GitWorktreeFile file, CancellationToken cancellationToken = default)
         {
             if (file.IsConflict == true)
             {
-                throw new GitException($"Resolve the conflict before staging: {file.Path}.");
+                throw new GitException("WorkingResolveBeforeStage", null, file.Path);
             }
 
             List<string> arguments = ["add", "-A", "--", LiteralPath(file.Path)];
@@ -160,12 +160,12 @@ namespace Bough.Core.Git
 
             if (file.IsConflict == true)
             {
-                throw new GitException($"Resolve the conflict before discarding changes: {file.Path}.");
+                throw new GitException("WorkingResolveBeforeDiscard", null, file.Path);
             }
 
             if (file.IsUnstaged == false)
             {
-                throw new GitException($"The file has no unstaged changes to discard: {file.Path}.");
+                throw new GitException("WorkingNoUnstagedChanges", null, file.Path);
             }
 
             string fullPath = ResolveDiscardPath(repository, file.Path);
@@ -173,18 +173,18 @@ namespace Bough.Core.Git
             {
                 if (string.Equals(file.Path, file.OriginalPath, StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    throw new GitException($"A case-only rename cannot be discarded safely: {file.Path}.");
+                    throw new GitException("WorkingCaseRenameUnsafe", null, file.Path);
                 }
 
                 string originalPath = ResolveDiscardPath(repository, file.OriginalPath);
                 if (File.Exists(originalPath) == true)
                 {
-                    throw new GitException($"The original rename path is occupied: {file.OriginalPath}.");
+                    throw new GitException("WorkingOriginalPathOccupied", null, file.OriginalPath);
                 }
 
                 if (Directory.Exists(originalPath) == true)
                 {
-                    throw new GitException($"The original rename path is occupied: {file.OriginalPath}.");
+                    throw new GitException("WorkingOriginalPathOccupied", null, file.OriginalPath);
                 }
             }
 
@@ -192,14 +192,14 @@ namespace Bough.Core.Git
             bool exists = information.Exists;
             if (Directory.Exists(fullPath) == true)
             {
-                throw new GitException($"Only a file can be discarded: {file.Path}.");
+                throw new GitException("WorkingOnlyFileDiscard", null, file.Path);
             }
 
             if (file.IsUntracked == true)
             {
                 if (exists == false)
                 {
-                    throw new GitException($"The untracked file is no longer available: {file.Path}.");
+                    throw new GitException("WorkingUntrackedFileMissing", null, file.Path);
                 }
             }
 
@@ -207,7 +207,7 @@ namespace Bough.Core.Git
             {
                 if (exists == false)
                 {
-                    throw new GitException($"The renamed file is no longer available: {file.Path}.");
+                    throw new GitException("WorkingRenamedFileMissing", null, file.Path);
                 }
             }
 
@@ -218,7 +218,7 @@ namespace Bough.Core.Git
 
             if ((information.Attributes & FileAttributes.ReparsePoint) != 0)
             {
-                throw new GitException($"A symbolic link cannot be discarded safely: {file.Path}.");
+                throw new GitException("WorkingSymlinkDiscardUnsafe", null, file.Path);
             }
 
             using FileStream stream = File.OpenRead(fullPath);
@@ -233,7 +233,7 @@ namespace Bough.Core.Git
             List<GitWorktreeFile> selected = files.ToList();
             if (selected.Count == 0)
             {
-                throw new GitException("Select at least one file to discard.");
+                throw new GitException("WorkingSelectDiscardFile", null, Array.Empty<object>());
             }
 
             GitWorktreeStatus status = await GetStatusAsync(repository, cancellationToken);
@@ -248,17 +248,17 @@ namespace Bough.Core.Git
                     cancellationToken.ThrowIfCancellationRequested();
                     if (paths.Add(file.Path) == false)
                     {
-                        throw new GitException($"A file was selected more than once: {file.Path}.");
+                        throw new GitException("WorkingDuplicateSelection", null, file.Path);
                     }
 
                     if (currentFiles.TryGetValue(file.Path, out GitWorktreeFile current) == false)
                     {
-                        throw new GitException($"The selected file changed before discard: {file.Path}.");
+                        throw new GitException("WorkingSelectedFileChanged", null, file.Path);
                     }
 
                     if (DiscardStatusMatches(file, current) == false)
                     {
-                        throw new GitException($"The selected file changed before discard: {file.Path}.");
+                        throw new GitException("WorkingSelectedFileChanged", null, file.Path);
                     }
 
                     GitDiscardPlan plan = PrepareDiscard(repository, current);
@@ -276,7 +276,7 @@ namespace Bough.Core.Git
             ArgumentNullException.ThrowIfNull(plans);
             if (plans.Count == 0)
             {
-                throw new GitException("Select at least one file to discard.");
+                throw new GitException("WorkingSelectDiscardFile", null, Array.Empty<object>());
             }
 
             IReadOnlyList<GitDiscardPlan> current = await PrepareDiscardsAsync(repository, plans.Select(plan => plan.File), cancellationToken);
@@ -284,12 +284,12 @@ namespace Bough.Core.Git
             {
                 if (DiscardFileMatches(plans[index], current[index]) == false)
                 {
-                    throw new GitException($"The selected file changed before discard: {plans[index].Path}.");
+                    throw new GitException("WorkingSelectedFileChanged", null, plans[index].Path);
                 }
 
                 if (plans[index].IndexEntries != current[index].IndexEntries)
                 {
-                    throw new GitException($"The index changed before discard: {plans[index].Path}.");
+                    throw new GitException("WorkingIndexChanged", null, plans[index].Path);
                 }
             }
 
@@ -303,7 +303,7 @@ namespace Bough.Core.Git
                 GitCommandResult tracked = await _runner.RunAsync(repository.RootPath, new string[] { "ls-files", "-z", "--", LiteralPath(plan.Path) }, false, cancellationToken);
                 if (tracked.Output.Length > 0)
                 {
-                    throw new GitException($"The renamed destination is tracked and cannot be deleted: {plan.Path}.");
+                    throw new GitException("WorkingRenamedDestinationTracked", null, plan.Path);
                 }
             }
 
@@ -320,7 +320,7 @@ namespace Bough.Core.Git
                         string fullPath = ResolveDiscardPath(repository, plan.Path);
                         if (Directory.Exists(fullPath) == true)
                         {
-                            throw new GitException($"Only a file can be discarded: {plan.Path}.");
+                            throw new GitException("WorkingOnlyFileDiscard", null, plan.Path);
                         }
 
                         pathspecs.Append(LiteralPath(plan.Path)).Append('\0');
@@ -341,18 +341,18 @@ namespace Bough.Core.Git
                     string originalPath = ResolveDiscardPath(repository, plan.File.OriginalPath);
                     if (File.Exists(originalPath) == true)
                     {
-                        throw new GitException($"The original rename path is occupied: {plan.File.OriginalPath}.");
+                        throw new GitException("WorkingOriginalPathOccupied", null, plan.File.OriginalPath);
                     }
 
                     if (Directory.Exists(originalPath) == true)
                     {
-                        throw new GitException($"The original rename path is occupied: {plan.File.OriginalPath}.");
+                        throw new GitException("WorkingOriginalPathOccupied", null, plan.File.OriginalPath);
                     }
 
                     await _runner.RunAsync(repository.RootPath, new string[] { "restore", "--worktree", "--", LiteralPath(plan.File.OriginalPath) }, false, cancellationToken);
                     if (DiscardDestinationMatches(repository, plan) == false)
                     {
-                        throw new GitException($"The renamed file changed before deletion: {plan.Path}.");
+                        throw new GitException("WorkingRenamedFileChanged", null, plan.Path);
                     }
 
                     File.Delete(ResolveDiscardPath(repository, plan.Path));
@@ -369,7 +369,7 @@ namespace Bough.Core.Git
                     cancellationToken.ThrowIfCancellationRequested();
                     if (DiscardDestinationMatches(repository, plan) == false)
                     {
-                        throw new GitException($"The untracked file changed before deletion: {plan.Path}.");
+                        throw new GitException("WorkingUntrackedFileChanged", null, plan.Path);
                     }
 
                     File.Delete(ResolveDiscardPath(repository, plan.Path));
@@ -405,7 +405,7 @@ namespace Bough.Core.Git
         {
             if (string.IsNullOrEmpty(selectedPath) == true)
             {
-                throw new ArgumentException("A selected path is required.", nameof(selectedPath));
+                throw new GitException("WorkingSelectedPathRequired", null, Array.Empty<object>());
             }
 
             return await PrepareStagePlanAsync(repository, selectedPath, cancellationToken);
@@ -426,7 +426,7 @@ namespace Bough.Core.Git
             GitStagePlan current = await PrepareStagePlanAsync(repository, plan.SelectedPath, cancellationToken);
             if (StagePlansMatch(plan, current) == false)
             {
-                throw new GitException("Working tree changed while staging was awaiting confirmation. Refresh and try again.");
+                throw new GitException("WorkingStageStateChanged", null, Array.Empty<object>());
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -490,7 +490,7 @@ namespace Bough.Core.Git
 
                 if (information.Exists == false)
                 {
-                    throw new GitException($"New file disappeared before staging: {file.Path}.");
+                    throw new GitException("WorkingNewFileDisappeared", null, file.Path);
                 }
 
                 if (information.Length >= _largeNewFileThreshold)
@@ -501,7 +501,7 @@ namespace Bough.Core.Git
 
             if (selectedPath != null && files.Count == 0)
             {
-                throw new GitException($"File is no longer available to stage: {selectedPath}.");
+                throw new GitException("WorkingStageFileUnavailable", null, selectedPath);
             }
 
             files.Sort((left, right) => StringComparer.Ordinal.Compare(left.Path, right.Path));
@@ -612,7 +612,7 @@ namespace Bough.Core.Git
             GitCommandResult head = await _runner.RunAsync(repository.RootPath, _headMessageArguments, true, cancellationToken);
             if (head.ExitCode != 0)
             {
-                throw new GitException("There is no previous commit to amend.");
+                throw new GitException("WorkingNoPreviousCommit", null, Array.Empty<object>());
             }
 
             byte[] content = await _runner.RunBytesAsync(repository.RootPath, new string[] { "cat-file", "commit", head.Output.Trim() }, 1048576, cancellationToken);
@@ -623,13 +623,13 @@ namespace Bough.Core.Git
             }
             catch (DecoderFallbackException exception)
             {
-                throw new GitException("The previous commit message is not valid UTF-8.", exception);
+                throw new GitException("WorkingPreviousMessageInvalidUtf8", exception, Array.Empty<object>());
             }
 
             int messageStart = raw.IndexOf("\n\n", StringComparison.Ordinal);
             if (messageStart < 0)
             {
-                throw new GitException("Git returned a commit without a message boundary.");
+                throw new GitException("WorkingCommitMessageBoundaryMissing", null, Array.Empty<object>());
             }
 
             return raw.Substring(messageStart + 2);
@@ -639,31 +639,31 @@ namespace Bough.Core.Git
         {
             if (string.IsNullOrWhiteSpace(message) == true)
             {
-                throw new GitException("Enter a commit message.");
+                throw new GitException("WorkingCommitMessageRequired", null, Array.Empty<object>());
             }
 
             string firstLine = message.Split('\n')[0];
             if (string.IsNullOrWhiteSpace(firstLine) == true)
             {
-                throw new GitException("Enter the first line of the commit message.");
+                throw new GitException("WorkingCommitSummaryRequired", null, Array.Empty<object>());
             }
 
             GitWorktreeStatus status = await GetStatusAsync(repository, cancellationToken);
             if (status.Files.Any(file => file.IsStaged) == false)
             {
-                throw new GitException("Stage at least one file before committing.");
+                throw new GitException("WorkingStageBeforeCommit", null, Array.Empty<object>());
             }
 
             if (status.Files.Any(file => file.IsConflict) == true)
             {
-                throw new GitException("Resolve all conflicts before committing.");
+                throw new GitException("WorkingResolveBeforeCommit", null, Array.Empty<object>());
             }
 
             GitCommandResult name = await _runner.RunAsync(repository.RootPath, _userNameArguments, true, cancellationToken);
             GitCommandResult email = await _runner.RunAsync(repository.RootPath, _userEmailArguments, true, cancellationToken);
             if (string.IsNullOrWhiteSpace(name.Output) == true || string.IsNullOrWhiteSpace(email.Output) == true)
             {
-                throw new GitException("Set Git user.name and user.email before committing.");
+                throw new GitException("WorkingAuthorRequired", null, Array.Empty<object>());
             }
 
             List<string> arguments = ["commit", "--cleanup=verbatim", "--file=-"];
@@ -891,12 +891,12 @@ namespace Bough.Core.Git
         {
             if (string.IsNullOrWhiteSpace(path) == true)
             {
-                throw new GitException("The selected file has no repository-relative path.");
+                throw new GitException("WorkingRelativePathMissing", null, Array.Empty<object>());
             }
 
             if (Path.IsPathRooted(path) == true)
             {
-                throw new GitException($"The selected file path is outside the repository: {path}.");
+                throw new GitException("WorkingPathOutsideRoot", null, path);
             }
 
             string root = Path.GetFullPath(repository.RootPath);
@@ -904,22 +904,22 @@ namespace Bough.Core.Git
             string relativePath = Path.GetRelativePath(root, fullPath);
             if (relativePath == ".")
             {
-                throw new GitException("The repository root cannot be discarded.");
+                throw new GitException("WorkingRootDiscardDenied", null, Array.Empty<object>());
             }
 
             if (Path.IsPathRooted(relativePath) == true)
             {
-                throw new GitException($"The selected file path is outside the repository: {path}.");
+                throw new GitException("WorkingPathOutsideRoot", null, path);
             }
 
             if (relativePath == "..")
             {
-                throw new GitException($"The selected file path is outside the repository: {path}.");
+                throw new GitException("WorkingPathOutsideRoot", null, path);
             }
 
             if (relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) == true)
             {
-                throw new GitException($"The selected file path is outside the repository: {path}.");
+                throw new GitException("WorkingPathOutsideRoot", null, path);
             }
 
             string[] segments = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
@@ -928,7 +928,7 @@ namespace Bough.Core.Git
             {
                 if (segments[index].Equals(".git", StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    throw new GitException($"Git metadata cannot be discarded: {path}.");
+                    throw new GitException("WorkingMetadataDiscardDenied", null, path);
                 }
 
                 if (index == segments.Length - 1)
@@ -939,7 +939,7 @@ namespace Bough.Core.Git
                 parent = Path.Combine(parent, segments[index]);
                 if (File.Exists(parent) == true)
                 {
-                    throw new GitException($"The selected file path has a file parent: {path}.");
+                    throw new GitException("WorkingFileParentInvalid", null, path);
                 }
 
                 if (Directory.Exists(parent) == false)
@@ -949,7 +949,7 @@ namespace Bough.Core.Git
 
                 if ((File.GetAttributes(parent) & FileAttributes.ReparsePoint) != 0)
                 {
-                    throw new GitException($"The selected file path crosses a symbolic link: {path}.");
+                    throw new GitException("WorkingPathSymlink", null, path);
                 }
             }
 
@@ -973,13 +973,13 @@ namespace Bough.Core.Git
             FileInfo info = new(fullPath);
             if (info.Length > 1048576)
             {
-                return new GitFilePreview(string.Empty, $"New file is {info.Length} bytes. Preview is limited to 1 MiB.", false, info.Length);
+                return new GitFilePreview(string.Empty, "WorktreePreviewNewFileTooLarge", false, info.Length, info.Length);
             }
 
             byte[] content = await File.ReadAllBytesAsync(fullPath, cancellationToken);
             if (HasBinaryContent(content) == true)
             {
-                return new GitFilePreview(string.Empty, $"New binary file ({content.Length} bytes).", true, content.Length);
+                return new GitFilePreview(string.Empty, "WorktreePreviewNewBinaryFile", true, content.Length, content.Length);
             }
 
             try
@@ -990,11 +990,11 @@ namespace Bough.Core.Git
                     text = text.Substring(1);
                 }
 
-                return new GitFilePreview(text, $"New text file ({content.Length} bytes).", false, content.Length);
+                return new GitFilePreview(text, "WorktreePreviewNewTextFile", false, content.Length, content.Length);
             }
             catch (DecoderFallbackException)
             {
-                return new GitFilePreview(string.Empty, $"New binary or non-UTF-8 file ({content.Length} bytes).", true, content.Length);
+                return new GitFilePreview(string.Empty, "WorktreePreviewNewBinaryOrInvalidUtf8", true, content.Length, content.Length);
             }
         }
 

@@ -31,12 +31,12 @@ namespace Bough.Core.Git
                 string[] fields = line.TrimEnd('\r').Split('\0');
                 if (fields.Length != 4)
                 {
-                    throw new GitException("Git returned an unexpected stash-list format.");
+                    throw new GitException("StashListFormatInvalid", null, Array.Empty<object>());
                 }
 
                 if (DateTimeOffset.TryParse(fields[3], CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) == false)
                 {
-                    throw new GitException($"Git returned an invalid stash date for {fields[0]}.");
+                    throw new GitException("StashDateInvalid", null, fields[0]);
                 }
 
                 string branch = ParseBranch(fields[2]);
@@ -54,7 +54,7 @@ namespace Bough.Core.Git
             string[] parts = filesResult.Output.Split('\0');
             if (parts[parts.Length - 1].Length != 0)
             {
-                throw new GitException($"Git returned a malformed file list for {entry.Name}.");
+                throw new GitException("StashFileListInvalid", null, entry.Name);
             }
 
             return new GitStashPreview(parts.Where(path => path.Length > 0), diffResult.Output);
@@ -71,14 +71,14 @@ namespace Bough.Core.Git
             GitWorktreeStatus status = await _workingTreeService.GetStatusAsync(repository, cancellationToken);
             if (status.Files.Any(file => file.IsConflict) == true)
             {
-                throw new GitException("Resolve conflicts before creating a stash.");
+                throw new GitException("StashResolveConflictsFirst", null, Array.Empty<object>());
             }
 
             bool hasTrackedChanges = status.Files.Any(file => file.IsUntracked == false);
             bool hasUntrackedChanges = status.Files.Any(file => file.IsUntracked);
             if (hasTrackedChanges == false && (includeUntracked == false || hasUntrackedChanges == false))
             {
-                throw new GitException("There are no selected changes to stash.");
+                throw new GitException("StashNoSelectedChanges", null, Array.Empty<object>());
             }
 
             IReadOnlyList<GitStashEntry> before = await GetStashesAsync(repository, cancellationToken);
@@ -100,18 +100,18 @@ namespace Bough.Core.Git
                 IReadOnlyList<GitStashEntry> after = await GetStashesAsync(repository, cancellationToken);
                 if (after.Count == 0)
                 {
-                    throw new GitException("Git did not create a new stash. Refresh the working tree and try again.");
+                    throw new GitException("StashCreationMissing", null, Array.Empty<object>());
                 }
                 if (before.Count > 0 && after[0].CommitHash == before[0].CommitHash)
                 {
-                    throw new GitException("Git did not create a new stash. Refresh the working tree and try again.");
+                    throw new GitException("StashCreationMissing", null, Array.Empty<object>());
                 }
 
                 return new GitStashSaveResult(after[0], after);
             }
             catch (Exception exception) when (exception is not OutOfMemoryException)
             {
-                throw new GitStashMutationException(exception.Message, true, true, exception);
+                throw GitStashMutationException.FromError(exception, true, true);
             }
         }
 
@@ -124,7 +124,7 @@ namespace Bough.Core.Git
             }
             catch (Exception exception) when (exception is not OutOfMemoryException)
             {
-                throw new GitStashMutationException(exception.Message, true, false, exception);
+                throw GitStashMutationException.FromError(exception, true, false);
             }
         }
 
@@ -137,7 +137,7 @@ namespace Bough.Core.Git
             }
             catch (Exception exception) when (exception is not OutOfMemoryException)
             {
-                throw new GitStashMutationException(exception.Message, true, true, exception);
+                throw GitStashMutationException.FromError(exception, true, true);
             }
         }
 
@@ -150,7 +150,7 @@ namespace Bough.Core.Git
             }
             catch (Exception exception) when (exception is not OutOfMemoryException)
             {
-                throw new GitStashMutationException(exception.Message, false, true, exception);
+                throw GitStashMutationException.FromError(exception, false, true);
             }
         }
 
@@ -163,17 +163,17 @@ namespace Bough.Core.Git
 
             if (Regex.IsMatch(entry.Name, @"^stash@\{[0-9]+\}$", RegexOptions.CultureInvariant) == false)
             {
-                throw new GitException($"Invalid stash reference: {entry.Name}.");
+                throw new GitException("StashReferenceInvalid", null, entry.Name);
             }
 
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "rev-parse", "--verify", "--quiet", $"{entry.Name}^{{commit}}" }, true, cancellationToken);
             if (result.ExitCode != 0)
             {
-                throw new GitException($"{entry.Name} changed or was removed. Refresh the stash list before continuing.");
+                throw new GitException("StashSelectionChanged", null, entry.Name);
             }
             if (string.Equals(result.Output.Trim(), entry.CommitHash, StringComparison.OrdinalIgnoreCase) == false)
             {
-                throw new GitException($"{entry.Name} changed or was removed. Refresh the stash list before continuing.");
+                throw new GitException("StashSelectionChanged", null, entry.Name);
             }
         }
 

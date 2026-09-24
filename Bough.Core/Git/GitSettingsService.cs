@@ -38,18 +38,18 @@ namespace Bough.Core.Git
             }
             if (executable != "git" && Path.IsPathFullyQualified(executable) == false)
             {
-                throw new ArgumentException($"Git 실행 파일의 절대 경로를 입력하세요: {candidatePath}", nameof(candidatePath));
+                throw new GitException("GitExecutableAbsolutePathRequired", null, candidatePath);
             }
             if (executable != "git" && File.Exists(executable) == false)
             {
-                throw new FileNotFoundException($"Git 실행 파일을 찾을 수 없습니다: {executable}", executable);
+                throw new GitException("GitExecutableNotFound", null, executable);
             }
 
             GitCommandResult result = await _runner.RunWithExecutableAsync(executable, Directory.GetCurrentDirectory(), _versionArguments, false, cancellationToken);
             string version = result.Output.Trim();
             if (version.StartsWith("git version ", StringComparison.OrdinalIgnoreCase) == false)
             {
-                throw new GitException($"선택한 파일의 Git 버전을 확인할 수 없습니다: {version}");
+                throw new GitException("GitExecutableVersionInvalid", null, version);
             }
 
             return version;
@@ -75,14 +75,14 @@ namespace Bough.Core.Git
             string globalName = await ReadConfigAsync(repository, "--global", "user.name", cancellationToken);
             string globalEmail = await ReadConfigAsync(repository, "--global", "user.email", cancellationToken);
             GitCommandResult helperResult = await _runner.RunAsync(repository.RootPath, _credentialHelperArguments, true, cancellationToken);
-            string helper = "설정되지 않음";
+            string helper = string.Empty;
             if (helperResult.ExitCode == 0)
             {
                 helper = helperResult.Output.Trim();
             }
             if (helperResult.ExitCode != 0 && helperResult.ExitCode != 1)
             {
-                throw new GitException($"credential.helper 설정을 읽지 못했습니다: {helperResult.Error.Trim()}");
+                throw new GitException("GitCredentialHelperReadFailed", null, helperResult.Error.Trim());
             }
 
             ArrayQueue<GitRemote> remotes = [];
@@ -97,7 +97,7 @@ namespace Bough.Core.Git
                 }
                 else
                 {
-                    throw new GitException($"{name} 원격 URL을 읽지 못했습니다: {urlResult.Error.Trim()}");
+                    throw new GitException("GitSettingsRemoteUrlReadFailed", null, name, urlResult.Error.Trim());
                 }
                 remotes.Add(new GitRemote(name, url, Array.Empty<GitRemoteBranch>()));
             }
@@ -129,7 +129,7 @@ namespace Bough.Core.Git
                 return string.Empty;
             }
 
-            throw new GitException($"{scope} {key} 설정을 읽지 못했습니다: {result.Error.Trim()}");
+            throw new GitException("GitConfigReadFailed", null, scope, key, result.Error.Trim());
         }
 
         private async Task WriteConfigAsync(GitRepository repository, string scope, string key, string value, CancellationToken cancellationToken)
@@ -140,7 +140,7 @@ namespace Bough.Core.Git
                 GitCommandResult unsetResult = await _runner.RunAsync(repository.RootPath, new string[] { "config", scope, "--unset-all", key }, true, cancellationToken);
                 if (unsetResult.ExitCode != 0 && unsetResult.ExitCode != 5)
                 {
-                    throw new GitException($"{scope} {key} 설정을 지우지 못했습니다: {unsetResult.Error.Trim()}");
+                    throw new GitException("GitConfigUnsetFailed", null, scope, key, unsetResult.Error.Trim());
                 }
 
                 return;

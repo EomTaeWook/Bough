@@ -14,6 +14,7 @@ namespace Bough.App.ViewModels
         private readonly GitWorkingTreeService _workingTreeService;
         private readonly GitOperationQueue _operationQueue;
         private readonly StringHelper _stringHelper;
+        private readonly GitErrorLocalizer _errorLocalizer;
         private readonly ObservableCollection<GitStashEntry> _stashes;
         private readonly ObservableCollection<string> _previewFiles;
         private readonly ObservableCollection<string> _stashTargets;
@@ -32,7 +33,8 @@ namespace Bough.App.ViewModels
         private int _requestVersion;
         private int _previewVersion;
 
-        public StashViewModel(GitStashService stashService, GitWorkingTreeService workingTreeService, GitOperationQueue operationQueue, StringHelper stringHelper)
+        public StashViewModel(GitStashService stashService, GitWorkingTreeService workingTreeService, GitOperationQueue operationQueue,
+            StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
         {
             if (stashService == null)
             {
@@ -53,11 +55,16 @@ namespace Bough.App.ViewModels
             {
                 throw new ArgumentNullException(nameof(operationQueue));
             }
+            if (errorLocalizer == null)
+            {
+                throw new ArgumentNullException(nameof(errorLocalizer));
+            }
 
             _stashService = stashService;
             _workingTreeService = workingTreeService;
             _operationQueue = operationQueue;
             _stringHelper = stringHelper;
+            _errorLocalizer = errorLocalizer;
             _stashes = [];
             _previewFiles = [];
             _stashTargets = [];
@@ -363,7 +370,7 @@ namespace Bough.App.ViewModels
             {
                 if (requestVersion == _requestVersion)
                 {
-                    ErrorText = exception.Message;
+                    ErrorText = _errorLocalizer.GetDisplayMessage(exception);
                 }
             }
             finally
@@ -412,7 +419,7 @@ namespace Bough.App.ViewModels
                 {
                     if (requestVersion == _requestVersion)
                     {
-                        ErrorText = exception.Message;
+                        ErrorText = _errorLocalizer.GetDisplayMessage(exception);
                     }
                 }
             }
@@ -525,9 +532,9 @@ namespace Bough.App.ViewModels
             {
                 if (IsCurrentRepository(repository) == true)
                 {
-                    ErrorText = exception.Message;
+                    ErrorText = _errorLocalizer.GetDisplayMessage(exception);
                 }
-                return new StashMutationResult(repository, kind, false, false, false, null, exception.Message);
+                return new StashMutationResult(repository, kind, false, false, false, null, _errorLocalizer.GetDisplayMessage(exception));
             }
         }
 
@@ -586,13 +593,13 @@ namespace Bough.App.ViewModels
             }
             catch (GitStashMutationException exception)
             {
-                failure = exception.Message;
+                failure = _errorLocalizer.GetDisplayMessage(exception);
                 worktreeMayHaveChanged = exception.WorktreeMayHaveChanged;
                 stashesMayHaveChanged = exception.StashesMayHaveChanged;
             }
             catch (Exception exception)
             {
-                failure = exception.Message;
+                failure = _errorLocalizer.GetDisplayMessage(exception);
             }
 
             bool invalidateReads = succeeded;
@@ -653,7 +660,7 @@ namespace Bough.App.ViewModels
                 {
                     if (failure == null)
                     {
-                        failure = exception.Message;
+                        failure = _errorLocalizer.GetDisplayMessage(exception);
                     }
                 }
             }
@@ -675,7 +682,7 @@ namespace Bough.App.ViewModels
                 {
                     if (failure == null)
                     {
-                        failure = exception.Message;
+                        failure = _errorLocalizer.GetDisplayMessage(exception);
                     }
                 }
             }

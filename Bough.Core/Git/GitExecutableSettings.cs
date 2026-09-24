@@ -41,13 +41,13 @@ namespace Bough.Core.Git
             string selectedPath = path?.Trim() ?? string.Empty;
             if (selectedPath.Length > 0 && Path.IsPathFullyQualified(selectedPath) == false)
             {
-                throw new ArgumentException("Git 실행 파일의 절대 경로를 입력하세요.", nameof(path));
+                throw new GitException("GitExecutableAbsolutePathRequired", null, selectedPath);
             }
 
             string directory = Path.GetDirectoryName(_filePath);
             if (directory == null)
             {
-                throw new InvalidOperationException($"Git 설정 파일 경로가 올바르지 않습니다: {_filePath}");
+                throw new GitException("GitExecutableSettingsPathInvalid", null, _filePath);
             }
 
             Directory.CreateDirectory(directory);

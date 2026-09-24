@@ -114,7 +114,7 @@ namespace Bough.Core.Git
                 }
                 else
                 {
-                    throw new GitException($"{remoteName} 원격 URL을 읽지 못했습니다: {urlResult.Error.Trim()}");
+                    throw new GitException("ReferenceRemoteUrlUnreadable", null, remoteName, urlResult.Error.Trim());
                 }
                 remotes.Add(new GitRemote(remoteName, url, remoteBranches[remoteName].ToArray()));
             }
@@ -139,7 +139,7 @@ namespace Bough.Core.Git
             GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
             if (updated.CurrentBranch != branchName)
             {
-                throw new GitException($"브랜치 전환 후 현재 브랜치가 예상과 다릅니다: 요청 {branchName}, 현재 {updated.CurrentBranch}");
+                throw new GitException("ReferenceBranchSwitchMismatch", null, branchName, updated.CurrentBranch);
             }
             return updated;
         }
@@ -152,14 +152,14 @@ namespace Bough.Core.Git
             string name = tagName.Trim();
             if (name.StartsWith("-", StringComparison.Ordinal))
             {
-                throw new GitException($"태그 이름이 올바르지 않습니다: {name}");
+                throw new GitException("ReferenceTagNameInvalid", null, name);
             }
 
             GitCommandResult format = await _runner.RunAsync(repository.RootPath,
                 new string[] { "check-ref-format", $"refs/tags/{name}" }, true, cancellationToken);
             if (format.ExitCode != 0)
             {
-                throw new GitException($"태그 이름이 올바르지 않습니다: {name}. {format.Error.Trim()}");
+                throw new GitException("ReferenceTagNameRejected", null, name, format.Error.Trim());
             }
 
             string reference = $"refs/tags/{name}";
@@ -167,11 +167,11 @@ namespace Bough.Core.Git
                 new string[] { "show-ref", "--verify", "--quiet", reference }, true, cancellationToken);
             if (existing.ExitCode == 0)
             {
-                throw new GitException($"'{name}' 태그가 이미 있습니다. 기존 태그를 덮어쓰지 않습니다.");
+                throw new GitException("ReferenceTagExists", null, name);
             }
             if (existing.ExitCode != 1)
             {
-                throw new GitException($"기존 태그를 확인하지 못했습니다: {existing.Error.Trim()}");
+                throw new GitException("ReferenceTagLookupFailed", null, existing.Error.Trim());
             }
 
             string point = target.Trim();
@@ -179,13 +179,13 @@ namespace Bough.Core.Git
             {
                 if (point.Length != 40 && point.Length != 64)
                 {
-                    throw new GitException($"태그 대상 커밋 해시가 올바르지 않습니다: {point}");
+                    throw new GitException("ReferenceTagTargetHashInvalid", null, point);
                 }
                 foreach (char character in point)
                 {
                     if (Uri.IsHexDigit(character) == false)
                     {
-                        throw new GitException($"태그 대상 커밋 해시가 올바르지 않습니다: {point}");
+                        throw new GitException("ReferenceTagTargetHashInvalid", null, point);
                     }
                 }
             }
@@ -194,7 +194,7 @@ namespace Bough.Core.Git
                 new string[] { "rev-parse", "--verify", "--quiet", $"{point}^{{commit}}" }, true, cancellationToken);
             if (commit.ExitCode != 0)
             {
-                throw new GitException($"태그 대상 커밋을 찾을 수 없습니다: {point}");
+                throw new GitException("ReferenceTagTargetNotFound", null, point);
             }
 
             await _runner.RunAsync(repository.RootPath,
@@ -223,7 +223,7 @@ namespace Bough.Core.Git
             GitCommandResult checkResult = await _runner.RunAsync(repository.RootPath, new string[] { "check-ref-format", "--branch", branchName }, true, cancellationToken);
             if (checkResult.ExitCode != 0)
             {
-                throw new GitException($"브랜치 이름이 올바르지 않습니다: {branchName}. {checkResult.Error.Trim()}");
+                throw new GitException("ReferenceBranchNameRejected", null, branchName, checkResult.Error.Trim());
             }
 
             string point = "HEAD";
@@ -233,13 +233,13 @@ namespace Bough.Core.Git
             }
             if (point.StartsWith("-", StringComparison.Ordinal) == true)
             {
-                throw new ArgumentException($"시작점이 올바르지 않습니다: {point}", nameof(startPoint));
+                throw new GitException("ReferenceStartPointInvalid", null, point);
             }
 
             GitCommandResult commitResult = await _runner.RunAsync(repository.RootPath, new string[] { "rev-parse", "--verify", "--quiet", $"{point}^{{commit}}" }, true, cancellationToken);
             if (commitResult.ExitCode != 0)
             {
-                throw new GitException($"시작 커밋을 찾을 수 없습니다: {point}");
+                throw new GitException("ReferenceStartCommitNotFound", null, point);
             }
 
             await _runner.RunAsync(repository.RootPath, new string[] { "switch", "-c", branchName, commitResult.Output.Trim() }, false, cancellationToken);
@@ -254,7 +254,7 @@ namespace Bough.Core.Git
             GitCommandResult checkResult = await _runner.RunAsync(repository.RootPath, new string[] { "check-ref-format", "--branch", localName }, true, cancellationToken);
             if (checkResult.ExitCode != 0)
             {
-                throw new GitException($"브랜치 이름이 올바르지 않습니다: {localName}. {checkResult.Error.Trim()}");
+                throw new GitException("ReferenceBranchNameRejected", null, localName, checkResult.Error.Trim());
             }
 
             await _runner.RunAsync(repository.RootPath, new string[] { "switch", "--track", "-c", localName, remoteBranch.FullName }, false, cancellationToken);
@@ -276,7 +276,7 @@ namespace Bough.Core.Git
             }
             if (configResult.ExitCode != 0)
             {
-                throw new GitException($".gitmodules를 읽지 못했습니다: {configResult.Error.Trim()}");
+                throw new GitException("ReferenceSubmoduleConfigUnreadable", null, configResult.Error.Trim());
             }
 
             Dictionary<string, string> paths = new(StringComparer.Ordinal);
@@ -286,7 +286,7 @@ namespace Bough.Core.Git
                 int separator = entry.IndexOf('\n');
                 if (separator < 0)
                 {
-                    throw new GitException(".gitmodules의 출력 형식이 올바르지 않습니다.");
+                    throw new GitException("ReferenceSubmoduleConfigInvalid", null, Array.Empty<object>());
                 }
 
                 string key = entry[..separator];
@@ -334,7 +334,7 @@ namespace Bough.Core.Git
                 string relativePath = Path.GetRelativePath(repository.RootPath, fullPath);
                 if (relativePath == ".." || relativePath.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
                 {
-                    throw new GitException($"서브모듈 경로가 저장소 밖을 가리킵니다: {path}");
+                    throw new GitException("ReferenceSubmoduleOutsideRepository", null, path);
                 }
 
                 string expectedCommit = string.Empty;
@@ -343,7 +343,7 @@ namespace Bough.Core.Git
                     expectedCommit = commit;
                 }
                 string currentCommit = string.Empty;
-                string state = "미초기화";
+                string state = "ReferenceSubmoduleUninitialized";
                 string gitMarker = Path.Combine(fullPath, ".git");
                 if (File.Exists(gitMarker) == true || Directory.Exists(gitMarker) == true)
                 {
@@ -351,15 +351,15 @@ namespace Bough.Core.Git
                     if (currentResult.ExitCode == 0)
                     {
                         currentCommit = currentResult.Output.Trim();
-                        state = "다른 커밋";
+                        state = "ReferenceSubmoduleDifferentCommit";
                         if (expectedCommit == currentCommit)
                         {
-                            state = "일치";
+                            state = "ReferenceSubmoduleMatchingCommit";
                         }
                     }
                     else
                     {
-                        state = "체크아웃 확인 실패";
+                        state = "ReferenceSubmoduleCheckoutUnavailable";
                     }
                 }
 
@@ -382,7 +382,7 @@ namespace Bough.Core.Git
                 string[] fields = line.Split('\0');
                 if (fields.Length != fieldCount)
                 {
-                    throw new GitException("Git 참조 출력 형식이 올바르지 않습니다.");
+                    throw new GitException("ReferenceOutputInvalid", null, Array.Empty<object>());
                 }
 
                 rows.Add(fields);

@@ -1,3 +1,4 @@
+using Bough.App.Localization;
 using Bough.Core.Git;
 using System.Collections.ObjectModel;
 
@@ -10,10 +11,12 @@ namespace Bough.App.ViewModels
         private bool _isLoading;
         private string _diffText;
         private string _diffReason;
+        private readonly StringHelper _stringHelper;
 
-        public HistoryInspectionFileItem(GitCommitChangedFile file)
+        public HistoryInspectionFileItem(GitCommitChangedFile file, StringHelper stringHelper)
         {
             File = file;
+            _stringHelper = stringHelper;
             _diffText = string.Empty;
             _diffReason = string.Empty;
             DiffLines = [];
@@ -30,12 +33,12 @@ namespace Bough.App.ViewModels
             {
                 switch (File.StatusCode)
                 {
-                    case 'A': return "Added";
-                    case 'M': return "Modified";
-                    case 'D': return "Deleted";
-                    case 'R': return "Renamed";
-                    case 'C': return "Copied";
-                    case 'T': return "Type changed";
+                    case 'A': return _stringHelper.GetString("HistoryStatusAdded");
+                    case 'M': return _stringHelper.GetString("HistoryStatusModified");
+                    case 'D': return _stringHelper.GetString("HistoryStatusDeleted");
+                    case 'R': return _stringHelper.GetString("HistoryStatusRenamed");
+                    case 'C': return _stringHelper.GetString("HistoryStatusCopied");
+                    case 'T': return _stringHelper.GetString("HistoryStatusTypeChanged");
                     default: return File.Status;
                 }
             }

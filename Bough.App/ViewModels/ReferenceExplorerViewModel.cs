@@ -16,6 +16,7 @@ namespace Bough.App.ViewModels
         private readonly TerminalLauncher _terminalLauncher;
         private readonly RepositoryFolderLauncher _folderLauncher;
         private readonly StringHelper _stringHelper;
+        private readonly GitErrorLocalizer _errorLocalizer;
         private readonly GitOperationQueue _operationQueue;
         private readonly ObservableCollection<GitLocalBranch> _branches;
         private readonly ObservableCollection<GitRemote> _remotes;
@@ -44,6 +45,7 @@ namespace Bough.App.ViewModels
             _terminalLauncher = terminalLauncher;
             _folderLauncher = folderLauncher;
             _stringHelper = stringHelper;
+            _errorLocalizer = new GitErrorLocalizer(stringHelper);
             _operationQueue = operationQueue ?? throw new ArgumentNullException(nameof(operationQueue));
             _branches = [];
             _remotes = [];
@@ -89,6 +91,9 @@ namespace Bough.App.ViewModels
             return _stringHelper.GetString(name);
         }
 
+        public string ReferenceTitle { get { return _stringHelper.GetString("ReferenceTitle"); } }
+        public string ReferenceTreeAccessibleName { get { return _stringHelper.GetString("ReferenceTreeAccessibleName"); } }
+
         public ReadOnlyObservableCollection<GitLocalBranch> Branches { get; }
         public ReadOnlyObservableCollection<GitRemote> Remotes { get; }
         public ReadOnlyObservableCollection<GitTag> Tags { get; }
@@ -120,7 +125,24 @@ namespace Bough.App.ViewModels
         public string CurrentBranch
         {
             get { return _currentBranch; }
-            private set { SetProperty(ref _currentBranch, value); }
+            private set
+            {
+                if (SetProperty(ref _currentBranch, value))
+                {
+                    OnPropertyChanged(nameof(CurrentBranchDisplay));
+                }
+            }
+        }
+        public string CurrentBranchDisplay
+        {
+            get
+            {
+                if (CurrentBranch == "Detached HEAD")
+                {
+                    return _stringHelper.GetString("ReferenceDetachedHead");
+                }
+                return CurrentBranch;
+            }
         }
 
         public string StatusMessage
@@ -218,7 +240,7 @@ namespace Bough.App.ViewModels
                 return;
             }
 
-            StatusMessage = "참조 목록을 불러오는 중입니다.";
+            StatusMessage = _stringHelper.GetString("ReferenceLoading");
         }
 
         public void InvalidatePendingRequests()
@@ -246,7 +268,7 @@ namespace Bough.App.ViewModels
             _loadCancellation = cancellation;
             int request = ++_requestVersion;
             IsBusy = true;
-            StatusMessage = "참조 목록을 불러오는 중입니다.";
+            StatusMessage = _stringHelper.GetString("ReferenceLoading");
             try
             {
                 GitReferenceSnapshot snapshot = await _referenceService.GetSnapshotAsync(repository, cancellation.Token);
@@ -279,7 +301,7 @@ namespace Bough.App.ViewModels
             {
                 if (request == _requestVersion)
                 {
-                    StatusMessage = exception.Message;
+                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
                 }
                 return false;
             }
@@ -409,7 +431,7 @@ namespace Bough.App.ViewModels
                 if (IsCurrentRepository(repository.RootPath))
                 {
                     await RefreshCoreAsync();
-                    BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", branchName, CurrentBranch, exception.Message);
+                    BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", branchName, CurrentBranchDisplay, _errorLocalizer.GetDisplayMessage(exception));
                     StatusMessage = BranchSwitchFailureMessage;
                 }
                 return false;
@@ -441,11 +463,11 @@ namespace Bough.App.ViewModels
             }
             if (branch == null)
             {
-                StatusMessage = "시작 브랜치가 선택되지 않았습니다.";
+                StatusMessage = _stringHelper.GetString("ReferenceSourceBranchRequired");
                 return false;
             }
             GitRepository repository = _repository;
-            return await RunBranchChangeAsync(() => _actionService.CreateFromBranchAsync(repository, branch.Name, branch.CommitHash, newName, true), $"{newName} 브랜치를 만들었습니다.", newName);
+            return await RunBranchChangeAsync(() => _actionService.CreateFromBranchAsync(repository, branch.Name, branch.CommitHash, newName, true), _stringHelper.Format("ReferenceBranchCreated", newName), newName);
         }
 
         public async Task<bool> TrackMenuRemoteAsync(string repositoryRoot, GitRemoteBranch branch, string localName)
@@ -456,7 +478,7 @@ namespace Bough.App.ViewModels
             }
             if (branch == null)
             {
-                StatusMessage = "원격 브랜치가 선택되지 않았습니다.";
+                StatusMessage = _stringHelper.GetString("ReferenceRemoteBranchRequired");
                 return false;
             }
             GitRepository repository = _repository;
@@ -486,11 +508,11 @@ namespace Bough.App.ViewModels
             {
                 if (request == _requestVersion)
                 {
-                    StatusMessage = exception.Message;
+                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
                 }
                 return false;
             }
-            return await RunBranchChangeAsync(() => _actionService.TrackRemoteAsync(repository, branch, localName), $"{branch.FullName}을 추적하는 {localName} 브랜치로 전환했습니다.", localName);
+            return await RunBranchChangeAsync(() => _actionService.TrackRemoteAsync(repository, branch, localName), _stringHelper.Format("ReferenceRemoteTrackingSwitched", branch.FullName, localName), localName);
         }
 
         public async Task<bool> PrepareRemoteBranchCheckoutAsync(string repositoryRoot, GitRemoteBranch branch)
@@ -502,7 +524,7 @@ namespace Bough.App.ViewModels
             }
             if (branch == null)
             {
-                StatusMessage = "원격 브랜치가 선택되지 않았습니다.";
+                StatusMessage = _stringHelper.GetString("ReferenceRemoteBranchRequired");
                 return false;
             }
             BranchSwitchFailureMessage = string.Empty;
@@ -577,7 +599,7 @@ namespace Bough.App.ViewModels
                         return false;
                     }
                     await QueueBranchSwitchAsync(repository, trackingBranch.Name,
-                        $"{branch.FullName}을 추적하는 {trackingBranch.Name} 브랜치로 전환했습니다.");
+                        _stringHelper.Format("ReferenceRemoteTrackingSwitched", branch.FullName, trackingBranch.Name));
                     return false;
                 }
                 if (nameExists)
@@ -590,7 +612,7 @@ namespace Bough.App.ViewModels
             {
                 if (request == _requestVersion)
                 {
-                    StatusMessage = $"{branch.FullName} 전환을 준비하지 못했습니다. 현재 브랜치: {CurrentBranch}. 이유: {exception.Message}";
+                    StatusMessage = _stringHelper.Format("ReferenceRemoteCheckoutFailed", branch.FullName, CurrentBranchDisplay, _errorLocalizer.GetDisplayMessage(exception));
                     BranchSwitchFailureMessage = StatusMessage;
                 }
                 return false;
@@ -634,12 +656,12 @@ namespace Bough.App.ViewModels
             }
             if (string.IsNullOrEmpty(tag.CommitHash) == true)
             {
-                StatusMessage = $"{tag.Name} 태그는 커밋을 가리키지 않습니다.";
+                StatusMessage = _stringHelper.Format("ReferenceTagNoCommit", tag.Name);
                 return;
             }
 
             TagCommitSelected?.Invoke(tag.CommitHash);
-            StatusMessage = $"{tag.Name} 태그의 커밋으로 이동합니다.";
+            StatusMessage = _stringHelper.Format("ReferenceTagNavigate", tag.Name);
         }
 
         public void OpenStashes()
@@ -662,7 +684,7 @@ namespace Bough.App.ViewModels
                 return false;
             }
             GitRepository repository = _repository;
-            return await RunBranchChangeAsync(() => _referenceService.CreateBranchAsync(repository, name, "HEAD"), $"{name} 브랜치를 만들고 전환했습니다.", name);
+            return await RunBranchChangeAsync(() => _referenceService.CreateBranchAsync(repository, name, "HEAD"), _stringHelper.Format("ReferenceBranchCreatedAndSwitched", name), name);
         }
 
         public async Task<bool> CreateTagFromSectionAsync(string repositoryRoot, string name)
@@ -689,7 +711,7 @@ namespace Bough.App.ViewModels
             {
                 if (IsCurrentRepository(repository.RootPath))
                 {
-                    StatusMessage = exception.Message;
+                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
                 }
                 return false;
             }
@@ -705,7 +727,7 @@ namespace Bough.App.ViewModels
             {
                 if (IsCurrentRepository(repository.RootPath))
                 {
-                    StatusMessage = exception.Message;
+                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
                 }
                 return false;
             }
@@ -728,7 +750,7 @@ namespace Bough.App.ViewModels
             }
             else
             {
-                StatusMessage = $"{success} 참조 목록은 다시 새로 고쳐 주세요. {StatusMessage}";
+                StatusMessage = _stringHelper.Format("ReferenceTagRefreshFailed", success, StatusMessage);
             }
             RepositoryChanged?.Invoke(repository);
             return true;
@@ -759,7 +781,7 @@ namespace Bough.App.ViewModels
             {
                 if (IsCurrentRepository(requestedRepository.RootPath))
                 {
-                    BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", targetBranch, CurrentBranch, exception.Message);
+                    BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", targetBranch, CurrentBranchDisplay, _errorLocalizer.GetDisplayMessage(exception));
                     StatusMessage = BranchSwitchFailureMessage;
                 }
                 return false;
@@ -775,7 +797,7 @@ namespace Bough.App.ViewModels
             }
             if (_branchChangeInProgress)
             {
-                StatusMessage = _stringHelper.Format("ReferenceSwitchOperationBusy", targetBranch, CurrentBranch);
+                StatusMessage = _stringHelper.Format("ReferenceSwitchOperationBusy", targetBranch, CurrentBranchDisplay);
                 BranchSwitchFailureMessage = StatusMessage;
                 return false;
             }
@@ -863,12 +885,12 @@ namespace Bough.App.ViewModels
                 {
                     return false;
                 }
-                string currentBranch = CurrentBranch;
+                string currentBranch = CurrentBranchDisplay;
                 if (refreshed == false)
                 {
                     currentBranch = _stringHelper.GetString("ReferenceSwitchCurrentUnknown");
                 }
-                BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", targetBranch, currentBranch, exception.Message);
+                BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", targetBranch, currentBranch, _errorLocalizer.GetDisplayMessage(exception));
                 StatusMessage = BranchSwitchFailureMessage;
                 return false;
             }
@@ -888,11 +910,11 @@ namespace Bough.App.ViewModels
             try
             {
                 _terminalLauncher.Open(_repository);
-                StatusMessage = $"{_repository.RootPath}에서 터미널을 열었습니다.";
+                StatusMessage = _stringHelper.Format("ReferenceTerminalOpened", _repository.RootPath);
             }
             catch (Exception exception)
             {
-                StatusMessage = exception.Message;
+                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
             }
         }
 
@@ -910,11 +932,11 @@ namespace Bough.App.ViewModels
             try
             {
                 _folderLauncher.Open(repository);
-                StatusMessage = $"{repository.RootPath} 폴더를 열었습니다.";
+                StatusMessage = _stringHelper.Format("ReferenceFolderOpened", repository.RootPath);
             }
             catch (Exception exception)
             {
-                StatusMessage = exception.Message;
+                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
             }
         }
 
@@ -1023,7 +1045,8 @@ namespace Bough.App.ViewModels
                 ReferenceTreeNode submodules = CreateTreeNode(expanded, "submodules", submodulesHeading, "▧", submodulesHeading, ReferenceTreeNodeKind.Section, null, false, false, true);
                 foreach (GitSubmodule submodule in _submodules)
                 {
-                    string tip = $"{submodule.Path}\n{submodule.State}\n{submodule.Url}\nExpected: {submodule.ExpectedCommit}\nChecked out: {submodule.CheckedOutCommit}";
+                    string state = _stringHelper.GetString(submodule.State);
+                    string tip = _stringHelper.Format("ReferenceSubmoduleTooltip", submodule.Path, state, submodule.Url, submodule.ExpectedCommit, submodule.CheckedOutCommit);
                     submodules.Children.Add(CreateTreeNode(expanded, "submodule:" + submodule.Path, submodule.Path, string.Empty, tip, ReferenceTreeNodeKind.Submodule, submodule, false, false, false));
                 }
                 _treeRoots.Add(submodules);

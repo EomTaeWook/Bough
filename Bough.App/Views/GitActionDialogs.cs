@@ -25,8 +25,6 @@ namespace Bough.App.Views
 
     public class GitActionDialogs
     {
-        private static readonly string[] _resetModeLabels = new string[] { "Soft", "Mixed", "Hard" };
-
         public static string TagText(string name, StringHelper stringHelper = null)
         {
             if (stringHelper != null)
@@ -50,11 +48,11 @@ namespace Bough.App.Views
             return string.Format(CultureInfo.CurrentCulture, TagText(name, stringHelper), value);
         }
 
-        public static async Task<bool> ConfirmAsync(Window owner, string title, string message, string confirmText)
+        public static async Task<bool> ConfirmAsync(Window owner, string title, string message, string confirmText, StringHelper stringHelper = null)
         {
             Window dialog = CreateWindow(title);
             TextBlock description = new() { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
-            Button cancel = new() { Content = "Cancel" };
+            Button cancel = new() { Content = TagText("ReferenceCancel", stringHelper) };
             Button confirm = new() { Content = confirmText };
             cancel.Click += delegate { dialog.Close(false); };
             confirm.Click += delegate { dialog.Close(true); };
@@ -65,31 +63,17 @@ namespace Bough.App.Views
         public static async Task<bool> RequestNewBranchAsync(Window owner, string title, string startPoint, string suggestedName, Func<string, Task<string>> submit, StringHelper stringHelper = null, bool remoteCheckout = false, string warning = null)
         {
             Window dialog = CreateWindow(title);
-            string namePlaceholder = "New branch name";
-            string startLabel = "Start point";
-            string cancelText = "Cancel";
-            string createText = "Create and switch";
-            if (stringHelper != null)
-            {
-                namePlaceholder = stringHelper.GetString("ReferenceBranchName");
-                startLabel = stringHelper.GetString("ReferenceStartPoint");
-                cancelText = stringHelper.GetString("ReferenceCancel");
-                createText = stringHelper.GetString("ReferenceCreateAndSwitch");
-            }
+            string namePlaceholder = TagText("ReferenceBranchName", stringHelper);
+            string startLabel = TagText("ReferenceStartPoint", stringHelper);
+            string cancelText = TagText("ReferenceCancel", stringHelper);
+            string createText = TagText("ReferenceCreateAndSwitch", stringHelper);
             string descriptionText = string.Empty;
             if (remoteCheckout)
             {
-                startLabel = "Remote branch";
-                namePlaceholder = "New local branch name";
-                createText = "Create and switch";
-                descriptionText = "Create a new local branch to track the remote branch.";
-                if (stringHelper != null)
-                {
-                    startLabel = stringHelper.GetString("RemoteCheckoutSourceLabel");
-                    namePlaceholder = stringHelper.GetString("RemoteCheckoutLocalName");
-                    createText = stringHelper.GetString("RemoteCheckoutAction");
-                    descriptionText = stringHelper.GetString("RemoteCheckoutDescription");
-                }
+                startLabel = TagText("RemoteCheckoutSourceLabel", stringHelper);
+                namePlaceholder = TagText("RemoteCheckoutLocalName", stringHelper);
+                createText = TagText("RemoteCheckoutAction", stringHelper);
+                descriptionText = TagText("RemoteCheckoutDescription", stringHelper);
                 dialog.Width = 440;
             }
             TextBlock description = new() { Text = descriptionText, TextWrapping = TextWrapping.Wrap, IsVisible = remoteCheckout };
@@ -189,7 +173,7 @@ namespace Bough.App.Views
                     }
                     catch (Exception exception)
                     {
-                        failure = exception.Message;
+                        failure = DisplayFailure(exception, stringHelper);
                     }
                     if (dialog.IsVisible == false)
                     {
@@ -337,7 +321,7 @@ namespace Bough.App.Views
                 }
                 catch (Exception exception)
                 {
-                    failure = exception.Message;
+                    failure = DisplayFailure(exception, stringHelper);
                 }
                 if (failure == null)
                 {
@@ -359,44 +343,64 @@ namespace Bough.App.Views
             return await dialog.ShowDialog<bool>(owner);
         }
 
-        public static async Task<GitResetChoice> RequestResetAsync(Window owner, GitResetPreview preview)
+        public static async Task<GitResetChoice> RequestResetAsync(Window owner, GitResetPreview preview, StringHelper stringHelper = null)
         {
-            Window dialog = CreateWindow("Reset current branch");
+            Window dialog = CreateWindow(TagText("GitResetTitle", stringHelper));
             TextBlock target = new()
             {
-                Text = $"Current branch: {preview.BranchName}\nTarget: {preview.ShortHash} {preview.TargetSubject}",
+                Text = FormatText("GitResetTargetDescription", stringHelper, preview.BranchName, preview.ShortHash, preview.TargetSubject),
                 TextWrapping = Avalonia.Media.TextWrapping.Wrap
             };
-            TextBlock status = new() { Text = preview.StatusDescription, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
-            string direction = "The branch will move to an earlier commit.";
+            TextBlock status = new() { Text = FormatText("CommitResetWorktreeSummary", stringHelper, preview.StagedCount, preview.WorkingCount, preview.UntrackedCount), TextWrapping = Avalonia.Media.TextWrapping.Wrap };
+            string direction = TagText("GitResetAncestorDirection", stringHelper);
             if (preview.IsAncestor == false)
             {
-                direction = "The target is not an ancestor of HEAD. The branch will move to a different commit.";
+                direction = TagText("GitResetDifferentDirection", stringHelper);
             }
             TextBlock movement = new() { Text = direction, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
-            ComboBox modes = new() { ItemsSource = _resetModeLabels, SelectedIndex = 0 };
-            TextBlock impact = new() { Text = "Soft keeps the index and working files.", TextWrapping = Avalonia.Media.TextWrapping.Wrap };
+            string[] modeLabels = new string[] { TagText("GitResetModeSoft", stringHelper), TagText("GitResetModeMixed", stringHelper), TagText("GitResetModeHard", stringHelper) };
+            ComboBox modes = new() { ItemsSource = modeLabels, SelectedIndex = 0 };
+            TextBlock impact = new() { Text = TagText("GitResetImpactSoft", stringHelper), TextWrapping = Avalonia.Media.TextWrapping.Wrap };
             modes.SelectionChanged += delegate
             {
                 if (modes.SelectedIndex == 1)
                 {
-                    impact.Text = "Mixed resets the index to the target. Working files remain.";
+                    impact.Text = TagText("GitResetImpactMixed", stringHelper);
                 }
                 if (modes.SelectedIndex == 2)
                 {
-                    impact.Text = "Hard resets the index and working files to the target. Local file changes can be lost.";
+                    impact.Text = TagText("GitResetImpactHard", stringHelper);
                 }
                 if (modes.SelectedIndex == 0)
                 {
-                    impact.Text = "Soft keeps the index and working files.";
+                    impact.Text = TagText("GitResetImpactSoft", stringHelper);
                 }
             };
-            Button cancel = new() { Content = "Cancel" };
-            Button reset = new() { Content = "Continue" };
+            Button cancel = new() { Content = TagText("ReferenceCancel", stringHelper) };
+            Button reset = new() { Content = TagText("GitResetContinue", stringHelper) };
             cancel.Click += delegate { dialog.Close(null); };
             reset.Click += delegate { dialog.Close(new GitResetChoice((GitResetMode)modes.SelectedIndex)); };
             dialog.Content = CreateContent(target, status, movement, modes, impact, CreateButtons(cancel, reset));
             return await dialog.ShowDialog<GitResetChoice>(owner);
+        }
+
+        private static string FormatText(string name, StringHelper stringHelper, params object[] arguments)
+        {
+            return string.Format(CultureInfo.CurrentCulture, TagText(name, stringHelper), arguments);
+        }
+
+        private static string DisplayFailure(Exception exception, StringHelper stringHelper)
+        {
+            if (stringHelper == null)
+            {
+                StringLanguage language = StringLanguage.English;
+                if (CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ko")
+                {
+                    language = StringLanguage.Korean;
+                }
+                stringHelper = new StringHelper(new StringLanguageSelection(language));
+            }
+            return new GitErrorLocalizer(stringHelper).GetDisplayMessage(exception);
         }
 
         private static Window CreateWindow(string title)

@@ -14,6 +14,7 @@ namespace Bough.App.ViewModels
         private readonly GitWorkingTreeService _workingTreeService;
         private readonly GitOperationQueue _operationQueue;
         private readonly StringHelper _stringHelper;
+        private readonly GitErrorLocalizer _errorLocalizer;
         private readonly ObservableCollection<GitWorktreeFile> _unstagedFiles;
         private readonly ObservableCollection<GitWorktreeFile> _stagedFiles;
         private readonly ObservableCollection<GitWorktreeFile> _conflictFiles;
@@ -39,7 +40,8 @@ namespace Bough.App.ViewModels
         private int _previewVersion;
         private int _amendVersion;
 
-        public LocalChangesViewModel(GitWorkingTreeService workingTreeService, GitStashService stashService, GitOperationQueue operationQueue, StringHelper stringHelper)
+        public LocalChangesViewModel(GitWorkingTreeService workingTreeService, GitStashService stashService, GitOperationQueue operationQueue,
+            StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
         {
             if (workingTreeService == null)
             {
@@ -55,11 +57,16 @@ namespace Bough.App.ViewModels
             {
                 throw new ArgumentNullException(nameof(operationQueue));
             }
+            if (errorLocalizer == null)
+            {
+                throw new ArgumentNullException(nameof(errorLocalizer));
+            }
 
             _workingTreeService = workingTreeService;
             _operationQueue = operationQueue;
             _stringHelper = stringHelper;
-            Stashes = new StashViewModel(stashService, workingTreeService, operationQueue, stringHelper);
+            _errorLocalizer = errorLocalizer;
+            Stashes = new StashViewModel(stashService, workingTreeService, operationQueue, stringHelper, errorLocalizer);
             Stashes.ResolveRequested += path => ResolveRequested?.Invoke(path);
             _unstagedFiles = [];
             _stagedFiles = [];
@@ -678,7 +685,7 @@ namespace Bough.App.ViewModels
             {
                 if (requestVersion == _requestVersion)
                 {
-                    ErrorText = exception.Message;
+                    ErrorText = _errorLocalizer.GetDisplayMessage(exception);
                 }
             }
             finally
@@ -718,7 +725,7 @@ namespace Bough.App.ViewModels
 
                 PreviewIsUnifiedDiff = file.IsUntracked == false;
                 PreviewText = preview.Text;
-                PreviewDescription = preview.Description;
+                PreviewDescription = _stringHelper.Format(preview.DescriptionCode, preview.DescriptionArguments.ToArray());
             }
             catch (Exception exception)
             {
@@ -726,7 +733,7 @@ namespace Bough.App.ViewModels
                 {
                     if (requestVersion == _requestVersion)
                     {
-                        ErrorText = exception.Message;
+                        ErrorText = _errorLocalizer.GetDisplayMessage(exception);
                         PreviewDescription = _stringHelper.GetString("LocalPreviewFailed");
                     }
                 }
@@ -1147,7 +1154,7 @@ namespace Bough.App.ViewModels
                         catch (Exception exception)
                         {
                             resultRecorded = true;
-                            RememberMutationError(repository, $"{operationName}: {exception.Message}");
+                            RememberMutationError(repository, $"{operationName}: {_errorLocalizer.GetDisplayMessage(exception)}");
                             throw;
                         }
                     }));
@@ -1161,7 +1168,7 @@ namespace Bough.App.ViewModels
 
                 await UiQueuedOperation.RunAsync(() =>
                 {
-                    RememberMutationError(repository, $"{operationName}: {exception.Message}");
+                    RememberMutationError(repository, $"{operationName}: {_errorLocalizer.GetDisplayMessage(exception)}");
                     return Task.CompletedTask;
                 });
             }
@@ -1178,7 +1185,7 @@ namespace Bough.App.ViewModels
 
         private void ShowMutationCommandError(Exception exception)
         {
-            ErrorText = exception.Message;
+            ErrorText = _errorLocalizer.GetDisplayMessage(exception);
         }
 
         private bool IsCurrentRepository(GitRepository repository)
@@ -1313,7 +1320,7 @@ namespace Bough.App.ViewModels
                 }
 
                 Amend = false;
-                ErrorText = exception.Message;
+                ErrorText = _errorLocalizer.GetDisplayMessage(exception);
             }
         }
 
@@ -1422,6 +1429,13 @@ namespace Bough.App.ViewModels
             _conflictFiles.Clear();
             foreach (GitWorktreeFile file in status.Files)
             {
+                string statusText = _stringHelper.GetString(file.StatusCode);
+                if (file.IsPartiallyStaged == true)
+                {
+                    statusText = _stringHelper.Format("WorktreeStatusPartiallyStaged", statusText);
+                }
+                file.DisplayStatusText = statusText;
+
                 if (file.IsConflict == true)
                 {
                     _conflictFiles.Add(file);

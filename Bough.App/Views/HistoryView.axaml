@@ -5,6 +5,7 @@
              xmlns:controls="using:Bough.App.Controls"
              xmlns:views="using:Bough.App.Views"
              x:Class="Bough.App.Views.HistoryView"
+             x:Name="HistoryRoot"
              x:DataType="vm:HistoryViewModel"
              Background="{DynamicResource BoughBrushCanvas}">
   <UserControl.Resources>
@@ -171,21 +172,21 @@
   <Grid RowDefinitions="66,*">
     <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
       <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="32,34" Margin="22,0" ColumnSpacing="14">
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="Commit history" FontSize="18" FontWeight="SemiBold"
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Labels.Heading}" FontSize="18" FontWeight="SemiBold"
                    Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Bottom" />
         <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-          <RadioButton Content="전체" GroupName="HistoryScope" IsChecked="{Binding IsAllScope, Mode=OneWay}"
-                       Click="AllScopeClicked" ToolTip.Tip="Show commits from all references"
-                       AutomationProperties.Name="All commits" />
-          <RadioButton Content="현재 브랜치" GroupName="HistoryScope" IsChecked="{Binding IsCurrentBranchScope, Mode=OneWay}"
-                       Click="CurrentBranchScopeClicked" ToolTip.Tip="Show commits reachable from HEAD"
-                       AutomationProperties.Name="Current branch commits" />
+          <RadioButton Content="{Binding Labels.ScopeAll}" GroupName="HistoryScope" IsChecked="{Binding IsAllScope, Mode=OneWay}"
+                       Click="AllScopeClicked" ToolTip.Tip="{Binding Labels.ScopeAllTooltip}"
+                       AutomationProperties.Name="{Binding Labels.ScopeAllAccessible}" />
+          <RadioButton Content="{Binding Labels.ScopeCurrent}" GroupName="HistoryScope" IsChecked="{Binding IsCurrentBranchScope, Mode=OneWay}"
+                       Click="CurrentBranchScopeClicked" ToolTip.Tip="{Binding Labels.ScopeCurrentTooltip}"
+                       AutomationProperties.Name="{Binding Labels.ScopeCurrentAccessible}" />
         </StackPanel>
-        <CheckBox Grid.Column="1" Grid.RowSpan="2" Content="External author photos" IsChecked="{Binding ExternalAuthorPhotosEnabled, Mode=TwoWay}"
+        <CheckBox Grid.Column="1" Grid.RowSpan="2" Content="{Binding Labels.ExternalPhotos}" IsChecked="{Binding ExternalAuthorPhotosEnabled, Mode=TwoWay}"
                   Click="ExternalAuthorPhotosClicked"
                   VerticalAlignment="Center" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11"
-                   ToolTip.Tip="Look up GitHub and Gravatar author photos"
-                  AutomationProperties.Name="Use external author photos" />
+                   ToolTip.Tip="{Binding Labels.ExternalPhotosTooltip}"
+                  AutomationProperties.Name="{Binding Labels.ExternalPhotosAccessible}" />
         <Border Grid.Column="2" Grid.RowSpan="2" Background="{DynamicResource BoughBrushRaised}" CornerRadius="12" Padding="10,5" VerticalAlignment="Center">
           <TextBlock Text="{Binding CountText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" />
         </Border>
@@ -207,12 +208,12 @@
               <Border MinHeight="30" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" ToolTip.Tip="{Binding ToolTipText}">
                 <Border.ContextMenu>
                   <ContextMenu Opened="CommitContextOpened">
-                    <MenuItem Header="Copy SHA" Click="CopyCommitShaClicked" />
-                    <MenuItem Header="Create branch here..." Click="CreateCommitBranchClicked" />
-                    <MenuItem Header="Create tag here..." Tag="create-tag" Click="CreateCommitTagClicked" />
-                    <MenuItem Header="Check out this commit..." Click="CheckoutCommitClicked" />
+                    <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopySha}" Click="CopyCommitShaClicked" />
+                    <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CreateBranchHere}" Click="CreateCommitBranchClicked" />
+                    <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CreateTagHere}" Tag="create-tag" Click="CreateCommitTagClicked" />
+                    <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CheckoutCommit}" Click="CheckoutCommitClicked" />
                     <Separator />
-                    <MenuItem Header="Reset current branch to this commit..." Tag="reset" Click="ResetCommitClicked" />
+                    <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ResetCommit}" Tag="reset" Click="ResetCommitClicked" />
                   </ContextMenu>
                 </Border.ContextMenu>
                 <Grid ColumnDefinitions="Auto,*" Margin="6,0,8,0">
@@ -224,8 +225,15 @@
                                                 GitHubRemoteUrl="{Binding GitHubRemoteUrl}"
                                                 x:CompileBindings="False"
                                                 ExternalPhotosEnabled="{Binding ExternalPhotosEnabled}"
-                                                ToolTip.Tip="{Binding PhotoSource, RelativeSource={RelativeSource Self}, Converter={StaticResource PhotoSourceLabelConverter}}"
-                                                AutomationProperties.Name="{Binding AuthorDisplayName}" />
+                                                Tag="{Binding DataContext.Strings, ElementName=HistoryRoot}"
+                                                AutomationProperties.Name="{Binding AuthorDisplayName}">
+                        <ToolTip.Tip>
+                          <MultiBinding Converter="{StaticResource PhotoSourceLabelConverter}">
+                            <Binding Path="PhotoSource" RelativeSource="{RelativeSource Self}" />
+                            <Binding Path="Tag" RelativeSource="{RelativeSource Self}" />
+                          </MultiBinding>
+                        </ToolTip.Tip>
+                      </controls:AuthorIdenticon>
                       <ItemsControl Grid.Column="1" ItemsSource="{Binding InlineReferences}" VerticalAlignment="Center">
                         <ItemsControl.ItemsPanel>
                           <ItemsPanelTemplate>
@@ -253,12 +261,12 @@
                       </ItemsControl>
                       <Button Grid.Column="2" Content="{Binding MoreReferencesText}" IsVisible="{Binding HasMoreReferences}"
                               Padding="5,1" Margin="0,0,6,0" FontSize="10" VerticalAlignment="Center"
-                              ToolTip.Tip="Show all references">
+                              ToolTip.Tip="{Binding DataContext.Labels.MoreReferencesTooltip, ElementName=HistoryRoot, x:CompileBindings=False}">
                         <Button.Flyout>
                           <Flyout Placement="Bottom">
                             <Border Background="{DynamicResource BoughBrushRaised}" Padding="12" CornerRadius="6" MinWidth="180">
                               <StackPanel Spacing="8">
-                                <TextBlock Text="ALL REFERENCES" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="10" FontWeight="Bold" />
+                                <TextBlock Text="{Binding DataContext.Labels.AllReferencesHeading, ElementName=HistoryRoot, x:CompileBindings=False}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="10" FontWeight="Bold" />
                                 <ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
                                   <ItemsControl ItemsSource="{Binding References}">
                                     <ItemsControl.ItemTemplate>
@@ -296,7 +304,7 @@
           </ListBox.ItemTemplate>
         </ListBox>
 
-        <TextBlock Grid.Row="0" Text="No commits yet" IsVisible="{Binding IsEmpty}"
+        <TextBlock Grid.Row="0" Text="{Binding Labels.Empty}" IsVisible="{Binding IsEmpty}"
                    Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
         <TextBlock Grid.Row="0" Text="{Binding ErrorText}" IsVisible="{Binding HasLoadError}"
                    Foreground="{DynamicResource BoughBrushError}" FontSize="12" TextWrapping="Wrap" TextAlignment="Center"
@@ -305,12 +313,12 @@
         <Border Grid.Row="1" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" Padding="12,5"
                 IsVisible="{Binding ShowPageStatus}">
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-            <TextBlock Text="Loading commits…" IsVisible="{Binding IsLoadingMore}"
+            <TextBlock Text="{Binding Labels.LoadingCommits}" IsVisible="{Binding IsLoadingMore}"
                        Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" VerticalAlignment="Center" />
             <TextBlock Text="{Binding PageErrorText}" IsVisible="{Binding HasPageError}"
                        Foreground="{DynamicResource BoughBrushError}" FontSize="11" VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis" MaxWidth="500" ToolTip.Tip="{Binding PageErrorText}" />
-            <Button Content="Retry" Command="{Binding RetryLoadMoreCommand}"
+            <Button Content="{Binding Labels.Retry}" Command="{Binding RetryLoadMoreCommand}"
                     IsVisible="{Binding HasPageError}" Padding="7,2" FontSize="11" />
           </StackPanel>
         </Border>
@@ -320,17 +328,17 @@
                     Background="{DynamicResource BoughBrushBorder}" Cursor="SizeNorthSouth"
                     ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" KeyboardIncrement="16"
                     PointerPressed="CommitSplitterPointerPressed" KeyDown="CommitSplitterKeyDown"
-                    Focusable="True" ToolTip.Tip="Resize commit list and details"
-                    AutomationProperties.Name="Resize commit list and details" />
+                    Focusable="True" ToolTip.Tip="{Binding Labels.ResizeHistory}"
+                    AutomationProperties.Name="{Binding Labels.ResizeHistory}" />
 
       <Border Grid.Row="2" Background="{DynamicResource BoughBrushCanvas}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
         <Grid>
-          <TextBlock Text="Select a commit to inspect it" IsVisible="{Binding HasNoSelection}"
+          <TextBlock Text="{Binding Labels.SelectCommit}" IsVisible="{Binding HasNoSelection}"
                      Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
           <TabControl IsVisible="{Binding HasSelection}" SelectedIndex="{Binding SelectedTab, Mode=TwoWay}"
                       Background="{DynamicResource BoughBrushCanvas}" Foreground="{DynamicResource BoughBrushText}" BorderThickness="0"
                       HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-            <TabItem Header="Commit">
+            <TabItem Header="{Binding Labels.TabCommit}">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="16" Spacing="13">
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
@@ -345,25 +353,38 @@
                                                 CommitHash="{Binding SelectedCommit.Hash}" GitHubRemoteUrl="{Binding GitHubRemoteUrl}"
                                                 ExternalPhotosEnabled="{Binding ExternalAuthorPhotosEnabled}"
                                                 x:CompileBindings="False"
-                                                ToolTip.Tip="{Binding PhotoSource, RelativeSource={RelativeSource Self}, Converter={StaticResource PhotoSourceLabelConverter}}"
-                                                AutomationProperties.Name="{Binding SelectedCommit.AuthorDisplayName}" />
-                      <TextBlock Text="{Binding PhotoSource, ElementName=DetailAuthorAvatar, Converter={StaticResource PhotoSourceLabelConverter}}"
-                                 x:CompileBindings="False" FontSize="10" Foreground="{DynamicResource BoughBrushTextMuted}" HorizontalAlignment="Right" />
+                                                Tag="{Binding Strings}"
+                                                AutomationProperties.Name="{Binding SelectedCommit.AuthorDisplayName}">
+                        <ToolTip.Tip>
+                          <MultiBinding Converter="{StaticResource PhotoSourceLabelConverter}">
+                            <Binding Path="PhotoSource" RelativeSource="{RelativeSource Self}" />
+                            <Binding Path="Tag" RelativeSource="{RelativeSource Self}" />
+                          </MultiBinding>
+                        </ToolTip.Tip>
+                      </controls:AuthorIdenticon>
+                      <TextBlock x:CompileBindings="False" FontSize="10" Foreground="{DynamicResource BoughBrushTextMuted}" HorizontalAlignment="Right">
+                        <TextBlock.Text>
+                          <MultiBinding Converter="{StaticResource PhotoSourceLabelConverter}">
+                            <Binding Path="PhotoSource" ElementName="DetailAuthorAvatar" />
+                            <Binding Path="Strings" />
+                          </MultiBinding>
+                        </TextBlock.Text>
+                      </TextBlock>
                     </StackPanel>
                   </Grid>
                   <SelectableTextBlock Text="{Binding ReferencesText}" FontSize="11" Foreground="{DynamicResource BoughBrushSuccess}" TextWrapping="Wrap" />
                   <Grid ColumnDefinitions="*,Auto">
                     <SelectableTextBlock Text="{Binding Inspection.Hash}" FontFamily="Cascadia Mono, Menlo, monospace"
                                          FontSize="11" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Inspection.Hash}" />
-                    <Button Grid.Column="1" Content="Copy SHA" Click="CopyHashClicked" Padding="7,3" FontSize="10" />
+                    <Button Grid.Column="1" Content="{Binding Labels.CopySha}" Click="CopyHashClicked" Padding="7,3" FontSize="10" />
                   </Grid>
                   <ItemsControl ItemsSource="{Binding Inspection.Parents}" IsVisible="{Binding HasParents}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="x:String">
                         <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,0,3">
                           <Button Content="{Binding}" Click="ParentClicked" Padding="5,2" FontSize="10"
-                                  FontFamily="Cascadia Mono, Menlo, monospace" ToolTip.Tip="Go to parent commit" />
-                          <Button Content="Copy" Click="CopyParentClicked" Padding="5,2" FontSize="10" />
+                                  FontFamily="Cascadia Mono, Menlo, monospace" ToolTip.Tip="{Binding DataContext.Labels.ParentTooltip, ElementName=HistoryRoot, x:CompileBindings=False}" />
+                          <Button Content="{Binding DataContext.Labels.Copy, ElementName=HistoryRoot, x:CompileBindings=False}" Click="CopyParentClicked" Padding="5,2" FontSize="10" />
                         </StackPanel>
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -372,10 +393,10 @@
                             IsVisible="{Binding HasMultipleParents}" />
                   <TextBlock Text="{Binding ComparisonText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextSubtle}" />
                   <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Expand all" Click="ExpandAllClicked" Padding="7,4" FontSize="11" />
-                    <Button Content="Collapse all" Click="CollapseAllClicked" Padding="7,4" FontSize="11" />
+                    <Button Content="{Binding Labels.ExpandAll}" Click="ExpandAllClicked" Padding="7,4" FontSize="11" />
+                    <Button Content="{Binding Labels.CollapseAll}" Click="CollapseAllClicked" Padding="7,4" FontSize="11" />
                   </StackPanel>
-                  <TextBlock Text="No file changes against this parent" IsVisible="{Binding HasNoChangedFiles}"
+                  <TextBlock Text="{Binding Labels.NoChanges}" IsVisible="{Binding HasNoChangedFiles}"
                              Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="11" />
                   <ItemsControl ItemsSource="{Binding ChangedFiles}">
                     <ItemsControl.ItemTemplate>
@@ -391,14 +412,14 @@
                           </Expander.Header>
                           <Expander.ContextMenu>
                             <ContextMenu Opened="FileContextOpened">
-                              <MenuItem Header="Open" Click="OpenFileClicked" />
-                              <MenuItem Header="Show in File Explorer" Click="ExplorerFileClicked" />
+                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" Click="OpenFileClicked" />
+                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" Click="ExplorerFileClicked" />
                               <Separator />
-                              <MenuItem Header="History" Click="FileHistoryClicked" />
-                              <MenuItem Header="Show in File Tree" Click="ShowInTreeClicked" />
+                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" Click="FileHistoryClicked" />
+                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowTree}" Click="ShowInTreeClicked" />
                               <Separator />
-                              <MenuItem Header="Save as…" Click="SaveFileClicked" />
-                              <MenuItem Header="Copy Path" Click="CopyPathClicked" />
+                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" Click="SaveFileClicked" />
+                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" Click="CopyPathClicked" />
                             </ContextMenu>
                           </Expander.ContextMenu>
                           <StackPanel Spacing="5">
@@ -406,7 +427,7 @@
                                        Classes.statusRenamed="{Binding IsRenamed}" Classes.statusCopied="{Binding IsCopied}"
                                        Text="{Binding StatusText}" FontSize="10" />
                             <TextBlock Text="{Binding DiffReason}" FontSize="11" Foreground="{DynamicResource BoughBrushWarning}" TextWrapping="Wrap" />
-                            <TextBlock Text="Loading diff…" IsVisible="{Binding IsLoading}" FontSize="11" />
+                            <TextBlock Text="{Binding DataContext.Labels.LoadingDiff, ElementName=HistoryRoot, x:CompileBindings=False}" IsVisible="{Binding IsLoading}" FontSize="11" />
                             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                               <StackPanel>
                               <ItemsControl ItemsSource="{Binding DiffLines}">
@@ -442,7 +463,7 @@
                 </StackPanel>
               </ScrollViewer>
             </TabItem>
-            <TabItem Header="Changes">
+            <TabItem Header="{Binding Labels.TabChanges}">
               <Grid Margin="12">
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
@@ -455,7 +476,7 @@
                   <TextBlock Text="{Binding MessageFirstLine}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                   <TextBlock Text="{Binding ChangesSummary}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" />
                 </StackPanel>
-                <TextBox Grid.Row="1" PlaceholderText="Search changed paths" Text="{Binding FileSearch, Mode=TwoWay}"
+                <TextBox Grid.Row="1" PlaceholderText="{Binding Labels.SearchChangedPaths}" Text="{Binding FileSearch, Mode=TwoWay}"
                          Margin="0,0,0,8" />
                 <ListBox Grid.Row="2" ItemsSource="{Binding VisibleChangedFiles}"
                          SelectedItem="{Binding SelectedChangedFile, Mode=TwoWay}"
@@ -467,14 +488,14 @@
                       <Border Padding="8,6" ToolTip.Tip="{Binding PathDescription}">
                         <Border.ContextMenu>
                           <ContextMenu Opened="FileContextOpened">
-                            <MenuItem Header="Open" Click="OpenFileClicked" />
-                            <MenuItem Header="Show in File Explorer" Click="ExplorerFileClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" Click="OpenFileClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" Click="ExplorerFileClicked" />
                             <Separator />
-                            <MenuItem Header="History" Click="FileHistoryClicked" />
-                            <MenuItem Header="Show in File Tree" Click="ShowInTreeClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" Click="FileHistoryClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowTree}" Click="ShowInTreeClicked" />
                             <Separator />
-                            <MenuItem Header="Save as…" Click="SaveFileClicked" />
-                            <MenuItem Header="Copy Path" Click="CopyPathClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" Click="SaveFileClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" Click="CopyPathClicked" />
                           </ContextMenu>
                         </Border.ContextMenu>
                         <Grid ColumnDefinitions="75,*">
@@ -489,8 +510,8 @@
                 </ListBox>
                 <GridSplitter Grid.Row="3" Height="6" Background="{DynamicResource BoughBrushBorder}" Cursor="SizeNorthSouth"
                               ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" KeyboardIncrement="12"
-                              Focusable="True" ToolTip.Tip="Resize changed files and preview"
-                              AutomationProperties.Name="Resize changed files and preview" />
+                              Focusable="True" ToolTip.Tip="{Binding Labels.ResizeChanges}"
+                              AutomationProperties.Name="{Binding Labels.ResizeChanges}" />
                 <Grid Grid.Row="4" RowDefinitions="Auto,Auto,*" RowSpacing="4" Margin="0,4,0,0">
                   <TextBlock Grid.Row="0" Text="{Binding PreviewPath}" FontWeight="SemiBold" FontSize="11"
                              TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding PreviewPath}" />
@@ -503,7 +524,7 @@
                 </Grid>
               </Grid>
             </TabItem>
-            <TabItem Header="File Tree">
+            <TabItem Header="{Binding Labels.TabFileTree}">
               <Grid Margin="12">
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
@@ -511,7 +532,7 @@
                   <RowDefinition Height="6" />
                   <RowDefinition Height="2*" MinHeight="90" />
                 </Grid.RowDefinitions>
-                <TextBox Grid.Row="0" PlaceholderText="Search snapshot paths" Text="{Binding TreeSearch, Mode=TwoWay}" Margin="0,0,0,8" />
+                <TextBox Grid.Row="0" PlaceholderText="{Binding Labels.SearchSnapshotPaths}" Text="{Binding TreeSearch, Mode=TwoWay}" Margin="0,0,0,8" />
                 <TreeView Grid.Row="1" ItemsSource="{Binding VisibleTreeRoots}"
                           SelectedItem="{Binding SelectedTreeFile, Mode=TwoWay}"
                           Background="{DynamicResource BoughBrushSurface}" Foreground="{DynamicResource BoughBrushText}"
@@ -524,17 +545,17 @@
                   </TreeView.Styles>
                   <TreeView.ItemTemplate>
                     <TreeDataTemplate x:DataType="vm:HistoryTreeItem" ItemsSource="{Binding Children}">
-                      <Border Padding="3" ToolTip.Tip="{Binding Path}">
+                      <Border Padding="3" ToolTip.Tip="{Binding ToolTipPath}">
                         <Border.ContextMenu>
                           <ContextMenu Opened="FileContextOpened">
-                            <MenuItem Header="Open" Click="OpenFileClicked" />
-                            <MenuItem Header="Show in File Explorer" Click="ExplorerFileClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" Click="OpenFileClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" Click="ExplorerFileClicked" />
                             <Separator />
-                            <MenuItem Header="History" Click="FileHistoryClicked" />
-                            <MenuItem Header="Show in File Tree" Click="ShowInTreeClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" Click="FileHistoryClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowTree}" Click="ShowInTreeClicked" />
                             <Separator />
-                            <MenuItem Header="Save as…" Click="SaveFileClicked" />
-                            <MenuItem Header="Copy Path" Click="CopyPathClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" Click="SaveFileClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" Click="CopyPathClicked" />
                           </ContextMenu>
                         </Border.ContextMenu>
                         <StackPanel Orientation="Horizontal" Spacing="7">
@@ -547,8 +568,8 @@
                 </TreeView>
                 <GridSplitter Grid.Row="2" Height="6" Background="{DynamicResource BoughBrushBorder}" Cursor="SizeNorthSouth"
                               ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" KeyboardIncrement="12"
-                              Focusable="True" ToolTip.Tip="Resize file tree and preview"
-                              AutomationProperties.Name="Resize file tree and preview" />
+                              Focusable="True" ToolTip.Tip="{Binding Labels.ResizeTree}"
+                              AutomationProperties.Name="{Binding Labels.ResizeTree}" />
                 <Grid Grid.Row="3" RowDefinitions="Auto,Auto,*" RowSpacing="4" Margin="0,4,0,0">
                   <TextBlock Grid.Row="0" Text="{Binding PreviewPath}" FontWeight="SemiBold" FontSize="11"
                              TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding PreviewPath}" />
@@ -567,7 +588,8 @@
             <Grid RowDefinitions="Auto,*">
               <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Text="{Binding AuxiliaryTitle}" FontWeight="SemiBold" FontSize="11" />
-                <Button Grid.Column="1" Content="×" Click="CloseAuxiliaryClicked" Padding="4,1" />
+                <Button Grid.Column="1" Content="×" Click="CloseAuxiliaryClicked" Padding="4,1"
+                        AutomationProperties.Name="{Binding Labels.CloseAuxiliary}" ToolTip.Tip="{Binding Labels.CloseAuxiliary}" />
               </Grid>
               <TextBox Grid.Row="1" Text="{Binding AuxiliaryText}" IsReadOnly="True" AcceptsReturn="True"
                        TextWrapping="NoWrap" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="10" />

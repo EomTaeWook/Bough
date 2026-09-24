@@ -9,9 +9,11 @@ namespace Bough.Core.Conflicts
 {
     public class ConflictParser
     {
-        public ConflictDocument Parse(string text)
+        public ConflictDocument Parse(string text, string currentChangeLabel, string incomingChangeLabel)
         {
             ArgumentNullException.ThrowIfNull(text);
+            ArgumentException.ThrowIfNullOrWhiteSpace(currentChangeLabel);
+            ArgumentException.ThrowIfNullOrWhiteSpace(incomingChangeLabel);
 
             var lines = SplitLines(text);
             ArrayQueue<ConflictSection> sections = [];
@@ -54,7 +56,7 @@ namespace Bough.Core.Conflicts
                 lineIndex++;
 
                 string original = string.Concat(lines.Skip(startIndex).Take(lineIndex - startIndex));
-                ConflictHunk hunk = new(hunkId, startLine, GetLabel(oursLabel, "Current change"), ours, hasBase, baseLabel, baseText, GetLabel(theirsLabel, "Incoming change"), theirs, original);
+                ConflictHunk hunk = new(hunkId, startLine, GetLabel(oursLabel, currentChangeLabel), ours, hasBase, baseLabel, baseText, GetLabel(theirsLabel, incomingChangeLabel), theirs, original);
                 sections.Add(hunk);
                 hunkId++;
             }
@@ -96,12 +98,12 @@ namespace Bough.Core.Conflicts
         {
             if (lineIndex >= lines.Count)
             {
-                throw new ConflictParseException($"Conflict beginning at line {startLine} has no {marker} marker.");
+                throw new ConflictParseException("ConflictMarkerMissing", startLine, marker);
             }
 
             if (TryReadMarker(lines[lineIndex], marker, out _) == false)
             {
-                throw new ConflictParseException($"Conflict beginning at line {startLine} has no {marker} marker.");
+                throw new ConflictParseException("ConflictMarkerMissing", startLine, marker);
             }
         }
 

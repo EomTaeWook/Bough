@@ -126,6 +126,10 @@ namespace Bough.App.ViewModels
         public bool HasQueueStatus { get { return _queueStatusText.Length > 0; } }
         public bool HasUnsavedConflictEdits { get { return HasDocument && ResultText != _loadedResultText; } }
         public string FilesToResolveText { get { return _stringHelper.GetString("FilesToResolve"); } }
+        public string WindowTitle { get { return _stringHelper.GetString("ConflictWindowTitle"); } }
+        public string DiscardResolutionTitle { get { return _stringHelper.GetString("DiscardResolutionTitle"); } }
+        public string DiscardResolutionCloseMessage { get { return _stringHelper.GetString("DiscardResolutionCloseConflictMessage"); } }
+        public string DiscardResolutionConfirmText { get { return _stringHelper.GetString("DiscardResolutionConfirm"); } }
         public string PreviousButtonText { get { return _stringHelper.GetString("PreviousButton"); } }
         public string NextButtonText { get { return _stringHelper.GetString("NextButton"); } }
         public string FinalFileText { get { return _stringHelper.GetString("FinalFile"); } }
@@ -336,7 +340,7 @@ namespace Bough.App.ViewModels
             {
                 if (HasUnsavedConflictEdits == true)
                 {
-                    StatusMessage = "The conflict was resolved outside Bough. Close this window to discard unsaved edits.";
+                    StatusMessage = _stringHelper.GetString("ConflictResolvedExternallyWithUnsavedEdits");
                     return true;
                 }
                 ClearDocument();
@@ -399,7 +403,8 @@ namespace Bough.App.ViewModels
 
             GitRepository repository = _repository;
             int loadVersion = ++_loadVersion;
-            GitConflictFile conflict = await _repositoryService.LoadConflictAsync(repository, file.RelativePath);
+            GitConflictFile conflict = await _repositoryService.LoadConflictAsync(repository, file.RelativePath,
+                _stringHelper.GetString("IncomingChange"), _stringHelper.GetString("ConflictIncomingIndexStage3"));
             if (loadVersion != _loadVersion)
             {
                 return;
@@ -414,12 +419,13 @@ namespace Bough.App.ViewModels
             }
             if (conflict.WorkingText.Contains('\0') == true)
             {
-                throw new NotSupportedException($"'{file.RelativePath}' is a binary file and cannot be edited as text.");
+                throw new GitException("ConflictBinaryFileCannotEdit", null, file.RelativePath);
             }
 
             (ConflictDocument Document, string InitialResult) parsed = await Task.Run(() =>
             {
-                ConflictDocument document = _parser.Parse(conflict.WorkingText);
+                ConflictDocument document = _parser.Parse(conflict.WorkingText,
+                    _stringHelper.GetString("CurrentChange"), _stringHelper.GetString("IncomingChange"));
                 string initialResult = document.Render(new Dictionary<int, ResolutionChoiceType>());
                 return (document, initialResult);
             });
@@ -437,7 +443,7 @@ namespace Bough.App.ViewModels
             }
             if (parsed.Document.Hunks.Count == 0)
             {
-                throw new ConflictParseException($"'{file.RelativePath}' does not contain text conflict markers.");
+                throw new ConflictParseException("ConflictTextMarkersMissing", file.RelativePath);
             }
 
             _document = parsed.Document;
@@ -626,7 +632,8 @@ namespace Bough.App.ViewModels
                 GitConflictFile currentConflict;
                 try
                 {
-                    currentConflict = await _repositoryService.LoadConflictAsync(repository, conflict.RelativePath, cancellationToken);
+                    currentConflict = await _repositoryService.LoadConflictAsync(repository, conflict.RelativePath,
+                        _stringHelper.GetString("IncomingChange"), _stringHelper.GetString("ConflictIncomingIndexStage3"), cancellationToken);
                 }
                 catch (FileNotFoundException exception)
                 {
@@ -647,7 +654,8 @@ namespace Bough.App.ViewModels
                 ConflictDocument resultDocument;
                 try
                 {
-                    resultDocument = await Task.Run(() => _parser.Parse(resultText), cancellationToken);
+                    resultDocument = await Task.Run(() => _parser.Parse(resultText,
+                        _stringHelper.GetString("CurrentChange"), _stringHelper.GetString("IncomingChange")), cancellationToken);
                 }
                 catch (ConflictParseException exception)
                 {

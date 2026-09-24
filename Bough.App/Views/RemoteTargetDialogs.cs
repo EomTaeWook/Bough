@@ -26,21 +26,21 @@ namespace Bough.App.Views
 
     public class RemoteTargetDialogs
     {
-        public static async Task<RemoteOperationTarget> SelectPullAsync(Window owner, RemoteOperationsViewModel viewModel, string strategy, GitErrorLocalizer errorLocalizer)
+        public static async Task<RemoteOperationTarget> SelectPullAsync(Window owner, RemoteOperationsViewModel viewModel, string strategy, StringHelper strings, GitErrorLocalizer errorLocalizer)
         {
             GitRepository repository = viewModel.CurrentRepository;
             string currentBranch = viewModel.CurrentBranchText;
             string upstream = viewModel.UpstreamText;
-            Window dialog = CreateWindow("Choose Pull source");
-            TextBlock current = new() { Text = $"Current branch: {currentBranch}" };
-            TextBlock remoteLabel = new() { Text = "Remote" };
+            Window dialog = CreateWindow(strings.GetString("RemotePullSourceTitle"));
+            TextBlock current = new() { Text = strings.Format("RemoteCurrentBranch", currentBranch) };
+            TextBlock remoteLabel = new() { Text = strings.GetString("RemoteRemoteLabel") };
             ComboBox remote = new() { ItemsSource = viewModel.Remotes, MinWidth = 250 };
-            TextBlock branchLabel = new() { Text = "Existing remote branch" };
+            TextBlock branchLabel = new() { Text = strings.GetString("RemoteExistingBranchLabel") };
             ComboBox branch = new() { MinWidth = 250, IsEnabled = false };
             TextBlock summary = new() { TextWrapping = TextWrapping.Wrap };
             TextBlock error = CreateError();
-            Button cancel = new() { Content = "Cancel", IsCancel = true };
-            Button confirm = new() { Content = $"Pull · {strategy}", IsDefault = true, IsEnabled = false };
+            Button cancel = new() { Content = strings.GetString("Cancel"), IsCancel = true };
+            Button confirm = new() { Content = strings.Format("RemotePullOperationTitle", strategy), IsDefault = true, IsEnabled = false };
             int selectionRequest = 0;
 
             bool IsContextCurrent()
@@ -65,13 +65,13 @@ namespace Bough.App.Views
                 if (remote.SelectedItem is not string selectedRemote)
                 {
                     confirm.IsEnabled = false;
-                    summary.Text = "Choose a remote and an existing branch.";
+                    summary.Text = strings.GetString("RemoteChooseRemoteAndBranch");
                     return;
                 }
                 if (branch.SelectedItem is not string selectedBranch)
                 {
                     confirm.IsEnabled = false;
-                    summary.Text = "Choose a remote and an existing branch.";
+                    summary.Text = strings.GetString("RemoteChooseRemoteAndBranch");
                     return;
                 }
                 summary.Text = $"{selectedRemote}/{selectedBranch} → {currentBranch}";
@@ -108,7 +108,7 @@ namespace Bough.App.Views
                     }
                     if (IsContextCurrent() == false)
                     {
-                        error.Text = "The selected repository changed. Open the selection again.";
+                        error.Text = strings.GetString("RemoteDialogRepositoryChanged");
                         error.IsVisible = true;
                         return;
                     }
@@ -116,7 +116,7 @@ namespace Bough.App.Views
                     branch.IsEnabled = choices.Count > 0;
                     if (choices.Count == 0)
                     {
-                        error.Text = "No remote branches are available. Fetch this remote first.";
+                        error.Text = strings.GetString("RemoteNoBranchesFetchFirst");
                         error.IsVisible = true;
                     }
                     if (selectedRemote == viewModel.UpstreamRemote)
@@ -144,7 +144,7 @@ namespace Bough.App.Views
             {
                 if (IsContextCurrent() == false)
                 {
-                    error.Text = "The selected repository changed. Open the selection again.";
+                    error.Text = strings.GetString("RemoteDialogRepositoryChanged");
                     error.IsVisible = true;
                     return;
                 }
@@ -172,16 +172,16 @@ namespace Bough.App.Views
             return await dialog.ShowDialog<RemoteOperationTarget>(owner);
         }
 
-        public static async Task<RemoteOperationTarget> SelectPushAsync(Window owner, RemoteOperationsViewModel viewModel, GitErrorLocalizer errorLocalizer)
+        public static async Task<RemoteOperationTarget> SelectPushAsync(Window owner, RemoteOperationsViewModel viewModel, StringHelper strings, GitErrorLocalizer errorLocalizer)
         {
             GitRepository repository = viewModel.CurrentRepository;
             string currentBranch = viewModel.CurrentBranchText;
             string upstream = viewModel.UpstreamText;
-            Window dialog = CreateWindow("Confirm Push destination");
-            TextBlock current = new() { Text = $"Current branch: {currentBranch}" };
-            TextBlock remoteLabel = new() { Text = "Destination remote" };
+            Window dialog = CreateWindow(strings.GetString("RemotePushDestinationTitle"));
+            TextBlock current = new() { Text = strings.Format("RemoteCurrentBranch", currentBranch) };
+            TextBlock remoteLabel = new() { Text = strings.GetString("RemoteDestinationRemoteLabel") };
             ComboBox remote = new() { ItemsSource = viewModel.Remotes, MinWidth = 250 };
-            TextBlock branchLabel = new() { Text = "Destination branch" };
+            TextBlock branchLabel = new() { Text = strings.GetString("RemoteDestinationBranchLabel") };
             string initialBranch = viewModel.CurrentBranchText;
             if (viewModel.HasUpstream == true)
             {
@@ -191,8 +191,8 @@ namespace Bough.App.Views
             TextBlock summary = new() { TextWrapping = TextWrapping.Wrap };
             TextBlock effect = new() { TextWrapping = TextWrapping.Wrap };
             TextBlock error = CreateError();
-            Button cancel = new() { Content = "Cancel", IsCancel = true };
-            Button confirm = new() { Content = "Confirm Push", IsDefault = true };
+            Button cancel = new() { Content = strings.GetString("Cancel"), IsCancel = true };
+            Button confirm = new() { Content = strings.GetString("RemoteConfirmPushAction"), IsDefault = true };
             bool validating = false;
 
             bool IsContextCurrent()
@@ -216,14 +216,15 @@ namespace Bough.App.Views
             {
                 string selectedRemote = remote.SelectedItem as string;
                 string selectedBranch = branch.Text?.Trim() ?? string.Empty;
-                summary.Text = $"{currentBranch} → {selectedRemote ?? "(choose remote)"}/{selectedBranch}";
+                string remoteName = selectedRemote ?? strings.GetString("RemoteChooseRemotePlaceholder");
+                summary.Text = $"{currentBranch} → {remoteName}/{selectedBranch}";
                 if (viewModel.HasUpstream)
                 {
-                    effect.Text = $"Existing upstream remains {viewModel.UpstreamText}.";
+                    effect.Text = strings.Format("RemoteExistingUpstreamRemains", viewModel.UpstreamText);
                 }
                 else
                 {
-                    effect.Text = "A successful first Push will set this destination as upstream.";
+                    effect.Text = strings.GetString("RemoteFirstPushSetsUpstream");
                 }
                 confirm.IsEnabled = false;
                 if (validating == true)
@@ -277,7 +278,7 @@ namespace Bough.App.Views
                     await viewModel.ValidatePushTargetAsync(selectedRemote, selectedBranch);
                     if (IsContextCurrent() == false)
                     {
-                        error.Text = "The selected repository changed. Open the selection again.";
+                        error.Text = strings.GetString("RemoteDialogRepositoryChanged");
                         error.IsVisible = true;
                         return;
                     }

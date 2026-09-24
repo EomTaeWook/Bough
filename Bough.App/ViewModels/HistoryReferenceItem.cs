@@ -1,77 +1,103 @@
 using System;
+using Bough.App.Localization;
 
 namespace Bough.App.ViewModels
 {
+    internal enum HistoryReferenceKind
+    {
+        CurrentBranch,
+        LocalBranch,
+        RemoteBranch,
+        Tag,
+        Other
+    }
+
     public class HistoryReferenceItem
     {
-        public HistoryReferenceItem(string name)
+        private readonly StringHelper _stringHelper;
+        private readonly HistoryReferenceKind _kind;
+
+        public HistoryReferenceItem(string name, StringHelper stringHelper)
         {
+            _stringHelper = stringHelper;
             if (name.StartsWith("HEAD -> refs/heads/", StringComparison.Ordinal))
             {
                 Name = name.Substring("HEAD -> refs/heads/".Length);
-                Kind = "Current branch";
+                _kind = HistoryReferenceKind.CurrentBranch;
                 Symbol = "✓";
             }
             else if (name.StartsWith("refs/heads/", StringComparison.Ordinal))
             {
                 Name = name.Substring("refs/heads/".Length);
-                Kind = "Local branch";
+                _kind = HistoryReferenceKind.LocalBranch;
                 Symbol = "●";
             }
             else if (name.StartsWith("refs/remotes/", StringComparison.Ordinal))
             {
                 Name = name.Substring("refs/remotes/".Length).Replace(" -> refs/remotes/", " → ");
-                Kind = "Remote branch";
+                _kind = HistoryReferenceKind.RemoteBranch;
                 Symbol = "⇄";
                 IsSymbolicRemote = name.Contains("/HEAD -> ", StringComparison.Ordinal);
             }
             else if (name.StartsWith("tag: refs/tags/", StringComparison.Ordinal))
             {
                 Name = name.Substring("tag: refs/tags/".Length);
-                Kind = "Tag";
+                _kind = HistoryReferenceKind.Tag;
                 Symbol = "◆";
             }
             else if (name.StartsWith("HEAD -> ", StringComparison.Ordinal))
             {
                 Name = name.Substring("HEAD -> ".Length);
-                Kind = "Current branch";
+                _kind = HistoryReferenceKind.CurrentBranch;
                 Symbol = "✓";
             }
             else if (name.StartsWith("tag: ", StringComparison.Ordinal))
             {
                 Name = name.Substring("tag: ".Length);
-                Kind = "Tag";
+                _kind = HistoryReferenceKind.Tag;
                 Symbol = "◆";
             }
             else
             {
                 Name = name;
-                Kind = "Reference";
+                _kind = HistoryReferenceKind.Other;
                 Symbol = "●";
             }
 
-            ToolTipText = $"{Kind}: {Name}";
         }
 
         public string Name { get; }
-        public string Kind { get; }
+        public string Kind
+        {
+            get
+            {
+                switch (_kind)
+                {
+                    case HistoryReferenceKind.CurrentBranch: return _stringHelper.GetString("HistoryReferenceCurrentBranch");
+                    case HistoryReferenceKind.LocalBranch: return _stringHelper.GetString("HistoryReferenceLocalBranch");
+                    case HistoryReferenceKind.RemoteBranch: return _stringHelper.GetString("HistoryReferenceRemoteBranch");
+                    case HistoryReferenceKind.Tag: return _stringHelper.GetString("HistoryReferenceTag");
+                    default: return _stringHelper.GetString("HistoryReferenceGeneric");
+                }
+            }
+        }
         public string Symbol { get; }
-        public string ToolTipText { get; }
+        public string ToolTipText { get { return $"{Kind}: {Name}"; } }
         public bool IsSymbolicRemote { get; }
         public int InlinePriority
         {
             get
             {
-                if (Kind == "Current branch") return 0;
-                if (Kind == "Local branch") return 1;
-                if (Kind == "Remote branch") return 2;
-                if (Kind == "Tag") return 3;
+                if (_kind == HistoryReferenceKind.CurrentBranch) return 0;
+                if (_kind == HistoryReferenceKind.LocalBranch) return 1;
+                if (_kind == HistoryReferenceKind.RemoteBranch) return 2;
+                if (_kind == HistoryReferenceKind.Tag) return 3;
                 return 4;
             }
         }
-        public bool IsCurrent { get { return Kind == "Current branch"; } }
-        public bool IsLocal { get { return Kind == "Local branch"; } }
-        public bool IsRemote { get { return Kind == "Remote branch"; } }
-        public bool IsTag { get { return Kind == "Tag"; } }
+        public bool IsCurrent { get { return _kind == HistoryReferenceKind.CurrentBranch; } }
+        public bool IsLocal { get { return _kind == HistoryReferenceKind.LocalBranch; } }
+        public bool IsRemote { get { return _kind == HistoryReferenceKind.RemoteBranch; } }
+        public bool IsTag { get { return _kind == HistoryReferenceKind.Tag; } }
     }
 }

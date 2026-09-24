@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
@@ -12,7 +13,33 @@ namespace Bough.App.Views
 {
     public partial class RemoteOperationsView : UserControl
     {
-        public StringHelper StringHelper { get; set; }
+        private StringHelper _stringHelper;
+        public StringHelper StringHelper
+        {
+            get { return _stringHelper; }
+            set
+            {
+                _stringHelper = value;
+                if (value == null)
+                {
+                    return;
+                }
+                UpstreamLabel.Text = value.GetString("RemoteUpstreamLabel");
+                FetchButton.Content = value.GetString("RemoteFetchAction");
+                PullButton.Content = value.GetString("RemotePullAction");
+                PushButton.Content = value.GetString("RemotePushAction");
+                AutomationProperties.SetName(FetchButton, value.GetString("RemoteFetchAction"));
+                AutomationProperties.SetName(PullButton, value.GetString("RemotePullFastForwardAutomation"));
+                AutomationProperties.SetName(PushButton, value.GetString("RemotePushAction"));
+                AutomationProperties.SetName(FetchMenuButton, value.GetString("RemoteFetchMenuAutomation"));
+                AutomationProperties.SetName(PullMenuButton, value.GetString("RemotePullMenuAutomation"));
+                AutomationProperties.SetName(PushMenuButton, value.GetString("RemotePushMenuAutomation"));
+                ToolTip.SetTip(FetchMenuButton, value.GetString("RemoteFetchMenuTip"));
+                ToolTip.SetTip(PullButton, value.GetString("RemotePullDefaultTip"));
+                ToolTip.SetTip(PullMenuButton, value.GetString("RemotePullMenuTip"));
+                ToolTip.SetTip(PushMenuButton, value.GetString("RemotePushMenuTip"));
+            }
+        }
         public GitErrorLocalizer ErrorLocalizer { get; set; }
         public GitOperationQueue OperationQueue { get; set; }
         public Func<RemoteOperationsViewModel> CreateOperationSession { get; set; }
@@ -39,12 +66,12 @@ namespace Bough.App.Views
             }
 
             ContextMenu menu = new();
-            MenuItem remoteGroup = new() { Header = "원격 선택" };
-            ToolTip.SetTip(remoteGroup, "다음 Fetch에 사용할 원격을 선택합니다. 선택만으로 Git 작업은 실행되지 않습니다.");
+            MenuItem remoteGroup = new() { Header = StringHelper.GetString("RemoteSelectFetchRemote") };
+            ToolTip.SetTip(remoteGroup, StringHelper.GetString("RemoteSelectFetchRemoteTip"));
             foreach (string remote in viewModel.Remotes)
             {
                 MenuItem remoteItem = new() { Header = remote, ToggleType = MenuItemToggleType.Radio, IsChecked = remote == viewModel.SelectedRemote, MinWidth = 220 };
-                ToolTip.SetTip(remoteItem, "다음 Fetch에 사용할 원격으로 선택합니다. 지금 Fetch를 실행하지 않습니다.");
+                ToolTip.SetTip(remoteItem, StringHelper.GetString("RemoteFetchRemoteItemTip"));
                 remoteItem.Click += delegate
                 {
                     viewModel.SelectedRemote = remote;
@@ -53,8 +80,8 @@ namespace Bough.App.Views
             }
             menu.Items.Add(remoteGroup);
 
-            MenuItem prune = new() { Header = "삭제된 브랜치 정리", ToggleType = MenuItemToggleType.CheckBox, IsChecked = viewModel.Prune };
-            ToolTip.SetTip(prune, "원격에서 이미 삭제된 브랜치의 로컬 원격 추적 표시를 다음 Fetch/Fetch all 때 정리합니다. 내 로컬 브랜치와 작업 파일은 삭제하지 않습니다. 선택만으로 실행되지 않습니다.");
+            MenuItem prune = new() { Header = StringHelper.GetString("RemotePruneOption"), ToggleType = MenuItemToggleType.CheckBox, IsChecked = viewModel.Prune };
+            ToolTip.SetTip(prune, StringHelper.GetString("RemotePruneOptionTip"));
             prune.Click += delegate
             {
                 bool enabled = viewModel.Prune == false;
@@ -64,8 +91,8 @@ namespace Bough.App.Views
             menu.Items.Add(prune);
             menu.Items.Add(new Separator());
 
-            MenuItem fetchAll = new() { Header = "모든 원격 가져오기", IsEnabled = viewModel.CanFetchAll };
-            ToolTip.SetTip(fetchAll, "모든 등록 원격에서 Fetch를 바로 실행합니다.");
+            MenuItem fetchAll = new() { Header = StringHelper.GetString("RemoteFetchAllAction"), IsEnabled = viewModel.CanFetchAll };
+            ToolTip.SetTip(fetchAll, StringHelper.GetString("RemoteFetchAllTip"));
             fetchAll.Click += FetchAllClicked;
             menu.Items.Add(fetchAll);
             OpenMenu(button, menu);
@@ -79,17 +106,17 @@ namespace Bough.App.Views
             }
 
             ContextMenu menu = new();
-            MenuItem pullFrom = new() { Header = "받을 브랜치 선택" };
-            ToolTip.SetTip(pullFrom, "받을 원격 브랜치를 고른 뒤 Fast-forward only로 Pull을 실행합니다.");
+            MenuItem pullFrom = new() { Header = StringHelper.GetString("RemotePullChooseBranch") };
+            ToolTip.SetTip(pullFrom, StringHelper.GetString("RemotePullChooseBranchTip"));
             pullFrom.Click += PullFromClicked;
             menu.Items.Add(pullFrom);
             menu.Items.Add(new Separator());
-            MenuItem merge = new() { Header = "병합해서 받기" };
-            ToolTip.SetTip(merge, "현재 upstream에서 Merge 방식으로 한 번 Pull합니다. upstream이 없으면 받을 원격 브랜치를 선택합니다.");
+            MenuItem merge = new() { Header = StringHelper.GetString("RemotePullMergeAction") };
+            ToolTip.SetTip(merge, StringHelper.GetString("RemotePullMergeTip"));
             merge.Click += MergeClicked;
             menu.Items.Add(merge);
-            MenuItem rebase = new() { Header = "재배치해서 받기" };
-            ToolTip.SetTip(rebase, "현재 upstream에서 Rebase 방식으로 한 번 Pull합니다. upstream이 없으면 받을 원격 브랜치를 선택합니다.");
+            MenuItem rebase = new() { Header = StringHelper.GetString("RemotePullRebaseAction") };
+            ToolTip.SetTip(rebase, StringHelper.GetString("RemotePullRebaseTip"));
             rebase.Click += RebaseClicked;
             menu.Items.Add(rebase);
             OpenMenu(button, menu);
@@ -107,8 +134,8 @@ namespace Bough.App.Views
             }
 
             ContextMenu menu = new();
-            MenuItem pushTo = new() { Header = "보낼 대상 선택", IsEnabled = viewModel.CanPushTo };
-            ToolTip.SetTip(pushTo, "보낼 원격과 대상 브랜치를 확인한 뒤 Push를 실행합니다.");
+            MenuItem pushTo = new() { Header = StringHelper.GetString("RemotePushChooseTarget"), IsEnabled = viewModel.CanPushTo };
+            ToolTip.SetTip(pushTo, StringHelper.GetString("RemotePushChooseTargetTip"));
             pushTo.Click += PushToClicked;
             menu.Items.Add(pushTo);
             OpenMenu(button, menu);
@@ -133,7 +160,7 @@ namespace Bough.App.Views
             {
                 return;
             }
-            await ShowOperationAsync(viewModel, RemoteOperationKind.Fetch, false, "Fetch", viewModel.SelectedRemote,
+            await ShowOperationAsync(viewModel, RemoteOperationKind.Fetch, false, StringHelper.GetString("RemoteFetchAction"), viewModel.SelectedRemote,
                 session => session.FetchAsync(false), true, false);
         }
 
@@ -147,7 +174,7 @@ namespace Bough.App.Views
             {
                 return;
             }
-            await ShowOperationAsync(viewModel, RemoteOperationKind.Fetch, true, "Fetch all", "모든 원격",
+            await ShowOperationAsync(viewModel, RemoteOperationKind.Fetch, true, StringHelper.GetString("RemoteFetchAllAction"), StringHelper.GetString("RemoteAllRemotes"),
                 session => session.FetchAsync(true), true, false);
         }
 
@@ -232,14 +259,14 @@ namespace Bough.App.Views
         private async Task RunPullAsync(RemoteOperationsViewModel viewModel, GitPullStrategy strategy, bool chooseTarget)
         {
             GitRepository repository = viewModel.CurrentRepository;
-            string strategyName = "Fast-forward only";
+            string strategyName = StringHelper.GetString("RemoteStrategyFastForward");
             if (strategy == GitPullStrategy.Merge)
             {
-                strategyName = "Merge";
+                strategyName = StringHelper.GetString("RemoteStrategyMerge");
             }
             if (strategy == GitPullStrategy.Rebase)
             {
-                strategyName = "Rebase";
+                strategyName = StringHelper.GetString("RemoteStrategyRebase");
             }
             RemoteOperationTarget target;
             bool needsTarget = chooseTarget;
@@ -256,7 +283,7 @@ namespace Bough.App.Views
                 InternalDialogOpening?.Invoke();
                 try
                 {
-                    target = await RemoteTargetDialogs.SelectPullAsync(owner, viewModel, strategyName, ErrorLocalizer);
+                    target = await RemoteTargetDialogs.SelectPullAsync(owner, viewModel, strategyName, StringHelper, ErrorLocalizer);
                 }
                 finally
                 {
@@ -279,7 +306,7 @@ namespace Bough.App.Views
             {
                 return;
             }
-            await ShowOperationAsync(viewModel, RemoteOperationKind.Pull, false, $"Pull · {strategyName}",
+            await ShowOperationAsync(viewModel, RemoteOperationKind.Pull, false, StringHelper.Format("RemotePullOperationTitle", strategyName),
                 $"{target.Remote}/{target.Branch} → {viewModel.CurrentBranchText}",
                 session => session.PullAsync(strategy, target.Remote, target.Branch), true, true);
         }
@@ -303,7 +330,7 @@ namespace Bough.App.Views
                 InternalDialogOpening?.Invoke();
                 try
                 {
-                    target = await RemoteTargetDialogs.SelectPushAsync(owner, viewModel, ErrorLocalizer);
+                    target = await RemoteTargetDialogs.SelectPushAsync(owner, viewModel, StringHelper, ErrorLocalizer);
                 }
                 finally
                 {
@@ -342,7 +369,7 @@ namespace Bough.App.Views
                     }
                 }
             }
-            await ShowOperationAsync(viewModel, RemoteOperationKind.Push, false, "Push",
+            await ShowOperationAsync(viewModel, RemoteOperationKind.Push, false, StringHelper.GetString("RemotePushAction"),
                 $"{viewModel.CurrentBranchText} → {target.Remote}/{target.Branch}", async session =>
             {
                 if (await session.PrepareUpstreamPushAsync(target.Remote, target.Branch) == false)
@@ -461,7 +488,7 @@ namespace Bough.App.Views
                         }
                     }
                 }, cancellationToken: cancellation.Token);
-            RemoteOperationWindow dialog = new(session, operationName, target, observedOperation, closeOnSuccess, ErrorLocalizer, cancellation, OperationQueue, requestedRepository.RootPath);
+            RemoteOperationWindow dialog = new(session, operationName, target, observedOperation, closeOnSuccess, StringHelper, ErrorLocalizer, cancellation, OperationQueue, requestedRepository.RootPath);
             InternalDialogOpening?.Invoke();
             try
             {

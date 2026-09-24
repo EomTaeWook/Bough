@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bough.App.Localization;
 using Bough.Core.Git;
 
 namespace Bough.App.ViewModels
@@ -13,19 +14,21 @@ namespace Bough.App.ViewModels
         private IReadOnlyList<string> _referenceNames;
         private IReadOnlyList<HistoryReferenceItem> _references;
         private IReadOnlyList<HistoryReferenceItem> _inlineReferences;
+        private readonly StringHelper _stringHelper;
 
-        public HistoryCommitItem(GitHistoryCommit commit, HistoryGraphRow graph, double graphWidth)
+        public HistoryCommitItem(GitHistoryCommit commit, HistoryGraphRow graph, double graphWidth, StringHelper stringHelper)
         {
             Commit = commit;
             Graph = graph;
             _graphWidth = graphWidth;
+            _stringHelper = stringHelper;
             SetReferences(commit.References);
         }
 
         private void SetReferences(IReadOnlyList<string> names)
         {
             _referenceNames = names;
-            _references = names.Select(name => new HistoryReferenceItem(name)).ToList().AsReadOnly();
+            _references = names.Select(name => new HistoryReferenceItem(name, _stringHelper)).ToList().AsReadOnly();
             List<HistoryReferenceItem> inline = _references.Where(reference => reference.IsSymbolicRemote == false)
                 .OrderBy(reference => reference.InlinePriority).Take(2).ToList();
             if (inline.Count == 0 && _references.Count > 0)
@@ -73,11 +76,11 @@ namespace Bough.App.ViewModels
                 {
                     return Author;
                 }
-                return "Unknown author";
+                return _stringHelper.GetString("HistoryUnknownAuthor");
             }
         }
         public string DateText { get { return Commit.AuthoredAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm"); } }
         public string DetailDateText { get { return Commit.AuthoredAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm zzz"); } }
-        public string ToolTipText { get { return $"{MessageFirstLine}\n{Author} · {DetailDateText}\n{Hash}"; } }
+        public string ToolTipText { get { return $"{MessageFirstLine}\n{AuthorDisplayName} · {DetailDateText}\n{Hash}"; } }
     }
 }

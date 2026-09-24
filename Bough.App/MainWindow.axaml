@@ -96,31 +96,31 @@
         </StackPanel>
 
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-          <Button Content="Local Changes" Command="{Binding ShowLocalChangesCommand}" Classes="navigation"
+          <Button Content="{Binding LocalChangesNavigationText}" Command="{Binding ShowLocalChangesCommand}" Classes="navigation"
                   Classes.active="{Binding IsLocalChangesView}" />
-          <Button Content="All Commits" Command="{Binding ShowHistoryCommand}" Classes="navigation"
+          <Button Content="{Binding AllCommitsNavigationText}" Command="{Binding ShowHistoryCommand}" Classes="navigation"
                   Classes.active="{Binding IsHistoryView}" />
           <Button Content="{Binding GitSettings.SettingsTitle}" Command="{Binding ShowGitSettingsCommand}" Classes="navigation"
                   Classes.active="{Binding IsGitSettingsView}" />
           <Border Width="1" Background="{DynamicResource BoughBrushBorder}" Margin="5,9" />
-          <Button IsEnabled="{Binding HasRepository}" Focusable="True" ToolTip.Tip="Open the current repository folder"
-                  AutomationProperties.Name="Open current repository in File Explorer" Padding="8,4">
+          <Button IsEnabled="{Binding HasRepository}" Focusable="True" ToolTip.Tip="{Binding OpenFolderToolTipText}"
+                  AutomationProperties.Name="{Binding OpenFolderAutomationName}" Padding="8,4">
             <Button.Flyout>
               <Flyout Placement="Bottom">
-                <Button Content="Open repository folder" Click="OpenFolderClicked" Focusable="True" />
+                <Button Content="{Binding OpenFolderActionText}" Click="OpenFolderClicked" Focusable="True" />
               </Flyout>
             </Button.Flyout>
             <StackPanel Spacing="0" HorizontalAlignment="Center">
               <TextBlock Text="↗" FontSize="15" HorizontalAlignment="Center" />
-              <TextBlock Text="Open in ▾" FontSize="9" />
+              <TextBlock Text="{Binding OpenInText}" FontSize="9" />
             </StackPanel>
           </Button>
           <Button Command="{Binding References.OpenTerminalCommand}" Focusable="True"
-                  ToolTip.Tip="Open a console at the current repository root"
-                  AutomationProperties.Name="Open console at current repository root" Padding="8,4">
+                  ToolTip.Tip="{Binding ConsoleToolTipText}"
+                  AutomationProperties.Name="{Binding ConsoleAutomationName}" Padding="8,4">
             <StackPanel Spacing="0" HorizontalAlignment="Center">
               <TextBlock Text="&gt;_" FontSize="14" HorizontalAlignment="Center" />
-              <TextBlock Text="Console" FontSize="9" />
+              <TextBlock Text="{Binding ConsoleText}" FontSize="9" />
             </StackPanel>
           </Button>
         </StackPanel>

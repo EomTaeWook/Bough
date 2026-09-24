@@ -31,12 +31,12 @@ namespace Bough.Core.Git
             string[] fields = result.Output.Split('\0');
             if (fields.Length != 8 || fields[7].Length != 0)
             {
-                throw new GitException($"Git returned an unexpected commit format for {commitHash}.");
+                throw new GitException("InspectionCommitFormatInvalid", null, commitHash);
             }
 
             if (DateTimeOffset.TryParse(fields[4], CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset authoredAt) == false)
             {
-                throw new GitException($"Git returned an invalid author date for {commitHash}.");
+                throw new GitException("InspectionCommitAuthorDateInvalid", null, commitHash);
             }
 
             GitCommandResult referencesResult = await _runner.RunAsync(repository.RootPath, new string[] { "for-each-ref", "--points-at", commitHash, "--format=%(refname)" }, false, cancellationToken);
@@ -51,14 +51,18 @@ namespace Bough.Core.Git
             List<string> arguments = CreateDiffArguments(comparisonParent, commitHash, "--name-status");
             arguments.Insert(arguments.Count - 1, "-z");
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, arguments, false, cancellationToken);
-            string[] parts = SplitNul(result.Output, $"changed files for {commitHash}");
+            string[] parts = SplitNul(result.Output, "InspectionChangedFilesUnterminatedRecord", commitHash);
             ArrayQueue<GitCommitChangedFile> files = [];
             for (int index = 0; index < parts.Length;)
             {
                 string status = parts[index++];
-                if (status.Length == 0 || index >= parts.Length)
+                if (status.Length == 0)
                 {
-                    throw new GitException($"Git returned an invalid changed-file record for {commitHash}.");
+                    throw new GitException("InspectionChangedFileRecordInvalid", null, commitHash);
+                }
+                if (index >= parts.Length)
+                {
+                    throw new GitException("InspectionChangedFileRecordInvalid", null, commitHash);
                 }
 
                 string previousPath = string.Empty;
@@ -67,7 +71,7 @@ namespace Bough.Core.Git
                 {
                     if (index >= parts.Length)
                     {
-                        throw new GitException($"Git returned an incomplete rename record for {commitHash}.");
+                        throw new GitException("InspectionRenameRecordIncomplete", null, commitHash);
                     }
 
                     previousPath = path;
@@ -103,10 +107,11 @@ namespace Bough.Core.Git
                 before = await GetFileContentAsync(repository, comparisonParent, previousPath, cancellationToken);
             }
 
-            string reason = GetDiffReason(after, before);
-            if (reason.Length > 0)
+            GitCommitFileContent reasonContent = GetDiffReason(after, before);
+            if (reasonContent != null)
             {
-                return new GitCommitFileDiff(repository.RootPath, commitHash, comparisonParent, file.Path, file.PreviousPath, string.Empty, reason, Array.Empty<GitUnifiedDiffHunk>());
+                return new GitCommitFileDiff(repository.RootPath, commitHash, comparisonParent, file.Path, file.PreviousPath, string.Empty,
+                    reasonContent.ReasonCode, Array.Empty<GitUnifiedDiffHunk>(), reasonContent.ReasonArguments.ToArray());
             }
 
             List<string> arguments = CreateDiffArguments(comparisonParent, commitHash, "--patch");
@@ -125,18 +130,18 @@ namespace Bough.Core.Git
                 string text = _strictUtf8.GetString(bytes);
                 if (text.Length == 0)
                 {
-                    return new GitCommitFileDiff(repository.RootPath, commitHash, comparisonParent, file.Path, file.PreviousPath, string.Empty, "No changes against the selected parent.", Array.Empty<GitUnifiedDiffHunk>());
+                    return new GitCommitFileDiff(repository.RootPath, commitHash, comparisonParent, file.Path, file.PreviousPath, string.Empty, "HistoryNoChangesAgainstParent", Array.Empty<GitUnifiedDiffHunk>());
                 }
 
                 return new GitCommitFileDiff(repository.RootPath, commitHash, comparisonParent, file.Path, file.PreviousPath, text, string.Empty, ParseHunks(text));
             }
             catch (GitOutputLimitException)
             {
-                return new GitCommitFileDiff(repository.RootPath, commitHash, comparisonParent, file.Path, file.PreviousPath, string.Empty, $"Diff exceeds {MaximumDiffBytes} bytes.", Array.Empty<GitUnifiedDiffHunk>());
+                return new GitCommitFileDiff(repository.RootPath, commitHash, comparisonParent, file.Path, file.PreviousPath, string.Empty, "HistoryDiffExceedsBytes", Array.Empty<GitUnifiedDiffHunk>(), MaximumDiffBytes);
             }
             catch (DecoderFallbackException)
             {
-                return new GitCommitFileDiff(repository.RootPath, commitHash, comparisonParent, file.Path, file.PreviousPath, string.Empty, "Diff is not valid UTF-8 text.", Array.Empty<GitUnifiedDiffHunk>());
+                return new GitCommitFileDiff(repository.RootPath, commitHash, comparisonParent, file.Path, file.PreviousPath, string.Empty, "HistoryDiffInvalidUtf8", Array.Empty<GitUnifiedDiffHunk>());
             }
         }
 
@@ -157,7 +162,7 @@ namespace Bough.Core.Git
 
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "ls-tree", "-z", treeish }, false, cancellationToken);
             ArrayQueue<GitCommitTreeEntry> entries = [];
-            foreach (string record in SplitNul(result.Output, $"tree {treeish}"))
+            foreach (string record in SplitNul(result.Output, "InspectionTreeUnterminatedRecord", treeish))
             {
                 GitCommitTreeEntry entry = ParseTreeEntry(record, directoryPath);
                 entries.Add(entry);
@@ -173,34 +178,34 @@ namespace Bough.Core.Git
             GitCommitTreeEntry entry = await FindTreeEntryAsync(repository, commitHash, path, cancellationToken);
             if (entry == null)
             {
-                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "File is not present in this commit.", 0, string.Empty);
+                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "HistoryPreviewFileAbsent", 0, string.Empty);
             }
 
             if (entry.IsGitlink == true)
             {
-                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "Submodule gitlink; target commit is shown as the object hash.", 0, entry.ObjectHash);
+                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "HistorySubmoduleGitlink", 0, entry.ObjectHash);
             }
 
             if (entry.ObjectType != "blob")
             {
-                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "Path is a directory, not a file.", 0, entry.ObjectHash);
+                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "HistoryPathIsDirectory", 0, entry.ObjectHash);
             }
 
             GitCommandResult sizeResult = await _runner.RunAsync(repository.RootPath, new string[] { "cat-file", "-s", entry.ObjectHash }, false, cancellationToken);
             if (long.TryParse(sizeResult.Output.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out long size) == false)
             {
-                throw new GitException($"Git returned an invalid blob size for {path} at {commitHash}.");
+                throw new GitException("InspectionBlobSizeInvalid", null, path, commitHash);
             }
 
             if (size > MaximumFileBytes)
             {
-                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, $"File exceeds {MaximumFileBytes} bytes.", size, entry.ObjectHash);
+                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "HistoryFileExceedsBytes", size, entry.ObjectHash, MaximumFileBytes);
             }
 
             byte[] bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "cat-file", "blob", entry.ObjectHash }, MaximumFileBytes, cancellationToken);
             if (bytes.Contains((byte)0) == true)
             {
-                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "Binary file.", size, entry.ObjectHash);
+                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "HistoryBinaryFile", size, entry.ObjectHash);
             }
 
             try
@@ -208,14 +213,14 @@ namespace Bough.Core.Git
                 string text = _strictUtf8.GetString(bytes);
                 if (text.StartsWith("version https://git-lfs.github.com/spec/v1\n", StringComparison.Ordinal) == true)
                 {
-                    return new GitCommitFileContent(repository.RootPath, commitHash, path, text, "Git LFS pointer, not the file contents.", size, entry.ObjectHash);
+                    return new GitCommitFileContent(repository.RootPath, commitHash, path, text, "HistoryLfsPointer", size, entry.ObjectHash);
                 }
 
                 return new GitCommitFileContent(repository.RootPath, commitHash, path, text, string.Empty, size, entry.ObjectHash);
             }
             catch (DecoderFallbackException)
             {
-                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "File is not valid UTF-8 text.", size, entry.ObjectHash);
+                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "HistoryInvalidUtf8", size, entry.ObjectHash);
             }
         }
 
@@ -231,7 +236,7 @@ namespace Bough.Core.Git
             GitCommitFileContent content = await GetFileContentAsync(repository, commitHash, path, cancellationToken);
             if (content.HasText == false)
             {
-                throw new GitException($"Cannot blame {path} at {commitHash}: {content.Reason}");
+                throw new GitException("InspectionBlameUnavailable", null, path, commitHash, content.ReasonCode);
             }
 
             int totalLines = content.Text.Count(character => character == '\n');
@@ -247,7 +252,15 @@ namespace Bough.Core.Git
 
             int endLine = Math.Min(startLine + lineCount - 1, totalLines);
             string range = $"{startLine},{endLine}";
-            byte[] bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "-c", "core.quotepath=false", "blame", "--line-porcelain", "--encoding=UTF-8", "-L", range, commitHash, "--", path }, 4 * MaximumFileBytes, cancellationToken);
+            byte[] bytes;
+            try
+            {
+                bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "-c", "core.quotepath=false", "blame", "--line-porcelain", "--encoding=UTF-8", "-L", range, commitHash, "--", path }, 4 * MaximumFileBytes, cancellationToken);
+            }
+            catch (GitOutputLimitException exception)
+            {
+                throw new GitException("InspectionBlameOutputLimit", exception, path, 4 * MaximumFileBytes);
+            }
             string output;
             try
             {
@@ -255,7 +268,7 @@ namespace Bough.Core.Git
             }
             catch (DecoderFallbackException exception)
             {
-                throw new GitException($"Git blame output is not valid UTF-8 for {path} at {commitHash}.", exception);
+                throw new GitException("InspectionBlameInvalidUtf8", exception, path, commitHash);
             }
 
             ArrayQueue<GitBlameLine> lines = [];
@@ -266,7 +279,7 @@ namespace Bough.Core.Git
                 string[] header = records[index++].Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (header.Length < 3 || int.TryParse(header[1], NumberStyles.None, CultureInfo.InvariantCulture, out int originalLine) == false || int.TryParse(header[2], NumberStyles.None, CultureInfo.InvariantCulture, out int finalLine) == false)
                 {
-                    throw new GitException($"Git returned a malformed blame header for {path} at {commitHash}.");
+                    throw new GitException("InspectionBlameHeaderInvalid", null, path, commitHash);
                 }
 
                 string sourceHash = header[0].TrimStart('^');
@@ -313,10 +326,18 @@ namespace Bough.Core.Git
 
                 if (hasText == false || hasAuthorTime == false)
                 {
-                    throw new GitException($"Git returned an incomplete blame record for {path} at {commitHash}.");
+                    throw new GitException("InspectionBlameRecordIncomplete", null, path, commitHash);
                 }
 
-                DateTimeOffset authoredAt = DateTimeOffset.FromUnixTimeSeconds(authorTime).ToOffset(ParseTimezone(timezone));
+                DateTimeOffset authoredAt;
+                try
+                {
+                    authoredAt = DateTimeOffset.FromUnixTimeSeconds(authorTime).ToOffset(ParseTimezone(timezone));
+                }
+                catch (ArgumentOutOfRangeException exception)
+                {
+                    throw new GitException("InspectionBlameAuthorTimeInvalid", exception, path, commitHash, authorTime);
+                }
                 lines.Add(new GitBlameLine(finalLine, originalLine, sourceHash, author, authoredAt, summary, originalPath, sourceText));
             }
 
@@ -333,7 +354,15 @@ namespace Bough.Core.Git
             }
 
             string format = "--format=format:%H%x00%an%x00%aI%x00%s%x00";
-            byte[] bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "log", "--follow", "--name-status", "-z", format, $"--max-count={limit}", commitHash, "--", LiteralPath(path) }, 2 * MaximumFileBytes, cancellationToken);
+            byte[] bytes;
+            try
+            {
+                bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "log", "--follow", "--name-status", "-z", format, $"--max-count={limit}", commitHash, "--", LiteralPath(path) }, 2 * MaximumFileBytes, cancellationToken);
+            }
+            catch (GitOutputLimitException exception)
+            {
+                throw new GitException("InspectionFileHistoryOutputLimit", exception, path, 2 * MaximumFileBytes);
+            }
             string output;
             try
             {
@@ -341,10 +370,10 @@ namespace Bough.Core.Git
             }
             catch (DecoderFallbackException exception)
             {
-                throw new GitException($"Git file history output is not valid UTF-8 for {path} at {commitHash}.", exception);
+                throw new GitException("InspectionFileHistoryInvalidUtf8", exception, path, commitHash);
             }
 
-            string[] parts = SplitNul(output, $"history of {path}");
+            string[] parts = SplitNul(output, "InspectionHistoryUnterminatedRecord", path);
             ArrayQueue<GitFileHistoryEntry> entries = [];
             string currentPath = path;
             int index = 0;
@@ -359,7 +388,7 @@ namespace Bough.Core.Git
                 ValidateHash(historyHash);
                 if (index + 2 >= parts.Length)
                 {
-                    throw new GitException($"Git returned an incomplete history record for {path}.");
+                    throw new GitException("InspectionHistoryRecordIncomplete", null, path);
                 }
 
                 string author = parts[index++];
@@ -367,7 +396,7 @@ namespace Bough.Core.Git
                 string title = parts[index++];
                 if (DateTimeOffset.TryParse(date, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset authoredAt) == false)
                 {
-                    throw new GitException($"Git returned an invalid history date for {historyHash}.");
+                    throw new GitException("InspectionHistoryDateInvalid", null, historyHash);
                 }
 
                 string previousPath = string.Empty;
@@ -381,7 +410,7 @@ namespace Bough.Core.Git
 
                     if (index >= parts.Length)
                     {
-                        throw new GitException($"Git returned an incomplete history status for {historyHash}.");
+                        throw new GitException("InspectionHistoryStatusIncomplete", null, historyHash);
                     }
 
                     string changedPath = parts[index++];
@@ -389,7 +418,7 @@ namespace Bough.Core.Git
                     {
                         if (index >= parts.Length)
                         {
-                            throw new GitException($"Git returned an incomplete rename history for {historyHash}.");
+                            throw new GitException("InspectionRenameHistoryIncomplete", null, historyHash);
                         }
 
                         string newPath = parts[index++];
@@ -414,7 +443,7 @@ namespace Bough.Core.Git
         {
             if (timezone.Length != 5 || (timezone[0] != '+' && timezone[0] != '-') || int.TryParse(timezone.Substring(1, 2), out int hours) == false || int.TryParse(timezone.Substring(3, 2), out int minutes) == false || hours > 14 || minutes > 59)
             {
-                throw new GitException($"Git returned an invalid author timezone: {timezone}.");
+                throw new GitException("InspectionAuthorTimezoneInvalid", null, timezone);
             }
 
             TimeSpan offset = new(hours, minutes, 0);
@@ -441,7 +470,7 @@ namespace Bough.Core.Git
 
             if (commit.Parents.Contains(parentHash, StringComparer.OrdinalIgnoreCase) == false)
             {
-                throw new ArgumentException($"{parentHash} is not a parent of {commitHash}.", nameof(parentHash));
+                throw new GitException("InspectionParentNotFound", null, parentHash, commitHash);
             }
 
             return parentHash;
@@ -450,7 +479,7 @@ namespace Bough.Core.Git
         private async Task<GitCommitTreeEntry> FindTreeEntryAsync(GitRepository repository, string commitHash, string path, CancellationToken cancellationToken)
         {
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "ls-tree", "--full-tree", "-z", commitHash, "--", LiteralPath(path) }, false, cancellationToken);
-            foreach (string record in SplitNul(result.Output, $"tree path {path}"))
+            foreach (string record in SplitNul(result.Output, "InspectionTreePathUnterminatedRecord", path))
             {
                 GitCommitTreeEntry entry = ParseTreeEntry(record, string.Empty);
                 if (entry.Path == path)
@@ -467,13 +496,13 @@ namespace Bough.Core.Git
             int tab = record.IndexOf('\t');
             if (tab < 0)
             {
-                throw new GitException("Git returned a malformed tree record.");
+                throw new GitException("InspectionTreeRecordInvalid", null, Array.Empty<object>());
             }
 
             string[] fields = record.Substring(0, tab).Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (fields.Length != 3)
             {
-                throw new GitException("Git returned a malformed tree entry header.");
+                throw new GitException("InspectionTreeEntryHeaderInvalid", null, Array.Empty<object>());
             }
 
             string path = record.Substring(tab + 1);
@@ -495,19 +524,19 @@ namespace Bough.Core.Git
             return ["diff", "--find-renames", format, parentHash, commitHash, "--"];
         }
 
-        private static string GetDiffReason(GitCommitFileContent after, GitCommitFileContent before)
+        private static GitCommitFileContent GetDiffReason(GitCommitFileContent after, GitCommitFileContent before)
         {
-            if (after.Reason.Length > 0 && after.ObjectHash.Length > 0)
+            if (after.ReasonCode.Length > 0 && after.ObjectHash.Length > 0)
             {
-                return after.Reason;
+                return after;
             }
 
-            if (before != null && before.Reason.Length > 0 && before.ObjectHash.Length > 0)
+            if (before != null && before.ReasonCode.Length > 0 && before.ObjectHash.Length > 0)
             {
-                return before.Reason;
+                return before;
             }
 
-            return string.Empty;
+            return null;
         }
 
         private static IReadOnlyList<GitUnifiedDiffHunk> ParseHunks(string diff)
@@ -538,8 +567,14 @@ namespace Bough.Core.Git
                     }
 
                     header = line;
-                    oldStart = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-                    newStart = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
+                    if (int.TryParse(match.Groups[1].Value, NumberStyles.None, CultureInfo.InvariantCulture, out oldStart) == false)
+                    {
+                        throw new GitException("InspectionDiffHunkLineInvalid", null, line);
+                    }
+                    if (int.TryParse(match.Groups[2].Value, NumberStyles.None, CultureInfo.InvariantCulture, out newStart) == false)
+                    {
+                        throw new GitException("InspectionDiffHunkLineInvalid", null, line);
+                    }
                     oldLine = oldStart;
                     newLine = newStart;
                     continue;
@@ -581,7 +616,7 @@ namespace Bough.Core.Git
             return Array.AsReadOnly(hunks.ToArray());
         }
 
-        private static string[] SplitNul(string output, string context)
+        private static string[] SplitNul(string output, string errorCode, params object[] arguments)
         {
             if (output.Length == 0)
             {
@@ -590,7 +625,7 @@ namespace Bough.Core.Git
 
             if (output[output.Length - 1] != '\0')
             {
-                throw new GitException($"Git returned an unterminated NUL record for {context}.");
+                throw new GitException(errorCode, null, arguments);
             }
 
             string[] parts = output.Split('\0');
@@ -599,23 +634,35 @@ namespace Bough.Core.Git
 
         private static void ValidateHash(string hash)
         {
-            if (string.IsNullOrWhiteSpace(hash) == true || Regex.IsMatch(hash, "^([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$", RegexOptions.CultureInvariant) == false)
+            if (string.IsNullOrWhiteSpace(hash) == true)
             {
-                throw new ArgumentException($"A full commit hash is required: {hash}.", nameof(hash));
+                throw new GitException("InspectionCommitHashRequired", null, hash);
+            }
+            if (Regex.IsMatch(hash, "^([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$", RegexOptions.CultureInvariant) == false)
+            {
+                throw new GitException("InspectionCommitHashRequired", null, hash);
             }
         }
 
         private static void ValidatePath(string path)
         {
-            if (string.IsNullOrEmpty(path) == true || path.IndexOf('\0') >= 0 || path.StartsWith("/", StringComparison.Ordinal) == true)
+            if (string.IsNullOrEmpty(path) == true)
             {
-                throw new ArgumentException($"A repository-relative Git path is required: {path}.", nameof(path));
+                throw new GitException("InspectionGitPathRequired", null, path);
+            }
+            if (path.IndexOf('\0') >= 0)
+            {
+                throw new GitException("InspectionGitPathRequired", null, path);
+            }
+            if (path.StartsWith("/", StringComparison.Ordinal) == true)
+            {
+                throw new GitException("InspectionGitPathRequired", null, path);
             }
 
             string[] parts = path.Split('/');
             if (parts.Any(part => part.Length == 0 || part == "." || part == "..") == true)
             {
-                throw new ArgumentException($"A normalized Git path is required: {path}.", nameof(path));
+                throw new GitException("InspectionGitPathNotNormalized", null, path);
             }
         }
 

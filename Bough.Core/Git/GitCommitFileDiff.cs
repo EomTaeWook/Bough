@@ -6,7 +6,7 @@ namespace Bough.Core.Git
 {
     public class GitCommitFileDiff
     {
-        public GitCommitFileDiff(string repositoryRoot, string commitHash, string parentHash, string path, string previousPath, string text, string reason, IEnumerable<GitUnifiedDiffHunk> hunks)
+        public GitCommitFileDiff(string repositoryRoot, string commitHash, string parentHash, string path, string previousPath, string text, string reasonCode, IEnumerable<GitUnifiedDiffHunk> hunks, params object[] reasonArguments)
         {
             RepositoryRoot = repositoryRoot;
             CommitHash = commitHash;
@@ -14,7 +14,13 @@ namespace Bough.Core.Git
             Path = path;
             PreviousPath = previousPath;
             Text = text;
-            Reason = reason;
+            ReasonCode = reasonCode;
+            object[] values = Array.Empty<object>();
+            if (reasonArguments != null)
+            {
+                values = (object[])reasonArguments.Clone();
+            }
+            ReasonArguments = Array.AsReadOnly(values);
             Hunks = Array.AsReadOnly(hunks.ToArray());
         }
 
@@ -30,10 +36,12 @@ namespace Bough.Core.Git
 
         public string Text { get; }
 
-        public string Reason { get; }
+        public string ReasonCode { get; }
+
+        public IReadOnlyList<object> ReasonArguments { get; }
 
         public IReadOnlyList<GitUnifiedDiffHunk> Hunks { get; }
 
-        public bool HasText { get { return Reason.Length == 0; } }
+        public bool HasText { get { return ReasonCode.Length == 0; } }
     }
 }

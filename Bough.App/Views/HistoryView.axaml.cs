@@ -344,7 +344,7 @@ namespace Bough.App.Views
             MenuItem tag = menu.Items.OfType<MenuItem>().FirstOrDefault(item => item.Tag as string == "create-tag");
             if (tag != null)
             {
-                tag.Header = GitActionDialogs.TagText("HistoryCreateTagHere");
+                tag.Header = GitActionDialogs.TagText("HistoryCreateTagHere", viewModel.Strings);
             }
             MenuItem reset = menu.Items.OfType<MenuItem>().LastOrDefault();
             if (reset != null)
@@ -384,7 +384,7 @@ namespace Bough.App.Views
 
             string hash = _menuCommitHash;
             string root = _menuRepositoryRoot;
-            await GitActionDialogs.RequestNewBranchAsync(owner, "Create branch at commit", hash.Substring(0, 8), string.Empty, async name =>
+            await GitActionDialogs.RequestNewBranchAsync(owner, viewModel.Strings.GetString("HistoryCreateBranchAtCommitTitle"), hash.Substring(0, 8), string.Empty, async name =>
             {
                 bool created = await viewModel.CreateBranchAsync(root, hash, name, true);
                 if (created == true)
@@ -395,8 +395,8 @@ namespace Bough.App.Views
                 {
                     return viewModel.ErrorText;
                 }
-                return "The repository changed while creating the branch. Refresh and try again.";
-            });
+                return viewModel.Strings.GetString("HistoryBranchCreateRepositoryChanged");
+            }, viewModel.Strings);
         }
 
         private async void CreateCommitTagClicked(object sender, RoutedEventArgs eventArgs)
@@ -418,14 +418,14 @@ namespace Bough.App.Views
             string root = _menuRepositoryRoot;
             await GitActionDialogs.RequestTagAsync(owner, hash, async name =>
             {
-                string success = GitActionDialogs.FormatTagText("ReferenceLocalTagCreated", name.Trim());
+                string success = GitActionDialogs.FormatTagText("ReferenceLocalTagCreated", name.Trim(), viewModel.Strings);
                 bool created = await viewModel.CreateTagAsync(root, hash, name, success);
                 if (created)
                 {
                     return null;
                 }
                 return viewModel.ErrorText;
-            });
+            }, viewModel.Strings);
         }
 
         private async void CheckoutCommitClicked(object sender, RoutedEventArgs eventArgs)
@@ -445,7 +445,10 @@ namespace Bough.App.Views
 
             string hash = _menuCommitHash;
             string root = _menuRepositoryRoot;
-            bool confirmed = await GitActionDialogs.ConfirmAsync(owner, "Check out commit", $"Switch to detached HEAD at {hash.Substring(0, 8)}? The current branch will stay where it is.", "Check out");
+            bool confirmed = await GitActionDialogs.ConfirmAsync(owner,
+                viewModel.Strings.GetString("HistoryCheckoutConfirmTitle"),
+                viewModel.Strings.Format("HistoryCheckoutConfirmMessage", hash.Substring(0, 8)),
+                viewModel.Strings.GetString("HistoryCheckoutConfirmAction"), viewModel.Strings);
             if (confirmed == true)
             {
                 await viewModel.SwitchDetachedAsync(root, hash);
@@ -472,7 +475,7 @@ namespace Bough.App.Views
             try
             {
                 GitResetPreview preview = await viewModel.GetResetPreviewAsync(root, hash);
-                GitResetChoice choice = await GitActionDialogs.RequestResetAsync(owner, preview);
+                GitResetChoice choice = await GitActionDialogs.RequestResetAsync(owner, preview, viewModel.Strings);
                 if (choice == null)
                 {
                     return;
@@ -481,7 +484,10 @@ namespace Bough.App.Views
                 bool hardConfirmed = false;
                 if (choice.Mode == GitResetMode.Hard)
                 {
-                    hardConfirmed = await GitActionDialogs.ConfirmAsync(owner, "Confirm hard reset", $"Hard reset {preview.BranchName} to {preview.ShortHash}? Staged changes and working files can be overwritten. This cannot be undone from the app.", "Hard reset");
+                    hardConfirmed = await GitActionDialogs.ConfirmAsync(owner,
+                        viewModel.Strings.GetString("HistoryHardResetConfirmTitle"),
+                        viewModel.Strings.Format("HistoryHardResetConfirmMessage", preview.BranchName, preview.ShortHash),
+                        viewModel.Strings.GetString("HistoryHardResetConfirmAction"), viewModel.Strings);
                     if (hardConfirmed == false)
                     {
                         return;
@@ -632,7 +638,7 @@ namespace Bough.App.Views
             string workingPath = viewModel.FileActions.GetWorkingPath(viewModel.CurrentRepository, _menuFilePath);
             items[0].IsEnabled = isDirectory == false;
             items[1].IsEnabled = isDirectory == false && isGitlink == false && File.Exists(workingPath);
-            if (items[1].IsEnabled == false) ToolTip.SetTip(items[1], "File is absent from the current working folder.");
+            if (items[1].IsEnabled == false) ToolTip.SetTip(items[1], viewModel.Strings.GetString("HistoryWorkingFileAbsentTooltip"));
             else ToolTip.SetTip(items[1], string.Empty);
             items[2].IsEnabled = isDirectory == false;
             items[3].IsEnabled = isDirectory == false && _menuFileDeleted == false;
@@ -679,7 +685,10 @@ namespace Bough.App.Views
             try
             {
                 string absolute = viewModel.FileActions.GetWorkingPath(repository, _menuFilePath);
-                if (File.Exists(absolute) == false) throw new GitException($"{_menuFilePath} is absent from the working folder.");
+                if (File.Exists(absolute) == false)
+                {
+                    throw new GitException("HistoryWorkingFileAbsent", null, _menuFilePath);
+                }
                 ProcessStartInfo start = new();
                 if (OperatingSystem.IsWindows() == true)
                 {
@@ -741,7 +750,10 @@ namespace Bough.App.Views
                 string localPath = file.TryGetLocalPath();
                 if (localPath != null && File.Exists(localPath) == true)
                 {
-                    bool confirmed = await GitActionDialogs.ConfirmAsync(owner, "Overwrite exported file", $"Replace {localPath} with {path} from {hash.Substring(0, 8)}?", "Replace");
+                    bool confirmed = await GitActionDialogs.ConfirmAsync(owner,
+                        viewModel.Strings.GetString("HistoryExportOverwriteTitle"),
+                        viewModel.Strings.Format("HistoryExportOverwriteMessage", localPath, path, hash.Substring(0, 8)),
+                        viewModel.Strings.GetString("HistoryExportOverwriteAction"), viewModel.Strings);
                     if (confirmed == false) return;
                 }
                 viewModel.RequireSelectedRepository(root, hash);
