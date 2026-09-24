@@ -2846,7 +2846,7 @@
   {
     "Id": 2554,
     "Name": "RemoteAheadBehindUnavailable",
-    "Kor": "앞섬/뒤처짐 정보 없음",
+    "Kor": "앞선/뒤처진 커밋 수 없음",
     "Eng": "Ahead / behind unavailable"
   },
   {
@@ -2871,7 +2871,7 @@
     "Id": 2558,
     "Name": "RemoteCancelRequested",
     "Kor": "원격 작업 중단을 요청했습니다. 종료를 기다리는 중...",
-    "Eng": "Cancellation requested. Waiting for the remote operation to stop..."
+    "Eng": "Cancel requested. Waiting for the remote operation to stop..."
   },
   {
     "Id": 2559,
@@ -2948,13 +2948,13 @@
   {
     "Id": 2571,
     "Name": "RemoteDetachedHint",
-    "Kor": "Detached HEAD: Fetch는 가능하며 Pull과 Push에는 브랜치가 필요합니다.",
+    "Kor": "Detached HEAD: Fetch는 가능하지만 Pull과 Push에는 브랜치가 필요합니다.",
     "Eng": "Detached HEAD: Fetch is available; Pull and Push require a branch."
   },
   {
     "Id": 2572,
     "Name": "RemoteDetachedOrNoCommits",
-    "Kor": "Detached HEAD / 커밋 없음",
+    "Kor": "분리된 HEAD / 커밋 없음",
     "Eng": "Detached HEAD / no commits"
   },
   {
@@ -3044,7 +3044,7 @@
   {
     "Id": 2587,
     "Name": "RemoteFetchResult",
-    "Kor": "가져옴: {0}. 갱신됨: {1}.",
+    "Kor": "가져온 원격: {0}. 갱신된 참조: {1}.",
     "Eng": "Fetched: {0}. Updated: {1}."
   },
   {
@@ -3086,7 +3086,7 @@
   {
     "Id": 2594,
     "Name": "RemoteLoadingState",
-    "Kor": "원격 상태 불러오는 중...",
+    "Kor": "원격 상태를 읽는 중...",
     "Eng": "Loading remote state..."
   },
   {
@@ -3123,7 +3123,7 @@
     "Id": 2600,
     "Name": "RemoteOperationCanceled",
     "Kor": "원격 작업이 중단되었습니다. 이미 적용된 변경은 되돌리지 않습니다.",
-    "Eng": "The remote operation was canceled. Changes already applied remain in place."
+    "Eng": "The remote operation was canceled. Applied changes are not rolled back."
   },
   {
     "Id": 2601,
@@ -3242,7 +3242,7 @@
   {
     "Id": 2620,
     "Name": "RemotePullingFrom",
-    "Kor": "{0}/{1}에서 Pull하는 중...",
+    "Kor": "{0}/{1}에서 받는 중...",
     "Eng": "Pulling from {0}/{1}..."
   },
   {
@@ -3315,7 +3315,7 @@
     "Id": 2632,
     "Name": "RemotePushBranchChanged",
     "Kor": "현재 브랜치가 변경되었습니다. Push 대상을 다시 확인하세요.",
-    "Eng": "The current branch changed. Confirm the Push destination again."
+    "Eng": "The current branch changed. Check the Push target again."
   },
   {
     "Id": 2633,
@@ -3333,12 +3333,12 @@
     "Id": 2635,
     "Name": "RemotePushCommitsConfirmed",
     "Kor": "Push할 새 커밋을 확인했습니다.",
-    "Eng": "New commits to Push have been confirmed."
+    "Eng": "New commits to push were confirmed."
   },
   {
     "Id": 2636,
     "Name": "RemotePushCompleted",
-    "Kor": "{0}/{1}에 Push했습니다.",
+    "Kor": "{0}/{1}에 보냈습니다.",
     "Eng": "Pushed to {0}/{1}."
   },
   {
@@ -3368,7 +3368,7 @@
   {
     "Id": 2641,
     "Name": "RemotePushingTo",
-    "Kor": "{0}/{1}에 Push하는 중...",
+    "Kor": "{0}/{1}에 보내는 중...",
     "Eng": "Pushing to {0}/{1}..."
   },
   {
@@ -3393,13 +3393,13 @@
     "Id": 2645,
     "Name": "RemotePushNoNewCommits",
     "Kor": "보낼 새 커밋 없음",
-    "Eng": "No new commits to Push"
+    "Eng": "No new commits to push"
   },
   {
     "Id": 2646,
     "Name": "RemotePushNoNewCommitsBehind",
     "Kor": "보낼 새 커밋 없음 · upstream보다 {0}개 뒤처짐",
-    "Eng": "No new commits to Push · {0} behind upstream"
+    "Eng": "No new commits to push · {0} behind upstream"
   },
   {
     "Id": 2647,
@@ -3411,7 +3411,7 @@
     "Id": 2648,
     "Name": "RemotePushUpstreamChanged",
     "Kor": "Upstream이 변경되었습니다. Push 대상을 다시 확인하세요.",
-    "Eng": "Upstream changed. Confirm the Push destination again."
+    "Eng": "Upstream changed. Check the Push target again."
   },
   {
     "Id": 2649,
@@ -3441,7 +3441,7 @@
     "Id": 2653,
     "Name": "RemoteRequestedBranchChanged",
     "Kor": "요청한 브랜치 {0}이(가) 현재 체크아웃되어 있지 않습니다. 현재 브랜치: {1}.",
-    "Eng": "The requested branch {0} is no longer checked out. Current branch: {1}."
+    "Eng": "Requested branch {0} is no longer checked out. Current branch: {1}."
   },
   {
     "Id": 2654,
@@ -3513,7 +3513,7 @@
     "Id": 2665,
     "Name": "RemoteStateCheckCanceled",
     "Kor": "{0} 상태 확인 중 중단되었습니다.",
-    "Eng": "{0} Canceled while checking state."
+    "Eng": "{0} State check was canceled."
   },
   {
     "Id": 2666,
@@ -3524,7 +3524,7 @@
   {
     "Id": 2667,
     "Name": "RemoteStateRefreshed",
-    "Kor": "원격 상태를 새로 고쳤습니다.",
+    "Kor": "원격 상태를 새로 읽었습니다.",
     "Eng": "Remote state refreshed."
   },
   {
@@ -3554,19 +3554,19 @@
   {
     "Id": 2672,
     "Name": "RemoteStrategyFastForward",
-    "Kor": "Fast-forward only",
+    "Kor": "빠른 전진만",
     "Eng": "Fast-forward only"
   },
   {
     "Id": 2673,
     "Name": "RemoteStrategyMerge",
-    "Kor": "Merge",
+    "Kor": "병합",
     "Eng": "Merge"
   },
   {
     "Id": 2674,
     "Name": "RemoteStrategyRebase",
-    "Kor": "Rebase",
+    "Kor": "재배치",
     "Eng": "Rebase"
   },
   {
