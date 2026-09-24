@@ -45,7 +45,7 @@ namespace Bough.App
                     discard = await GitActionDialogs.ConfirmAsync(this,
                         _viewModel.DiscardResolutionTitle,
                         _viewModel.DiscardResolutionCloseMessage,
-                        _viewModel.DiscardResolutionConfirmText);
+                        _viewModel.DiscardResolutionConfirmText, _viewModel.Strings);
                 }
                 finally
                 {

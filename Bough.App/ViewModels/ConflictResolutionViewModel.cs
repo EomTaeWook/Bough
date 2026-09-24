@@ -53,6 +53,7 @@ namespace Bough.App.ViewModels
         private readonly ConflictParser _parser;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
+
         private readonly StringComparison _pathComparison;
         private readonly Dictionary<int, ResolutionChoiceType> _choices;
         private IConflictStageCompletion _completion;
@@ -113,6 +114,7 @@ namespace Bough.App.ViewModels
             SaveAndStageCommand = new RelayCommand(() => _ = SaveAndStageAsync(), CanSaveAndStage);
         }
 
+        public StringHelper Strings { get { return _stringHelper; } }
         public ObservableCollection<ConflictFileItem> ConflictFiles { get; }
         public RelayCommand PreviousHunkCommand { get; }
         public RelayCommand NextHunkCommand { get; }
