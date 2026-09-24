@@ -2967,7 +2967,7 @@
     "Id": 2574,
     "Name": "RemoteElapsedTime",
     "Kor": "경과 시간 {0}",
-    "Eng": "Elapsed {0}"
+    "Eng": "Elapsed time {0}"
   },
   {
     "Id": 2575,
@@ -2978,7 +2978,7 @@
   {
     "Id": 2576,
     "Name": "RemoteExistingUpstreamRemains",
-    "Kor": "기존 upstream {0}이(가) 유지됩니다.",
+    "Kor": "기존 upstream {0}은(는) 유지됩니다.",
     "Eng": "Existing upstream remains {0}."
   },
   {
@@ -2996,7 +2996,7 @@
   {
     "Id": 2579,
     "Name": "RemoteFetchAllTip",
-    "Kor": "등록된 모든 원격에서 Fetch를 바로 실행합니다.",
+    "Kor": "모든 등록 원격에서 Fetch를 바로 실행합니다.",
     "Eng": "Fetch from all configured remotes now."
   },
   {
@@ -3033,13 +3033,13 @@
     "Id": 2585,
     "Name": "RemoteFetchMenuTip",
     "Kor": "모든 원격 가져오기, 원격 선택, 삭제된 브랜치 정리",
-    "Eng": "Fetch all, select remote, and prune removed branches"
+    "Eng": "Fetch all, select remote, prune deleted branches"
   },
   {
     "Id": 2586,
     "Name": "RemoteFetchRemoteItemTip",
     "Kor": "다음 Fetch에 사용할 원격으로 선택합니다. 지금 Fetch를 실행하지 않습니다.",
-    "Eng": "Select this remote for the next Fetch without running Fetch now."
+    "Eng": "Select this remote for the next Fetch. Fetch does not run now."
   },
   {
     "Id": 2587,
@@ -3050,7 +3050,7 @@
   {
     "Id": 2588,
     "Name": "RemoteFirstPushSetsUpstream",
-    "Kor": "첫 Push가 성공하면 이 대상을 upstream으로 설정합니다.",
+    "Kor": "첫 Push가 성공하면 이 대상이 upstream으로 설정됩니다.",
     "Eng": "A successful first Push will set this destination as upstream."
   },
   {
@@ -3092,7 +3092,7 @@
   {
     "Id": 2595,
     "Name": "RemoteNoBranchesFetchFirst",
-    "Kor": "사용할 수 있는 원격 브랜치가 없습니다. 먼저 해당 원격을 Fetch하세요.",
+    "Kor": "사용할 수 있는 원격 브랜치가 없습니다. 먼저 이 원격을 Fetch하세요.",
     "Eng": "No remote branches are available. Fetch this remote first."
   },
   {
@@ -3165,13 +3165,13 @@
     "Id": 2607,
     "Name": "RemotePruneOption",
     "Kor": "삭제된 브랜치 정리",
-    "Eng": "Prune removed branches"
+    "Eng": "Prune deleted branches"
   },
   {
     "Id": 2608,
     "Name": "RemotePruneOptionTip",
-    "Kor": "다음 Fetch 때 삭제된 원격 추적 표시를 정리합니다. 로컬 브랜치와 작업 파일은 삭제하지 않습니다.",
-    "Eng": "Prune removed remote tracking references on the next Fetch. Local branches and working files are preserved."
+    "Kor": "원격에서 이미 삭제된 브랜치의 로컬 원격 추적 표시를 다음 Fetch/Fetch all 때 정리합니다. 내 로컬 브랜치와 작업 파일은 삭제하지 않습니다. 선택만으로 실행되지 않습니다.",
+    "Eng": "On the next Fetch or Fetch all, remove local remote-tracking references for branches already deleted on the remote. Local branches and working files are kept. Selecting this option does not run Fetch."
   },
   {
     "Id": 2609,
@@ -3195,13 +3195,13 @@
     "Id": 2612,
     "Name": "RemotePullChooseBranch",
     "Kor": "받을 브랜치 선택",
-    "Eng": "Choose branch to pull"
+    "Eng": "Choose source branch"
   },
   {
     "Id": 2613,
     "Name": "RemotePullChooseBranchTip",
-    "Kor": "원격 브랜치를 고른 뒤 Fast-forward only로 Pull합니다.",
-    "Eng": "Choose a remote branch and pull with fast-forward only."
+    "Kor": "받을 원격 브랜치를 고른 뒤 빠른 전진만으로 Pull을 실행합니다.",
+    "Eng": "Choose a remote branch, then Pull with fast-forward only."
   },
   {
     "Id": 2614,
@@ -3212,7 +3212,7 @@
   {
     "Id": 2615,
     "Name": "RemotePullDefaultTip",
-    "Kor": "Fast-forward only · upstream이 없으면 받을 원격 브랜치를 선택합니다.",
+    "Kor": "빠른 전진만 · upstream이 없으면 받을 원격 브랜치를 선택합니다.",
     "Eng": "Fast-forward only · choose a remote branch when there is no upstream."
   },
   {
@@ -3224,8 +3224,8 @@
   {
     "Id": 2617,
     "Name": "RemotePullFastForwardAutomation",
-    "Kor": "Fast-forward only로 Pull",
-    "Eng": "Pull with fast-forward only"
+    "Kor": "Pull (빠른 전진만)",
+    "Eng": "Pull (Fast-forward only)"
   },
   {
     "Id": 2618,
@@ -3255,7 +3255,7 @@
     "Id": 2622,
     "Name": "RemotePullMenuTip",
     "Kor": "받을 브랜치 선택, 병합해서 받기, 재배치해서 받기",
-    "Eng": "Choose branch, pull with merge, or pull with rebase"
+    "Eng": "Choose source branch, pull with merge, pull with rebase"
   },
   {
     "Id": 2623,
@@ -3266,8 +3266,8 @@
   {
     "Id": 2624,
     "Name": "RemotePullMergeTip",
-    "Kor": "현재 upstream에서 Merge 방식으로 Pull합니다. upstream이 없으면 받을 원격 브랜치를 선택합니다.",
-    "Eng": "Pull from the current upstream using Merge. Choose a remote branch if there is no upstream."
+    "Kor": "현재 upstream에서 병합 방식으로 한 번 Pull합니다. upstream이 없으면 받을 원격 브랜치를 선택합니다.",
+    "Eng": "Pull once from the current upstream using merge. If there is no upstream, choose a remote branch."
   },
   {
     "Id": 2625,
@@ -3284,20 +3284,20 @@
   {
     "Id": 2627,
     "Name": "RemotePullRebaseTip",
-    "Kor": "현재 upstream에서 Rebase 방식으로 Pull합니다. upstream이 없으면 받을 원격 브랜치를 선택합니다.",
-    "Eng": "Pull from the current upstream using Rebase. Choose a remote branch if there is no upstream."
+    "Kor": "현재 upstream에서 재배치 방식으로 한 번 Pull합니다. upstream이 없으면 받을 원격 브랜치를 선택합니다.",
+    "Eng": "Pull once from the current upstream using rebase. If there is no upstream, choose a remote branch."
   },
   {
     "Id": 2628,
     "Name": "RemotePullSourceTitle",
-    "Kor": "Pull 원본 선택",
+    "Kor": "받을 브랜치 선택",
     "Eng": "Choose Pull source"
   },
   {
     "Id": 2629,
     "Name": "RemotePullSummaryAutomation",
     "Kor": "Pull로 받은 커밋과 변경 파일 요약",
-    "Eng": "Incoming commits and changed files summary"
+    "Eng": "Summary of commits and changed files received by Pull"
   },
   {
     "Id": 2630,
@@ -3326,7 +3326,7 @@
   {
     "Id": 2634,
     "Name": "RemotePushChooseTargetTip",
-    "Kor": "보낼 원격과 대상 브랜치를 확인한 뒤 Push합니다.",
+    "Kor": "보낼 원격과 대상 브랜치를 확인한 뒤 Push를 실행합니다.",
     "Eng": "Confirm the remote and destination branch before Push."
   },
   {
@@ -3458,8 +3458,8 @@
   {
     "Id": 2656,
     "Name": "RemoteSelectFetchRemoteTip",
-    "Kor": "다음 Fetch에 사용할 원격을 선택합니다. 선택만으로 작업은 실행되지 않습니다.",
-    "Eng": "Select the remote for the next Fetch. Selection alone does not run a Git operation."
+    "Kor": "다음 Fetch에 사용할 원격을 선택합니다. 선택만으로 Git 작업은 실행되지 않습니다.",
+    "Eng": "Choose the remote for the next Fetch. Selection does not start a Git operation."
   },
   {
     "Id": 2657,
@@ -3543,13 +3543,13 @@
     "Id": 2670,
     "Name": "RemoteStopAutomation",
     "Kor": "진행 중인 원격 작업 중단",
-    "Eng": "Stop running remote operation"
+    "Eng": "Stop the running remote operation"
   },
   {
     "Id": 2671,
     "Name": "RemoteStopTip",
     "Kor": "진행 중인 원격 작업에 중단을 요청합니다. 완료된 결과는 되돌리지 않습니다.",
-    "Eng": "Request cancellation of the running remote operation. Completed changes remain in place."
+    "Eng": "Request cancellation of the remote operation. Completed effects are not rolled back."
   },
   {
     "Id": 2672,
