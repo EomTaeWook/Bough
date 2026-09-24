@@ -63,8 +63,8 @@
       </TreeView.Styles>
       <TreeView.ItemTemplate>
         <TreeDataTemplate x:DataType="vm:ReferenceTreeNode" ItemsSource="{Binding Children}">
-          <Border Padding="2,1,24,1" HorizontalAlignment="Stretch" Background="Transparent"
-                  Tapped="TreeNodeTapped"
+          <Border Padding="2,1,20,1" Margin="0,0,16,0" HorizontalAlignment="Stretch" Background="Transparent"
+                  Tapped="TreeNodeTapped" DoubleTapped="TreeNodeDoubleTapped"
                   ToolTip.Tip="{Binding ToolTipText}"
                   AutomationProperties.Name="{Binding AccessibleLabel}">
             <Border.ContextMenu>

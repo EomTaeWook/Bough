@@ -18,6 +18,8 @@ namespace Bough.App.Views
         private const double MinimumFileListWidth = 260;
         private const double MinimumPreviewWidth = 220;
         private const double SplitterWidth = 6;
+        private const double LocalHeaderHeight = 64;
+        private const double MinimumWorkAreaHeight = 180;
         private const double FileSectionHeaderHeight = 42;
         private const double MinimumPopulatedSectionHeight = 84;
         private const double FileSectionsSplitterHeight = 6;
@@ -62,6 +64,11 @@ namespace Bough.App.Views
             _preferredFileListWidth = _layoutSettings.LoadFileListWidth();
             _preferredStagedHeightRatio = _layoutSettings.LoadStagedHeightRatio();
             _fileListColumn.Width = new GridLength(_preferredFileListWidth);
+            StagedList.AddHandler(InputElement.PointerPressedEvent, StagedPointerPressed, RoutingStrategies.Tunnel, true);
+            StagedList.AddHandler(InputElement.ContextRequestedEvent, StagedContextRequested, RoutingStrategies.Tunnel, true);
+            UnstagedList.AddHandler(InputElement.PointerPressedEvent, UnstagedPointerPressed, RoutingStrategies.Tunnel, true);
+            UnstagedList.AddHandler(InputElement.ContextRequestedEvent, UnstagedContextRequested, RoutingStrategies.Tunnel, true);
+            SizeChanged += LocalChangesSizeChanged;
             DataContextChanged += delegate { BindConfirmations(); BindFileSections(); BindContextMenuLabels(); };
             AttachedToVisualTree += delegate { BindConfirmations(); BindFileSections(); BindContextMenuLabels(); };
             DetachedFromVisualTree += delegate { UnbindConfirmations(); UnbindFileSections(); };
@@ -396,6 +403,11 @@ namespace Bough.App.Views
             StagedUnstageItem.IsEnabled = viewModel.StagedFiles.Contains(_contextStagedFile);
         }
 
+        private void StagedContextRequested(object sender, ContextRequestedEventArgs eventArgs)
+        {
+            StagedContextOpened(sender, eventArgs);
+        }
+
         private async void UnstageContextClicked(object sender, RoutedEventArgs eventArgs)
         {
             if (DataContext is not LocalChangesViewModel viewModel)
@@ -457,12 +469,6 @@ namespace Bough.App.Views
 
         private void UnstagedContextOpened(object sender, RoutedEventArgs eventArgs)
         {
-            if (_contextPointerSelection == false)
-            {
-                _contextDiscardPaths = UnstagedList.SelectedItems.OfType<GitWorktreeFile>().Select(file => file.Path).ToArray();
-            }
-
-            _contextPointerSelection = false;
             if (DataContext is not LocalChangesViewModel viewModel)
             {
                 DiscardContextItem.IsEnabled = false;
@@ -470,6 +476,26 @@ namespace Bough.App.Views
                 return;
             }
 
+            if (_contextPointerSelection == true)
+            {
+                HashSet<string> paths = new(_contextDiscardPaths, StringComparer.Ordinal);
+                GitWorktreeFile[] files = viewModel.UnstagedFiles.Where(file => paths.Contains(file.Path)).ToArray();
+                _contextDiscardPaths = files.Select(file => file.Path).ToArray();
+                if (files.Length > 0)
+                {
+                    UnstagedList.SelectedItems.Clear();
+                    foreach (GitWorktreeFile file in files)
+                    {
+                        UnstagedList.SelectedItems.Add(file);
+                    }
+                }
+            }
+            else
+            {
+                _contextDiscardPaths = UnstagedList.SelectedItems.OfType<GitWorktreeFile>().Select(file => file.Path).ToArray();
+            }
+
+            _contextPointerSelection = false;
             string label = viewModel.GetDiscardSelectionText(_contextDiscardPaths.Count);
             DiscardContextItem.Header = label;
             DiscardContextItem.IsEnabled = _contextDiscardPaths.Count > 0;
@@ -482,6 +508,11 @@ namespace Bough.App.Views
             IgnoreLocalItem.Header = viewModel.IgnoreLocalText;
             ToolTip.SetTip(IgnoreRepositoryItem, viewModel.IgnoreRepositoryText);
             ToolTip.SetTip(IgnoreLocalItem, viewModel.IgnoreLocalText);
+        }
+
+        private void UnstagedContextRequested(object sender, ContextRequestedEventArgs eventArgs)
+        {
+            UnstagedContextOpened(sender, eventArgs);
         }
 
         private async void DiscardContextClicked(object sender, RoutedEventArgs eventArgs)
@@ -580,6 +611,26 @@ namespace Bough.App.Views
             }
 
             _expandedCommitHeight = Math.Max(MinimumCommitHeight, _commitRow.ActualHeight);
+            UpdateLayoutMinimumHeight(Bounds.Height);
+        }
+
+        private void LocalChangesSizeChanged(object sender, SizeChangedEventArgs eventArgs)
+        {
+            UpdateLayoutMinimumHeight(eventArgs.NewSize.Height);
+        }
+
+        private void UpdateLayoutMinimumHeight(double availableHeight)
+        {
+            double commitHeight = CollapsedCommitHeight;
+            double splitterHeight = 0;
+            if (_commitExpanded == true)
+            {
+                commitHeight = Math.Max(MinimumCommitHeight, _expandedCommitHeight);
+                splitterHeight = CommitSplitterHeight;
+            }
+
+            double minimumHeight = LocalHeaderHeight + MinimumWorkAreaHeight + splitterHeight + commitHeight;
+            LayoutGrid.Height = Math.Max(minimumHeight, availableHeight);
         }
 
         private void CommitToggleClicked(object sender, RoutedEventArgs eventArgs)
@@ -594,6 +645,7 @@ namespace Bough.App.Views
                 _commitRow.MinHeight = CollapsedCommitHeight;
                 _commitRow.Height = new GridLength(CollapsedCommitHeight);
                 CommitToggle.Content = "⌃";
+                UpdateLayoutMinimumHeight(Bounds.Height);
                 return;
             }
 
@@ -604,6 +656,7 @@ namespace Bough.App.Views
             CommitSplitter.IsVisible = true;
             CommitBody.IsVisible = true;
             CommitToggle.Content = "⌄";
+            UpdateLayoutMinimumHeight(Bounds.Height);
         }
 
         private async void OpenStashClicked(object sender, RoutedEventArgs eventArgs)

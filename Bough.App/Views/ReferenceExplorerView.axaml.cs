@@ -48,7 +48,7 @@ namespace Bough.App.Views
             ActivateNonBranchNode(viewModel, node);
         }
 
-        private async void TreeNodePointerPressed(object sender, PointerPressedEventArgs eventArgs)
+        private void TreeNodePointerPressed(object sender, PointerPressedEventArgs eventArgs)
         {
             if (eventArgs.Source is not Control source)
             {
@@ -63,13 +63,16 @@ namespace Bough.App.Views
             {
                 _menuNode = node;
                 _menuRepositoryRoot = (DataContext as ReferenceExplorerViewModel)?.CurrentRepository?.RootPath;
-                return;
             }
-            if (eventArgs.ClickCount != 2)
+        }
+
+        private async void TreeNodeDoubleTapped(object sender, TappedEventArgs eventArgs)
+        {
+            if (sender is not Border border)
             {
                 return;
             }
-            if (eventArgs.GetCurrentPoint(ReferenceTree).Properties.IsLeftButtonPressed == false)
+            if (border.DataContext is not ReferenceTreeNode node)
             {
                 return;
             }
@@ -77,7 +80,6 @@ namespace Bough.App.Views
             {
                 return;
             }
-
             eventArgs.Handled = true;
             await ActivateBranchNodeAsync(node);
         }
@@ -437,17 +439,18 @@ namespace Bough.App.Views
             {
                 return;
             }
-            GitRemoteBranch branch = _menuNode?.Target as GitRemoteBranch;
-            if (branch == null)
+            GitRemoteBranch branch = null;
+            if (sender is MenuItem item)
             {
-                if (sender is MenuItem item)
+                branch = (item.Tag as ReferenceTreeNode)?.Target as GitRemoteBranch;
+                if (branch == null)
                 {
                     branch = (item.DataContext as ReferenceTreeNode)?.Target as GitRemoteBranch;
                 }
             }
             if (branch == null)
             {
-                return;
+                branch = _menuNode?.Target as GitRemoteBranch;
             }
             string repositoryRoot = (sender as MenuItem)?.CommandParameter as string ?? _menuRepositoryRoot ?? viewModel.CurrentRepository?.RootPath;
             await CheckoutRemoteBranchAsync(viewModel, branch, repositoryRoot);
@@ -455,15 +458,6 @@ namespace Bough.App.Views
 
         private async Task CheckoutRemoteBranchAsync(ReferenceExplorerViewModel viewModel, GitRemoteBranch branch, string repositoryRoot)
         {
-            if (repositoryRoot == null)
-            {
-                return;
-            }
-            if (branch == null)
-            {
-                return;
-            }
-
             bool showDialog = await viewModel.PrepareRemoteBranchCheckoutAsync(repositoryRoot, branch);
             if (showDialog == false)
             {

@@ -57,8 +57,13 @@ namespace Bough.Core.Git
 
         public async Task<string> SaveGitPathAsync(string candidatePath, CancellationToken cancellationToken = default)
         {
-            string version = await TestGitAsync(candidatePath, cancellationToken);
-            _executableSettings.SavePath(candidatePath);
+            string selectedPath = candidatePath?.Trim() ?? string.Empty;
+            string version = await TestGitAsync(selectedPath, cancellationToken);
+            if (selectedPath == "git")
+            {
+                selectedPath = string.Empty;
+            }
+            _executableSettings.SavePath(selectedPath);
             return version;
         }
 

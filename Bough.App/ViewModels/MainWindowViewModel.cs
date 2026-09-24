@@ -83,7 +83,7 @@ namespace Bough.App.ViewModels
             RefreshCommand = new AsyncRelayCommand(RefreshAsync, CanRefresh);
             ShowHistoryCommand = new AsyncRelayCommand(ShowHistoryAsync, CanNavigate);
             ShowLocalChangesCommand = new AsyncRelayCommand(ShowLocalChangesAsync, CanNavigate);
-            ShowGitSettingsCommand = new AsyncRelayCommand(ShowGitSettingsAsync, CanNavigate);
+            ShowGitSettingsCommand = new AsyncRelayCommand(ShowGitSettingsAsync, CanShowGitSettings);
             IsLocalChangesView = true;
         }
 
@@ -1044,7 +1044,7 @@ namespace Bough.App.ViewModels
 
         private async Task ShowGitSettingsAsync()
         {
-            if (_repository == null)
+            if (CanShowGitSettings() == false)
             {
                 return;
             }
@@ -1271,6 +1271,15 @@ namespace Bough.App.ViewModels
             {
                 return false;
             }
+            if (Conflicts.IsBusy == true)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private bool CanShowGitSettings()
+        {
             if (Conflicts.IsBusy == true)
             {
                 return false;

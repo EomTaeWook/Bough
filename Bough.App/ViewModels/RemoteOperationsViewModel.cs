@@ -99,6 +99,7 @@ namespace Bough.App.ViewModels
         private readonly GitRemoteOperationService _service;
         private readonly GitRepositoryService _repositoryService;
         private readonly ObservableCollection<string> _remotes;
+        private readonly Dictionary<string, string> _selectedRemotesByRepository;
         private CancellationTokenSource _cancellation;
         private CancellationTokenSource _loadCancellation;
         private GitRepository _repository;
@@ -121,6 +122,12 @@ namespace Bough.App.ViewModels
             _service = service;
             _repositoryService = repositoryService;
             _remotes = [];
+            StringComparer repositoryComparer = StringComparer.Ordinal;
+            if (OperatingSystem.IsWindows())
+            {
+                repositoryComparer = StringComparer.OrdinalIgnoreCase;
+            }
+            _selectedRemotesByRepository = new Dictionary<string, string>(repositoryComparer);
             Remotes = new ReadOnlyObservableCollection<string>(_remotes);
             _selectedRemote = string.Empty;
             _statusText = "Select a repository.";
@@ -242,7 +249,22 @@ namespace Bough.App.ViewModels
             get { return _selectedRemote; }
             set
             {
-                if (SetProperty(ref _selectedRemote, value) == true) { NotifyState(); }
+                if (SetProperty(ref _selectedRemote, value) == false)
+                {
+                    return;
+                }
+                if (_repository != null)
+                {
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        _selectedRemotesByRepository.Remove(_repository.RootPath);
+                    }
+                    else
+                    {
+                        _selectedRemotesByRepository[_repository.RootPath] = value;
+                    }
+                }
+                NotifyState();
             }
         }
         public async Task SetRepositoryAsync(GitRepository repository)
@@ -257,12 +279,20 @@ namespace Bough.App.ViewModels
 
         public void BindRepository(GitRepository repository)
         {
+            string selectedRemote = string.Empty;
+            if (repository != null)
+            {
+                if (_selectedRemotesByRepository.TryGetValue(repository.RootPath, out string rememberedRemote))
+                {
+                    selectedRemote = rememberedRemote;
+                }
+            }
             InvalidatePendingRequests();
             _repository = repository;
             LatestOperationStateSnapshot = null;
             _state = null;
             _remotes.Clear();
-            SelectedRemote = string.Empty;
+            SelectedRemote = selectedRemote;
             _showPullStrategies = false;
             LastOperationOutcome = RemoteOperationOutcome.None;
             OperationStageText = string.Empty;
@@ -864,6 +894,11 @@ namespace Bough.App.ViewModels
             _state = state;
             _remotes.Clear();
             foreach (string remote in state.Remotes) { _remotes.Add(remote); }
+            if (_remotes.Contains(SelectedRemote))
+            {
+                NotifyState();
+                return;
+            }
             if (state.HasUpstream == true)
             {
                 SelectedRemote = state.UpstreamRemote;

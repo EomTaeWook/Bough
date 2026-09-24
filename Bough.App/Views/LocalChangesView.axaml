@@ -18,7 +18,8 @@
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
     </Style>
   </UserControl.Styles>
-  <Grid x:Name="LayoutGrid">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+  <Grid x:Name="LayoutGrid" Height="440">
     <Grid.RowDefinitions>
       <RowDefinition Height="64" />
       <RowDefinition Height="*" MinHeight="180" />
@@ -54,8 +55,12 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" RowDefinitions="42,*">
           <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="10,4">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4">
-              <TextBlock Text="{Binding StagedHeadingText}" Foreground="{DynamicResource BoughBrushTextMuted}" FontWeight="Bold" VerticalAlignment="Center"
+            <Grid ColumnSpacing="4">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="0" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Text="{Binding StagedHeadingText}" Foreground="{DynamicResource BoughBrushTextMuted}" FontWeight="Bold" VerticalAlignment="Center" MinWidth="0"
                          TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StagedHeadingText}" />
               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                 <Button Content="↓" Width="32" Padding="4,3" Command="{Binding UnstageSelectedCommand}"
@@ -66,7 +71,7 @@
             </Grid>
           </Border>
           <ListBox x:Name="StagedList" Grid.Row="1" ItemsSource="{Binding StagedFiles}" SelectedItem="{Binding SelectedStagedFile, Mode=TwoWay}"
-                   PointerPressed="StagedPointerPressed" IsVisible="{Binding HasStagedFiles}" Background="Transparent" BorderThickness="0">
+                   IsVisible="{Binding HasStagedFiles}" Background="Transparent" BorderThickness="0">
             <ListBox.ContextMenu>
               <ContextMenu Opened="StagedContextOpened" Background="{DynamicResource BoughBrushSurface}">
                 <MenuItem x:Name="StagedUnstageItem" Click="UnstageContextClicked" />
@@ -90,8 +95,12 @@
         <Border Grid.Row="2" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
         <Grid RowDefinitions="42,*">
           <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="10,4">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4">
-              <TextBlock Text="{Binding UnstagedHeadingText}" Foreground="{DynamicResource BoughBrushTextMuted}" FontWeight="Bold" VerticalAlignment="Center"
+            <Grid ColumnSpacing="4">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="0" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Text="{Binding UnstagedHeadingText}" Foreground="{DynamicResource BoughBrushTextMuted}" FontWeight="Bold" VerticalAlignment="Center" MinWidth="0"
                          TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding UnstagedHeadingText}" />
               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                 <Button Content="↑" Width="32" Padding="4,3" Command="{Binding StageSelectedCommand}"
@@ -104,7 +113,7 @@
             </Grid>
           </Border>
           <ListBox x:Name="UnstagedList" Grid.Row="1" ItemsSource="{Binding UnstagedFiles}" SelectedItem="{Binding SelectedUnstagedFile, Mode=TwoWay}"
-                   SelectionMode="Multiple" SelectionChanged="UnstagedSelectionChanged" KeyDown="UnstagedKeyDown" PointerPressed="UnstagedPointerPressed"
+                   SelectionMode="Multiple" SelectionChanged="UnstagedSelectionChanged" KeyDown="UnstagedKeyDown"
                    IsVisible="{Binding HasUnstagedFiles}" Background="Transparent" BorderThickness="0">
             <ListBox.ContextMenu>
               <ContextMenu Opened="UnstagedContextOpened" Background="{DynamicResource BoughBrushSurface}">
@@ -172,15 +181,17 @@
           <Button x:Name="CommitToggle" Grid.Column="1" Content="⌄" Click="CommitToggleClicked" Padding="10,2" />
         </Grid>
       </Border>
-      <Grid x:Name="CommitBody" Grid.Row="1" RowDefinitions="*,Auto,Auto" RowSpacing="4" Margin="14,4,14,5">
-        <TextBox x:Name="CommitMessageInput" Grid.Row="0" Text="{Binding CommitMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 PlaceholderText="{Binding CommitMessagePlaceholderText}" IsEnabled="{Binding IsCommitMessageEditable}"
-                 AcceptsReturn="True" TextWrapping="Wrap" MinHeight="32"
-                 ScrollViewer.VerticalScrollBarVisibility="Auto" />
-        <ScrollViewer Grid.Row="1" MaxHeight="34" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-          <TextBlock x:Name="CommitHintText" Text="{Binding CommitHint}" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
-        </ScrollViewer>
-        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+      <Grid x:Name="CommitBody" Grid.Row="1" RowDefinitions="*,Auto" RowSpacing="4" Margin="14,4,14,5">
+        <Grid Grid.Row="0" RowDefinitions="*,Auto" RowSpacing="4" MinHeight="0">
+          <TextBox x:Name="CommitMessageInput" Grid.Row="0" Text="{Binding CommitMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="{Binding CommitMessagePlaceholderText}" IsEnabled="{Binding IsCommitMessageEditable}"
+                   AcceptsReturn="True" TextWrapping="Wrap" MinHeight="0"
+                   ScrollViewer.VerticalScrollBarVisibility="Auto" />
+          <ScrollViewer Grid.Row="1" MaxHeight="34" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <TextBlock x:Name="CommitHintText" Text="{Binding CommitHint}" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+          </ScrollViewer>
+        </Grid>
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="12">
           <CheckBox x:Name="AmendCheckBox" IsChecked="{Binding Amend, Mode=TwoWay}" Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Center">
             <TextBlock Text="{Binding AmendPreviousCommitText}" TextWrapping="Wrap" />
           </CheckBox>
@@ -194,4 +205,5 @@
       <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource BoughBrushError}" TextWrapping="Wrap" />
     </Border>
   </Grid>
+  </ScrollViewer>
 </UserControl>

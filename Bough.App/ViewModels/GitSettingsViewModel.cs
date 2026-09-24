@@ -162,7 +162,20 @@ namespace Bough.App.ViewModels
         public string PhotoAuthorEmail { get { return _photoAuthorEmail; } set { SetProperty(ref _photoAuthorEmail, value); } }
         public string PhotoLinkStatus { get { return _photoLinkStatus; } private set { SetProperty(ref _photoLinkStatus, value); } }
 
-        public string GitPathInput { get { return _gitPathInput; } set { SetProperty(ref _gitPathInput, value); } }
+        public string GitPathInput
+        {
+            get { return _gitPathInput; }
+            set
+            {
+                if (SetProperty(ref _gitPathInput, value) == false)
+                {
+                    return;
+                }
+
+                GitVersion = string.Empty;
+                StatusMessage = _stringHelper.GetString("GitSettingsHint");
+            }
+        }
         public string GitVersion { get { return _gitVersion; } private set { SetProperty(ref _gitVersion, value); } }
         public string LocalName { get { return _localName; } set { SetProperty(ref _localName, value); } }
         public string LocalEmail { get { return _localEmail; } set { SetProperty(ref _localEmail, value); } }
@@ -419,8 +432,9 @@ namespace Bough.App.ViewModels
 
             int request = ++_requestVersion;
             _accountCancellation?.Cancel();
-            using CancellationTokenSource cancellation = new();
+            CancellationTokenSource cancellation = new();
             _accountCancellation = cancellation;
+            Task accountRefresh = null;
             IsBusy = true;
             try
             {
@@ -439,7 +453,8 @@ namespace Bough.App.ViewModels
                 foreach (GitRemote remote in snapshot.Remotes) { _remotes.Add(remote); }
                 AuthorStatus = GetAuthorStatus(snapshot);
                 StatusMessage = _stringHelper.GetString("GitSettingsRefreshed");
-                await RefreshAccountsAsync(repository, request, string.Empty, string.Empty, cancellation.Token);
+                IsBusy = false;
+                accountRefresh = RefreshAccountsInBackgroundAsync(repository, request, cancellation);
                 return true;
             }
             catch (Exception exception)
@@ -452,14 +467,47 @@ namespace Bough.App.ViewModels
             }
             finally
             {
-                if (_accountCancellation == cancellation)
+                if (accountRefresh == null)
                 {
-                    _accountCancellation = null;
+                    if (_accountCancellation == cancellation)
+                    {
+                        _accountCancellation = null;
+                    }
+                    cancellation.Dispose();
                 }
                 if (request == _requestVersion)
                 {
                     IsBusy = false;
                 }
+            }
+        }
+
+        private async Task RefreshAccountsInBackgroundAsync(GitRepository repository, int request,
+            CancellationTokenSource cancellation)
+        {
+            try
+            {
+                await RefreshAccountsAsync(repository, request, string.Empty, string.Empty, cancellation.Token);
+            }
+            catch (Exception exception)
+            {
+                if (request != _requestVersion)
+                {
+                    return;
+                }
+                if (_repository != repository)
+                {
+                    return;
+                }
+                AccountStatusText = _errorLocalizer.GetDisplayMessage(exception);
+            }
+            finally
+            {
+                if (_accountCancellation == cancellation)
+                {
+                    _accountCancellation = null;
+                }
+                cancellation.Dispose();
             }
         }
 
@@ -563,14 +611,26 @@ namespace Bough.App.ViewModels
 
         private async Task TestGitAsync()
         {
+            string candidatePath = GitPathInput;
             IsBusy = true;
             try
             {
-                GitVersion = await _settingsService.TestGitAsync(GitPathInput);
-                StatusMessage = _stringHelper.Format("GitPathVerified", GitVersion);
+                string version = await _settingsService.TestGitAsync(candidatePath);
+                if (GitPathInput != candidatePath)
+                {
+                    return;
+                }
+
+                GitVersion = version;
+                StatusMessage = _stringHelper.Format("GitPathVerified", version);
             }
             catch (Exception exception)
             {
+                if (GitPathInput != candidatePath)
+                {
+                    return;
+                }
+
                 GitVersion = string.Empty;
                 StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
             }
@@ -582,14 +642,27 @@ namespace Bough.App.ViewModels
 
         private async Task SaveGitPathAsync()
         {
+            string candidatePath = GitPathInput;
             IsBusy = true;
             try
             {
-                GitVersion = await _settingsService.SaveGitPathAsync(GitPathInput);
-                StatusMessage = _stringHelper.Format("GitPathSaved", GitVersion);
+                string version = await _settingsService.SaveGitPathAsync(candidatePath);
+                if (GitPathInput != candidatePath)
+                {
+                    return;
+                }
+
+                GitPathInput = _settingsService.ConfiguredGitPath;
+                GitVersion = version;
+                StatusMessage = _stringHelper.Format("GitPathSaved", version);
             }
             catch (Exception exception)
             {
+                if (GitPathInput != candidatePath)
+                {
+                    return;
+                }
+
                 StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
             }
             finally
