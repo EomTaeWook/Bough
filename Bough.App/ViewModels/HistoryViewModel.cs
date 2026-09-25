@@ -530,11 +530,11 @@ namespace Bough.App.ViewModels
         {
             if (_repository == null)
             {
-                throw new GitException(_stringHelper.GetString("HistoryRepositoryRequired"));
+                throw new GitException("HistoryRepositoryRequired", null, Array.Empty<object>());
             }
             if (_repository.RootPath != repositoryRoot)
             {
-                throw new GitException(_stringHelper.GetString("HistoryMenuRepositoryChanged"));
+                throw new GitException("HistoryMenuRepositoryChanged", null, Array.Empty<object>());
             }
             return _repository;
         }
@@ -735,11 +735,11 @@ namespace Bough.App.ViewModels
                 }
                 if (page.Commits.Count <= 1)
                 {
-                    throw new GitException(_stringHelper.GetString("HistoryCommitListChanged"));
+                    throw new GitException("HistoryCommitListChanged", null, Array.Empty<object>());
                 }
                 if (Commits[existingCount - 1].Hash != page.Commits[0].Hash)
                 {
-                    throw new GitException(_stringHelper.GetString("HistoryCommitListChanged"));
+                    throw new GitException("HistoryCommitListChanged", null, Array.Empty<object>());
                 }
 
                 GitHistoryCommit[] newCommits = page.Commits.Skip(1).ToArray();
@@ -1481,11 +1481,11 @@ namespace Bough.App.ViewModels
             GitRepository repository = RequireRepository(root);
             if (_inspection == null)
             {
-                throw new GitException(_stringHelper.GetString("HistoryCommitRequired"));
+                throw new GitException("HistoryCommitRequired", null, Array.Empty<object>());
             }
             if (_inspection.Hash != hash)
             {
-                throw new GitException(_stringHelper.GetString("HistorySelectedCommitChanged"));
+                throw new GitException("HistorySelectedCommitChanged", null, Array.Empty<object>());
             }
             return repository;
         }

@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Security;
 using Bough.Core.Git;
 using DataContainer.Generated;
 using Dignus.DependencyInjection.Attributes;
@@ -20,6 +22,18 @@ namespace Bough.App.Localization
         public string GetDisplayMessage(Exception exception)
         {
             ArgumentNullException.ThrowIfNull(exception);
+            if (exception is UnauthorizedAccessException || exception is SecurityException)
+            {
+                return _stringHelper.GetString("GitFileAccessDenied");
+            }
+            if (exception is IOException)
+            {
+                return _stringHelper.GetString("GitFileOperationFailed");
+            }
+            if (exception is OperationCanceledException)
+            {
+                return _stringHelper.GetString("GitOperationCanceled");
+            }
             if (exception is not GitException gitException)
             {
                 return exception.Message;

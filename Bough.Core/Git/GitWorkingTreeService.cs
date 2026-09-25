@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -381,7 +382,7 @@ namespace Bough.Core.Git
             catch (Exception exception) when (exception is not OutOfMemoryException)
             {
                 List<string> remaining = current.Select(plan => plan.Path).Where(path => completed.Contains(path) == false).ToList();
-                return new GitDiscardBatchResult(completed, remaining, exception.Message);
+                return new GitDiscardBatchResult(completed, remaining, exception);
             }
         }
 
@@ -391,7 +392,7 @@ namespace Bough.Core.Git
             GitDiscardBatchResult result = await ApplyDiscardsAsync(repository, new GitDiscardPlan[] { plan }, cancellationToken);
             if (result.HasError == true)
             {
-                throw new GitException(result.Error);
+                ExceptionDispatchInfo.Capture(result.Error).Throw();
             }
         }
 

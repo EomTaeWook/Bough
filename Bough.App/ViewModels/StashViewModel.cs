@@ -726,14 +726,14 @@ namespace Bough.App.ViewModels
         {
             if (expectedFiles == null)
             {
-                throw new GitException(_stringHelper.GetString("StashTargetsUnavailable"));
+                throw new GitException("StashTargetsUnavailable", null, Array.Empty<object>());
             }
 
             GitWorktreeFile[] expected = expectedFiles.Where(file => includeUntracked || file.IsUntracked == false).ToArray();
             GitWorktreeFile[] current = currentFiles.Where(file => includeUntracked || file.IsUntracked == false).ToArray();
             if (expected.Length != current.Length)
             {
-                throw new GitException(_stringHelper.GetString("StashTargetsChanged"));
+                throw new GitException("StashTargetsChanged", null, Array.Empty<object>());
             }
 
             Dictionary<string, GitWorktreeFile> currentByPath = current.ToDictionary(file => file.Path, StringComparer.Ordinal);
@@ -741,19 +741,19 @@ namespace Bough.App.ViewModels
             {
                 if (currentByPath.TryGetValue(file.Path, out GitWorktreeFile item) == false)
                 {
-                    throw new GitException(_stringHelper.Format("StashTargetChanged", file.Path));
+                    throw new GitException("StashTargetChanged", null, file.Path);
                 }
                 if (file.OriginalPath != item.OriginalPath)
                 {
-                    throw new GitException(_stringHelper.Format("StashTargetChanged", file.Path));
+                    throw new GitException("StashTargetChanged", null, file.Path);
                 }
                 if (file.IndexStatus != item.IndexStatus)
                 {
-                    throw new GitException(_stringHelper.Format("StashTargetIndexChanged", file.Path));
+                    throw new GitException("StashTargetIndexChanged", null, file.Path);
                 }
                 if (file.WorktreeStatus != item.WorktreeStatus)
                 {
-                    throw new GitException(_stringHelper.Format("StashTargetChanged", file.Path));
+                    throw new GitException("StashTargetChanged", null, file.Path);
                 }
             }
         }

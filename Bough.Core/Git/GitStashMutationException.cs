@@ -16,12 +16,36 @@ namespace Bough.Core.Git
                 }
             }
 
-            return new GitStashMutationException(exception.Message, worktreeMayHaveChanged, stashesMayHaveChanged, exception);
+            if (exception is GitException uncodedGitException)
+            {
+                return new GitStashMutationException(uncodedGitException.Message, worktreeMayHaveChanged, stashesMayHaveChanged, uncodedGitException);
+            }
+
+            if (exception is OperationCanceledException)
+            {
+                return new GitStashMutationException("StashMutationCanceled", exception, worktreeMayHaveChanged, stashesMayHaveChanged);
+            }
+
+            return new GitStashMutationException(exception, worktreeMayHaveChanged, stashesMayHaveChanged);
         }
 
         private GitStashMutationException(GitException exception, bool worktreeMayHaveChanged,
             bool stashesMayHaveChanged)
             : base(exception.ErrorCode, exception, exception.Arguments.ToArray())
+        {
+            WorktreeMayHaveChanged = worktreeMayHaveChanged;
+            StashesMayHaveChanged = stashesMayHaveChanged;
+        }
+
+        private GitStashMutationException(Exception exception, bool worktreeMayHaveChanged,
+            bool stashesMayHaveChanged)
+            : this("StashMutationFailed", exception, worktreeMayHaveChanged, stashesMayHaveChanged)
+        {
+        }
+
+        private GitStashMutationException(string errorCode, Exception exception, bool worktreeMayHaveChanged,
+            bool stashesMayHaveChanged)
+            : base(errorCode, exception, Array.Empty<object>())
         {
             WorktreeMayHaveChanged = worktreeMayHaveChanged;
             StashesMayHaveChanged = stashesMayHaveChanged;

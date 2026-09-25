@@ -843,7 +843,7 @@ namespace Bough.App.ViewModels
                 Func<IReadOnlyList<GitDiscardPlan>, CancellationToken, Task<bool>> confirm = ConfirmDiscardRequested;
                 if (confirm == null)
                 {
-                    throw new GitException(_stringHelper.GetString("LocalDiscardRequiresConfirmation"));
+                    throw new GitException("LocalDiscardRequiresConfirmation", null, Array.Empty<object>());
                 }
 
                 bool accepted = await confirm(plans, cancellationToken);
@@ -860,7 +860,7 @@ namespace Bough.App.ViewModels
                 }
                 if (result.HasError == true)
                 {
-                    throw new GitException(_stringHelper.Format("DiscardBatchPartialFailure", result.CompletedPaths.Count, string.Join("\n", result.CompletedPaths), result.RemainingPaths.Count, string.Join("\n", result.RemainingPaths), result.Error));
+                    throw new GitException("DiscardBatchPartialFailure", result.Error, result.CompletedPaths.Count, string.Join("\n", result.CompletedPaths), result.RemainingPaths.Count, string.Join("\n", result.RemainingPaths), _errorLocalizer.GetDisplayMessage(result.Error));
                 }
             }
             finally
@@ -948,7 +948,7 @@ namespace Bough.App.ViewModels
                 Func<GitIgnorePlan, CancellationToken, Task<bool>> confirm = ConfirmIgnoreRequested;
                 if (confirm == null)
                 {
-                    throw new GitException(_stringHelper.GetString("LocalIgnoreRequiresConfirmation"));
+                    throw new GitException("LocalIgnoreRequiresConfirmation", null, Array.Empty<object>());
                 }
 
                 bool accepted = await confirm(plan, cancellationToken);
@@ -1015,7 +1015,7 @@ namespace Bough.App.ViewModels
                         Func<IReadOnlyList<GitLargeFileCandidate>, CancellationToken, Task<bool>> confirm = ConfirmLargeFilesRequested;
                         if (confirm == null)
                         {
-                            throw new GitException(_stringHelper.GetString("LocalLargeStageRequiresConfirmation"));
+                            throw new GitException("LocalLargeStageRequiresConfirmation", null, Array.Empty<object>());
                         }
 
                         bool accepted = await confirm(plan.LargeFiles, token);
@@ -1210,7 +1210,7 @@ namespace Bough.App.ViewModels
             GitWorktreeFile current = status.Files.FirstOrDefault(file => file.Path == expected.Path);
             if (current == null)
             {
-                throw new GitException(_stringHelper.Format("LocalSelectedFileChanged", expected.Path));
+                throw new GitException("LocalSelectedFileChanged", null, expected.Path);
             }
 
             ValidateFileSelection([expected], [current], staged);
@@ -1221,7 +1221,7 @@ namespace Bough.App.ViewModels
         {
             if (expected.Count != current.Count)
             {
-                throw new GitException(_stringHelper.GetString("LocalSelectionSetChanged"));
+                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
             }
 
             Dictionary<string, GitWorktreeFile> currentFiles = current.ToDictionary(file => file.Path, StringComparer.Ordinal);
@@ -1229,7 +1229,7 @@ namespace Bough.App.ViewModels
             {
                 if (currentFiles.TryGetValue(file.Path, out GitWorktreeFile item) == false)
                 {
-                    throw new GitException(_stringHelper.Format("LocalSelectedFileChanged", file.Path));
+                    throw new GitException("LocalSelectedFileChanged", null, file.Path);
                 }
 
                 bool available = item.IsUnstaged;
@@ -1239,20 +1239,20 @@ namespace Bough.App.ViewModels
                 }
                 if (available == false)
                 {
-                    throw new GitException(_stringHelper.Format("LocalSelectedFileUnavailable", file.Path));
+                    throw new GitException("LocalSelectedFileUnavailable", null, file.Path);
                 }
 
                 if (file.OriginalPath != item.OriginalPath)
                 {
-                    throw new GitException(_stringHelper.Format("LocalSelectedFileChanged", file.Path));
+                    throw new GitException("LocalSelectedFileChanged", null, file.Path);
                 }
                 if (file.IndexStatus != item.IndexStatus)
                 {
-                    throw new GitException(_stringHelper.Format("LocalIndexChanged", file.Path));
+                    throw new GitException("LocalIndexChanged", null, file.Path);
                 }
                 if (file.WorktreeStatus != item.WorktreeStatus)
                 {
-                    throw new GitException(_stringHelper.Format("LocalWorkingFileChanged", file.Path));
+                    throw new GitException("LocalWorkingFileChanged", null, file.Path);
                 }
             }
         }

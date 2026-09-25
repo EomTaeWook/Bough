@@ -4870,5 +4870,35 @@
     "Name": "HistoryTreeSubmodule",
     "Kor": "서브모듈",
     "Eng": "Submodule"
+  },
+  {
+    "Id": 2892,
+    "Name": "GitFileAccessDenied",
+    "Kor": "파일 또는 폴더에 접근할 권한이 없습니다.",
+    "Eng": "Permission to access the file or folder was denied."
+  },
+  {
+    "Id": 2893,
+    "Name": "GitFileOperationFailed",
+    "Kor": "파일을 읽거나 저장하는 중 오류가 발생했습니다.",
+    "Eng": "A file read or write failed."
+  },
+  {
+    "Id": 2894,
+    "Name": "StashMutationFailed",
+    "Kor": "Stash 작업 중 오류가 발생했습니다.",
+    "Eng": "The stash operation failed."
+  },
+  {
+    "Id": 2895,
+    "Name": "StashMutationCanceled",
+    "Kor": "Stash 작업이 중단되었습니다.",
+    "Eng": "The stash operation was canceled."
+  },
+  {
+    "Id": 2896,
+    "Name": "GitOperationCanceled",
+    "Kor": "작업이 중단되었습니다.",
+    "Eng": "The operation was canceled."
   }
 ]

@@ -828,7 +828,7 @@ namespace Bough.App.ViewModels
                 }
                 if (updated.CurrentBranch != targetBranch)
                 {
-                    throw new GitException(_stringHelper.Format("ReferenceSwitchUnexpectedCurrent", targetBranch, updated.CurrentBranch));
+                    throw new GitException("ReferenceSwitchUnexpectedCurrent", null, targetBranch, updated.CurrentBranch);
                 }
 
                 _repository = updated;

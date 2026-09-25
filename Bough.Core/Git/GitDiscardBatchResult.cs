@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 
 namespace Bough.Core.Git
 {
     public class GitDiscardBatchResult
     {
-        public GitDiscardBatchResult(IReadOnlyList<string> completedPaths, IReadOnlyList<string> remainingPaths, string error)
+        public GitDiscardBatchResult(IReadOnlyList<string> completedPaths, IReadOnlyList<string> remainingPaths, Exception error)
         {
             CompletedPaths = completedPaths;
             RemainingPaths = remainingPaths;
@@ -15,8 +16,8 @@ namespace Bough.Core.Git
 
         public IReadOnlyList<string> RemainingPaths { get; }
 
-        public string Error { get; }
+        public Exception Error { get; }
 
-        public bool HasError { get { return string.IsNullOrEmpty(Error) == false; } }
+        public bool HasError { get { return Error != null; } }
     }
 }
