@@ -3,18 +3,6 @@ using System.Collections.ObjectModel;
 
 namespace Bough.App.ViewModels
 {
-    public enum ReferenceTreeNodeKind
-    {
-        Section,
-        Branch,
-        Tag,
-        Remote,
-        RemoteBranch,
-        Stash,
-        Submodule,
-        Empty
-    }
-
     public class ReferenceTreeNode : ViewModelBase
     {
         private readonly Action<ReferenceTreeNode, bool> _expansionChanged;

@@ -8,22 +8,7 @@ using Dignus.Log;
 
 namespace Bough.Core.Git
 {
-    public sealed class GitOperationQueueState
-    {
-        public GitOperationQueueState(string repositoryRoot, string runningOperationName, int pendingCount)
-        {
-            RepositoryRoot = repositoryRoot;
-            RunningOperationName = runningOperationName;
-            PendingCount = pendingCount;
-        }
-
-        public string RepositoryRoot { get; }
-        public string RunningOperationName { get; }
-        public bool IsRunning { get { return RunningOperationName.Length > 0; } }
-        public int PendingCount { get; }
-    }
-
-    public sealed class GitOperationQueue
+    public class GitOperationQueue
     {
         private readonly object _sync = new();
         private readonly Dictionary<string, RepositoryLane> _lanes;
@@ -323,7 +308,7 @@ namespace Bough.Core.Git
             }
         }
 
-        private sealed class RepositoryLane
+        private class RepositoryLane
         {
             public RepositoryLane(string repositoryRoot)
             {
@@ -337,7 +322,7 @@ namespace Bough.Core.Git
             public bool ConsumerRunning { get; set; }
         }
 
-        private sealed class ExecutionFrame
+        private class ExecutionFrame
         {
             public ExecutionFrame(string repositoryRoot)
             {
@@ -366,7 +351,7 @@ namespace Bough.Core.Git
             public abstract void Cancel(CancellationToken cancellationToken);
         }
 
-        private sealed class QueuedOperation<T> : QueuedOperation
+        private class QueuedOperation<T> : QueuedOperation
         {
             private readonly Func<CancellationToken, Task<T>> _action;
             private readonly TaskCompletionSource<T> _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);

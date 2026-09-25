@@ -8,12 +8,6 @@ using Dignus.Collections;
 
 namespace Bough.Core.Git
 {
-    public enum GitHistoryScope
-    {
-        All,
-        CurrentBranch
-    }
-
     public class GitHistoryService
     {
         private static readonly string[] _remoteUrlsArguments = new string[] { "config", "--local", "--null", "--get-regexp", "^remote\\..*\\.url$" };

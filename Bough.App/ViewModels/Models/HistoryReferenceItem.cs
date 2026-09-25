@@ -3,15 +3,6 @@ using Bough.App.Localization;
 
 namespace Bough.App.ViewModels
 {
-    internal enum HistoryReferenceKind
-    {
-        CurrentBranch,
-        LocalBranch,
-        RemoteBranch,
-        Tag,
-        Other
-    }
-
     public class HistoryReferenceItem
     {
         private readonly StringHelper _stringHelper;

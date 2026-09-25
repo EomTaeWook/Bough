@@ -8,13 +8,6 @@ using Avalonia.Styling;
 
 namespace Bough.App.Appearance
 {
-    public enum AppearanceThemeMode
-    {
-        Light,
-        Dark,
-        System
-    }
-
     public class AppearanceThemeService
     {
         private readonly Application _application;
