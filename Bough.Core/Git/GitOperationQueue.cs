@@ -72,7 +72,7 @@ namespace Bough.Core.Git
                 {
                     if (_lanes.Comparer.Equals(frame.RepositoryRoot, root))
                     {
-                        throw new InvalidOperationException("A Git operation cannot enqueue another operation for the same repository. Await dependent work inside the existing callback.");
+                        throw new GitException("GitOperationQueueReentry", null, Array.Empty<object>());
                     }
                 }
             }

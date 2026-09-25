@@ -431,7 +431,7 @@ namespace Bough.App.ViewModels
             Conflicts.BindRepository(opened);
             HasRepository = true;
             RepositoryName = opened.DisplayName;
-            RepositoryMeta = $"{opened.CurrentBranch}  ·  {opened.RootPath}";
+            RepositoryMeta = FormatRepositoryMeta(opened);
             SetStatusMessage(opened.RootPath, false);
             RepositoryList.RememberOpened(opened.RootPath);
             StartRepositoryAreaLoads(opened, request, false);
@@ -613,7 +613,7 @@ namespace Bough.App.ViewModels
 
             _repository = repository;
             Conflicts.BindRepository(repository);
-            RepositoryMeta = $"{repository.CurrentBranch}  ·  {repository.RootPath}";
+            RepositoryMeta = FormatRepositoryMeta(repository);
             StartRepositoryAreaLoads(repository, request, IsHistoryView);
         }
 
@@ -672,7 +672,7 @@ namespace Bough.App.ViewModels
 
             _repository = updated;
             Conflicts.BindRepository(updated);
-            RepositoryMeta = $"{updated.CurrentBranch}  ·  {updated.RootPath}";
+            RepositoryMeta = FormatRepositoryMeta(updated);
         }
 
         public async Task HandleRemoteOperationFinishedAsync(GitRepository updated, RemoteOperationStateSnapshot snapshot,
@@ -693,7 +693,7 @@ namespace Bough.App.ViewModels
 
             _repository = updated;
             Conflicts.BindRepository(updated);
-            RepositoryMeta = $"{updated.CurrentBranch}  ·  {updated.RootPath}";
+            RepositoryMeta = FormatRepositoryMeta(updated);
             if (snapshot != null)
             {
                 RemoteOperations.ApplyOperationStateSnapshot(snapshot);
@@ -735,7 +735,7 @@ namespace Bough.App.ViewModels
 
             _repository = updated;
             Conflicts.BindRepository(updated);
-            RepositoryMeta = $"{updated.CurrentBranch}  ·  {updated.RootPath}";
+            RepositoryMeta = FormatRepositoryMeta(updated);
             int request = _repositoryRequestVersion;
             if (refreshReferences == true)
             {
@@ -865,7 +865,7 @@ namespace Bough.App.ViewModels
                 }
                 _repository = updated;
                 Conflicts.BindRepository(updated);
-                RepositoryMeta = $"{updated.CurrentBranch}  ·  {updated.RootPath}";
+                RepositoryMeta = FormatRepositoryMeta(updated);
                 _ = ObserveRepositoryAreaAsync(() => References.SetRepositoryAsync(updated), request, null);
                 _ = ObserveRepositoryAreaAsync(() => RemoteOperations.SetRepositoryAsync(updated), request, null);
                 if (IsHistoryView == true)
@@ -1352,6 +1352,16 @@ namespace Bough.App.ViewModels
                 return false;
             }
             return true;
+        }
+
+        private string FormatRepositoryMeta(GitRepository repository)
+        {
+            string branch = repository.CurrentBranch;
+            if (branch == "Detached HEAD")
+            {
+                branch = _stringHelper.GetString("ReferenceDetachedHead");
+            }
+            return $"{branch}  ·  {repository.RootPath}";
         }
 
         private void NotifyCommandStates()

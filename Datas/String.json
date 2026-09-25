@@ -4900,5 +4900,11 @@
     "Name": "GitOperationCanceled",
     "Kor": "작업이 중단되었습니다.",
     "Eng": "The operation was canceled."
+  },
+  {
+    "Id": 2897,
+    "Name": "GitOperationQueueReentry",
+    "Kor": "같은 저장소의 Git 작업을 실행 중인 작업 안에서 다시 대기열에 넣을 수 없습니다. 종속 작업은 현재 작업 안에서 기다리세요.",
+    "Eng": "A Git operation cannot enqueue another operation for the same repository. Await dependent work inside the current operation."
   }
 ]
