@@ -1,7 +1,9 @@
 using System;
 using Bough.Core.Git;
+using Bough.Core.Git.Models;
+using Bough.App.Internals;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.ViewModels.Models
 {
     public class ConflictStageResult
     {

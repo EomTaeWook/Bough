@@ -9,6 +9,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Bough.App.ViewModels.Models;
+using Bough.Core.Git.Models;
+using Bough.App.Internals;
 
 namespace Bough.App.ViewModels
 {

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using Bough.Core.Internals;
 
-namespace Bough.Core.Git
+namespace Bough.Core.Git.Models
 {
     public class GitIgnorePlan
     {

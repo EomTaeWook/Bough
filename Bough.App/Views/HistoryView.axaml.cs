@@ -13,6 +13,8 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Bough.App.ViewModels;
 using Bough.Core.Git;
+using Bough.Core.Git.Models;
+using Bough.Core.Internals;
 
 namespace Bough.App.Views
 {

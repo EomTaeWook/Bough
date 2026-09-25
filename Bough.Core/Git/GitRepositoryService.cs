@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Dignus.DependencyInjection.Attributes;
+using Bough.Core.Git.Models;
 
 namespace Bough.Core.Git
 {

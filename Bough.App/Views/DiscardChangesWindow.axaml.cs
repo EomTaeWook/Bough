@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Bough.Core.Git;
+using Bough.Core.Git.Models;
 
 namespace Bough.App.Views
 {

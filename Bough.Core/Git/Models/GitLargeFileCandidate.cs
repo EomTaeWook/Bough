@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Bough.Core.Git
+namespace Bough.Core.Git.Models
 {
     public class GitLargeFileCandidate
     {

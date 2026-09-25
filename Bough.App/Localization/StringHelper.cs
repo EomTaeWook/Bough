@@ -3,6 +3,7 @@ using System.Globalization;
 using DataContainer.Generated;
 using Dignus.DependencyInjection.Attributes;
 using Dignus.Log;
+using Bough.App.Internals;
 
 namespace Bough.App.Localization
 {

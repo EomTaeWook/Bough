@@ -1,4 +1,4 @@
-namespace Bough.Core.Git
+namespace Bough.Core.Git.Models
 {
     public class GitConflictFile
     {

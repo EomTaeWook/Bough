@@ -8,10 +8,7 @@ namespace Bough.Core.Internals
         Both,
         Remove
     }
-}
 
-namespace Bough.Core.Git
-{
     public enum GitResetMode
     {
         Soft,

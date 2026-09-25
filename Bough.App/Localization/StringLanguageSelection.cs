@@ -1,3 +1,5 @@
+using Bough.App.Internals;
+
 namespace Bough.App.Localization
 {
     public class StringLanguageSelection

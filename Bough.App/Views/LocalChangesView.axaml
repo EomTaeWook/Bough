@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Bough.App.ViewModels"
-             xmlns:git="using:Bough.Core.Git"
+             xmlns:git="using:Bough.Core.Git.Models"
              xmlns:views="using:Bough.App.Views"
              x:Class="Bough.App.Views.LocalChangesView"
              x:DataType="vm:LocalChangesViewModel"

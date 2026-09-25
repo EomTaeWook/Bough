@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Bough.App.ViewModels;
+using Bough.App.ViewModels.Models;
 
 namespace Bough.App.Controls
 {

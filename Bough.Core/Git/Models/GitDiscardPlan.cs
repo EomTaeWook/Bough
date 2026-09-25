@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Bough.Core.Git
+namespace Bough.Core.Git.Models
 {
     public class GitDiscardPlan
     {

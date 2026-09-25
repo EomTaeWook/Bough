@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Bough.App.Appearance;
 using Bough.App.ViewModels;
+using Bough.App.Internals;
 
 namespace Bough.App.Views
 {

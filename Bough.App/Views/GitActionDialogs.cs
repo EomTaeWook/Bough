@@ -10,6 +10,9 @@ using Bough.App.Localization;
 using Bough.Core.Git;
 using DataContainer.Generated;
 using Dignus.Collections;
+using Bough.Core.Git.Models;
+using Bough.Core.Internals;
+using Bough.App.Internals;
 
 namespace Bough.App.Views
 {

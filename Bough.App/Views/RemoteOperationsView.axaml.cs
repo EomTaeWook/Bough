@@ -8,6 +8,10 @@ using Avalonia.Interactivity;
 using Bough.App.Localization;
 using Bough.App.ViewModels;
 using Bough.Core.Git;
+using Bough.App.ViewModels.Models;
+using Bough.Core.Git.Models;
+using Bough.Core.Internals;
+using Bough.App.Internals;
 
 namespace Bough.App.Views
 {

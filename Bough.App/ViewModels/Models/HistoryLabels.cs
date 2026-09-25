@@ -1,6 +1,6 @@
 using Bough.App.Localization;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.ViewModels.Models
 {
     public class HistoryLabels
     {

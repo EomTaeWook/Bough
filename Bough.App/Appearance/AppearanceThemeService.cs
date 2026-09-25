@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Styling;
+using Bough.App.Internals;
 
 namespace Bough.App.Appearance
 {

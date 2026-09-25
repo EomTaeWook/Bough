@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Bough.Core.Conflicts
+namespace Bough.Core.Conflicts.Models
 {
     public class ConflictDocument
     {

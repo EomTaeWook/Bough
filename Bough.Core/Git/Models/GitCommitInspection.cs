@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Bough.Core.Git
+namespace Bough.Core.Git.Models
 {
     public class GitCommitInspection
     {

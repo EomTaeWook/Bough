@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Bough.Core.Conflicts.Models;
 
 namespace Bough.Core.Conflicts
 {

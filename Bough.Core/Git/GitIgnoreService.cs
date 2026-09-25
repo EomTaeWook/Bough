@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Bough.Core.Git.Models;
+using Bough.Core.Internals;
 
 namespace Bough.Core.Git
 {

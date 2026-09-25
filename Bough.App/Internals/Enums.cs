@@ -1,4 +1,4 @@
-namespace Bough.App.Appearance
+namespace Bough.App.Internals
 {
     public enum AppearanceThemeMode
     {
@@ -6,19 +6,13 @@ namespace Bough.App.Appearance
         Dark,
         System
     }
-}
 
-namespace Bough.App.Localization
-{
     public enum StringLanguage
     {
         Korean,
         English
     }
-}
 
-namespace Bough.App.Controls
-{
     public enum AuthorPhotoSource
     {
         LocalIdenticon,
@@ -26,10 +20,7 @@ namespace Bough.App.Controls
         GitHubLinkedAccount,
         Gravatar
     }
-}
 
-namespace Bough.App.ViewModels
-{
     public enum ConflictStageOutcome
     {
         Succeeded,

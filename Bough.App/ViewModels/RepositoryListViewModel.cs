@@ -4,6 +4,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using Bough.App.ViewModels.Models;
 
 namespace Bough.App.ViewModels
 {

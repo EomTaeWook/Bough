@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Bough.App.ViewModels"
+        xmlns:models="using:Bough.App.ViewModels.Models"
         x:Class="Bough.App.ConflictWindow" x:DataType="vm:ConflictResolutionViewModel"
         Title="{Binding WindowTitle}" Width="1360" Height="850" MinWidth="980" MinHeight="650" Background="{DynamicResource BoughBrushCanvas}">
   <Window.Styles>
@@ -83,7 +84,7 @@
                    Background="Transparent"
                    BorderThickness="0">
             <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:ConflictFileItem">
+              <DataTemplate x:DataType="models:ConflictFileItem">
                 <Grid Margin="12,10" RowDefinitions="Auto,Auto">
                   <TextBlock Grid.Row="0" Text="{Binding FileName}" FontWeight="SemiBold"
                              TextTrimming="CharacterEllipsis" />

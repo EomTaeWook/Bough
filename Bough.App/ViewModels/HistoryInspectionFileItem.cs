@@ -1,6 +1,8 @@
 using Bough.App.Localization;
 using Bough.Core.Git;
 using System.Collections.ObjectModel;
+using Bough.App.ViewModels.Models;
+using Bough.Core.Git.Models;
 
 namespace Bough.App.ViewModels
 {

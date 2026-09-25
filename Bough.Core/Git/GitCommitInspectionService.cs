@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Dignus.Collections;
+using Bough.Core.Git.Models;
 
 namespace Bough.Core.Git
 {

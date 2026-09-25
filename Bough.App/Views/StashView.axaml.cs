@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Bough.App.ViewModels;
+using Bough.App.ViewModels.Models;
 
 namespace Bough.App.Views
 {

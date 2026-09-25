@@ -10,6 +10,7 @@ using Bough.Core.Conflicts;
 using Bough.Core.Git;
 using Dignus.DependencyInjection;
 using Dignus.DependencyInjection.Extensions;
+using Bough.App.Internals;
 
 namespace Bough.App
 {

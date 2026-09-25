@@ -11,6 +11,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Bough.Core.Conflicts.Models;
+using Bough.App.ViewModels.Models;
+using Bough.Core.Git.Models;
+using Bough.App.Internals;
 
 namespace Bough.App.ViewModels
 {

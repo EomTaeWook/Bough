@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Bough.App.ViewModels"
-             xmlns:git="using:Bough.Core.Git"
+             xmlns:models="using:Bough.App.ViewModels.Models"
              xmlns:controls="using:Bough.App.Controls"
              xmlns:views="using:Bough.App.Views"
              x:Class="Bough.App.Views.HistoryView"
@@ -241,7 +241,7 @@
                           </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                          <DataTemplate x:DataType="vm:HistoryReferenceItem">
+                          <DataTemplate x:DataType="models:HistoryReferenceItem">
                             <Border Classes="referenceBadge" Classes.refCurrent="{Binding IsCurrent}" Classes.refLocal="{Binding IsLocal}"
                                     Classes.refRemote="{Binding IsRemote}" Classes.refTag="{Binding IsTag}"
                                     CornerRadius="4" Padding="4,1" MaxWidth="100"
@@ -270,7 +270,7 @@
                                 <ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
                                   <ItemsControl ItemsSource="{Binding References}">
                                     <ItemsControl.ItemTemplate>
-                                      <DataTemplate x:DataType="vm:HistoryReferenceItem">
+                                      <DataTemplate x:DataType="models:HistoryReferenceItem">
                                         <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,0,5"
                                                     ToolTip.Tip="{Binding ToolTipText}">
                                           <Border Classes="referenceBadge" Classes.refCurrent="{Binding IsCurrent}" Classes.refLocal="{Binding IsLocal}"
@@ -432,7 +432,7 @@
                               <StackPanel>
                               <ItemsControl ItemsSource="{Binding DiffLines}">
                                 <ItemsControl.ItemTemplate>
-                                  <DataTemplate x:DataType="vm:HistoryDiffLineItem">
+                                  <DataTemplate x:DataType="models:HistoryDiffLineItem">
                                     <Border Classes="diffLine" Classes.diffAdded="{Binding IsAdded}" Classes.diffRemoved="{Binding IsRemoved}"
                                             Classes.diffHunk="{Binding IsHunk}" Padding="3,1">
                                       <Grid ColumnDefinitions="38,38,*">

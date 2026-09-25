@@ -9,6 +9,9 @@ using Bough.App.Controls;
 using Bough.App.Localization;
 using Bough.Core.Git;
 using DataContainer.Generated;
+using Bough.App.ViewModels.Models;
+using Bough.Core.Git.Models;
+using Bough.Core.Internals;
 
 namespace Bough.App.ViewModels
 {

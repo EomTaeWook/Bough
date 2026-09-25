@@ -6,6 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Localization;
 using Bough.Core.Git;
+using Bough.App.ViewModels.Models;
+using Bough.Core.Git.Models;
+using Bough.Core.Internals;
+using Bough.App.Internals;
 
 namespace Bough.App.ViewModels
 {

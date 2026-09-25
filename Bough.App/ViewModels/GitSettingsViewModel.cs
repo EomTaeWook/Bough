@@ -8,6 +8,8 @@ using Bough.App.Controls;
 using Bough.App.Appearance;
 using Bough.App.Localization;
 using Bough.Core.Git;
+using Bough.Core.Git.Models;
+using Bough.App.Internals;
 
 namespace Bough.App.ViewModels
 {

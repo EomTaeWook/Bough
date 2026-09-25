@@ -4,6 +4,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Bough.App.Localization;
 using Bough.App.Controls;
+using Bough.App.Internals;
 
 namespace Bough.App.Views
 {

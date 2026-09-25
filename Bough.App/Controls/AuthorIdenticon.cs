@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Bough.App.Internals;
 
 namespace Bough.App.Controls
 {

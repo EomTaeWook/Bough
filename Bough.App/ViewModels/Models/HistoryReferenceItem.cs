@@ -1,7 +1,8 @@
 using System;
 using Bough.App.Localization;
+using Bough.App.Internals;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.ViewModels.Models
 {
     public class HistoryReferenceItem
     {

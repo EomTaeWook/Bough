@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Bough.App.ViewModels.Models;
 
 namespace Bough.App.ViewModels
 {

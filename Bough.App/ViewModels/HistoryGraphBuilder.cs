@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using Bough.Core.Git;
 using Dignus.Collections;
 using System.Linq;
+using Bough.App.ViewModels.Models;
+using Bough.Core.Git.Models;
 
 namespace Bough.App.ViewModels
 {

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Bough.App.Localization;
 using Bough.Core.Git;
+using Bough.App.ViewModels.Models;
+using Bough.Core.Git.Models;
 
 namespace Bough.App.ViewModels
 {

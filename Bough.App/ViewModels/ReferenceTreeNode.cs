@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using Bough.App.Internals;
 
 namespace Bough.App.ViewModels
 {

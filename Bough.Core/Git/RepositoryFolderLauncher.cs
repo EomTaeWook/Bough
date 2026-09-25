@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using Bough.Core.Git.Models;
 
 namespace Bough.Core.Git
 {

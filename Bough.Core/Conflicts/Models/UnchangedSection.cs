@@ -1,4 +1,4 @@
-namespace Bough.Core.Conflicts
+namespace Bough.Core.Conflicts.Models
 {
     public class UnchangedSection : ConflictSection
     {

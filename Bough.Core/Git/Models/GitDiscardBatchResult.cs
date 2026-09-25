@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Bough.Core.Git
+namespace Bough.Core.Git.Models
 {
     public class GitDiscardBatchResult
     {
