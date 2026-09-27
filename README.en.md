@@ -78,8 +78,6 @@ cd ../JsonToCSharp
 
 The bundled converter may exit with a `Console.ReadKey` exception after generating the files. If that happens, check both the completion message and the generated output. UI text is read from `StringTemplate`: Korean is used when the operating system UI language is Korean, and English is used otherwise.
 
-## Licensing direction
+## License
 
-The intended license would allow personal and workplace use while restricting resale of Bough itself or a renamed copy.
-
-The exact terms have not been finalized. Until a formal license file is added, no separate permission to use, copy, or distribute the project is granted.
+[Bough Source License 1.0](LICENSE) allows free personal, educational, and internal business use and modification. You may redistribute it without charge if you retain the license and copyright notice. Selling Bough or a substantially Bough-based Git client, including a renamed copy, is restricted. Third-party components remain under their own licenses.
