@@ -102,7 +102,7 @@ namespace Bough.App.ViewModels
         public LocalChangesViewModel LocalChanges { get; }
 
         public string LocalChangesNavigationText { get { return _stringHelper.GetString("LocalChangesHeading"); } }
-        public string AllCommitsNavigationText { get { return _stringHelper.GetString("MainAllCommitsNavigation"); } }
+        public string HistoryNavigationText { get { return _stringHelper.GetString("MainHistoryNavigation"); } }
         public string OpenFolderToolTipText { get { return _stringHelper.GetString("MainOpenFolderToolTip"); } }
         public string OpenFolderAutomationName { get { return _stringHelper.GetString("MainOpenFolderAutomationName"); } }
         public string OpenFolderActionText { get { return _stringHelper.GetString("MainOpenFolderAction"); } }

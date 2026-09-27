@@ -99,7 +99,7 @@
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
           <Button Content="{Binding LocalChangesNavigationText}" Command="{Binding ShowLocalChangesCommand}" Classes="navigation"
                   Classes.active="{Binding IsLocalChangesView}" />
-          <Button Content="{Binding AllCommitsNavigationText}" Command="{Binding ShowHistoryCommand}" Classes="navigation"
+          <Button Content="{Binding HistoryNavigationText}" Command="{Binding ShowHistoryCommand}" Classes="navigation"
                   Classes.active="{Binding IsHistoryView}" />
           <Button Content="{Binding GitSettings.SettingsTitle}" Command="{Binding ShowGitSettingsCommand}" Classes="navigation"
                   Classes.active="{Binding IsGitSettingsView}" />

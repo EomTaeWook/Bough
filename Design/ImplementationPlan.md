@@ -122,6 +122,6 @@
 ## 총괄 PD: 기획과 검증 기준
 
 1. Design 문서를 갱신하고 작업자 간 서비스·화면 계약과 진행 상태를 조율한다. 앱 코드의 구현과 최종 연결은 작업자에게 지시한다.
-2. 동일한 저장소에서 Local Changes → Stage → Commit → All Commits, Branch 선택 → History 이동, 커밋 선택 → 파일 diff·트리 탐색 흐름의 검증 기준을 관리한다.
+2. 동일한 저장소에서 Local Changes → Stage → Commit → History, Branch 선택 → History의 해당 커밋으로 이동, 커밋 선택 → 파일 diff·트리 탐색 흐름의 검증 기준을 관리한다.
 3. 기능 구성이 안정되면 Windows와 macOS의 터미널 실행 경로, Git 부재, 빈 저장소, 한글 경로 등의 검증을 작업자에게 요청한다.
 

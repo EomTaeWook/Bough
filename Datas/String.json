@@ -1921,9 +1921,9 @@
   },
   {
     "Id": 2400,
-    "Name": "MainAllCommitsNavigation",
-    "Kor": "\uBAA8\uB4E0 \uCEE4\uBC0B",
-    "Eng": "All Commits"
+    "Name": "MainHistoryNavigation",
+    "Kor": "히스토리",
+    "Eng": "History"
   },
   {
     "Id": 2401,
