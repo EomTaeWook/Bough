@@ -1,0 +1,85 @@
+# Bough
+
+[한국어](README.md) | **English**
+
+**Bough is a Git GUI for macOS and Windows that makes merge conflicts easier to understand and resolve.**
+
+It aims to keep everyday Git work light and fast while making the context and outcome of conflict resolution clear.
+
+## Preview
+
+![Bough History showing the commit graph, changed files, and code preview](Docs/images/history.png)
+
+## Why Bough?
+
+Conflict resolution in existing Git GUIs can be difficult when:
+
+- It is unclear where each side of a conflict came from.
+- There is too little context to decide which changes to keep.
+- The effect of a choice on the final file is hard to see immediately.
+- Repository tabs pile up across the top, making it harder to see where you are and switch repositories.
+
+Bough is designed to show the source of each conflicting change and preview the resulting file as you make selections.
+
+## Core experience
+
+- **Clear change origins:** Distinguish the branches, commits, and other context behind each change.
+- **Readable conflict comparison:** See conflicting sections alongside surrounding code.
+- **Immediate result preview:** See how each choice changes the final file.
+- **Review before applying:** Check the result before saving the file and continuing your Git work.
+- **Clear repository navigation:** See and switch the current repository without relying on a row of tabs.
+
+## Initial development scope
+
+The first development phase focused on **conflict resolution**:
+
+1. Detect repositories and files with unresolved conflicts.
+2. Show conflict sections and the origin of each side.
+3. Select changes or edit the result directly.
+4. Preview the final file as it changes.
+5. Save the resolved file and update the Git index.
+
+Bough now also supports everyday Git work, including commit history, creating commits, creating and switching branches, staging files, and remote operations. These workflows are still being refined.
+
+Additional screens and workflows are described in the [design notes](Design/README.md) (Korean).
+
+## Technology
+
+- **Language:** C# / .NET
+- **Platforms:** macOS and Windows
+- **UI:** Avalonia
+
+The project is under active development. It provides conflict file navigation, selection between both sides, editing and staging the result, and commit history browsing. Usability improvements are ongoing.
+
+## Run
+
+You need the .NET 10 SDK and Git.
+
+```powershell
+dotnet run --project Bough.App/Bough.App.csproj
+```
+
+Add a repository from the left sidebar to see unresolved conflict files. For each conflict section, choose a change, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
+
+Select **History** at the top to see commits from all local and remote references in a branch graph. Selecting a commit shows its author, date, message, and changed files in the details panel. The first 200 commits are shown; use **Load more commits** to browse older history. Selecting and inspecting a commit does not change the repository.
+
+## Data generation
+
+`Excel/String.xlsx` is the source of UI strings. `Datas/String.json` and `DataContainer/Generated` are generated outputs. Run each converter from the folder that contains its executable.
+
+`JsonToCSharp.exe` is managed with Git LFS. If the executable is missing after cloning the repository, install Git LFS and run `git lfs pull` from the repository root.
+
+```powershell
+cd ExportTools/ExcelToJson
+./ExcelToJson.exe --no-pause
+cd ../JsonToCSharp
+./JsonToCSharp.exe --no-pause
+```
+
+The bundled converter may exit with a `Console.ReadKey` exception after generating the files. If that happens, check both the completion message and the generated output. UI text is read from `StringTemplate`: Korean is used when the operating system UI language is Korean, and English is used otherwise.
+
+## Licensing direction
+
+The intended license would allow personal and workplace use while restricting resale of Bough itself or a renamed copy.
+
+The exact terms have not been finalized. Until a formal license file is added, no separate permission to use, copy, or distribute the project is granted.
