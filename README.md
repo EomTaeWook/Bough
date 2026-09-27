@@ -6,7 +6,7 @@
 
 ## 화면 미리보기
 
-![Bough의 전체 커밋 기록과 변경 파일 미리보기](Docs/images/all-commits.png)
+![Bough History 화면의 커밋 그래프, 변경 파일 목록과 코드 미리보기](Docs/images/history.png)
 
 ## 왜 Bough인가요?
 
