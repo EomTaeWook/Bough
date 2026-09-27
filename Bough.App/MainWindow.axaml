@@ -6,6 +6,7 @@
         x:Class="Bough.App.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Bough"
+        Icon="/Assets/AppIcon.ico"
         Width="1440"
         Height="920"
         MinWidth="1080"
@@ -82,10 +83,7 @@
       <Grid RowDefinitions="72,Auto">
       <Grid Grid.Row="0" ColumnDefinitions="280,*,Auto" Margin="20,0">
         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="11">
-          <Border Width="34" Height="34" CornerRadius="10" Background="{DynamicResource BoughBrushAccent}">
-            <TextBlock Text="B" Foreground="{DynamicResource BoughBrushAccentText}" FontWeight="Bold" FontSize="18"
-                       HorizontalAlignment="Center" VerticalAlignment="Center" />
-          </Border>
+          <Image Width="34" Height="34" Source="/Assets/AppIcon.png" />
           <TextBlock Text="Bough" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
         </StackPanel>
 

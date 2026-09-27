@@ -10,6 +10,7 @@
     <NoWarn>$(NoWarn);AVLN3001</NoWarn>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaResource Include="Assets\AppIcon.ico" />
+    <AvaloniaResource Include="Assets\AppIcon.png" />
     <ProjectReference Include="..\Bough.Core\Bough.Core.csproj" />
     <ProjectReference Include="..\DataContainer\DataContainer.csproj" />
   </ItemGroup>
