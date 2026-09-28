@@ -8,6 +8,9 @@ namespace Bough.App.Controls
 {
     public class HistoryGraphControl : Control
     {
+        private const double _laneStart = 16;
+        private const double _laneSpacing = 18;
+
         public static readonly StyledProperty<HistoryGraphRow> RowProperty = AvaloniaProperty.Register<HistoryGraphControl, HistoryGraphRow>(nameof(Row));
 
         private static readonly string[] _laneBrushKeys = new string[]
@@ -15,10 +18,15 @@ namespace Bough.App.Controls
             "BoughBrushGraphOne",
             "BoughBrushGraphTwo",
             "BoughBrushGraphThree",
-            "BoughBrushGraphFour"
+            "BoughBrushGraphFour",
+            "BoughBrushGraphFive",
+            "BoughBrushGraphSix",
+            "BoughBrushGraphSeven",
+            "BoughBrushGraphEight"
         };
         private IBrush[] _laneBrushes;
-        private IBrush _selectionBrush;
+        private Pen[] _lanePens;
+        private IBrush _focusBrush;
         private IBrush _surfaceBrush;
 
         public HistoryGraphControl()
@@ -26,6 +34,7 @@ namespace Bough.App.Controls
             ActualThemeVariantChanged += (sender, eventArgs) =>
             {
                 _laneBrushes = null;
+                _lanePens = null;
                 InvalidateVisual();
             };
         }
@@ -57,32 +66,41 @@ namespace Bough.App.Controls
                 double x2 = LaneX(segment.ToLane);
                 double y1 = height * segment.FromLevel;
                 double y2 = height * segment.ToLevel;
+                Pen pen = GetPen(segment.ColorIndex);
+                if (x1 == x2)
+                {
+                    context.DrawLine(pen, new Point(x1, y1), new Point(x2, y2));
+                    continue;
+                }
+
                 StreamGeometry path = new();
                 using (StreamGeometryContext geometry = path.Open())
                 {
                     geometry.BeginFigure(new Point(x1, y1), false);
-                    if (x1 == x2)
-                    {
-                        geometry.LineTo(new Point(x2, y2));
-                    }
-                    else
-                    {
-                        double middle = (y1 + y2) / 2;
-                        geometry.CubicBezierTo(new Point(x1, middle), new Point(x2, middle), new Point(x2, y2));
-                    }
+                    double firstTurn = y1 + (y2 - y1) * 0.42;
+                    double secondTurn = y1 + (y2 - y1) * 0.58;
+                    geometry.CubicBezierTo(new Point(x1, firstTurn), new Point(x2, secondTurn), new Point(x2, y2));
 
                     geometry.EndFigure(false);
                 }
 
-                context.DrawGeometry(null, new Pen(GetBrush(segment.ColorIndex), 1.7), path);
+                context.DrawGeometry(null, pen, path);
             }
 
             Point center = new(LaneX(Row.NodeLane), height / 2);
             IBrush brush = GetBrush(Row.NodeColorIndex);
-            context.DrawEllipse(_selectionBrush, null, center, 9, 9);
+            if (Row.IsCurrentHead == true)
+            {
+                context.DrawEllipse(null, new Pen(_focusBrush, 2.5), center, 8, 8);
+            }
             if (Row.IsMerge == true)
             {
                 context.DrawEllipse(_surfaceBrush, new Pen(brush, 2), center, 5, 5);
+                context.DrawEllipse(brush, null, center, 1.8, 1.8);
+            }
+            else if (Row.HasReferences == true)
+            {
+                context.DrawEllipse(brush, new Pen(_surfaceBrush, 1.2), center, 5, 5);
             }
             else
             {
@@ -92,7 +110,7 @@ namespace Bough.App.Controls
 
         private static double LaneX(int lane)
         {
-            return 16 + lane * 16;
+            return _laneStart + lane * _laneSpacing;
         }
 
         private void EnsureBrushes()
@@ -102,17 +120,24 @@ namespace Bough.App.Controls
                 return;
             }
             _laneBrushes = new IBrush[_laneBrushKeys.Length];
+            _lanePens = new Pen[_laneBrushKeys.Length];
             for (int index = 0; index < _laneBrushKeys.Length; index++)
             {
                 _laneBrushes[index] = GetResourceBrush(_laneBrushKeys[index]);
+                _lanePens[index] = new Pen(_laneBrushes[index], 2);
             }
-            _selectionBrush = GetResourceBrush("BoughBrushSelection");
+            _focusBrush = GetResourceBrush("BoughBrushFocus");
             _surfaceBrush = GetResourceBrush("BoughBrushSurface");
         }
 
         private IBrush GetBrush(int colorIndex)
         {
             return _laneBrushes[colorIndex % _laneBrushes.Length];
+        }
+
+        private Pen GetPen(int colorIndex)
+        {
+            return _lanePens[colorIndex % _lanePens.Length];
         }
 
         private IBrush GetResourceBrush(string key)

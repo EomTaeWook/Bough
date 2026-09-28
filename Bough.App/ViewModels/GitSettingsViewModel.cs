@@ -18,7 +18,6 @@ namespace Bough.App.ViewModels
         private static readonly string _globalConfigQueueRoot = Path.Combine(Path.GetTempPath(), "Bough", "global-git-config-queue");
         private readonly GitSettingsService _settingsService;
         private readonly GitHubAccountService _gitHubAccountService;
-        private readonly GitHubAuthorLinkSettings _gitHubAuthorLinkSettings;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly AppearanceThemeService _appearanceTheme;
@@ -35,9 +34,6 @@ namespace Bough.App.ViewModels
         private string _credentialHelper;
         private string _authorStatus;
         private string _statusMessage;
-        private string _photoGitHubUserName;
-        private string _photoAuthorEmail;
-        private string _photoLinkStatus;
         private string _accountStatusText = string.Empty;
         private string _appearanceStatus = string.Empty;
         private bool _remoteOperationBusy;
@@ -56,11 +52,6 @@ namespace Bough.App.ViewModels
             _appearanceTheme = appearanceTheme;
             _operationQueue = operationQueue;
             _appearanceTheme.ThemeChanged += OnAppearanceThemeChanged;
-            _gitHubAuthorLinkSettings = new GitHubAuthorLinkSettings();
-            GitHubAuthorLink photoLink = _gitHubAuthorLinkSettings.Load();
-            _photoGitHubUserName = photoLink.UserName;
-            _photoAuthorEmail = photoLink.AuthorEmail;
-            _photoLinkStatus = string.Empty;
             _gitPathInput = settingsService.ConfiguredGitPath;
             _gitVersion = string.Empty;
             _localName = string.Empty;
@@ -79,7 +70,6 @@ namespace Bough.App.ViewModels
             RefreshCommand = new AsyncRelayCommand(RefreshAsync, CanUseRepository);
             SaveLocalAuthorCommand = new QueuedAsyncRelayCommand(SaveLocalAuthorAsync, CanQueueRepositoryMutation, exception => StatusMessage = _errorLocalizer.GetDisplayMessage(exception));
             SaveGlobalAuthorCommand = new QueuedAsyncRelayCommand(SaveGlobalAuthorAsync, CanQueueRepositoryMutation, exception => StatusMessage = _errorLocalizer.GetDisplayMessage(exception));
-            SavePhotoLinkCommand = new RelayCommand(SavePhotoLink, CanRun);
         }
 
         public ReadOnlyObservableCollection<GitRemote> Remotes { get; }
@@ -152,18 +142,6 @@ namespace Bough.App.ViewModels
         public AsyncRelayCommand RefreshCommand { get; }
         public QueuedAsyncRelayCommand SaveLocalAuthorCommand { get; }
         public QueuedAsyncRelayCommand SaveGlobalAuthorCommand { get; }
-        public RelayCommand SavePhotoLinkCommand { get; }
-
-        public string PhotoLinkHeading { get { return _stringHelper.GetString("GitHubPhotoLinkHeading"); } }
-        public string PhotoLinkDescription { get { return _stringHelper.GetString("GitHubPhotoLinkDescription"); } }
-        public string PhotoGitHubUserNameLabel { get { return _stringHelper.GetString("GitHubPhotoUserName"); } }
-        public string PhotoAuthorEmailLabel { get { return _stringHelper.GetString("GitHubPhotoAuthorEmail"); } }
-        public string PhotoLinkSaveLabel { get { return _stringHelper.GetString("GitHubPhotoSave"); } }
-        public string PhotoLinkClearHelp { get { return _stringHelper.GetString("GitHubPhotoClearHelp"); } }
-        public string PhotoGitHubUserName { get { return _photoGitHubUserName; } set { SetProperty(ref _photoGitHubUserName, value); } }
-        public string PhotoAuthorEmail { get { return _photoAuthorEmail; } set { SetProperty(ref _photoAuthorEmail, value); } }
-        public string PhotoLinkStatus { get { return _photoLinkStatus; } private set { SetProperty(ref _photoLinkStatus, value); } }
-
         public string GitPathInput
         {
             get { return _gitPathInput; }
@@ -199,7 +177,6 @@ namespace Bough.App.ViewModels
                     RefreshCommand.NotifyCanExecuteChanged();
                     SaveLocalAuthorCommand.NotifyCanExecuteChanged();
                     SaveGlobalAuthorCommand.NotifyCanExecuteChanged();
-                    SavePhotoLinkCommand.NotifyCanExecuteChanged();
                     UpdateAccountAvailability();
                 }
             }
@@ -681,30 +658,6 @@ namespace Bough.App.ViewModels
         private async Task SaveLocalAuthorAsync()
         {
             await SaveAuthorAsync(false, LocalName, LocalEmail);
-        }
-
-        private void SavePhotoLink()
-        {
-            if (IsBusy)
-            {
-                return;
-            }
-            try
-            {
-                _gitHubAuthorLinkSettings.Save(PhotoAuthorEmail, PhotoGitHubUserName);
-                if (string.IsNullOrWhiteSpace(PhotoAuthorEmail))
-                {
-                    PhotoLinkStatus = _stringHelper.GetString("GitHubPhotoCleared");
-                }
-                else
-                {
-                    PhotoLinkStatus = _stringHelper.GetString("GitHubPhotoSaved");
-                }
-            }
-            catch (Exception exception)
-            {
-                PhotoLinkStatus = _errorLocalizer.GetDisplayMessage(exception);
-            }
         }
 
         private async Task SaveGlobalAuthorAsync()

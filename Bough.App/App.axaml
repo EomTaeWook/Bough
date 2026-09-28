@@ -151,6 +151,14 @@
         <SolidColorBrush x:Key="BoughBrushGraphThree" Color="#B26F18" />
         <Color x:Key="BoughColorGraphFour">#498043</Color>
         <SolidColorBrush x:Key="BoughBrushGraphFour" Color="#498043" />
+        <Color x:Key="BoughColorGraphFive">#B84343</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphFive" Color="#B84343" />
+        <Color x:Key="BoughColorGraphSix">#4E65A8</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphSix" Color="#4E65A8" />
+        <Color x:Key="BoughColorGraphSeven">#7B5AA6</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphSeven" Color="#7B5AA6" />
+        <Color x:Key="BoughColorGraphEight">#2D8777</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphEight" Color="#2D8777" />
       </ResourceDictionary>
       <ResourceDictionary x:Key="Dark">
         <Color x:Key="BoughColorHeader">#151C19</Color>
@@ -225,6 +233,14 @@
         <SolidColorBrush x:Key="BoughBrushGraphThree" Color="#E8BD72" />
         <Color x:Key="BoughColorGraphFour">#A9D39C</Color>
         <SolidColorBrush x:Key="BoughBrushGraphFour" Color="#A9D39C" />
+        <Color x:Key="BoughColorGraphFive">#F28B82</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphFive" Color="#F28B82" />
+        <Color x:Key="BoughColorGraphSix">#9BB5FF</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphSix" Color="#9BB5FF" />
+        <Color x:Key="BoughColorGraphSeven">#C9A7F2</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphSeven" Color="#C9A7F2" />
+        <Color x:Key="BoughColorGraphEight">#75D7C1</Color>
+        <SolidColorBrush x:Key="BoughBrushGraphEight" Color="#75D7C1" />
       </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>

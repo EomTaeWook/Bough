@@ -17,17 +17,17 @@ namespace Bough.App.Views
 {
     public partial class LocalChangesView : UserControl
     {
-        private const double MinimumFileListWidth = 260;
-        private const double MinimumPreviewWidth = 220;
-        private const double SplitterWidth = 6;
-        private const double LocalHeaderHeight = 64;
-        private const double MinimumWorkAreaHeight = 180;
-        private const double FileSectionHeaderHeight = 42;
-        private const double MinimumPopulatedSectionHeight = 84;
-        private const double FileSectionsSplitterHeight = 6;
-        private const double CollapsedCommitHeight = 48;
-        private const double MinimumCommitHeight = 190;
-        private const double CommitSplitterHeight = 6;
+        private const double _minimumFileListWidth = 260;
+        private const double _minimumPreviewWidth = 220;
+        private const double _splitterWidth = 6;
+        private const double _localHeaderHeight = 64;
+        private const double _minimumWorkAreaHeight = 180;
+        private const double _fileSectionHeaderHeight = 42;
+        private const double _minimumPopulatedSectionHeight = 84;
+        private const double _fileSectionsSplitterHeight = 6;
+        private const double _collapsedCommitHeight = 48;
+        private const double _minimumCommitHeight = 190;
+        private const double _commitSplitterHeight = 6;
 
         private readonly LocalChangesLayoutSettings _layoutSettings;
         private readonly ColumnDefinition _fileListColumn;
@@ -38,7 +38,7 @@ namespace Bough.App.Views
         private readonly RowDefinition _commitSplitterRow;
         private double _preferredFileListWidth;
         private double _preferredStagedHeightRatio;
-        private double _expandedCommitHeight = MinimumCommitHeight;
+        private double _expandedCommitHeight = _minimumCommitHeight;
         private bool _commitExpanded = true;
         private StashSaveWindow _stashWindow;
         private LocalChangesViewModel _confirmationSource;
@@ -152,20 +152,20 @@ namespace Bough.App.Views
         {
             if (hasStaged == true)
             {
-                _stagedRow.MinHeight = MinimumPopulatedSectionHeight;
+                _stagedRow.MinHeight = _minimumPopulatedSectionHeight;
             }
             else
             {
-                _stagedRow.MinHeight = FileSectionHeaderHeight;
+                _stagedRow.MinHeight = _fileSectionHeaderHeight;
             }
 
             if (hasUnstaged == true)
             {
-                _unstagedRow.MinHeight = MinimumPopulatedSectionHeight;
+                _unstagedRow.MinHeight = _minimumPopulatedSectionHeight;
             }
             else
             {
-                _unstagedRow.MinHeight = FileSectionHeaderHeight;
+                _unstagedRow.MinHeight = _fileSectionHeaderHeight;
             }
 
             if (hasStaged == true)
@@ -174,23 +174,23 @@ namespace Bough.App.Views
                 {
                     _stagedRow.Height = new GridLength(_preferredStagedHeightRatio, GridUnitType.Star);
                     _unstagedRow.Height = new GridLength(1 - _preferredStagedHeightRatio, GridUnitType.Star);
-                    _fileSectionsSplitterRow.Height = new GridLength(FileSectionsSplitterHeight);
+                    _fileSectionsSplitterRow.Height = new GridLength(_fileSectionsSplitterHeight);
                     FileSectionsSplitter.IsVisible = true;
                     return;
                 }
 
                 _stagedRow.Height = new GridLength(1, GridUnitType.Star);
-                _unstagedRow.Height = new GridLength(FileSectionHeaderHeight);
+                _unstagedRow.Height = new GridLength(_fileSectionHeaderHeight);
             }
             else if (hasUnstaged == true)
             {
-                _stagedRow.Height = new GridLength(FileSectionHeaderHeight);
+                _stagedRow.Height = new GridLength(_fileSectionHeaderHeight);
                 _unstagedRow.Height = new GridLength(1, GridUnitType.Star);
             }
             else
             {
-                _stagedRow.Height = new GridLength(FileSectionHeaderHeight);
-                _unstagedRow.Height = new GridLength(FileSectionHeaderHeight);
+                _stagedRow.Height = new GridLength(_fileSectionHeaderHeight);
+                _unstagedRow.Height = new GridLength(_fileSectionHeaderHeight);
             }
 
             _fileSectionsSplitterRow.Height = new GridLength(0);
@@ -559,8 +559,8 @@ namespace Bough.App.Views
 
         private void WorkAreaSizeChanged(object sender, SizeChangedEventArgs eventArgs)
         {
-            double maximumWidth = WorkAreaGrid.Bounds.Width - SplitterWidth - MinimumPreviewWidth;
-            double width = Math.Max(MinimumFileListWidth, Math.Min(_preferredFileListWidth, maximumWidth));
+            double maximumWidth = WorkAreaGrid.Bounds.Width - _splitterWidth - _minimumPreviewWidth;
+            double width = Math.Max(_minimumFileListWidth, Math.Min(_preferredFileListWidth, maximumWidth));
             if (Math.Abs(_fileListColumn.ActualWidth - width) > 0.5)
             {
                 _fileListColumn.Width = new GridLength(width);
@@ -612,7 +612,7 @@ namespace Bough.App.Views
                 return;
             }
 
-            _expandedCommitHeight = Math.Max(MinimumCommitHeight, _commitRow.ActualHeight);
+            _expandedCommitHeight = Math.Max(_minimumCommitHeight, _commitRow.ActualHeight);
             UpdateLayoutMinimumHeight(Bounds.Height);
         }
 
@@ -623,15 +623,15 @@ namespace Bough.App.Views
 
         private void UpdateLayoutMinimumHeight(double availableHeight)
         {
-            double commitHeight = CollapsedCommitHeight;
+            double commitHeight = _collapsedCommitHeight;
             double splitterHeight = 0;
             if (_commitExpanded == true)
             {
-                commitHeight = Math.Max(MinimumCommitHeight, _expandedCommitHeight);
-                splitterHeight = CommitSplitterHeight;
+                commitHeight = Math.Max(_minimumCommitHeight, _expandedCommitHeight);
+                splitterHeight = _commitSplitterHeight;
             }
 
-            double minimumHeight = LocalHeaderHeight + MinimumWorkAreaHeight + splitterHeight + commitHeight;
+            double minimumHeight = _localHeaderHeight + _minimumWorkAreaHeight + splitterHeight + commitHeight;
             LayoutGrid.Height = Math.Max(minimumHeight, availableHeight);
         }
 
@@ -644,17 +644,17 @@ namespace Bough.App.Views
                 CommitBody.IsVisible = false;
                 CommitSplitter.IsVisible = false;
                 _commitSplitterRow.Height = new GridLength(0);
-                _commitRow.MinHeight = CollapsedCommitHeight;
-                _commitRow.Height = new GridLength(CollapsedCommitHeight);
+                _commitRow.MinHeight = _collapsedCommitHeight;
+                _commitRow.Height = new GridLength(_collapsedCommitHeight);
                 CommitToggle.Content = "⌃";
                 UpdateLayoutMinimumHeight(Bounds.Height);
                 return;
             }
 
             _commitExpanded = true;
-            _commitRow.MinHeight = MinimumCommitHeight;
-            _commitRow.Height = new GridLength(Math.Max(MinimumCommitHeight, _expandedCommitHeight));
-            _commitSplitterRow.Height = new GridLength(CommitSplitterHeight);
+            _commitRow.MinHeight = _minimumCommitHeight;
+            _commitRow.Height = new GridLength(Math.Max(_minimumCommitHeight, _expandedCommitHeight));
+            _commitSplitterRow.Height = new GridLength(_commitSplitterHeight);
             CommitSplitter.IsVisible = true;
             CommitBody.IsVisible = true;
             CommitToggle.Content = "⌄";

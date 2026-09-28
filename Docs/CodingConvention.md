@@ -5,7 +5,7 @@
 ## C#
 
 - 직접 관리하는 프로젝트의 `<Nullable>disable</Nullable>`을 유지한다. nullable 타입 표기(`T?`), null-forgiving 연산자(`!`), `#nullable enable`을 사용하지 않는다.
-- private 필드는 `_camelCase`로 작성한다. 저장소 루트의 [`.editorconfig`](../.editorconfig)가 이 규칙을 정의한다.
+- private 필드와 private 상수는 모두 `_camelCase`로 작성한다. 상수도 `private const int _maximumPending = 64;`처럼 접두사 `_`를 사용한다. 저장소 루트의 [`.editorconfig`](../.editorconfig)가 이 규칙을 정의한다.
 - 명시적인 null 검사와 `throw` 문을 유지할 수 있도록 Visual Studio의 `IDE0016`, `IDE0029`, `IDE0030`, `IDE0270` 스타일 제안은 저장소의 `.editorconfig`에서 숨긴다. 컴파일러의 실제 null 관련 오류나 다른 분석 경고까지 끄지 않는다.
 - `CA1861`이 지적하는 반복 생성 상수 배열은 호출 대상이 배열을 수정하지 않는다는 점을 확인한 뒤 private `static readonly` 필드로 재사용한다. 값이 호출마다 달라지거나 호출 대상이 배열을 수정할 수 있으면 공유하지 않는다. 이 성능 경고를 프로젝트 전체에서 숨기지 않는다.
 - 현재 코드와 같이 중괄호가 있는 네임스페이스와 명시적인 타입을 사용한다. 직접 관리하는 클래스에는 `sealed`를 사용하지 않는다.

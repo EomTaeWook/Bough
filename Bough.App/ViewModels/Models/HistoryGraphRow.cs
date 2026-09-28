@@ -22,17 +22,21 @@ namespace Bough.App.ViewModels.Models
 
     public class HistoryGraphRow
     {
-        public HistoryGraphRow(int nodeLane, int nodeColorIndex, bool isMerge, IReadOnlyList<HistoryGraphSegment> segments)
+        public HistoryGraphRow(int nodeLane, int nodeColorIndex, bool isMerge, bool isCurrentHead, bool hasReferences, IReadOnlyList<HistoryGraphSegment> segments)
         {
             NodeLane = nodeLane;
             NodeColorIndex = nodeColorIndex;
             IsMerge = isMerge;
+            IsCurrentHead = isCurrentHead;
+            HasReferences = hasReferences;
             Segments = segments;
         }
 
         public int NodeLane { get; }
         public int NodeColorIndex { get; }
         public bool IsMerge { get; }
+        public bool IsCurrentHead { get; }
+        public bool HasReferences { get; }
         public IReadOnlyList<HistoryGraphSegment> Segments { get; }
     }
 }

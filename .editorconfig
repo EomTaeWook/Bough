@@ -10,8 +10,16 @@ dotnet_naming_rule.private_fields_use_underscore.severity = warning
 dotnet_naming_rule.private_fields_use_underscore.symbols = private_fields
 dotnet_naming_rule.private_fields_use_underscore.style = underscore_camel_case
 
+dotnet_naming_rule.private_constants_use_underscore.severity = warning
+dotnet_naming_rule.private_constants_use_underscore.symbols = private_constants
+dotnet_naming_rule.private_constants_use_underscore.style = underscore_camel_case
+
 dotnet_naming_symbols.private_fields.applicable_kinds = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_symbols.private_constants.applicable_kinds = field
+dotnet_naming_symbols.private_constants.applicable_accessibilities = private
+dotnet_naming_symbols.private_constants.required_modifiers = const
 
 dotnet_naming_style.underscore_camel_case.required_prefix = _
 dotnet_naming_style.underscore_camel_case.capitalization = camel_case

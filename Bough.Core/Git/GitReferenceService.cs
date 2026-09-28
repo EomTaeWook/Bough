@@ -12,7 +12,7 @@ namespace Bough.Core.Git
     public class GitReferenceService
     {
         private static readonly string[] _remoteArguments = new string[] { "remote" };
-        private static readonly string[] _allReferencesArguments = new string[] { "for-each-ref", "--format=%(refname)%00%(objectname)%00%(HEAD)%00%(objecttype)%00%(*objectname)%00%(*objecttype)%00%(upstream)%00%(upstream:remotename)%00%(upstream:remoteref)", "refs/heads", "refs/remotes", "refs/tags" };
+        private static readonly string[] _allReferencesArguments = new string[] { "for-each-ref", "--format=%(refname)%00%(objectname)%00%(HEAD)%00%(objecttype)%00%(*objectname)%00%(*objecttype)%00%(upstream)%00%(upstream:remotename)%00%(upstream:remoteref)%00%(symref)", "refs/heads", "refs/remotes", "refs/tags" };
         private static readonly string[] _currentBranchArguments = new string[] { "symbolic-ref", "--quiet", "--short", "HEAD" };
         private static readonly string[] _localReferencesArguments = new string[] { "for-each-ref", "--format=%(refname)%00%(objectname)%00%(HEAD)%00%(upstream)%00%(upstream:remotename)%00%(upstream:remoteref)", "refs/heads" };
         private static readonly string[] _submoduleConfigArguments = new string[] { "config", "--null", "--file", ".gitmodules", "--get-regexp", "^submodule\\..*\\.(path|url)$" };
@@ -35,6 +35,7 @@ namespace Bough.Core.Git
             GitCommandResult remoteResult = await _runner.RunAsync(repository.RootPath, _remoteArguments, false, cancellationToken);
             string[] remoteNames = SplitLines(remoteResult.Output);
             Dictionary<string, ArrayQueue<GitRemoteBranch>> remoteBranches = new(StringComparer.Ordinal);
+            Dictionary<string, string> remoteDefaultBranches = new(StringComparer.Ordinal);
             foreach (string remoteName in remoteNames)
             {
                 remoteBranches.Add(remoteName, []);
@@ -44,7 +45,7 @@ namespace Bough.Core.Git
             GitCommandResult referenceResult = await _runner.RunAsync(repository.RootPath,
                 _allReferencesArguments, false, cancellationToken);
             bool foundCurrentBranch = false;
-            foreach (string[] fields in ParseRows(referenceResult.Output, 9))
+            foreach (string[] fields in ParseRows(referenceResult.Output, 10))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (fields[0].StartsWith("refs/heads/", StringComparison.Ordinal))
@@ -83,12 +84,23 @@ namespace Bough.Core.Git
 
                 string fullName = fields[0][prefix.Length..];
                 int separator = fullName.IndexOf('/');
-                if (separator < 1 || fullName.EndsWith("/HEAD", StringComparison.Ordinal) == true)
+                if (separator < 1)
                 {
                     continue;
                 }
 
                 string remoteName = fullName[..separator];
+                if (fullName.EndsWith("/HEAD", StringComparison.Ordinal) == true)
+                {
+                    const string remotePrefix = "refs/remotes/";
+                    string symbolicReference = fields[9];
+                    string expectedPrefix = remotePrefix + remoteName + "/";
+                    if (symbolicReference.StartsWith(expectedPrefix, StringComparison.Ordinal) == true)
+                    {
+                        remoteDefaultBranches[remoteName] = symbolicReference[expectedPrefix.Length..];
+                    }
+                    continue;
+                }
                 if (remoteBranches.TryGetValue(remoteName, out ArrayQueue<GitRemoteBranch> items) == true)
                 {
                     items.Add(new GitRemoteBranch(remoteName, fullName[(separator + 1)..], fields[1]));
@@ -117,7 +129,8 @@ namespace Bough.Core.Git
                 {
                     throw new GitException("ReferenceRemoteUrlUnreadable", null, remoteName, urlResult.Error.Trim());
                 }
-                remotes.Add(new GitRemote(remoteName, url, remoteBranches[remoteName].ToArray()));
+                remoteDefaultBranches.TryGetValue(remoteName, out string defaultBranch);
+                remotes.Add(new GitRemote(remoteName, url, remoteBranches[remoteName].ToArray(), defaultBranch));
             }
 
             IReadOnlyList<GitSubmodule> submodules = await ReadSubmodulesAsync(repository, cancellationToken);

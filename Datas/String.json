@@ -1064,8 +1064,8 @@
   {
     "Id": 1177,
     "Name": "RemoteCheckoutAction",
-    "Kor": "\uB9CC\uB4E4\uACE0 \uC804\uD658",
-    "Eng": "Create and switch"
+    "Kor": "\uCCB4\uD06C\uC544\uC6C3",
+    "Eng": "Checkout"
   },
   {
     "Id": 1178,
@@ -1092,52 +1092,10 @@
     "Eng": "Local branch \u0027{0}\u0027 is already the current branch."
   },
   {
-    "Id": 1182,
-    "Name": "GitHubPhotoLinkHeading",
-    "Kor": "GITHUB \uD504\uB85C\uD544 \uC0AC\uC9C4",
-    "Eng": "GITHUB PROFILE PHOTO"
-  },
-  {
-    "Id": 1183,
-    "Name": "GitHubPhotoLinkDescription",
-    "Kor": "\uC9C0\uC815\uD55C Git \uC791\uC131\uC790 \uC774\uBA54\uC77C\uC758 \uCEE4\uBC0B\uC5D0 GitHub \uD504\uB85C\uD544 \uC0AC\uC9C4\uC744 \uC0AC\uC6A9\uD569\uB2C8\uB2E4. GitHub \uB85C\uADF8\uC778\uC774\uB098 \uC778\uC99D \uC124\uC815\uC774 \uC544\uB2D9\uB2C8\uB2E4.",
-    "Eng": "Use the specified GitHub profile photo for commits with the matching Git author email. This is not GitHub login or authentication."
-  },
-  {
     "Id": 1184,
     "Name": "GitHubPhotoUserName",
     "Kor": "GitHub \uC0AC\uC6A9\uC790\uBA85",
     "Eng": "GitHub username"
-  },
-  {
-    "Id": 1185,
-    "Name": "GitHubPhotoAuthorEmail",
-    "Kor": "\uC5F0\uACB0\uD560 Git \uC791\uC131\uC790 \uC774\uBA54\uC77C",
-    "Eng": "Git author email to match"
-  },
-  {
-    "Id": 1186,
-    "Name": "GitHubPhotoSave",
-    "Kor": "\uC0AC\uC9C4 \uC5F0\uACB0 \uC800\uC7A5",
-    "Eng": "Save photo mapping"
-  },
-  {
-    "Id": 1187,
-    "Name": "GitHubPhotoClearHelp",
-    "Kor": "\uB450 \uCE78\uC744 \uBE44\uC6B0\uACE0 \uC800\uC7A5\uD558\uBA74 \uC774 \uC0AC\uC6A9\uC790 \uCEF4\uD4E8\uD130\uC758 \uC5F0\uACB0\uC744 \uC0AD\uC81C\uD569\uB2C8\uB2E4.",
-    "Eng": "Leave both fields empty and save to remove this mapping from this computer."
-  },
-  {
-    "Id": 1188,
-    "Name": "GitHubPhotoSaved",
-    "Kor": "\uC0AC\uC9C4 \uC5F0\uACB0\uC744 \uC0AC\uC6A9\uC790 \uB85C\uCEEC \uC124\uC815\uC5D0 \uC800\uC7A5\uD588\uC2B5\uB2C8\uB2E4.",
-    "Eng": "Photo mapping saved to local user settings."
-  },
-  {
-    "Id": 1189,
-    "Name": "GitHubPhotoCleared",
-    "Kor": "\uC0AC\uC9C4 \uC5F0\uACB0\uC744 \uC0AC\uC6A9\uC790 \uB85C\uCEEC \uC124\uC815\uC5D0\uC11C \uC0AD\uC81C\uD588\uC2B5\uB2C8\uB2E4.",
-    "Eng": "Photo mapping removed from local user settings."
   },
   {
     "Id": 1190,
@@ -2802,24 +2760,6 @@
     "Eng": "New binary or non-UTF-8 file ({0} bytes)."
   },
   {
-    "Id": 2547,
-    "Name": "GitHubPhotoAuthorEmailInvalid",
-    "Kor": "올바른 Git 커밋 작성자 이메일을 입력하세요.",
-    "Eng": "A valid Git author email is required."
-  },
-  {
-    "Id": 2548,
-    "Name": "GitHubPhotoUserNameInvalid",
-    "Kor": "올바른 GitHub 사용자명을 입력하세요.",
-    "Eng": "A valid GitHub user name is required."
-  },
-  {
-    "Id": 2549,
-    "Name": "GitHubPhotoSettingsPathInvalid",
-    "Kor": "로컬 사진 설정 파일 경로에 상위 폴더가 없습니다: {0}.",
-    "Eng": "The local photo settings path has no directory: {0}."
-  },
-  {
     "Id": 2550,
     "Name": "GitProcessStartFailed",
     "Kor": "Git을 실행하지 못했습니다: {0}",
@@ -3642,30 +3582,6 @@
     "Eng": "Upstream"
   },
   {
-    "Id": 2687,
-    "Name": "AuthorPhotoGitHubCommit",
-    "Kor": "GitHub 프로필 (커밋 작성자 확인)",
-    "Eng": "GitHub profile (commit author verified)"
-  },
-  {
-    "Id": 2688,
-    "Name": "AuthorPhotoGitHubLinkedAccount",
-    "Kor": "GitHub 프로필 (사용자가 지정한 계정)",
-    "Eng": "GitHub profile (user-specified account)"
-  },
-  {
-    "Id": 2689,
-    "Name": "AuthorPhotoGravatar",
-    "Kor": "Gravatar",
-    "Eng": "Gravatar"
-  },
-  {
-    "Id": 2690,
-    "Name": "AuthorPhotoLocalIcon",
-    "Kor": "로컬 아이콘",
-    "Eng": "Local icon"
-  },
-  {
     "Id": 2691,
     "Name": "CommitAncestryCheckFailed",
     "Kor": "커밋 관계를 확인하지 못했습니다: {0}",
@@ -4078,24 +3994,6 @@
     "Name": "HistoryExportOverwriteTitle",
     "Kor": "내보낸 파일 덮어쓰기",
     "Eng": "Overwrite exported file"
-  },
-  {
-    "Id": 2760,
-    "Name": "HistoryExternalPhotos",
-    "Kor": "외부 작성자 사진",
-    "Eng": "External author photos"
-  },
-  {
-    "Id": 2761,
-    "Name": "HistoryExternalPhotosAccessible",
-    "Kor": "외부 작성자 사진 사용",
-    "Eng": "Use external author photos"
-  },
-  {
-    "Id": 2762,
-    "Name": "HistoryExternalPhotosTooltip",
-    "Kor": "GitHub와 Gravatar에서 작성자 사진 조회",
-    "Eng": "Look up GitHub and Gravatar author photos"
   },
   {
     "Id": 2763,
@@ -4906,5 +4804,53 @@
     "Name": "GitOperationQueueReentry",
     "Kor": "같은 저장소의 Git 작업을 실행 중인 작업 안에서 다시 대기열에 넣을 수 없습니다. 종속 작업은 현재 작업 안에서 기다리세요.",
     "Eng": "A Git operation cannot enqueue another operation for the same repository. Await dependent work inside the current operation."
+  },
+  {
+    "Id": 2898,
+    "Name": "ReferenceCreatePullRequest",
+    "Kor": "Pull/Merge Request 만들기...",
+    "Eng": "Create pull/merge request..."
+  },
+  {
+    "Id": 2899,
+    "Name": "PullRequestPushRequired",
+    "Kor": "{0} 브랜치를 먼저 원격에 Push하세요.",
+    "Eng": "Push branch {0} to a remote first."
+  },
+  {
+    "Id": 2900,
+    "Name": "PullRequestRemoteAmbiguous",
+    "Kor": "{0} 브랜치가 여러 원격에 있습니다. upstream을 설정한 뒤 다시 시도하세요.",
+    "Eng": "Branch {0} exists on multiple remotes. Set its upstream and try again."
+  },
+  {
+    "Id": 2901,
+    "Name": "PullRequestRemoteMissing",
+    "Kor": "Pull/Merge Request를 만들 원격 저장소를 찾지 못했습니다.",
+    "Eng": "No remote repository is available for this pull/merge request."
+  },
+  {
+    "Id": 2902,
+    "Name": "PullRequestProviderUnsupported",
+    "Kor": "이 원격 서비스의 Pull/Merge Request 작성 페이지는 지원하지 않습니다: {0}",
+    "Eng": "Pull/merge request creation is not supported for this remote provider: {0}"
+  },
+  {
+    "Id": 2903,
+    "Name": "PullRequestTargetBranchMissing",
+    "Kor": "{0} 원격에서 대상 브랜치를 찾지 못했습니다.",
+    "Eng": "No target branch was found on remote {0}."
+  },
+  {
+    "Id": 2904,
+    "Name": "PullRequestBrowserStartFailed",
+    "Kor": "Pull/Merge Request 작성 페이지를 열지 못했습니다: {0}",
+    "Eng": "Could not open the pull/merge request page: {0}"
+  },
+  {
+    "Id": 2905,
+    "Name": "PullRequestPageOpened",
+    "Kor": "{0} 브랜치의 Pull/Merge Request 작성 페이지를 열었습니다.",
+    "Eng": "Opened the pull/merge request page for branch {0}."
   }
 ]

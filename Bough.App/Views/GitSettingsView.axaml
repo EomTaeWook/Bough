@@ -80,23 +80,6 @@
         <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
 
         <StackPanel Spacing="8">
-          <TextBlock Text="{Binding PhotoLinkHeading}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource BoughBrushTextSubtle}" />
-          <TextBlock Text="{Binding PhotoLinkDescription}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
-          <TextBlock Text="{Binding PhotoGitHubUserNameLabel}" FontSize="11" Foreground="{DynamicResource BoughBrushText}" />
-          <TextBox Text="{Binding PhotoGitHubUserName, Mode=TwoWay}" PlaceholderText="{Binding PhotoGitHubUserNameLabel}"
-                   AutomationProperties.Name="{Binding PhotoGitHubUserNameLabel}" />
-          <TextBlock Text="{Binding PhotoAuthorEmailLabel}" FontSize="11" Foreground="{DynamicResource BoughBrushText}" />
-          <TextBox Text="{Binding PhotoAuthorEmail, Mode=TwoWay}" PlaceholderText="user.email"
-                   AutomationProperties.Name="{Binding PhotoAuthorEmailLabel}" />
-          <Button Content="{Binding PhotoLinkSaveLabel}" Command="{Binding SavePhotoLinkCommand}" HorizontalAlignment="Left"
-                  AutomationProperties.Name="{Binding PhotoLinkSaveLabel}" />
-          <TextBlock Text="{Binding PhotoLinkClearHelp}" FontSize="11" Foreground="{DynamicResource BoughBrushTextSubtle}" TextWrapping="Wrap" />
-          <TextBlock Text="{Binding PhotoLinkStatus}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
-        </StackPanel>
-
-        <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
-
-        <StackPanel Spacing="8">
           <TextBlock Text="{Binding AccountsHeading}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource BoughBrushTextSubtle}" />
           <TextBlock Text="{Binding AccountsDescription}"
                      FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />

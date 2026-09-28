@@ -251,7 +251,7 @@ namespace Bough.App.Views
                 return;
             }
             MenuItem[] items = menu.Items.OfType<MenuItem>().ToArray();
-            if (items.Length < 7)
+            if (items.Length < 8)
             {
                 menu.Close();
                 return;
@@ -269,7 +269,8 @@ namespace Bough.App.Views
             items[3].Header = viewModel.ReferenceText("ReferenceSwitchBranch");
             items[4].Header = viewModel.ReferenceText("ReferenceCreateFromBranch");
             items[5].Header = viewModel.ReferenceText("ReferenceCheckoutRemoteBranch");
-            items[6].Header = viewModel.ReferenceText("ReferenceCopyName");
+            items[6].Header = viewModel.ReferenceText("ReferenceCreatePullRequest");
+            items[7].Header = viewModel.ReferenceText("ReferenceCopyName");
             items[0].IsVisible = node.IsBranchSection;
             items[0].IsEnabled = true;
             items[1].IsVisible = node.IsTagSection;
@@ -281,7 +282,9 @@ namespace Bough.App.Views
             items[4].IsEnabled = true;
             items[5].IsVisible = node.Kind == ReferenceTreeNodeKind.RemoteBranch;
             items[5].IsEnabled = true;
-            items[6].IsVisible = node.IsEmpty == false;
+            items[6].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch || node.Kind == ReferenceTreeNodeKind.RemoteBranch;
+            items[6].IsEnabled = true;
+            items[7].IsVisible = node.IsEmpty == false;
         }
 
         private void TreeContextClosed(object sender, RoutedEventArgs eventArgs)
@@ -485,6 +488,25 @@ namespace Bough.App.Views
                 }
                 return viewModel.StatusMessage;
             }, viewModel.Strings, true, warning);
+        }
+
+        private void OpenPullRequestClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not ReferenceExplorerViewModel viewModel)
+            {
+                return;
+            }
+            ReferenceTreeNode node = _menuNode;
+            if (node == null && sender is MenuItem item)
+            {
+                node = item.Tag as ReferenceTreeNode ?? item.DataContext as ReferenceTreeNode;
+            }
+            if (node == null)
+            {
+                return;
+            }
+            string repositoryRoot = (sender as MenuItem)?.CommandParameter as string ?? _menuRepositoryRoot ?? viewModel.CurrentRepository?.RootPath;
+            viewModel.OpenPullRequest(repositoryRoot, node.Target as GitLocalBranch, node.Target as GitRemoteBranch);
         }
 
         private async void CopyTreeNameClicked(object sender, RoutedEventArgs eventArgs)

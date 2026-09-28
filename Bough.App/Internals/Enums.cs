@@ -13,14 +13,6 @@ namespace Bough.App.Internals
         English
     }
 
-    public enum AuthorPhotoSource
-    {
-        LocalIdenticon,
-        GitHubCommit,
-        GitHubLinkedAccount,
-        Gravatar
-    }
-
     public enum ConflictStageOutcome
     {
         Succeeded,

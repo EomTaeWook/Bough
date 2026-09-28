@@ -13,8 +13,8 @@ namespace Bough.Core.Git
 {
     public class GitCommitInspectionService
     {
-        private const int MaximumFileBytes = 1024 * 1024;
-        private const int MaximumDiffBytes = 2 * 1024 * 1024;
+        private const int _maximumFileBytes = 1024 * 1024;
+        private const int _maximumDiffBytes = 2 * 1024 * 1024;
         private readonly GitCommandRunner _runner;
         private readonly UTF8Encoding _strictUtf8;
 
@@ -127,7 +127,7 @@ namespace Bough.Core.Git
 
             try
             {
-                byte[] bytes = await _runner.RunBytesAsync(repository.RootPath, arguments, MaximumDiffBytes, cancellationToken);
+                byte[] bytes = await _runner.RunBytesAsync(repository.RootPath, arguments, _maximumDiffBytes, cancellationToken);
                 string text = _strictUtf8.GetString(bytes);
                 if (text.Length == 0)
                 {
@@ -138,7 +138,7 @@ namespace Bough.Core.Git
             }
             catch (GitOutputLimitException)
             {
-                return new GitCommitFileDiff(repository.RootPath, commitHash, comparisonParent, file.Path, file.PreviousPath, string.Empty, "HistoryDiffExceedsBytes", Array.Empty<GitUnifiedDiffHunk>(), MaximumDiffBytes);
+                return new GitCommitFileDiff(repository.RootPath, commitHash, comparisonParent, file.Path, file.PreviousPath, string.Empty, "HistoryDiffExceedsBytes", Array.Empty<GitUnifiedDiffHunk>(), _maximumDiffBytes);
             }
             catch (DecoderFallbackException)
             {
@@ -198,12 +198,12 @@ namespace Bough.Core.Git
                 throw new GitException("InspectionBlobSizeInvalid", null, path, commitHash);
             }
 
-            if (size > MaximumFileBytes)
+            if (size > _maximumFileBytes)
             {
-                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "HistoryFileExceedsBytes", size, entry.ObjectHash, MaximumFileBytes);
+                return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "HistoryFileExceedsBytes", size, entry.ObjectHash, _maximumFileBytes);
             }
 
-            byte[] bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "cat-file", "blob", entry.ObjectHash }, MaximumFileBytes, cancellationToken);
+            byte[] bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "cat-file", "blob", entry.ObjectHash }, _maximumFileBytes, cancellationToken);
             if (bytes.Contains((byte)0) == true)
             {
                 return new GitCommitFileContent(repository.RootPath, commitHash, path, string.Empty, "HistoryBinaryFile", size, entry.ObjectHash);
@@ -256,11 +256,11 @@ namespace Bough.Core.Git
             byte[] bytes;
             try
             {
-                bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "-c", "core.quotepath=false", "blame", "--line-porcelain", "--encoding=UTF-8", "-L", range, commitHash, "--", path }, 4 * MaximumFileBytes, cancellationToken);
+                bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "-c", "core.quotepath=false", "blame", "--line-porcelain", "--encoding=UTF-8", "-L", range, commitHash, "--", path }, 4 * _maximumFileBytes, cancellationToken);
             }
             catch (GitOutputLimitException exception)
             {
-                throw new GitException("InspectionBlameOutputLimit", exception, path, 4 * MaximumFileBytes);
+                throw new GitException("InspectionBlameOutputLimit", exception, path, 4 * _maximumFileBytes);
             }
             string output;
             try
@@ -358,11 +358,11 @@ namespace Bough.Core.Git
             byte[] bytes;
             try
             {
-                bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "log", "--follow", "--name-status", "-z", format, $"--max-count={limit}", commitHash, "--", LiteralPath(path) }, 2 * MaximumFileBytes, cancellationToken);
+                bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "log", "--follow", "--name-status", "-z", format, $"--max-count={limit}", commitHash, "--", LiteralPath(path) }, 2 * _maximumFileBytes, cancellationToken);
             }
             catch (GitOutputLimitException exception)
             {
-                throw new GitException("InspectionFileHistoryOutputLimit", exception, path, 2 * MaximumFileBytes);
+                throw new GitException("InspectionFileHistoryOutputLimit", exception, path, 2 * _maximumFileBytes);
             }
             string output;
             try

@@ -149,19 +149,6 @@ namespace Bough.App.Views
             }
         }
 
-        private void ExternalAuthorPhotosClicked(object sender, RoutedEventArgs eventArgs)
-        {
-            if (sender is not CheckBox checkBox)
-            {
-                return;
-            }
-            if (DataContext is not HistoryViewModel viewModel)
-            {
-                return;
-            }
-            viewModel.ExternalAuthorPhotosEnabled = checkBox.IsChecked == true;
-        }
-
         private async void AllScopeClicked(object sender, RoutedEventArgs eventArgs)
         {
             if (DataContext is not HistoryViewModel viewModel)

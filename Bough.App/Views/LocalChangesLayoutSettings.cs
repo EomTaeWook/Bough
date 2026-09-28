@@ -7,10 +7,10 @@ namespace Bough.App.Views
 {
     internal class LocalChangesLayoutSettings
     {
-        private const double DefaultFileListWidth = 310;
-        private const double MinimumFileListWidth = 260;
-        private const double MaximumFileListWidth = 1200;
-        private const double DefaultStagedHeightRatio = 0.5;
+        private const double _defaultFileListWidth = 310;
+        private const double _minimumFileListWidth = 260;
+        private const double _maximumFileListWidth = 1200;
+        private const double _defaultStagedHeightRatio = 0.5;
 
         private readonly string _filePath;
         private readonly string _stagedHeightPath;
@@ -28,20 +28,20 @@ namespace Bough.App.Views
 
         public double LoadFileListWidth()
         {
-            return LoadValue(_filePath, DefaultFileListWidth, MinimumFileListWidth, MaximumFileListWidth);
+            return LoadValue(_filePath, _defaultFileListWidth, _minimumFileListWidth, _maximumFileListWidth);
         }
 
         public double LoadStagedHeightRatio()
         {
-            double ratio = LoadValue(_stagedHeightPath, DefaultStagedHeightRatio, 0, 1);
+            double ratio = LoadValue(_stagedHeightPath, _defaultStagedHeightRatio, 0, 1);
             if (ratio <= 0)
             {
-                return DefaultStagedHeightRatio;
+                return _defaultStagedHeightRatio;
             }
 
             if (ratio >= 1)
             {
-                return DefaultStagedHeightRatio;
+                return _defaultStagedHeightRatio;
             }
 
             return ratio;
@@ -49,7 +49,7 @@ namespace Bough.App.Views
 
         public void SaveFileListWidth(double width)
         {
-            SaveValue(_filePath, width, MinimumFileListWidth, MaximumFileListWidth);
+            SaveValue(_filePath, width, _minimumFileListWidth, _maximumFileListWidth);
         }
 
         public void SaveStagedHeightRatio(double ratio)

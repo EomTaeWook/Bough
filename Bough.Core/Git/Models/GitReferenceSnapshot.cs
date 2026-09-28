@@ -42,16 +42,18 @@ namespace Bough.Core.Git.Models
 
     public class GitRemote
     {
-        public GitRemote(string name, string url, IReadOnlyList<GitRemoteBranch> branches)
+        public GitRemote(string name, string url, IReadOnlyList<GitRemoteBranch> branches, string defaultBranch = null)
         {
             Name = name;
             Url = url;
             Branches = branches;
+            DefaultBranch = defaultBranch ?? string.Empty;
         }
 
         public string Name { get; }
         public string Url { get; }
         public IReadOnlyList<GitRemoteBranch> Branches { get; }
+        public string DefaultBranch { get; }
     }
 
     public class GitRemoteBranch

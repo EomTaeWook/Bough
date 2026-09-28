@@ -28,7 +28,6 @@ namespace Bough.App.ViewModels
         private readonly HistoryGraphBuilder _graphBuilder;
         private HistoryGraphBuilder.Cursor _graphCursor;
         private double _graphWidth;
-        private readonly AuthorPhotoSettings _authorPhotoSettings;
         private GitRepository _repository;
         private string _loadedBranchName = string.Empty;
         private GitHistoryScope _selectedScope = GitHistoryScope.All;
@@ -59,10 +58,6 @@ namespace Bough.App.ViewModels
         private int _previewRequest;
         private HistoryInspectionFileItem _selectedChangedFile;
         private HistoryTreeItem _selectedTreeFile;
-        private bool _externalAuthorPhotosEnabled;
-        private string _gitHubRemoteUrl = string.Empty;
-        private string _remoteUrlLoadedRoot = string.Empty;
-        private int _remoteUrlRequest;
 
         public HistoryViewModel(GitHistoryService historyService, GitCommitActionService actionService, GitCommitInspectionService inspectionService, GitCommitMessageService commitMessageService, GitCommitFileActionService fileActionService, GitOperationQueue operationQueue, StringHelper stringHelper)
         {
@@ -77,8 +72,6 @@ namespace Bough.App.ViewModels
             Labels = new HistoryLabels(stringHelper);
             _graphBuilder = new HistoryGraphBuilder();
             _graphCursor = _graphBuilder.CreateCursor();
-            _authorPhotoSettings = new AuthorPhotoSettings();
-            _externalAuthorPhotosEnabled = _authorPhotoSettings.LoadEnabled();
             Commits = [];
             ChangedFiles = [];
             VisibleChangedFiles = [];
@@ -101,50 +94,12 @@ namespace Bough.App.ViewModels
         public ObservableCollection<HistoryCommitItem> Commits { get; }
         public StringHelper Strings { get { return _stringHelper; } }
         public HistoryLabels Labels { get; }
-        public bool ExternalAuthorPhotosEnabled
-        {
-            get { return _externalAuthorPhotosEnabled; }
-            set
-            {
-                if (SetProperty(ref _externalAuthorPhotosEnabled, value) == false)
-                {
-                    return;
-                }
-                foreach (HistoryCommitItem commit in Commits)
-                {
-                    commit.ExternalPhotosEnabled = value;
-                }
-                _authorPhotoSettings.SaveEnabled(value);
-                if (value == false)
-                {
-                    _remoteUrlRequest++;
-                    _remoteUrlLoadedRoot = string.Empty;
-                    return;
-                }
-                EnsureGitHubRemoteUrl();
-            }
-        }
         public event Action<GitRepository> RepositoryChanged;
         public event Action<string> ActionMessage;
         public GitRepository CurrentRepository { get { return _repository; } }
         public GitHistoryScope SelectedScope { get { return _selectedScope; } }
         public bool IsAllScope { get { return SelectedScope == GitHistoryScope.All; } }
         public bool IsCurrentBranchScope { get { return SelectedScope == GitHistoryScope.CurrentBranch; } }
-        public string GitHubRemoteUrl
-        {
-            get { return _gitHubRemoteUrl; }
-            private set
-            {
-                if (SetProperty(ref _gitHubRemoteUrl, value) == false)
-                {
-                    return;
-                }
-                foreach (HistoryCommitItem commit in Commits)
-                {
-                    commit.GitHubRemoteUrl = value;
-                }
-            }
-        }
         public ObservableCollection<HistoryInspectionFileItem> ChangedFiles { get; }
         public ObservableCollection<HistoryInspectionFileItem> VisibleChangedFiles { get; }
         public ObservableCollection<HistoryTreeItem> TreeRoots { get; }
@@ -390,11 +345,8 @@ namespace Bough.App.ViewModels
 
         public void Clear()
         {
-            _remoteUrlRequest++;
             _repository = null;
             _loadedBranchName = string.Empty;
-            _remoteUrlLoadedRoot = string.Empty;
-            GitHubRemoteUrl = string.Empty;
             ResetHistoryList();
         }
 
@@ -596,72 +548,11 @@ namespace Bough.App.ViewModels
             bool branchChanged = _loadedBranchName != repository.CurrentBranch;
             _repository = repository;
             _loadedBranchName = repository.CurrentBranch;
-            if (repositoryChanged)
-            {
-                GitHubRemoteUrl = string.Empty;
-                _remoteUrlLoadedRoot = string.Empty;
-            }
             if (repositoryChanged || (_selectedScope == GitHistoryScope.CurrentBranch && branchChanged))
             {
                 ResetHistoryList();
             }
-            EnsureGitHubRemoteUrl();
-
             await LoadCoreAsync();
-        }
-
-        private void EnsureGitHubRemoteUrl()
-        {
-            GitRepository repository = _repository;
-            if (repository == null)
-            {
-                return;
-            }
-            if (ExternalAuthorPhotosEnabled == false)
-            {
-                return;
-            }
-            if (_remoteUrlLoadedRoot == repository.RootPath)
-            {
-                return;
-            }
-            _remoteUrlLoadedRoot = repository.RootPath;
-            int remoteRequest = ++_remoteUrlRequest;
-            _ = LoadGitHubRemoteUrlAsync(repository, remoteRequest);
-        }
-
-        private async Task LoadGitHubRemoteUrlAsync(GitRepository repository, int request)
-        {
-            try
-            {
-                IReadOnlyList<string> urls = await _historyService.GetRemoteUrlsAsync(repository);
-                if (request != _remoteUrlRequest)
-                {
-                    return;
-                }
-                if (_repository == null)
-                {
-                    return;
-                }
-                if (_repository.RootPath != repository.RootPath)
-                {
-                    return;
-                }
-                foreach (string url in urls)
-                {
-                    if (GitHubRepositoryAddress.TryParse(url, out string owner, out string name) == false)
-                    {
-                        continue;
-                    }
-                    GitHubRemoteUrl = $"https://github.com/{owner}/{name}";
-                    return;
-                }
-                GitHubRemoteUrl = string.Empty;
-            }
-            catch (Exception)
-            {
-                // Photo lookup is optional; local icons remain available.
-            }
         }
 
         public async Task SelectCommitAsync(string commitHash)
@@ -893,10 +784,7 @@ namespace Bough.App.ViewModels
 
         private HistoryCommitItem CreateCommitItem(GitHistoryCommit commit, HistoryGraphRow graph, double graphWidth)
         {
-            HistoryCommitItem item = new(commit, graph, graphWidth, _stringHelper);
-            item.ExternalPhotosEnabled = ExternalAuthorPhotosEnabled;
-            item.GitHubRemoteUrl = GitHubRemoteUrl;
-            return item;
+            return new HistoryCommitItem(commit, graph, graphWidth, _stringHelper);
         }
 
         private static double GetGraphWidth(IReadOnlyList<HistoryGraphRow> rows)
@@ -910,7 +798,7 @@ namespace Bough.App.ViewModels
                     maximumLane = Math.Max(maximumLane, Math.Max(segment.FromLane, segment.ToLane));
                 }
             }
-            return Math.Min(180, 32 + maximumLane * 16);
+            return Math.Min(220, 34 + maximumLane * 18);
         }
 
         private void ClearInspection()

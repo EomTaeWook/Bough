@@ -11,8 +11,6 @@ namespace Bough.App.ViewModels
     public class HistoryCommitItem : ViewModelBase
     {
         private double _graphWidth;
-        private bool _externalPhotosEnabled;
-        private string _gitHubRemoteUrl = string.Empty;
         private IReadOnlyList<string> _referenceNames;
         private IReadOnlyList<HistoryReferenceItem> _references;
         private IReadOnlyList<HistoryReferenceItem> _inlineReferences;
@@ -59,8 +57,6 @@ namespace Bough.App.ViewModels
         public GitHistoryCommit Commit { get; }
         public HistoryGraphRow Graph { get; }
         public double GraphWidth { get { return _graphWidth; } set { SetProperty(ref _graphWidth, value); } }
-        public bool ExternalPhotosEnabled { get { return _externalPhotosEnabled; } set { SetProperty(ref _externalPhotosEnabled, value); } }
-        public string GitHubRemoteUrl { get { return _gitHubRemoteUrl; } set { SetProperty(ref _gitHubRemoteUrl, value); } }
         public IReadOnlyList<HistoryReferenceItem> References { get { return _references; } }
         public IReadOnlyList<HistoryReferenceItem> InlineReferences { get { return _inlineReferences; } }
         public bool HasMoreReferences { get { return References.Count > InlineReferences.Count; } }

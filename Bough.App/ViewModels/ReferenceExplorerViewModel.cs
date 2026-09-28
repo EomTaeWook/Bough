@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Localization;
@@ -17,6 +18,7 @@ namespace Bough.App.ViewModels
         private readonly GitCommitActionService _actionService;
         private readonly TerminalLauncher _terminalLauncher;
         private readonly RepositoryFolderLauncher _folderLauncher;
+        private readonly PullRequestLauncher _pullRequestLauncher;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly GitOperationQueue _operationQueue;
@@ -40,12 +42,13 @@ namespace Bough.App.ViewModels
         private string _branchChangeTarget;
         private CancellationTokenSource _loadCancellation;
 
-        public ReferenceExplorerViewModel(GitReferenceService referenceService, GitCommitActionService actionService, TerminalLauncher terminalLauncher, RepositoryFolderLauncher folderLauncher, StashViewModel stashViewModel, StringHelper stringHelper, GitOperationQueue operationQueue)
+        public ReferenceExplorerViewModel(GitReferenceService referenceService, GitCommitActionService actionService, TerminalLauncher terminalLauncher, RepositoryFolderLauncher folderLauncher, PullRequestLauncher pullRequestLauncher, StashViewModel stashViewModel, StringHelper stringHelper, GitOperationQueue operationQueue)
         {
             _referenceService = referenceService;
             _actionService = actionService;
             _terminalLauncher = terminalLauncher;
             _folderLauncher = folderLauncher;
+            _pullRequestLauncher = pullRequestLauncher;
             _stringHelper = stringHelper;
             _errorLocalizer = new GitErrorLocalizer(stringHelper);
             _operationQueue = operationQueue ?? throw new ArgumentNullException(nameof(operationQueue));
@@ -648,6 +651,77 @@ namespace Bough.App.ViewModels
                 return false;
             }
             return true;
+        }
+
+        public void OpenPullRequest(string repositoryRoot, GitLocalBranch localBranch, GitRemoteBranch remoteBranch)
+        {
+            if (CanRunMenuAction(repositoryRoot) == false)
+            {
+                return;
+            }
+            try
+            {
+                GitRemote remote;
+                string sourceBranch;
+                if (remoteBranch != null)
+                {
+                    remote = _remotes.FirstOrDefault(item => item.Name == remoteBranch.RemoteName);
+                    sourceBranch = remoteBranch.Name;
+                }
+                else
+                {
+                    ResolveLocalPullRequestSource(localBranch, out remote, out sourceBranch);
+                }
+                if (remote == null)
+                {
+                    throw new GitException("PullRequestRemoteMissing", null, Array.Empty<object>());
+                }
+                _pullRequestLauncher.Open(remote, sourceBranch);
+                StatusMessage = _stringHelper.Format("PullRequestPageOpened", sourceBranch);
+            }
+            catch (Exception exception)
+            {
+                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+            }
+        }
+
+        private void ResolveLocalPullRequestSource(GitLocalBranch branch, out GitRemote remote, out string sourceBranch)
+        {
+            if (branch == null)
+            {
+                throw new GitException("ReferenceSourceBranchRequired", null, Array.Empty<object>());
+            }
+            remote = null;
+            sourceBranch = branch.Name;
+            if (branch.UpstreamRemoteName.Length > 0 && branch.UpstreamRemoteRef.StartsWith("refs/heads/", StringComparison.Ordinal) == true)
+            {
+                remote = _remotes.FirstOrDefault(item => item.Name == branch.UpstreamRemoteName);
+                string upstreamBranch = branch.UpstreamRemoteRef["refs/heads/".Length..];
+                sourceBranch = upstreamBranch;
+                if (remote?.Branches.Any(item => item.Name == upstreamBranch) == true)
+                {
+                    return;
+                }
+                throw new GitException("PullRequestPushRequired", null, branch.Name);
+            }
+
+            List<GitRemote> candidates = _remotes.Where(item => item.Branches.Any(remoteBranch => remoteBranch.Name == branch.Name && remoteBranch.CommitHash == branch.CommitHash)).ToList();
+            if (candidates.Count == 1)
+            {
+                remote = candidates[0];
+                return;
+            }
+            GitRemote origin = candidates.FirstOrDefault(item => item.Name == "origin");
+            if (origin != null)
+            {
+                remote = origin;
+                return;
+            }
+            if (candidates.Count > 1)
+            {
+                throw new GitException("PullRequestRemoteAmbiguous", null, branch.Name);
+            }
+            throw new GitException("PullRequestPushRequired", null, branch.Name);
         }
 
         public void SelectTag(GitTag tag)

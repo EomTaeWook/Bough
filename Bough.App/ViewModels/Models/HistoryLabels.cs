@@ -18,9 +18,6 @@ namespace Bough.App.ViewModels.Models
         public string ScopeCurrent { get { return _strings.GetString("HistoryScopeCurrent"); } }
         public string ScopeCurrentTooltip { get { return _strings.GetString("HistoryScopeCurrentTooltip"); } }
         public string ScopeCurrentAccessible { get { return _strings.GetString("HistoryScopeCurrentAccessible"); } }
-        public string ExternalPhotos { get { return _strings.GetString("HistoryExternalPhotos"); } }
-        public string ExternalPhotosTooltip { get { return _strings.GetString("HistoryExternalPhotosTooltip"); } }
-        public string ExternalPhotosAccessible { get { return _strings.GetString("HistoryExternalPhotosAccessible"); } }
         public string CopySha { get { return _strings.GetString("HistoryCopySha"); } }
         public string CreateBranchHere { get { return _strings.GetString("HistoryCreateBranchHere"); } }
         public string CreateTagHere { get { return _strings.GetString("HistoryCreateTagHere"); } }

@@ -3,14 +3,10 @@
              xmlns:vm="using:Bough.App.ViewModels"
              xmlns:models="using:Bough.App.ViewModels.Models"
              xmlns:controls="using:Bough.App.Controls"
-             xmlns:views="using:Bough.App.Views"
              x:Class="Bough.App.Views.HistoryView"
              x:Name="HistoryRoot"
              x:DataType="vm:HistoryViewModel"
              Background="{DynamicResource BoughBrushCanvas}">
-  <UserControl.Resources>
-    <views:AuthorPhotoSourceLabelConverter x:Key="PhotoSourceLabelConverter" />
-  </UserControl.Resources>
   <UserControl.Styles>
     <Style Selector="TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
@@ -171,7 +167,7 @@
 
   <Grid RowDefinitions="66,*">
     <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
-      <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="32,34" Margin="22,0" ColumnSpacing="14">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="32,34" Margin="22,0" ColumnSpacing="14">
         <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Labels.Heading}" FontSize="18" FontWeight="SemiBold"
                    Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Bottom" />
         <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
@@ -182,12 +178,7 @@
                        Click="CurrentBranchScopeClicked" ToolTip.Tip="{Binding Labels.ScopeCurrentTooltip}"
                        AutomationProperties.Name="{Binding Labels.ScopeCurrentAccessible}" />
         </StackPanel>
-        <CheckBox Grid.Column="1" Grid.RowSpan="2" Content="{Binding Labels.ExternalPhotos}" IsChecked="{Binding ExternalAuthorPhotosEnabled, Mode=TwoWay}"
-                  Click="ExternalAuthorPhotosClicked"
-                  VerticalAlignment="Center" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11"
-                   ToolTip.Tip="{Binding Labels.ExternalPhotosTooltip}"
-                  AutomationProperties.Name="{Binding Labels.ExternalPhotosAccessible}" />
-        <Border Grid.Column="2" Grid.RowSpan="2" Background="{DynamicResource BoughBrushRaised}" CornerRadius="12" Padding="10,5" VerticalAlignment="Center">
+        <Border Grid.Column="1" Grid.RowSpan="2" Background="{DynamicResource BoughBrushRaised}" CornerRadius="12" Padding="10,5" VerticalAlignment="Center">
           <TextBlock Text="{Binding CountText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" />
         </Border>
       </Grid>
@@ -218,23 +209,8 @@
                 </Border.ContextMenu>
                 <Grid ColumnDefinitions="Auto,*" Margin="6,0,8,0">
                   <controls:HistoryGraphControl Grid.Column="0" Row="{Binding Graph}" Width="{Binding GraphWidth}" ClipToBounds="True" />
-                  <Grid Grid.Column="1" VerticalAlignment="Center" ColumnDefinitions="Auto,Auto,Auto,*">
-                      <controls:AuthorIdenticon Grid.Column="0" Width="18" Height="18" Margin="0,0,6,0"
-                                                VerticalAlignment="Center" AuthorName="{Binding Author}" AuthorEmail="{Binding AuthorEmail}"
-                                                CommitHash="{Binding Hash}"
-                                                GitHubRemoteUrl="{Binding GitHubRemoteUrl}"
-                                                x:CompileBindings="False"
-                                                ExternalPhotosEnabled="{Binding ExternalPhotosEnabled}"
-                                                Tag="{Binding DataContext.Strings, ElementName=HistoryRoot}"
-                                                AutomationProperties.Name="{Binding AuthorDisplayName}">
-                        <ToolTip.Tip>
-                          <MultiBinding Converter="{StaticResource PhotoSourceLabelConverter}">
-                            <Binding Path="PhotoSource" RelativeSource="{RelativeSource Self}" />
-                            <Binding Path="Tag" RelativeSource="{RelativeSource Self}" />
-                          </MultiBinding>
-                        </ToolTip.Tip>
-                      </controls:AuthorIdenticon>
-                      <ItemsControl Grid.Column="1" ItemsSource="{Binding InlineReferences}" VerticalAlignment="Center">
+                  <Grid Grid.Column="1" VerticalAlignment="Center" ColumnDefinitions="Auto,Auto,*">
+                      <ItemsControl Grid.Column="0" ItemsSource="{Binding InlineReferences}" VerticalAlignment="Center">
                         <ItemsControl.ItemsPanel>
                           <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" />
@@ -259,7 +235,7 @@
                           </DataTemplate>
                         </ItemsControl.ItemTemplate>
                       </ItemsControl>
-                      <Button Grid.Column="2" Content="{Binding MoreReferencesText}" IsVisible="{Binding HasMoreReferences}"
+                      <Button Grid.Column="1" Content="{Binding MoreReferencesText}" IsVisible="{Binding HasMoreReferences}"
                               Padding="5,1" Margin="0,0,6,0" FontSize="10" VerticalAlignment="Center"
                               ToolTip.Tip="{Binding DataContext.Labels.MoreReferencesTooltip, ElementName=HistoryRoot, x:CompileBindings=False}">
                         <Button.Flyout>
@@ -295,7 +271,7 @@
                           </Flyout>
                         </Button.Flyout>
                       </Button>
-                      <TextBlock Grid.Column="3" Text="{Binding MessageFirstLine}" FontSize="12" Foreground="{DynamicResource BoughBrushText}"
+                      <TextBlock Grid.Column="2" Text="{Binding MessageFirstLine}" FontSize="12" Foreground="{DynamicResource BoughBrushText}"
                                  FontWeight="Medium" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                   </Grid>
                 </Grid>
@@ -341,35 +317,11 @@
             <TabItem Header="{Binding Labels.TabCommit}">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="16" Spacing="13">
-                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-                    <StackPanel Grid.Column="0" Spacing="5">
+                  <Grid ColumnDefinitions="*">
+                    <StackPanel Spacing="5">
                       <SelectableTextBlock Text="{Binding SelectedMessage}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
                       <SelectableTextBlock Text="{Binding AuthorDescription}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
                       <SelectableTextBlock Text="{Binding AuthoredAtText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="4" HorizontalAlignment="Right">
-                      <controls:AuthorIdenticon x:Name="DetailAuthorAvatar" Width="52" Height="52" HorizontalAlignment="Right"
-                                                AuthorName="{Binding SelectedCommit.Author}" AuthorEmail="{Binding SelectedCommit.AuthorEmail}"
-                                                CommitHash="{Binding SelectedCommit.Hash}" GitHubRemoteUrl="{Binding GitHubRemoteUrl}"
-                                                ExternalPhotosEnabled="{Binding ExternalAuthorPhotosEnabled}"
-                                                x:CompileBindings="False"
-                                                Tag="{Binding Strings}"
-                                                AutomationProperties.Name="{Binding SelectedCommit.AuthorDisplayName}">
-                        <ToolTip.Tip>
-                          <MultiBinding Converter="{StaticResource PhotoSourceLabelConverter}">
-                            <Binding Path="PhotoSource" RelativeSource="{RelativeSource Self}" />
-                            <Binding Path="Tag" RelativeSource="{RelativeSource Self}" />
-                          </MultiBinding>
-                        </ToolTip.Tip>
-                      </controls:AuthorIdenticon>
-                      <TextBlock x:CompileBindings="False" FontSize="10" Foreground="{DynamicResource BoughBrushTextMuted}" HorizontalAlignment="Right">
-                        <TextBlock.Text>
-                          <MultiBinding Converter="{StaticResource PhotoSourceLabelConverter}">
-                            <Binding Path="PhotoSource" ElementName="DetailAuthorAvatar" />
-                            <Binding Path="Strings" />
-                          </MultiBinding>
-                        </TextBlock.Text>
-                      </TextBlock>
                     </StackPanel>
                   </Grid>
                   <SelectableTextBlock Text="{Binding ReferencesText}" FontSize="11" Foreground="{DynamicResource BoughBrushSuccess}" TextWrapping="Wrap" />

@@ -59,6 +59,7 @@ namespace Bough.App
                 _serviceContainer.RegisterType<GitCommitFileActionService, GitCommitFileActionService>(LifeScope.Singleton);
                 _serviceContainer.RegisterType<TerminalLauncher, TerminalLauncher>(LifeScope.Singleton);
                 _serviceContainer.RegisterType<RepositoryFolderLauncher, RepositoryFolderLauncher>(LifeScope.Singleton);
+                _serviceContainer.RegisterType<PullRequestLauncher, PullRequestLauncher>(LifeScope.Singleton);
                 _serviceContainer.RegisterType<ConflictParser, ConflictParser>(LifeScope.Singleton);
                 _serviceContainer.RegisterType<RepositoryListStore, RepositoryListStore>(LifeScope.Singleton);
                 _serviceContainer.RegisterDependencies(typeof(GitCommandRunner).Assembly);

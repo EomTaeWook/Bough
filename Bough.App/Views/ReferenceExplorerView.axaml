@@ -74,6 +74,7 @@
                 <MenuItem Click="SwitchMenuBranchClicked" />
                 <MenuItem Click="CreateFromBranchClicked" />
                 <MenuItem Click="TrackMenuRemoteClicked" />
+                <MenuItem Click="OpenPullRequestClicked" />
                 <MenuItem Click="CopyTreeNameClicked" />
               </ContextMenu>
             </Border.ContextMenu>

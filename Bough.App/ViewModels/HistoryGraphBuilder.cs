@@ -103,7 +103,9 @@ namespace Bough.App.ViewModels
                         }
                     }
 
-                    rows.Add(new HistoryGraphRow(nodeLane, current.ColorIndex, commit.Parents.Count > 1, segments.ToArray()));
+                    bool isCurrentHead = commit.References.Any(reference => reference == "HEAD" || reference.StartsWith("HEAD -> ", System.StringComparison.Ordinal));
+                    bool hasReferences = commit.References.Count > 0;
+                    rows.Add(new HistoryGraphRow(nodeLane, current.ColorIndex, commit.Parents.Count > 1, isCurrentHead, hasReferences, segments.ToArray()));
                     _active = next;
                 }
 
