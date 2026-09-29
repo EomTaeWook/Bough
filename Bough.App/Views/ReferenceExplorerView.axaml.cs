@@ -251,7 +251,7 @@ namespace Bough.App.Views
                 return;
             }
             MenuItem[] items = menu.Items.OfType<MenuItem>().ToArray();
-            if (items.Length < 8)
+            if (items.Length < 10)
             {
                 menu.Close();
                 return;
@@ -268,9 +268,11 @@ namespace Bough.App.Views
             items[2].Header = viewModel.ReferenceText("ReferenceOpenStashes");
             items[3].Header = viewModel.ReferenceText("ReferenceSwitchBranch");
             items[4].Header = viewModel.ReferenceText("ReferenceCreateFromBranch");
-            items[5].Header = viewModel.ReferenceText("ReferenceCheckoutRemoteBranch");
-            items[6].Header = viewModel.ReferenceText("ReferenceCreatePullRequest");
-            items[7].Header = viewModel.ReferenceText("ReferenceCopyName");
+            items[5].Header = viewModel.ReferenceText("ReferenceDeleteLocalBranch");
+            items[6].Header = viewModel.ReferenceText("ReferenceCheckoutRemoteBranch");
+            items[7].Header = viewModel.ReferenceText("ReferenceDeleteRemoteBranch");
+            items[8].Header = viewModel.ReferenceText("ReferenceCreatePullRequest");
+            items[9].Header = viewModel.ReferenceText("ReferenceCopyName");
             items[0].IsVisible = node.IsBranchSection;
             items[0].IsEnabled = true;
             items[1].IsVisible = node.IsTagSection;
@@ -280,11 +282,15 @@ namespace Bough.App.Views
             items[3].IsEnabled = true;
             items[4].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch;
             items[4].IsEnabled = true;
-            items[5].IsVisible = node.Kind == ReferenceTreeNodeKind.RemoteBranch;
-            items[5].IsEnabled = true;
-            items[6].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch || node.Kind == ReferenceTreeNodeKind.RemoteBranch;
+            items[5].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch;
+            items[5].IsEnabled = node.IsCurrent == false;
+            items[6].IsVisible = node.Kind == ReferenceTreeNodeKind.RemoteBranch;
             items[6].IsEnabled = true;
-            items[7].IsVisible = node.IsEmpty == false;
+            items[7].IsVisible = node.Kind == ReferenceTreeNodeKind.RemoteBranch;
+            items[7].IsEnabled = viewModel.IsRemoteDefaultBranch(node.Target as GitRemoteBranch) == false;
+            items[8].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch || node.Kind == ReferenceTreeNodeKind.RemoteBranch;
+            items[8].IsEnabled = true;
+            items[9].IsVisible = node.IsEmpty == false;
         }
 
         private void TreeContextClosed(object sender, RoutedEventArgs eventArgs)
@@ -438,6 +444,37 @@ namespace Bough.App.Views
             }, viewModel.Strings);
         }
 
+        private async void DeleteLocalBranchClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not ReferenceExplorerViewModel viewModel)
+            {
+                return;
+            }
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
+            if (sender is not MenuItem item)
+            {
+                return;
+            }
+            GitLocalBranch branch = (item.Tag as ReferenceTreeNode)?.Target as GitLocalBranch;
+            if (branch == null)
+            {
+                return;
+            }
+            string repositoryRoot = item.CommandParameter as string;
+            bool confirmed = await GitActionDialogs.ConfirmAsync(owner,
+                viewModel.ReferenceText("ReferenceDeleteLocalBranchTitle"),
+                viewModel.Strings.Format("ReferenceDeleteLocalBranchConfirm", branch.Name),
+                viewModel.ReferenceText("ReferenceDeleteBranchAction"), viewModel.Strings);
+            if (confirmed == false)
+            {
+                return;
+            }
+            await viewModel.DeleteLocalBranchAsync(repositoryRoot, branch);
+        }
+
         private async void TrackMenuRemoteClicked(object sender, RoutedEventArgs eventArgs)
         {
             if (DataContext is not ReferenceExplorerViewModel viewModel)
@@ -459,6 +496,37 @@ namespace Bough.App.Views
             }
             string repositoryRoot = (sender as MenuItem)?.CommandParameter as string ?? _menuRepositoryRoot ?? viewModel.CurrentRepository?.RootPath;
             await CheckoutRemoteBranchAsync(viewModel, branch, repositoryRoot);
+        }
+
+        private async void DeleteRemoteBranchClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not ReferenceExplorerViewModel viewModel)
+            {
+                return;
+            }
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
+            if (sender is not MenuItem item)
+            {
+                return;
+            }
+            GitRemoteBranch branch = (item.Tag as ReferenceTreeNode)?.Target as GitRemoteBranch;
+            if (branch == null)
+            {
+                return;
+            }
+            string repositoryRoot = item.CommandParameter as string;
+            bool confirmed = await GitActionDialogs.ConfirmAsync(owner,
+                viewModel.ReferenceText("ReferenceDeleteRemoteBranchTitle"),
+                viewModel.Strings.Format("ReferenceDeleteRemoteBranchConfirm", branch.FullName),
+                viewModel.ReferenceText("ReferenceDeleteBranchAction"), viewModel.Strings);
+            if (confirmed == false)
+            {
+                return;
+            }
+            await viewModel.DeleteRemoteBranchAsync(repositoryRoot, branch);
         }
 
         private async Task CheckoutRemoteBranchAsync(ReferenceExplorerViewModel viewModel, GitRemoteBranch branch, string repositoryRoot)

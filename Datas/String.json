@@ -4852,5 +4852,131 @@
     "Name": "PullRequestPageOpened",
     "Kor": "{0} 브랜치의 Pull/Merge Request 작성 페이지를 열었습니다.",
     "Eng": "Opened the pull/merge request page for branch {0}."
+  },
+  {
+    "Id": 2906,
+    "Name": "ReferenceDeleteLocalBranch",
+    "Kor": "로컬 브랜치 삭제...",
+    "Eng": "Delete local branch..."
+  },
+  {
+    "Id": 2907,
+    "Name": "ReferenceDeleteRemoteBranch",
+    "Kor": "원격 브랜치 삭제...",
+    "Eng": "Delete remote branch..."
+  },
+  {
+    "Id": 2908,
+    "Name": "ReferenceDeleteLocalBranchTitle",
+    "Kor": "로컬 브랜치 삭제",
+    "Eng": "Delete local branch"
+  },
+  {
+    "Id": 2909,
+    "Name": "ReferenceDeleteRemoteBranchTitle",
+    "Kor": "원격 브랜치 삭제",
+    "Eng": "Delete remote branch"
+  },
+  {
+    "Id": 2910,
+    "Name": "ReferenceDeleteLocalBranchConfirm",
+    "Kor": "{0} 브랜치를 삭제하시겠습니까? 병합되지 않은 커밋이 있으면 삭제하지 않습니다.",
+    "Eng": "Delete local branch {0}? Git will keep it if it contains unmerged commits."
+  },
+  {
+    "Id": 2911,
+    "Name": "ReferenceDeleteRemoteBranchConfirm",
+    "Kor": "원격 브랜치 {0}을(를) 서버에서 삭제하시겠습니까? 다른 사용자에게도 영향을 주며 앱에서 되돌릴 수 없습니다.",
+    "Eng": "Delete remote branch {0} from the server? This affects other users and cannot be undone from the app."
+  },
+  {
+    "Id": 2912,
+    "Name": "ReferenceDeleteBranchAction",
+    "Kor": "브랜치 삭제",
+    "Eng": "Delete branch"
+  },
+  {
+    "Id": 2913,
+    "Name": "ReferenceDeletingBranch",
+    "Kor": "{0} 브랜치 삭제 중...",
+    "Eng": "Deleting branch {0}..."
+  },
+  {
+    "Id": 2914,
+    "Name": "ReferenceLocalBranchDeleted",
+    "Kor": "{0} 로컬 브랜치를 삭제했습니다.",
+    "Eng": "Deleted local branch {0}."
+  },
+  {
+    "Id": 2915,
+    "Name": "ReferenceRemoteBranchDeleted",
+    "Kor": "{0} 원격 브랜치를 삭제했습니다.",
+    "Eng": "Deleted remote branch {0}."
+  },
+  {
+    "Id": 2916,
+    "Name": "ReferenceBranchDeleteRefreshFailed",
+    "Kor": "{0} 참조 목록 새로고침 실패: {1}",
+    "Eng": "{0} Could not refresh references: {1}"
+  },
+  {
+    "Id": 2917,
+    "Name": "ReferenceLocalBranchDeleteCurrent",
+    "Kor": "현재 체크아웃된 {0} 브랜치는 삭제할 수 없습니다.",
+    "Eng": "Cannot delete the checked-out branch {0}."
+  },
+  {
+    "Id": 2918,
+    "Name": "ReferenceLocalBranchDeleteMissing",
+    "Kor": "{0} 로컬 브랜치를 찾을 수 없습니다.",
+    "Eng": "Local branch {0} no longer exists."
+  },
+  {
+    "Id": 2919,
+    "Name": "ReferenceLocalBranchDeleteChanged",
+    "Kor": "{0} 브랜치가 확인 이후 변경되었습니다. 새로고친 뒤 다시 시도하세요.",
+    "Eng": "Branch {0} changed after confirmation. Refresh and try again."
+  },
+  {
+    "Id": 2920,
+    "Name": "ReferenceLocalBranchDeleteFailed",
+    "Kor": "{0} 로컬 브랜치를 삭제하지 못했습니다: {1}",
+    "Eng": "Could not delete local branch {0}: {1}"
+  },
+  {
+    "Id": 2921,
+    "Name": "ReferenceLocalBranchDeleteFailedWithoutOutput",
+    "Kor": "{0} 로컬 브랜치를 삭제하지 못했습니다(종료 코드 {1}).",
+    "Eng": "Could not delete local branch {0} (exit code {1})."
+  },
+  {
+    "Id": 2922,
+    "Name": "ReferenceRemoteBranchDeleteDefault",
+    "Kor": "{0}은(는) 원격의 기본 브랜치라 삭제할 수 없습니다.",
+    "Eng": "Cannot delete {0} because it is the remote's default branch."
+  },
+  {
+    "Id": 2923,
+    "Name": "ReferenceRemoteBranchDeleteMissing",
+    "Kor": "{0} 원격 브랜치를 찾을 수 없습니다.",
+    "Eng": "Remote branch {0} no longer exists."
+  },
+  {
+    "Id": 2924,
+    "Name": "ReferenceRemoteBranchDeleteChanged",
+    "Kor": "{0} 원격 브랜치가 확인 이후 변경되었습니다. Fetch한 뒤 다시 시도하세요.",
+    "Eng": "Remote branch {0} changed after confirmation. Fetch and try again."
+  },
+  {
+    "Id": 2925,
+    "Name": "ReferenceRemoteBranchDeleteFailed",
+    "Kor": "{0} 원격 브랜치를 삭제하지 못했습니다: {1}",
+    "Eng": "Could not delete remote branch {0}: {1}"
+  },
+  {
+    "Id": 2926,
+    "Name": "ReferenceRemoteBranchDeleteFailedWithoutOutput",
+    "Kor": "{0} 원격 브랜치를 삭제하지 못했습니다(종료 코드 {1}).",
+    "Eng": "Could not delete remote branch {0} (exit code {1})."
   }
 ]

@@ -73,7 +73,9 @@
                 <MenuItem Click="OpenStashesClicked" />
                 <MenuItem Click="SwitchMenuBranchClicked" />
                 <MenuItem Click="CreateFromBranchClicked" />
+                <MenuItem Click="DeleteLocalBranchClicked" />
                 <MenuItem Click="TrackMenuRemoteClicked" />
+                <MenuItem Click="DeleteRemoteBranchClicked" />
                 <MenuItem Click="OpenPullRequestClicked" />
                 <MenuItem Click="CopyTreeNameClicked" />
               </ContextMenu>

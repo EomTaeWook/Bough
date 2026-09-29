@@ -460,6 +460,105 @@ namespace Bough.App.ViewModels
             return string.Equals(_repository.RootPath, repositoryRoot, comparison);
         }
 
+        public bool IsRemoteDefaultBranch(GitRemoteBranch branch)
+        {
+            if (branch == null)
+            {
+                return false;
+            }
+            foreach (GitRemote remote in _remotes)
+            {
+                if (remote.Name != branch.RemoteName)
+                {
+                    continue;
+                }
+                return remote.DefaultBranch == branch.Name;
+            }
+            return false;
+        }
+
+        public async Task<bool> DeleteLocalBranchAsync(string repositoryRoot, GitLocalBranch branch)
+        {
+            if (CanRunMenuAction(repositoryRoot) == false)
+            {
+                return false;
+            }
+            if (branch == null)
+            {
+                StatusMessage = _stringHelper.GetString("ReferenceSwitchBranchRequired");
+                return false;
+            }
+
+            GitRepository repository = _repository;
+            return await QueueBranchDeletionAsync(repository, branch.Name,
+                _stringHelper.Format("ReferenceLocalBranchDeleted", branch.Name),
+                token => _referenceService.DeleteLocalBranchAsync(repository, branch, token));
+        }
+
+        public async Task<bool> DeleteRemoteBranchAsync(string repositoryRoot, GitRemoteBranch branch)
+        {
+            if (CanRunMenuAction(repositoryRoot) == false)
+            {
+                return false;
+            }
+            if (branch == null)
+            {
+                StatusMessage = _stringHelper.GetString("ReferenceRemoteBranchRequired");
+                return false;
+            }
+
+            GitRepository repository = _repository;
+            return await QueueBranchDeletionAsync(repository, branch.FullName,
+                _stringHelper.Format("ReferenceRemoteBranchDeleted", branch.FullName),
+                token => _referenceService.DeleteRemoteBranchAsync(repository, branch, token));
+        }
+
+        private async Task<bool> QueueBranchDeletionAsync(GitRepository repository, string branchName, string successMessage, Func<CancellationToken, Task> action)
+        {
+            try
+            {
+                return await _operationQueue.EnqueueAsync(repository.RootPath,
+                    _stringHelper.Format("ReferenceDeletingBranch", branchName), async token =>
+                {
+                    token.ThrowIfCancellationRequested();
+                    await action(token);
+                    if (IsCurrentRepository(repository.RootPath) == false)
+                    {
+                        return true;
+                    }
+
+                    bool refreshed = await RefreshCoreAsync();
+                    if (IsCurrentRepository(repository.RootPath) == false)
+                    {
+                        return true;
+                    }
+                    if (refreshed)
+                    {
+                        StatusMessage = successMessage;
+                    }
+                    else
+                    {
+                        StatusMessage = _stringHelper.Format("ReferenceBranchDeleteRefreshFailed", successMessage, StatusMessage);
+                    }
+                    RepositoryChanged?.Invoke(repository);
+                    return true;
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentRepository(repository.RootPath))
+                {
+                    await RefreshCoreAsync();
+                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                }
+                return false;
+            }
+        }
+
         public async Task<bool> CreateFromBranchAsync(string repositoryRoot, GitLocalBranch branch, string newName)
         {
             if (CanRunMenuAction(repositoryRoot) == false)

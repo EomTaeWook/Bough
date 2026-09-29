@@ -158,6 +158,101 @@ namespace Bough.Core.Git
             return updated;
         }
 
+        public async Task DeleteLocalBranchAsync(GitRepository repository, GitLocalBranch branch, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            ArgumentNullException.ThrowIfNull(branch);
+
+            GitCommandResult current = await _runner.RunAsync(repository.RootPath, _currentBranchArguments, true, cancellationToken);
+            if (current.ExitCode == 0)
+            {
+                if (string.Equals(current.Output.Trim(), branch.Name, StringComparison.Ordinal))
+                {
+                    throw new GitException("ReferenceLocalBranchDeleteCurrent", null, branch.Name);
+                }
+            }
+
+            string reference = $"refs/heads/{branch.Name}";
+            GitCommandResult existing = await _runner.RunAsync(repository.RootPath,
+                new string[] { "show-ref", "--verify", "--hash", reference }, true, cancellationToken);
+            if (existing.ExitCode == 1)
+            {
+                throw new GitException("ReferenceLocalBranchDeleteMissing", null, branch.Name);
+            }
+            if (existing.ExitCode != 0)
+            {
+                string error = existing.Error.Trim();
+                if (error.Length == 0)
+                {
+                    throw new GitException("ReferenceLocalBranchDeleteFailedWithoutOutput", null, branch.Name, existing.ExitCode);
+                }
+                throw new GitException("ReferenceLocalBranchDeleteFailed", null, branch.Name, error);
+            }
+            if (string.Equals(existing.Output.Trim(), branch.CommitHash, StringComparison.OrdinalIgnoreCase) == false)
+            {
+                throw new GitException("ReferenceLocalBranchDeleteChanged", null, branch.Name);
+            }
+
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath,
+                new string[] { "branch", "-d", "--", branch.Name }, true, cancellationToken);
+            if (result.ExitCode != 0)
+            {
+                string error = result.Error.Trim();
+                if (error.Length == 0)
+                {
+                    throw new GitException("ReferenceLocalBranchDeleteFailedWithoutOutput", null, branch.Name, result.ExitCode);
+                }
+                throw new GitException("ReferenceLocalBranchDeleteFailed", null, branch.Name, error);
+            }
+        }
+
+        public async Task DeleteRemoteBranchAsync(GitRepository repository, GitRemoteBranch branch, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            ArgumentNullException.ThrowIfNull(branch);
+
+            string branchReference = $"refs/heads/{branch.Name}";
+            GitCommandResult remote = await _runner.RunAsync(repository.RootPath,
+                new string[] { "ls-remote", "--symref", branch.RemoteName, "HEAD", branchReference }, false, cancellationToken);
+            string currentHash = string.Empty;
+            foreach (string line in remote.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (line == $"ref: {branchReference}\tHEAD")
+                {
+                    throw new GitException("ReferenceRemoteBranchDeleteDefault", null, branch.FullName);
+                }
+                string suffix = $"\t{branchReference}";
+                if (line.EndsWith(suffix, StringComparison.Ordinal))
+                {
+                    currentHash = line[..^suffix.Length];
+                }
+            }
+            if (currentHash.Length == 0)
+            {
+                throw new GitException("ReferenceRemoteBranchDeleteMissing", null, branch.FullName);
+            }
+            if (string.Equals(currentHash, branch.CommitHash, StringComparison.OrdinalIgnoreCase) == false)
+            {
+                throw new GitException("ReferenceRemoteBranchDeleteChanged", null, branch.FullName);
+            }
+
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath,
+                new string[] { "push", "--porcelain", $"--force-with-lease={branchReference}:{branch.CommitHash}", branch.RemoteName, $":{branchReference}" }, true, cancellationToken);
+            if (result.ExitCode != 0)
+            {
+                string error = result.Error.Trim();
+                if (error.Length == 0)
+                {
+                    throw new GitException("ReferenceRemoteBranchDeleteFailedWithoutOutput", null, branch.FullName, result.ExitCode);
+                }
+                throw new GitException("ReferenceRemoteBranchDeleteFailed", null, branch.FullName, error);
+            }
+
+            string trackingReference = $"refs/remotes/{branch.FullName}";
+            await _runner.RunAsync(repository.RootPath,
+                new string[] { "update-ref", "-d", trackingReference, branch.CommitHash }, true, cancellationToken);
+        }
+
         public async Task CreateLightweightTagAsync(GitRepository repository, string tagName, string target, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(repository);

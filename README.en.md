@@ -29,17 +29,14 @@ Bough is designed to show the source of each conflicting change and preview the 
 - **Review before applying:** Check the result before saving the file and continuing your Git work.
 - **Clear repository navigation:** See and switch the current repository without relying on a row of tabs.
 
-## Initial development scope
+## Features
 
-The first development phase focused on **conflict resolution**:
+- **Local changes:** Inspect changed files and diffs, stage and unstage, commit, discard changes, and ignore untracked files.
+- **History and references:** Browse the commit graph and file changes; create, switch, and delete branches; create tags.
+- **Remotes and stashes:** Fetch, Pull, and Push; save, apply, and delete stashes.
+- **Conflict resolution:** Inspect both sides of a conflict, choose or edit the result, preview it, then save and stage it.
 
-1. Detect repositories and files with unresolved conflicts.
-2. Show conflict sections and the origin of each side.
-3. Select changes or edit the result directly.
-4. Preview the final file as it changes.
-5. Save the resolved file and update the Git index.
-
-Bough now also supports everyday Git work, including commit history, creating commits, creating and switching branches, staging files, and remote operations. These workflows are still being refined.
+Features and workflows are still being refined.
 
 Additional screens and workflows are described in the [design notes](Design/README.md) (Korean).
 
@@ -62,6 +59,8 @@ dotnet run --project Bough.App/Bough.App.csproj
 Add a repository from the left sidebar to see unresolved conflict files. For each conflict section, choose a change, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
 
 Select **History** at the top to see commits from all local and remote references in a branch graph. Selecting a commit shows its author, date, message, and changed files in the details panel. The first 200 commits are shown; use **Load more commits** to browse older history. Selecting and inspecting a commit does not change the repository.
+
+Right-click a branch under **Git references** on the left to delete a local or remote branch. Confirm the target before deletion. The checked-out branch and a remote's default branch cannot be deleted, and local branches with unmerged commits are kept. Deleting a remote branch affects the server and other users.
 
 ## Data generation
 
