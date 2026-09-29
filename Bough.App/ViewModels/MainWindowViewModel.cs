@@ -1,4 +1,5 @@
 using Bough.App.Localization;
+using Bough.App.Presenters;
 using Bough.Core.Git;
 using Dignus.DependencyInjection.Attributes;
 using Avalonia.Threading;
@@ -22,6 +23,7 @@ namespace Bough.App.ViewModels
         private readonly GitOperationQueue _operationQueue;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
+        private readonly MainWindowRemoteCompletionPresenter _remoteCompletionPresenter;
         private readonly StringComparer _pathComparer;
         private readonly Dictionary<string, string> _autoOpenedConflicts;
         private GitRepository _repository;
@@ -29,6 +31,13 @@ namespace Bough.App.ViewModels
         private string _repositoryMeta;
         private string _statusMessage;
         private string _mainStatusMessage;
+        private string _visibleGitSettingsStatusMessage = string.Empty;
+        private string _visibleLocalChangesErrorText = string.Empty;
+        private string _visibleStashErrorText = string.Empty;
+        private string _visibleStashStatusText = string.Empty;
+        private int _gitSettingsStatusViewVersion;
+        private int _localChangesStatusViewVersion;
+        private int _stashStatusViewVersion;
         private string _runningGitOperationName = string.Empty;
         private int _pendingGitOperationCount;
         private bool _hasRepository;
@@ -40,6 +49,7 @@ namespace Bough.App.ViewModels
         private bool _isLocalChangesLoading;
         private bool _isReferencesLoading;
         private bool _isRemoteLoading;
+        private bool _isRebaseInProgress;
         private int _repositoryRequestVersion;
         private CancellationTokenSource _repositoryOpenCancellation;
 
@@ -49,6 +59,7 @@ namespace Bough.App.ViewModels
             _operationQueue = operationQueue;
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
+            _remoteCompletionPresenter = new MainWindowRemoteCompletionPresenter(this);
             if (OperatingSystem.IsWindows() == true)
             {
                 _pathComparer = StringComparer.OrdinalIgnoreCase;
@@ -72,6 +83,9 @@ namespace Bough.App.ViewModels
             History.ActionMessage += message => StatusMessage = message;
             History.FileRestored += OnHistoryFileRestored;
             References.PropertyChanged += OnReferencesPropertyChanged;
+            GitSettings.PropertyChanged += OnGitSettingsPropertyChanged;
+            LocalChanges.PropertyChanged += OnLocalChangesPropertyChanged;
+            LocalChanges.Stashes.PropertyChanged += OnStashPropertyChanged;
             References.RepositoryChanged += OnReferenceRepositoryChanged;
             References.TagCommitSelected += OnTagCommitSelected;
             References.StashesRequested += OnStashesRequested;
@@ -87,6 +101,7 @@ namespace Bough.App.ViewModels
             ShowHistoryCommand = new AsyncRelayCommand(ShowHistoryAsync, CanNavigate);
             ShowLocalChangesCommand = new AsyncRelayCommand(ShowLocalChangesAsync, CanNavigate);
             ShowGitSettingsCommand = new AsyncRelayCommand(ShowGitSettingsAsync, CanShowGitSettings);
+            ContinueRebaseCommand = new AsyncRelayCommand(ContinueRebaseAsync, CanContinueRebase);
             IsLocalChangesView = true;
         }
 
@@ -110,6 +125,24 @@ namespace Bough.App.ViewModels
         public string ConsoleToolTipText { get { return _stringHelper.GetString("MainConsoleToolTip"); } }
         public string ConsoleAutomationName { get { return _stringHelper.GetString("MainConsoleAutomationName"); } }
         public string ConsoleText { get { return _stringHelper.GetString("MainConsole"); } }
+        public string RebaseProgressLabel { get { return _stringHelper.GetString("RebaseProgressLabel"); } }
+        public string ContinueRebaseText { get { return _stringHelper.GetString("RebaseContinueAction"); } }
+        public string RebaseStatusText
+        {
+            get
+            {
+                if (IsLocalChangesLoading)
+                {
+                    return _stringHelper.GetString("RebaseCheckingConflicts");
+                }
+                int conflictCount = Conflicts.ConflictFiles.Count;
+                if (conflictCount > 0)
+                {
+                    return _stringHelper.Format("RebaseResolveBeforeContinue", conflictCount);
+                }
+                return _stringHelper.GetString("RebaseReadyToContinue");
+            }
+        }
 
         public string CurrentRepositoryRoot { get { return _repository?.RootPath; } }
         public int RepositoryRequestVersion { get { return _repositoryRequestVersion; } }
@@ -172,6 +205,22 @@ namespace Bough.App.ViewModels
                 AddSidebarStatusMessage(messages, References.PendingBranchSwitchMessage);
                 AddSidebarStatusMessage(messages, GitOperationQueueStatusText);
                 AddSidebarStatusMessage(messages, MainStatusMessage);
+                if (IsLocalChangesView == true)
+                {
+                    AddSidebarStatusMessage(messages, _visibleLocalChangesErrorText);
+                }
+                if (IsStashView == true)
+                {
+                    AddSidebarStatusMessage(messages, _visibleStashErrorText);
+                    if (string.IsNullOrWhiteSpace(_visibleStashErrorText) == true)
+                    {
+                        AddSidebarStatusMessage(messages, _visibleStashStatusText);
+                    }
+                }
+                if (IsGitSettingsView == true)
+                {
+                    AddSidebarStatusMessage(messages, _visibleGitSettingsStatusMessage);
+                }
                 AddSidebarStatusMessage(messages, References.StatusMessage);
                 return string.Join(Environment.NewLine, messages);
             }
@@ -185,6 +234,19 @@ namespace Bough.App.ViewModels
         public AsyncRelayCommand ShowHistoryCommand { get; }
         public AsyncRelayCommand ShowLocalChangesCommand { get; }
         public AsyncRelayCommand ShowGitSettingsCommand { get; }
+        public AsyncRelayCommand ContinueRebaseCommand { get; }
+
+        public bool IsRebaseInProgress
+        {
+            get { return _isRebaseInProgress; }
+            private set
+            {
+                if (SetProperty(ref _isRebaseInProgress, value))
+                {
+                    NotifyRebaseState();
+                }
+            }
+        }
 
         public bool IsHistoryView
         {
@@ -200,7 +262,13 @@ namespace Bough.App.ViewModels
             get { return _isLocalChangesView; }
             private set
             {
-                SetProperty(ref _isLocalChangesView, value);
+                if (SetProperty(ref _isLocalChangesView, value) == false)
+                {
+                    return;
+                }
+                _localChangesStatusViewVersion++;
+                _visibleLocalChangesErrorText = string.Empty;
+                NotifySidebarStatusChanged();
             }
         }
 
@@ -209,7 +277,14 @@ namespace Bough.App.ViewModels
             get { return _isStashView; }
             private set
             {
-                SetProperty(ref _isStashView, value);
+                if (SetProperty(ref _isStashView, value) == false)
+                {
+                    return;
+                }
+                _stashStatusViewVersion++;
+                _visibleStashErrorText = string.Empty;
+                _visibleStashStatusText = string.Empty;
+                NotifySidebarStatusChanged();
             }
         }
 
@@ -218,7 +293,13 @@ namespace Bough.App.ViewModels
             get { return _isGitSettingsView; }
             private set
             {
-                SetProperty(ref _isGitSettingsView, value);
+                if (SetProperty(ref _isGitSettingsView, value) == false)
+                {
+                    return;
+                }
+                _gitSettingsStatusViewVersion++;
+                _visibleGitSettingsStatusMessage = string.Empty;
+                NotifySidebarStatusChanged();
             }
         }
 
@@ -303,7 +384,13 @@ namespace Bough.App.ViewModels
         public bool IsLocalChangesLoading
         {
             get { return _isLocalChangesLoading; }
-            private set { SetProperty(ref _isLocalChangesLoading, value); }
+            private set
+            {
+                if (SetProperty(ref _isLocalChangesLoading, value))
+                {
+                    NotifyRebaseState();
+                }
+            }
         }
 
         public bool IsReferencesLoading
@@ -370,6 +457,7 @@ namespace Bough.App.ViewModels
             _repository = null;
             ClearGitOperationQueueState();
             Conflicts.BindRepository(null);
+            IsRebaseInProgress = false;
             HasRepository = false;
             IsLocalChangesLoading = false;
             IsReferencesLoading = false;
@@ -460,6 +548,7 @@ namespace Bough.App.ViewModels
             IsReferencesLoading = true;
             IsRemoteLoading = true;
             _ = ObserveRepositoryAreaAsync(() => RefreshLocalChangesAndConflictsAsync(repository, request), request, () => IsLocalChangesLoading = false);
+            _ = ObserveRepositoryAreaAsync(() => RefreshRebaseStateAsync(repository, request), request, null);
             _ = ObserveRepositoryAreaAsync(References.RefreshAsync, request, () => IsReferencesLoading = false);
             _ = ObserveRepositoryAreaAsync(RemoteOperations.RefreshAsync, request, () => IsRemoteLoading = false);
             if (IsGitSettingsView == true)
@@ -472,7 +561,7 @@ namespace Bough.App.ViewModels
             }
         }
 
-        private async Task ObserveRepositoryAreaAsync(Func<Task> load, int request, Action completed)
+        internal async Task ObserveRepositoryAreaAsync(Func<Task> load, int request, Action completed)
         {
             try
             {
@@ -494,7 +583,7 @@ namespace Bough.App.ViewModels
             }
         }
 
-        private async Task RefreshLocalChangesAndConflictsAsync(GitRepository repository, int request)
+        internal async Task RefreshLocalChangesAndConflictsAsync(GitRepository repository, int request)
         {
             await LocalChanges.LoadWorktreeAsync(repository);
             if (request != _repositoryRequestVersion)
@@ -506,6 +595,20 @@ namespace Bough.App.ViewModels
                 return;
             }
             await RefreshConflictsFromLocalChangesAsync(repository);
+        }
+
+        internal async Task RefreshRebaseStateAsync(GitRepository repository, int request)
+        {
+            bool isRebaseInProgress = await _repositoryService.IsRebaseInProgressAsync(repository);
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
+            IsRebaseInProgress = isRebaseInProgress;
         }
 
         public void RemoveRepository(RepositoryItem item)
@@ -527,6 +630,7 @@ namespace Bough.App.ViewModels
                 _repository = null;
                 ClearGitOperationQueueState();
                 Conflicts.BindRepository(null);
+                IsRebaseInProgress = false;
                 HasRepository = false;
                 IsLocalChangesLoading = false;
                 IsReferencesLoading = false;
@@ -678,53 +782,41 @@ namespace Bough.App.ViewModels
             RepositoryMeta = FormatRepositoryMeta(updated);
         }
 
-        public async Task HandleRemoteOperationFinishedAsync(GitRepository updated, RemoteOperationStateSnapshot snapshot,
+        public Task HandleRemoteOperationFinishedAsync(GitRepository updated, RemoteOperationStateSnapshot snapshot,
             bool worktreeMayChange, int repositoryRequestVersion)
+        {
+            return _remoteCompletionPresenter.CompleteAsync(updated, snapshot, worktreeMayChange, repositoryRequestVersion);
+        }
+
+        internal bool TryAdoptRemoteRepository(GitRepository updated, int repositoryRequestVersion)
         {
             if (repositoryRequestVersion != _repositoryRequestVersion)
             {
-                return;
+                return false;
             }
             if (_repository == null)
             {
-                return;
+                return false;
             }
             if (_pathComparer.Equals(_repository.RootPath, updated.RootPath) == false)
             {
-                return;
+                return false;
             }
 
             _repository = updated;
             Conflicts.BindRepository(updated);
             RepositoryMeta = FormatRepositoryMeta(updated);
-            if (snapshot != null)
-            {
-                RemoteOperations.ApplyOperationStateSnapshot(snapshot);
-            }
-            int request = _repositoryRequestVersion;
-            _ = ObserveRepositoryAreaAsync(() => References.SetRepositoryAsync(updated), request, null);
-            if (IsHistoryView == true)
-            {
-                _ = ObserveRepositoryAreaAsync(() => History.LoadAsync(updated), request, null);
-            }
-            if (worktreeMayChange == false)
+            return true;
+        }
+
+        internal void ReportRemoteCompletionFailure(Exception exception, int request)
+        {
+            if (request != _repositoryRequestVersion)
             {
                 return;
             }
-
-            try
-            {
-                await RefreshLocalChangesAndConflictsAsync(updated, request);
-            }
-            catch (Exception exception)
-            {
-                if (request == _repositoryRequestVersion)
-                {
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
-                }
-            }
+            StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
         }
-
         private async Task ApplyActionRepositoryAsync(GitRepository updated, bool refreshReferences, bool refreshRemote, bool refreshHistory)
         {
             if (_repository == null)
@@ -740,6 +832,7 @@ namespace Bough.App.ViewModels
             Conflicts.BindRepository(updated);
             RepositoryMeta = FormatRepositoryMeta(updated);
             int request = _repositoryRequestVersion;
+            _ = ObserveRepositoryAreaAsync(() => RefreshRebaseStateAsync(updated, request), request, null);
             if (refreshReferences == true)
             {
                 _ = ObserveRepositoryAreaAsync(() => References.SetRepositoryAsync(updated), request, null);
@@ -1116,6 +1209,7 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
+            NotifyRebaseState();
             if (Conflicts.ConflictFiles.Count == 0)
             {
                 _autoOpenedConflicts.Remove(repository.RootPath);
@@ -1176,6 +1270,108 @@ namespace Bough.App.ViewModels
                 return;
             }
             await RefreshConflictsFromLocalChangesAsync(repository);
+            await RefreshRebaseStateAsync(repository, request);
+        }
+
+        private async Task ContinueRebaseAsync()
+        {
+            if (CanContinueRebase() == false)
+            {
+                return;
+            }
+
+            GitRepository requestedRepository = _repository;
+            int request = _repositoryRequestVersion;
+            try
+            {
+                await _operationQueue.EnqueueAsync(requestedRepository.RootPath, _stringHelper.GetString("RebaseContinueAction"), async token =>
+                {
+                    GitCommandResult result = await _repositoryService.ContinueRebaseAsync(requestedRepository, token);
+                    GitRepository updated = await _repositoryService.OpenAsync(requestedRepository.RootPath, token);
+                    bool rebaseInProgress = await _repositoryService.IsRebaseInProgressAsync(updated, token);
+                    IReadOnlyList<string> conflicts = await _repositoryService.GetConflictPathsAsync(updated, token);
+
+                    if (IsCurrentRebaseRequest(requestedRepository.RootPath, request))
+                    {
+                        await ApplyRebaseResultAsync(updated, rebaseInProgress, conflicts, request);
+                    }
+
+                    if (conflicts.Count > 0)
+                    {
+                        if (IsCurrentRebaseRequest(requestedRepository.RootPath, request))
+                        {
+                            StatusMessage = _stringHelper.Format("RebaseNextConflicts", conflicts.Count);
+                        }
+                        return;
+                    }
+
+                    if (result.ExitCode != 0)
+                    {
+                        throw new GitException("RebaseContinueFailed", null, result.ExitCode, result.Error.Trim());
+                    }
+
+                    if (IsCurrentRebaseRequest(requestedRepository.RootPath, request) == false)
+                    {
+                        return;
+                    }
+                    if (rebaseInProgress)
+                    {
+                        StatusMessage = _stringHelper.GetString("RebaseContinueStillInProgress");
+                        return;
+                    }
+                    StatusMessage = _stringHelper.GetString("RebaseContinueCompleted");
+                });
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentRebaseRequest(requestedRepository.RootPath, request))
+                {
+                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                }
+            }
+        }
+
+        private async Task ApplyRebaseResultAsync(GitRepository updated, bool rebaseInProgress,
+            IReadOnlyList<string> conflicts, int request)
+        {
+            if (IsCurrentRebaseRequest(updated.RootPath, request) == false)
+            {
+                return;
+            }
+
+            _repository = updated;
+            Conflicts.BindRepository(updated);
+            RepositoryMeta = FormatRepositoryMeta(updated);
+            IsRebaseInProgress = rebaseInProgress;
+            await ApplyConflictPathsAsync(updated, conflicts);
+            if (IsCurrentRebaseRequest(updated.RootPath, request) == false)
+            {
+                return;
+            }
+
+            await LocalChanges.LoadWorktreeAsync(updated);
+            if (IsCurrentRebaseRequest(updated.RootPath, request) == false)
+            {
+                return;
+            }
+
+            Task history = History.LoadAsync(updated);
+            Task references = References.SetRepositoryAsync(updated);
+            Task remote = RemoteOperations.SetRepositoryAsync(updated);
+            await Task.WhenAll(history, references, remote);
+        }
+
+        private bool IsCurrentRebaseRequest(string repositoryRoot, int request)
+        {
+            if (request != _repositoryRequestVersion)
+            {
+                return false;
+            }
+            if (_repository == null)
+            {
+                return false;
+            }
+            return _pathComparer.Equals(_repository.RootPath, repositoryRoot);
         }
 
         private void OnGitOperationQueueStateChanged(GitOperationQueueState state)
@@ -1240,6 +1436,131 @@ namespace Bough.App.ViewModels
             NotifySidebarStatusChanged();
         }
 
+        private void OnGitSettingsPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
+        {
+            if (eventArgs.PropertyName != nameof(GitSettingsViewModel.StatusMessage))
+            {
+                return;
+            }
+            if (IsGitSettingsView == false)
+            {
+                return;
+            }
+            int viewVersion = _gitSettingsStatusViewVersion;
+            if (Dispatcher.UIThread.CheckAccess() == false)
+            {
+                Dispatcher.UIThread.Post(() => UpdateGitSettingsStatusMessage(viewVersion));
+                return;
+            }
+            UpdateGitSettingsStatusMessage(viewVersion);
+        }
+
+        private void UpdateGitSettingsStatusMessage(int viewVersion)
+        {
+            if (viewVersion != _gitSettingsStatusViewVersion)
+            {
+                return;
+            }
+            if (IsGitSettingsView == false)
+            {
+                return;
+            }
+            string message = GitSettings.StatusMessage;
+            if (_visibleGitSettingsStatusMessage == message)
+            {
+                return;
+            }
+            _visibleGitSettingsStatusMessage = message;
+            NotifySidebarStatusChanged();
+        }
+
+        private void OnLocalChangesPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
+        {
+            if (eventArgs.PropertyName != nameof(LocalChangesViewModel.ErrorText))
+            {
+                return;
+            }
+            if (IsLocalChangesView == false)
+            {
+                return;
+            }
+            int viewVersion = _localChangesStatusViewVersion;
+            if (Dispatcher.UIThread.CheckAccess() == false)
+            {
+                Dispatcher.UIThread.Post(() => UpdateLocalChangesErrorText(viewVersion));
+                return;
+            }
+            UpdateLocalChangesErrorText(viewVersion);
+        }
+
+        private void UpdateLocalChangesErrorText(int viewVersion)
+        {
+            if (viewVersion != _localChangesStatusViewVersion)
+            {
+                return;
+            }
+            if (IsLocalChangesView == false)
+            {
+                return;
+            }
+            string message = LocalChanges.ErrorText;
+            if (_visibleLocalChangesErrorText == message)
+            {
+                return;
+            }
+            _visibleLocalChangesErrorText = message;
+            NotifySidebarStatusChanged();
+        }
+
+        private void OnStashPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
+        {
+            string propertyName = eventArgs.PropertyName;
+            switch (propertyName)
+            {
+                case nameof(StashViewModel.ErrorText):
+                case nameof(StashViewModel.StatusText):
+                    break;
+                default:
+                    return;
+            }
+            if (IsStashView == false)
+            {
+                return;
+            }
+            int viewVersion = _stashStatusViewVersion;
+            if (Dispatcher.UIThread.CheckAccess() == false)
+            {
+                Dispatcher.UIThread.Post(() => UpdateStashStatus(propertyName, viewVersion));
+                return;
+            }
+            UpdateStashStatus(propertyName, viewVersion);
+        }
+
+        private void UpdateStashStatus(string propertyName, int viewVersion)
+        {
+            if (viewVersion != _stashStatusViewVersion)
+            {
+                return;
+            }
+            if (IsStashView == false)
+            {
+                return;
+            }
+            if (propertyName == nameof(StashViewModel.ErrorText))
+            {
+                _visibleStashErrorText = LocalChanges.Stashes.ErrorText;
+                if (string.IsNullOrWhiteSpace(_visibleStashErrorText) == false)
+                {
+                    _visibleStashStatusText = string.Empty;
+                }
+                NotifySidebarStatusChanged();
+                return;
+            }
+            _visibleStashStatusText = LocalChanges.Stashes.StatusText;
+            _visibleStashErrorText = string.Empty;
+            NotifySidebarStatusChanged();
+        }
+
         private void NotifySidebarStatusChanged()
         {
             OnPropertyChanged(nameof(SidebarStatusText));
@@ -1298,6 +1619,37 @@ namespace Bough.App.ViewModels
                 return false;
             }
             return true;
+        }
+
+        private bool CanContinueRebase()
+        {
+            if (HasRepository == false)
+            {
+                return false;
+            }
+            if (IsRebaseInProgress == false)
+            {
+                return false;
+            }
+            if (IsBusy)
+            {
+                return false;
+            }
+            if (IsLocalChangesLoading)
+            {
+                return false;
+            }
+            if (Conflicts.IsBusy)
+            {
+                return false;
+            }
+            return Conflicts.ConflictFiles.Count == 0;
+        }
+
+        private void NotifyRebaseState()
+        {
+            OnPropertyChanged(nameof(RebaseStatusText));
+            ContinueRebaseCommand.NotifyCanExecuteChanged();
         }
 
         private bool CanRefresh()
@@ -1373,6 +1725,7 @@ namespace Bough.App.ViewModels
             ShowHistoryCommand.NotifyCanExecuteChanged();
             ShowLocalChangesCommand.NotifyCanExecuteChanged();
             ShowGitSettingsCommand.NotifyCanExecuteChanged();
+            ContinueRebaseCommand.NotifyCanExecuteChanged();
         }
 
     }

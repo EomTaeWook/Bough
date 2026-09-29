@@ -8,6 +8,14 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Preview
 
+### Conflict resolution
+
+![Bough conflict window showing both changes, individual and batch choices, and the final file preview](Docs/images/conflict.png)
+
+This screen shows a reproduced text merge conflict. Compare both changes, choose how to resolve each section, and review the final file.
+
+### History
+
 ![Bough History showing the commit graph, changed files, and code preview](Docs/images/history.png)
 
 ## Why Bough?

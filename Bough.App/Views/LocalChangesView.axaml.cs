@@ -76,6 +76,17 @@ namespace Bough.App.Views
             DetachedFromVisualTree += delegate { UnbindConfirmations(); UnbindFileSections(); };
         }
 
+        private void PreviewNumberGutterPressed(object sender, PointerPressedEventArgs eventArgs)
+        {
+            if (eventArgs.GetCurrentPoint(PreviewNumberGutter).Properties.IsLeftButtonPressed == false)
+            {
+                return;
+            }
+
+            bool extendSelection = (eventArgs.KeyModifiers & KeyModifiers.Shift) == KeyModifiers.Shift;
+            PreviewCode.SelectLineAt(eventArgs.GetPosition(PreviewNumberGutter).Y, extendSelection);
+        }
+
         private void BindContextMenuLabels()
         {
             _contextStagedRepository = null;
@@ -87,6 +98,7 @@ namespace Bough.App.Views
             {
                 StagedUnstageItem.IsEnabled = false;
                 DiscardContextItem.IsEnabled = false;
+                StopTrackingContextItem.IsVisible = false;
                 IgnoreContextItem.IsEnabled = false;
                 return;
             }
@@ -94,10 +106,12 @@ namespace Bough.App.Views
             StagedUnstageItem.Header = viewModel.UnstageSelectedText;
             ToolTip.SetTip(StagedUnstageItem, viewModel.UnstageSelectedText);
             StagedUnstageItem.IsEnabled = false;
-            string discardLabel = viewModel.GetDiscardSelectionText(0);
+            string discardLabel = viewModel.GetDiscardContextMenuText(Array.Empty<GitWorktreeFile>());
             DiscardContextItem.Header = discardLabel;
             ToolTip.SetTip(DiscardContextItem, discardLabel);
             DiscardContextItem.IsEnabled = false;
+            StopTrackingContextItem.Header = viewModel.StopTrackingContextMenuText;
+            StopTrackingContextItem.IsVisible = false;
             IgnoreContextItem.Header = viewModel.IgnoreMenuText;
             IgnoreContextItem.IsVisible = false;
             IgnoreRepositoryItem.Header = viewModel.IgnoreRepositoryText;
@@ -236,6 +250,7 @@ namespace Bough.App.Views
             _confirmationSource = viewModel;
             viewModel.ConfirmLargeFilesRequested += ConfirmLargeFilesAsync;
             viewModel.ConfirmDiscardRequested += ConfirmDiscardAsync;
+            viewModel.ConfirmStopTrackingRequested += ConfirmStopTrackingAsync;
             viewModel.ConfirmIgnoreRequested += ConfirmIgnoreAsync;
         }
 
@@ -248,6 +263,7 @@ namespace Bough.App.Views
 
             _confirmationSource.ConfirmLargeFilesRequested -= ConfirmLargeFilesAsync;
             _confirmationSource.ConfirmDiscardRequested -= ConfirmDiscardAsync;
+            _confirmationSource.ConfirmStopTrackingRequested -= ConfirmStopTrackingAsync;
             _confirmationSource.ConfirmIgnoreRequested -= ConfirmIgnoreAsync;
             _confirmationSource = null;
         }
@@ -280,7 +296,31 @@ namespace Bough.App.Views
                 return false;
             }
 
-            DiscardChangesWindow window = new(plans, viewModel.DiscardTitleText, viewModel.DiscardPathLabelText, viewModel.GetDiscardImpactText(plans), viewModel.GetDiscardConfirmText(plans), viewModel.DiscardCancelText);
+            DiscardChangesWindow window = new(plans, viewModel.GetDiscardTitleText(plans), viewModel.DiscardPathLabelText, viewModel.GetDiscardImpactText(plans), viewModel.GetDiscardConfirmText(plans), viewModel.DiscardCancelText);
+            StashDialogOpening?.Invoke();
+            try
+            {
+                return await window.ShowForAsync(owner, cancellationToken);
+            }
+            finally
+            {
+                StashDialogClosed?.Invoke(false);
+            }
+        }
+
+        private async Task<bool> ConfirmStopTrackingAsync(IReadOnlyList<GitDiscardPlan> plans, CancellationToken cancellationToken)
+        {
+            if (DataContext is not LocalChangesViewModel viewModel)
+            {
+                return false;
+            }
+
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return false;
+            }
+
+            DiscardChangesWindow window = new(plans, viewModel.StopTrackingTitleText, viewModel.DiscardPathLabelText, viewModel.GetStopTrackingDescription(plans.Count), viewModel.StopTrackingConfirmText, viewModel.DiscardCancelText);
             StashDialogOpening?.Invoke();
             try
             {
@@ -474,15 +514,23 @@ namespace Bough.App.Views
             if (DataContext is not LocalChangesViewModel viewModel)
             {
                 DiscardContextItem.IsEnabled = false;
+                StopTrackingContextItem.IsVisible = false;
                 IgnoreContextItem.IsVisible = false;
                 return;
             }
 
-            if (_contextPointerSelection == true)
+            bool preservePointerSelection = _contextPointerSelection;
+            if (preservePointerSelection == false)
             {
-                HashSet<string> paths = new(_contextDiscardPaths, StringComparer.Ordinal);
-                GitWorktreeFile[] files = viewModel.UnstagedFiles.Where(file => paths.Contains(file.Path)).ToArray();
-                _contextDiscardPaths = files.Select(file => file.Path).ToArray();
+                _contextDiscardPaths = UnstagedList.SelectedItems.OfType<GitWorktreeFile>().Select(file => file.Path).ToArray();
+            }
+
+            _contextPointerSelection = false;
+            HashSet<string> paths = new(_contextDiscardPaths, StringComparer.Ordinal);
+            GitWorktreeFile[] files = viewModel.UnstagedFiles.Where(file => paths.Contains(file.Path)).ToArray();
+            _contextDiscardPaths = files.Select(file => file.Path).ToArray();
+            if (preservePointerSelection == true)
+            {
                 if (files.Length > 0)
                 {
                     UnstagedList.SelectedItems.Clear();
@@ -492,16 +540,17 @@ namespace Bough.App.Views
                     }
                 }
             }
-            else
-            {
-                _contextDiscardPaths = UnstagedList.SelectedItems.OfType<GitWorktreeFile>().Select(file => file.Path).ToArray();
-            }
 
-            _contextPointerSelection = false;
-            string label = viewModel.GetDiscardSelectionText(_contextDiscardPaths.Count);
+            string label = viewModel.GetDiscardContextMenuText(files);
             DiscardContextItem.Header = label;
             DiscardContextItem.IsEnabled = _contextDiscardPaths.Count > 0;
             ToolTip.SetTip(DiscardContextItem, label);
+            bool canStopTracking = viewModel.CanStopTrackingPaths(_contextDiscardPaths);
+            string stopTrackingLabel = viewModel.StopTrackingContextMenuText;
+            StopTrackingContextItem.Header = stopTrackingLabel;
+            StopTrackingContextItem.IsVisible = canStopTracking;
+            StopTrackingContextItem.IsEnabled = canStopTracking;
+            ToolTip.SetTip(StopTrackingContextItem, stopTrackingLabel);
             IgnoreContextItem.Header = viewModel.IgnoreMenuText;
             bool canIgnore = viewModel.CanIgnorePaths(_contextDiscardPaths);
             IgnoreContextItem.IsVisible = canIgnore;
@@ -530,6 +579,21 @@ namespace Bough.App.Views
             }
 
             await viewModel.DiscardPathsAsync(_contextDiscardPaths);
+        }
+
+        private async void StopTrackingContextClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not LocalChangesViewModel viewModel)
+            {
+                return;
+            }
+
+            if (viewModel.CanStopTrackingPaths(_contextDiscardPaths) == false)
+            {
+                return;
+            }
+
+            await viewModel.StopTrackingPathsAsync(_contextDiscardPaths);
         }
 
         private async void IgnoreRepositoryClicked(object sender, RoutedEventArgs eventArgs)

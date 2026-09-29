@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Localization;
+using Bough.App.Presenters;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
 using Bough.Core.Internals;
@@ -14,7 +15,7 @@ namespace Bough.App.ViewModels
     public class LocalChangesViewModel : ViewModelBase
     {
         private readonly GitWorkingTreeService _workingTreeService;
-        private readonly GitOperationQueue _operationQueue;
+        private readonly LocalChangesMutationPresenter _mutationPresenter;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly ObservableCollection<GitWorktreeFile> _unstagedFiles;
@@ -65,7 +66,7 @@ namespace Bough.App.ViewModels
             }
 
             _workingTreeService = workingTreeService;
-            _operationQueue = operationQueue;
+            _mutationPresenter = new LocalChangesMutationPresenter(workingTreeService, operationQueue);
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
             Stashes = new StashViewModel(stashService, workingTreeService, operationQueue, stringHelper, errorLocalizer);
@@ -103,10 +104,17 @@ namespace Bough.App.ViewModels
         public event Action<string> Committed;
 
         public event Func<IReadOnlyList<GitLargeFileCandidate>, CancellationToken, Task<bool>> ConfirmLargeFilesRequested;
+        internal Func<IReadOnlyList<GitLargeFileCandidate>, CancellationToken, Task<bool>> LargeFileConfirmation { get { return ConfirmLargeFilesRequested; } }
 
         public event Func<IReadOnlyList<GitDiscardPlan>, CancellationToken, Task<bool>> ConfirmDiscardRequested;
 
+        public event Func<IReadOnlyList<GitDiscardPlan>, CancellationToken, Task<bool>> ConfirmStopTrackingRequested;
+
         public event Func<GitIgnorePlan, CancellationToken, Task<bool>> ConfirmIgnoreRequested;
+
+        internal Func<IReadOnlyList<GitDiscardPlan>, CancellationToken, Task<bool>> DiscardConfirmation { get { return ConfirmDiscardRequested; } }
+        internal Func<IReadOnlyList<GitDiscardPlan>, CancellationToken, Task<bool>> StopTrackingConfirmation { get { return ConfirmStopTrackingRequested; } }
+        internal Func<GitIgnorePlan, CancellationToken, Task<bool>> IgnoreConfirmation { get { return ConfirmIgnoreRequested; } }
 
         public StashViewModel Stashes { get; }
 
@@ -158,11 +166,55 @@ namespace Bough.App.ViewModels
 
         public string DiscardSelectedText { get { return _stringHelper.GetString("DiscardSelected"); } }
 
-        public string DiscardSelectionText { get { return GetDiscardSelectionText(GetDiscardSelection().Count); } }
+        public string DiscardSelectionText { get { return GetDiscardSelectionText(GetDiscardSelection()); } }
 
-        public string GetDiscardSelectionText(int count) { return _stringHelper.Format("DiscardSelectionCount", count); }
+        public string GetDiscardSelectionText(IReadOnlyList<GitWorktreeFile> files)
+        {
+            int untrackedCount = files.Count(file => file.IsUntracked);
+            int trackedCount = files.Count - untrackedCount;
+            if (untrackedCount == 0)
+            {
+                return _stringHelper.Format("DiscardTrackedSelectionCount", trackedCount);
+            }
+            if (trackedCount == 0)
+            {
+                return _stringHelper.Format("DeleteUntrackedSelectionCount", untrackedCount);
+            }
 
-        public string DiscardTitleText { get { return _stringHelper.GetString("DiscardTitle"); } }
+            return _stringHelper.Format("DiscardMixedSelectionCount", trackedCount, untrackedCount);
+        }
+
+        public string GetDiscardContextMenuText(IReadOnlyList<GitWorktreeFile> files)
+        {
+            int untrackedCount = files.Count(file => file.IsUntracked);
+            int trackedCount = files.Count - untrackedCount;
+            if (untrackedCount == 0)
+            {
+                return _stringHelper.GetString("DiscardTrackedContextMenu");
+            }
+            if (trackedCount == 0)
+            {
+                return _stringHelper.GetString("DeleteUntrackedContextMenu");
+            }
+
+            return _stringHelper.GetString("DiscardMixedContextMenu");
+        }
+
+        public string GetDiscardTitleText(IReadOnlyList<GitDiscardPlan> plans)
+        {
+            int untrackedCount = plans.Count(plan => plan.IsUntracked);
+            int trackedCount = plans.Count - untrackedCount;
+            if (untrackedCount == 0)
+            {
+                return _stringHelper.GetString("DiscardTrackedTitle");
+            }
+            if (trackedCount == 0)
+            {
+                return _stringHelper.GetString("DeleteUntrackedTitle");
+            }
+
+            return _stringHelper.GetString("DiscardMixedTitle");
+        }
 
         public string DiscardPathLabelText { get { return _stringHelper.GetString("DiscardPathLabel"); } }
 
@@ -194,6 +246,15 @@ namespace Bough.App.ViewModels
             int untrackedCount = plans.Count(plan => plan.IsUntracked);
             int renameCount = plans.Count(plan => plan.IsWorktreeRename);
             int trackedCount = plans.Count - untrackedCount;
+            if (untrackedCount == 0)
+            {
+                return _stringHelper.Format("DiscardTrackedImpact", trackedCount, renameCount);
+            }
+            if (trackedCount == 0)
+            {
+                return _stringHelper.Format("DeleteUntrackedImpact", untrackedCount);
+            }
+
             return _stringHelper.Format("DiscardBatchImpact", trackedCount, untrackedCount, renameCount);
         }
 
@@ -203,9 +264,23 @@ namespace Bough.App.ViewModels
             {
                 return _stringHelper.GetString("DiscardConfirmUntracked");
             }
+            if (plans.Any(plan => plan.IsUntracked) == true)
+            {
+                return _stringHelper.GetString("DiscardConfirmMixed");
+            }
 
             return _stringHelper.GetString("DiscardConfirmTracked");
         }
+
+        public string StopTrackingTitleText { get { return _stringHelper.GetString("StopTrackingTitle"); } }
+
+        public string StopTrackingConfirmText { get { return _stringHelper.GetString("StopTrackingConfirm"); } }
+
+        public string StopTrackingContextMenuText { get { return _stringHelper.GetString("StopTrackingContextMenu"); } }
+
+        public string GetStopTrackingSelectionText(int count) { return _stringHelper.Format("StopTrackingSelectionCount", count); }
+
+        public string GetStopTrackingDescription(int count) { return _stringHelper.Format("StopTrackingDescription", count); }
 
         public string LargeStageTitleText { get { return _stringHelper.GetString("LargeStageTitle"); } }
 
@@ -774,15 +849,7 @@ namespace Bough.App.ViewModels
                 return Task.CompletedTask;
             }
 
-            return QueueMutationAsync(repository, UnstageSelectedText, async cancellationToken =>
-            {
-                await RunOperationCoreAsync(repository, async token =>
-                {
-                    GitWorktreeFile current = await ValidateFileSelectionAsync(repository, file, true, token);
-                    await _workingTreeService.UnstageAsync(repository, current, token);
-                    return true;
-                }, file.Path, false, cancellationToken);
-            });
+            return _mutationPresenter.UnstageSelectedAsync(this, repository, file, UnstageSelectedText);
         }
 
         private Task DiscardSelectedAsync()
@@ -827,54 +894,12 @@ namespace Bough.App.ViewModels
                 files.Add(file);
             }
 
-            return QueueMutationAsync(repository, GetDiscardSelectionText(files.Count), cancellationToken => DiscardCoreAsync(repository, files, cancellationToken));
+            return QueueMutationAsync(repository, GetDiscardSelectionText(files), cancellationToken => DiscardCoreAsync(repository, files, cancellationToken));
         }
 
-        private async Task DiscardCoreAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, CancellationToken cancellationToken)
+        private Task DiscardCoreAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, CancellationToken cancellationToken)
         {
-            bool active = IsCurrentRepository(repository);
-            if (active == true)
-            {
-                IsBusy = true;
-                ErrorText = string.Empty;
-            }
-
-            try
-            {
-                IReadOnlyList<GitDiscardPlan> plans = await _workingTreeService.PrepareDiscardsAsync(repository, files, cancellationToken);
-                Func<IReadOnlyList<GitDiscardPlan>, CancellationToken, Task<bool>> confirm = ConfirmDiscardRequested;
-                if (confirm == null)
-                {
-                    throw new GitException("LocalDiscardRequiresConfirmation", null, Array.Empty<object>());
-                }
-
-                bool accepted = await confirm(plans, cancellationToken);
-                if (accepted == false)
-                {
-                    return;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-                GitDiscardBatchResult result = await _workingTreeService.ApplyDiscardsAsync(repository, plans, cancellationToken);
-                if (IsCurrentRepository(repository) == true)
-                {
-                    await RefreshAsync();
-                }
-                if (result.HasError == true)
-                {
-                    throw new GitException("DiscardBatchPartialFailure", result.Error, result.CompletedPaths.Count, string.Join("\n", result.CompletedPaths), result.RemainingPaths.Count, string.Join("\n", result.RemainingPaths), _errorLocalizer.GetDisplayMessage(result.Error));
-                }
-            }
-            finally
-            {
-                if (active == true)
-                {
-                    if (IsCurrentRepository(repository) == true)
-                    {
-                        IsBusy = false;
-                    }
-                }
-            }
+            return _mutationPresenter.DiscardAsync(this, repository, files, cancellationToken);
         }
 
         public bool CanIgnorePaths(IReadOnlyList<string> paths)
@@ -911,6 +936,99 @@ namespace Bough.App.ViewModels
             return true;
         }
 
+        public bool CanStopTrackingPaths(IReadOnlyList<string> paths)
+        {
+            if (_repository == null)
+            {
+                return false;
+            }
+
+            if (paths == null)
+            {
+                return false;
+            }
+
+            if (paths.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (string path in paths)
+            {
+                GitWorktreeFile file = _unstagedFiles.FirstOrDefault(candidate => candidate.Path == path);
+                if (file == null)
+                {
+                    return false;
+                }
+                if (file.IsUntracked == true)
+                {
+                    return false;
+                }
+                if (file.IsConflict == true)
+                {
+                    return false;
+                }
+                if (string.IsNullOrEmpty(file.OriginalPath) == false)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public Task StopTrackingPathsAsync(IReadOnlyList<string> paths)
+        {
+            GitRepository repository = _repository;
+            if (repository == null)
+            {
+                return Task.CompletedTask;
+            }
+            if (paths == null)
+            {
+                return Task.CompletedTask;
+            }
+            if (paths.Count == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            List<GitWorktreeFile> files = [];
+            foreach (string path in paths.Distinct(StringComparer.Ordinal))
+            {
+                GitWorktreeFile file = _unstagedFiles.FirstOrDefault(candidate => candidate.Path == path);
+                if (file == null)
+                {
+                    ErrorText = _stringHelper.Format("LocalSelectedFileUnavailable", path);
+                    return Task.CompletedTask;
+                }
+                if (file.IsUntracked == true)
+                {
+                    ErrorText = _stringHelper.Format("LocalSelectedFileUnavailable", path);
+                    return Task.CompletedTask;
+                }
+                if (file.IsConflict == true)
+                {
+                    ErrorText = _stringHelper.Format("LocalSelectedFileUnavailable", path);
+                    return Task.CompletedTask;
+                }
+                if (string.IsNullOrEmpty(file.OriginalPath) == false)
+                {
+                    ErrorText = _stringHelper.Format("LocalSelectedFileUnavailable", path);
+                    return Task.CompletedTask;
+                }
+
+                files.Add(file);
+            }
+
+            return QueueMutationAsync(repository, GetStopTrackingSelectionText(files.Count), cancellationToken => StopTrackingCoreAsync(repository, files, cancellationToken));
+        }
+
+        private Task StopTrackingCoreAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, CancellationToken cancellationToken)
+        {
+            return _mutationPresenter.StopTrackingAsync(this, repository, files, cancellationToken);
+        }
+
         public Task IgnorePathsAsync(IReadOnlyList<string> paths, GitIgnoreLocation location)
         {
             GitRepository repository = _repository;
@@ -935,47 +1053,9 @@ namespace Bough.App.ViewModels
             return QueueMutationAsync(repository, IgnoreMenuText, cancellationToken => IgnoreCoreAsync(repository, files, location, cancellationToken));
         }
 
-        private async Task IgnoreCoreAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, GitIgnoreLocation location, CancellationToken cancellationToken)
+        private Task IgnoreCoreAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, GitIgnoreLocation location, CancellationToken cancellationToken)
         {
-            bool active = IsCurrentRepository(repository);
-            if (active == true)
-            {
-                IsBusy = true;
-                ErrorText = string.Empty;
-            }
-
-            try
-            {
-                GitIgnorePlan plan = await _workingTreeService.Ignore.PrepareAsync(repository, files, location, cancellationToken);
-                Func<GitIgnorePlan, CancellationToken, Task<bool>> confirm = ConfirmIgnoreRequested;
-                if (confirm == null)
-                {
-                    throw new GitException("LocalIgnoreRequiresConfirmation", null, Array.Empty<object>());
-                }
-
-                bool accepted = await confirm(plan, cancellationToken);
-                if (accepted == false)
-                {
-                    return;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-                await _workingTreeService.Ignore.ApplyAsync(repository, plan, cancellationToken);
-                if (IsCurrentRepository(repository) == true)
-                {
-                    await RefreshAsync();
-                }
-            }
-            finally
-            {
-                if (active == true)
-                {
-                    if (IsCurrentRepository(repository) == true)
-                    {
-                        IsBusy = false;
-                    }
-                }
-            }
+            return _mutationPresenter.IgnoreAsync(this, repository, files, location, cancellationToken);
         }
 
         private Task StageAllAsync()
@@ -997,41 +1077,7 @@ namespace Bough.App.ViewModels
                 operationName = StageSelectedText;
             }
 
-            return QueueMutationAsync(repository, operationName, async cancellationToken =>
-            {
-                await RunOperationCoreAsync(repository, async token =>
-                {
-                    GitStagePlan plan;
-                    if (selectedPath == null)
-                    {
-                        plan = await _workingTreeService.PrepareStageAllAsync(repository, token);
-                    }
-                    else
-                    {
-                        plan = await _workingTreeService.PrepareStageSelectedAsync(repository, selectedPath, token);
-                    }
-
-                    ValidateFileSelection(expectedFiles, plan.Files, false);
-                    if (plan.LargeFiles.Count > 0)
-                    {
-                        Func<IReadOnlyList<GitLargeFileCandidate>, CancellationToken, Task<bool>> confirm = ConfirmLargeFilesRequested;
-                        if (confirm == null)
-                        {
-                            throw new GitException("LocalLargeStageRequiresConfirmation", null, Array.Empty<object>());
-                        }
-
-                        bool accepted = await confirm(plan.LargeFiles, token);
-                        if (accepted == false)
-                        {
-                            return false;
-                        }
-                    }
-
-                    token.ThrowIfCancellationRequested();
-                    await _workingTreeService.ApplyStagePlanAsync(repository, plan, token);
-                    return true;
-                }, preferredPath, true, cancellationToken);
-            });
+            return _mutationPresenter.StageAsync(this, repository, expectedFiles, selectedPath, preferredPath, operationName);
         }
 
         private Task UnstageAllAsync()
@@ -1044,16 +1090,7 @@ namespace Bough.App.ViewModels
 
             GitWorktreeFile[] expectedFiles = _stagedFiles.ToArray();
             string preferredPath = SelectedStagedFile?.Path;
-            return QueueMutationAsync(repository, UnstageAllText, async cancellationToken =>
-            {
-                await RunOperationCoreAsync(repository, async token =>
-                {
-                    GitWorktreeStatus status = await _workingTreeService.GetStatusAsync(repository, token);
-                    ValidateFileSelection(expectedFiles, status.Files.Where(file => file.IsStaged).ToArray(), true);
-                    await _workingTreeService.UnstageAllAsync(repository, token);
-                    return true;
-                }, preferredPath, false, cancellationToken);
-            });
+            return _mutationPresenter.UnstageAllAsync(this, repository, expectedFiles, preferredPath, UnstageAllText);
         }
 
         private Task CommitAsync()
@@ -1067,39 +1104,40 @@ namespace Bough.App.ViewModels
             string message = CommitMessage;
             bool amend = Amend;
             GitWorktreeFile[] expectedFiles = _stagedFiles.ToArray();
-            return QueueMutationAsync(repository, CommitButtonText, async cancellationToken =>
-            {
-                string hash = null;
-                await RunOperationCoreAsync(repository, async token =>
-                {
-                    GitWorktreeStatus status = await _workingTreeService.GetStatusAsync(repository, token);
-                    ValidateFileSelection(expectedFiles, status.Files.Where(file => file.IsStaged).ToArray(), true);
-                    hash = await _workingTreeService.CommitAsync(repository, message, amend, token);
-                    if (IsCurrentRepository(repository) == false)
-                    {
-                        return true;
-                    }
-
-                    if (CommitMessage == message)
-                    {
-                        if (Amend == amend)
-                        {
-                            Amend = false;
-                            CommitMessage = string.Empty;
-                        }
-                    }
-
-                    return true;
-                }, null, false, cancellationToken);
-                if (IsCurrentRepository(repository) == true)
-                {
-                    StatusText = _stringHelper.Format("LocalCommittedNotice", hash);
-                    Committed?.Invoke(hash);
-                }
-            });
+            return _mutationPresenter.CommitAsync(this, repository, message, amend, expectedFiles, CommitButtonText);
         }
 
-        private async Task RunOperationCoreAsync(GitRepository repository, Func<CancellationToken, Task<bool>> operation, string preferredPath, bool preferStaged, CancellationToken cancellationToken)
+        internal void ClearCommittedDraft(GitRepository repository, string message, bool amend)
+        {
+            if (IsCurrentRepository(repository) == false)
+            {
+                return;
+            }
+            if (CommitMessage != message)
+            {
+                return;
+            }
+            if (Amend != amend)
+            {
+                return;
+            }
+
+            Amend = false;
+            CommitMessage = string.Empty;
+        }
+
+        internal void ApplyCommitResult(GitRepository repository, string hash)
+        {
+            if (IsCurrentRepository(repository) == false)
+            {
+                return;
+            }
+
+            StatusText = _stringHelper.Format("LocalCommittedNotice", hash);
+            Committed?.Invoke(hash);
+        }
+
+        internal bool BeginMutation(GitRepository repository)
         {
             bool active = IsCurrentRepository(repository);
             if (active == true)
@@ -1108,72 +1146,51 @@ namespace Bough.App.ViewModels
                 ErrorText = string.Empty;
             }
 
-            try
-            {
-                bool changed = await operation(cancellationToken);
-                if (changed == true)
-                {
-                    if (IsCurrentRepository(repository) == true)
-                    {
-                        await RefreshAsync(preferredPath, preferStaged);
-                    }
-                }
-            }
-            catch
-            {
-                if (IsCurrentRepository(repository) == true)
-                {
-                    await RefreshAsync();
-                }
-                throw;
-            }
-            finally
-            {
-                if (active == true)
-                {
-                    if (IsCurrentRepository(repository) == true)
-                    {
-                        IsBusy = false;
-                    }
-                }
-            }
+            return active;
         }
 
-        private async Task QueueMutationAsync(GitRepository repository, string operationName, Func<CancellationToken, Task> operation)
+        internal Task RefreshAfterMutationAsync(GitRepository repository, string preferredPath, bool preferStaged)
         {
-            bool resultRecorded = false;
-            try
+            if (IsCurrentRepository(repository) == false)
             {
-                await _operationQueue.EnqueueAsync(repository.RootPath, operationName,
-                    cancellationToken => UiQueuedOperation.RunAsync(async () =>
-                    {
-                        _queuedMutationErrors.Remove(repository.RootPath);
-                        try
-                        {
-                            await operation(cancellationToken);
-                            resultRecorded = true;
-                        }
-                        catch (Exception exception)
-                        {
-                            resultRecorded = true;
-                            RememberMutationError(repository, $"{operationName}: {_errorLocalizer.GetDisplayMessage(exception)}");
-                            throw;
-                        }
-                    }));
+                return Task.CompletedTask;
             }
-            catch (Exception exception)
-            {
-                if (resultRecorded == true)
-                {
-                    return;
-                }
 
-                await UiQueuedOperation.RunAsync(() =>
-                {
-                    RememberMutationError(repository, $"{operationName}: {_errorLocalizer.GetDisplayMessage(exception)}");
-                    return Task.CompletedTask;
-                });
+            return RefreshAsync(preferredPath, preferStaged);
+        }
+
+        internal void EndMutation(GitRepository repository, bool active)
+        {
+            if (active == false)
+            {
+                return;
             }
+            if (IsCurrentRepository(repository) == false)
+            {
+                return;
+            }
+
+            IsBusy = false;
+        }
+
+        private Task QueueMutationAsync(GitRepository repository, string operationName, Func<CancellationToken, Task> operation)
+        {
+            return _mutationPresenter.EnqueueAsync(this, repository, operationName, operation);
+        }
+
+        internal void ClearQueuedMutationError(GitRepository repository)
+        {
+            _queuedMutationErrors.Remove(repository.RootPath);
+        }
+
+        internal void RememberMutationError(GitRepository repository, string operationName, Exception exception)
+        {
+            RememberMutationError(repository, $"{operationName}: {_errorLocalizer.GetDisplayMessage(exception)}");
+        }
+
+        internal string GetMutationErrorText(Exception exception)
+        {
+            return _errorLocalizer.GetDisplayMessage(exception);
         }
 
         private void RememberMutationError(GitRepository repository, string message)
@@ -1204,59 +1221,6 @@ namespace Bough.App.ViewModels
             }
 
             return string.Equals(_repository.RootPath, repository.RootPath, comparison);
-        }
-
-        private async Task<GitWorktreeFile> ValidateFileSelectionAsync(GitRepository repository, GitWorktreeFile expected, bool staged, CancellationToken cancellationToken)
-        {
-            GitWorktreeStatus status = await _workingTreeService.GetStatusAsync(repository, cancellationToken);
-            GitWorktreeFile current = status.Files.FirstOrDefault(file => file.Path == expected.Path);
-            if (current == null)
-            {
-                throw new GitException("LocalSelectedFileChanged", null, expected.Path);
-            }
-
-            ValidateFileSelection([expected], [current], staged);
-            return current;
-        }
-
-        private void ValidateFileSelection(IReadOnlyList<GitWorktreeFile> expected, IReadOnlyList<GitWorktreeFile> current, bool staged)
-        {
-            if (expected.Count != current.Count)
-            {
-                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
-            }
-
-            Dictionary<string, GitWorktreeFile> currentFiles = current.ToDictionary(file => file.Path, StringComparer.Ordinal);
-            foreach (GitWorktreeFile file in expected)
-            {
-                if (currentFiles.TryGetValue(file.Path, out GitWorktreeFile item) == false)
-                {
-                    throw new GitException("LocalSelectedFileChanged", null, file.Path);
-                }
-
-                bool available = item.IsUnstaged;
-                if (staged == true)
-                {
-                    available = item.IsStaged;
-                }
-                if (available == false)
-                {
-                    throw new GitException("LocalSelectedFileUnavailable", null, file.Path);
-                }
-
-                if (file.OriginalPath != item.OriginalPath)
-                {
-                    throw new GitException("LocalSelectedFileChanged", null, file.Path);
-                }
-                if (file.IndexStatus != item.IndexStatus)
-                {
-                    throw new GitException("LocalIndexChanged", null, file.Path);
-                }
-                if (file.WorktreeStatus != item.WorktreeStatus)
-                {
-                    throw new GitException("LocalWorkingFileChanged", null, file.Path);
-                }
-            }
         }
 
         private void OpenResolve()

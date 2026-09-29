@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Controls;
 using Bough.App.Localization;
+using Bough.App.Presenters;
 using Bough.Core.Git;
 using DataContainer.Generated;
 using Bough.App.ViewModels.Models;
@@ -17,12 +18,11 @@ namespace Bough.App.ViewModels
 {
     public class HistoryViewModel : ViewModelBase
     {
-        private readonly GitHistoryService _historyService;
-        private readonly GitCommitActionService _actionService;
+        private readonly HistoryListPresenter _listPresenter;
+        private readonly HistoryCommitPresenter _commitPresenter;
+        private readonly HistoryActionPresenter _actionPresenter;
         private readonly GitCommitInspectionService _inspectionService;
-        private readonly GitCommitMessageService _commitMessageService;
         private readonly GitCommitFileActionService _fileActionService;
-        private readonly GitOperationQueue _operationQueue;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly HistoryGraphBuilder _graphBuilder;
@@ -39,8 +39,6 @@ namespace Bough.App.ViewModels
         private int _listVersion;
         private string _selectedMessage;
         private string _errorText;
-        private int _detailsRequest;
-        private int _loadRequest;
         private GitCommitInspection _inspection;
         private string _selectedParent;
         private string _fileSearch;
@@ -61,12 +59,11 @@ namespace Bough.App.ViewModels
 
         public HistoryViewModel(GitHistoryService historyService, GitCommitActionService actionService, GitCommitInspectionService inspectionService, GitCommitMessageService commitMessageService, GitCommitFileActionService fileActionService, GitOperationQueue operationQueue, StringHelper stringHelper)
         {
-            _historyService = historyService;
-            _actionService = actionService;
+            _listPresenter = new HistoryListPresenter(historyService);
+            _commitPresenter = new HistoryCommitPresenter(inspectionService, commitMessageService);
+            _actionPresenter = new HistoryActionPresenter(actionService, operationQueue);
             _inspectionService = inspectionService;
-            _commitMessageService = commitMessageService;
             _fileActionService = fileActionService;
-            _operationQueue = operationQueue ?? throw new ArgumentNullException(nameof(operationQueue));
             _stringHelper = stringHelper;
             _errorLocalizer = new GitErrorLocalizer(stringHelper);
             Labels = new HistoryLabels(stringHelper);
@@ -335,10 +332,10 @@ namespace Bough.App.ViewModels
                 OnPropertyChanged(nameof(HasNoSelection));
                 SelectedMessage = string.Empty;
                 ClearInspection();
-                _detailsRequest++;
+                _commitPresenter.Invalidate();
                 if (value != null)
                 {
-                    _ = LoadInspectionAsync(value, _detailsRequest);
+                    _ = LoadInspectionAsync(value);
                 }
             }
         }
@@ -377,7 +374,7 @@ namespace Bough.App.ViewModels
 
         private void ResetHistoryList()
         {
-            _loadRequest++;
+            _listPresenter.Invalidate();
             _graphCursor = _graphBuilder.CreateCursor();
             _graphWidth = 0;
             _listVersion++;
@@ -398,34 +395,38 @@ namespace Bough.App.ViewModels
         public async Task<GitResetPreview> GetResetPreviewAsync(string repositoryRoot, string commitHash)
         {
             GitRepository repository = RequireRepository(repositoryRoot);
-            return await _actionService.GetResetPreviewAsync(repository, commitHash);
+            return await _actionPresenter.GetResetPreviewAsync(repository, commitHash);
         }
 
         public async Task<bool> ResetAsync(string repositoryRoot, GitResetPreview preview, GitResetMode mode, bool hardConfirmed)
         {
-            return await RunActionAsync(repositoryRoot, repository => _actionService.ResetAsync(repository, preview, mode, hardConfirmed), _stringHelper.Format("HistoryResetSucceeded", preview.BranchName, preview.ShortHash));
+            string successMessage = _stringHelper.Format("HistoryResetSucceeded", preview.BranchName, preview.ShortHash);
+            return await RunActionAsync(repositoryRoot, successMessage,
+                (repository, applyResult) => _actionPresenter.ResetAsync(repository, preview, mode, hardConfirmed, successMessage, applyResult));
         }
 
         public async Task<bool> SwitchDetachedAsync(string repositoryRoot, string commitHash)
         {
-            return await RunActionAsync(repositoryRoot, repository => _actionService.SwitchDetachedAsync(repository, commitHash), _stringHelper.Format("HistoryDetachedCheckoutSucceeded", commitHash.Substring(0, 8)));
+            string successMessage = _stringHelper.Format("HistoryDetachedCheckoutSucceeded", commitHash.Substring(0, 8));
+            return await RunActionAsync(repositoryRoot, successMessage,
+                (repository, applyResult) => _actionPresenter.SwitchDetachedAsync(repository, commitHash, successMessage, applyResult));
         }
 
         public async Task<bool> CreateBranchAsync(string repositoryRoot, string commitHash, string branchName, bool switchToBranch)
         {
-            return await RunActionAsync(repositoryRoot, repository => _actionService.CreateBranchAsync(repository, branchName, commitHash, switchToBranch), _stringHelper.Format("HistoryBranchCreated", branchName));
+            string successMessage = _stringHelper.Format("HistoryBranchCreated", branchName);
+            return await RunActionAsync(repositoryRoot, successMessage,
+                (repository, applyResult) => _actionPresenter.CreateBranchAsync(repository, commitHash, branchName, switchToBranch, successMessage, applyResult));
         }
 
         public async Task<bool> CreateTagAsync(string repositoryRoot, string commitHash, string tagName, string successMessage)
         {
+            GitRepository repository = null;
             try
             {
-                GitRepository repository = RequireRepository(repositoryRoot);
-                return await _operationQueue.EnqueueAsync(repository.RootPath, successMessage, async token =>
-                {
-                    token.ThrowIfCancellationRequested();
-                    return await CreateTagCoreAsync(repository, commitHash, tagName, successMessage);
-                });
+                repository = RequireRepository(repositoryRoot);
+                return await _actionPresenter.CreateTagAsync(repository, commitHash, tagName, successMessage,
+                    () => ApplyTagResultAsync(repository, commitHash, tagName, successMessage));
             }
             catch (OperationCanceledException)
             {
@@ -433,34 +434,29 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                ReportActionError(exception);
-                return false;
-            }
-        }
-
-        private async Task<bool> CreateTagCoreAsync(GitRepository repository, string commitHash, string tagName, string successMessage)
-        {
-            try
-            {
-                await _actionService.CreateLightweightTagAsync(repository, tagName, commitHash);
-            }
-            catch (Exception exception)
-            {
+                if (repository == null)
+                {
+                    ReportActionError(exception);
+                    return false;
+                }
                 if (_repository?.RootPath == repository.RootPath)
                 {
                     ReportActionError(exception);
                 }
                 return false;
             }
+        }
 
+        private Task<bool> ApplyTagResultAsync(GitRepository repository, string commitHash, string tagName, string successMessage)
+        {
             GitRepository current = _repository;
             if (current == null)
             {
-                return true;
+                return Task.FromResult(true);
             }
             if (current.RootPath != repository.RootPath)
             {
-                return true;
+                return Task.FromResult(true);
             }
 
             HistoryCommitItem item = Commits.FirstOrDefault(commit => commit.Hash == commitHash);
@@ -471,7 +467,7 @@ namespace Bough.App.ViewModels
             }
             RepositoryChanged?.Invoke(current);
             ActionMessage?.Invoke(successMessage);
-            return true;
+            return Task.FromResult(true);
         }
 
         public void ReportActionError(Exception exception)
@@ -494,16 +490,14 @@ namespace Bough.App.ViewModels
             return _repository;
         }
 
-        private async Task<bool> RunActionAsync(string repositoryRoot, Func<GitRepository, Task<GitRepository>> action, string successMessage)
+        private async Task<bool> RunActionAsync(string repositoryRoot, string successMessage,
+            Func<GitRepository, Func<GitRepository, Task<bool>>, Task<bool>> execute)
         {
+            GitRepository repository = null;
             try
             {
-                GitRepository repository = RequireRepository(repositoryRoot);
-                return await _operationQueue.EnqueueAsync(repository.RootPath, successMessage, async token =>
-                {
-                    token.ThrowIfCancellationRequested();
-                    return await RunActionCoreAsync(repository, action, successMessage);
-                });
+                repository = RequireRepository(repositoryRoot);
+                return await execute(repository, updated => ApplyRepositoryActionAsync(repository, updated, successMessage));
             }
             catch (OperationCanceledException)
             {
@@ -511,28 +505,11 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                ReportActionError(exception);
-                return false;
-            }
-        }
-
-        private async Task<bool> RunActionCoreAsync(GitRepository repository, Func<GitRepository, Task<GitRepository>> action, string successMessage)
-        {
-            try
-            {
-                GitRepository updated = await action(repository);
-                if (_repository?.RootPath != repository.RootPath)
+                if (repository == null)
                 {
-                    return true;
+                    ReportActionError(exception);
+                    return false;
                 }
-                _repository = updated;
-                RepositoryChanged?.Invoke(updated);
-                await LoadAsync(updated);
-                ActionMessage?.Invoke(successMessage);
-                return true;
-            }
-            catch (Exception exception)
-            {
                 if (_repository?.RootPath == repository.RootPath)
                 {
                     ReportActionError(exception);
@@ -541,9 +518,22 @@ namespace Bough.App.ViewModels
             }
         }
 
+        private async Task<bool> ApplyRepositoryActionAsync(GitRepository repository, GitRepository updated, string successMessage)
+        {
+            if (_repository?.RootPath != repository.RootPath)
+            {
+                return true;
+            }
+            _repository = updated;
+            RepositoryChanged?.Invoke(updated);
+            await LoadAsync(updated);
+            ActionMessage?.Invoke(successMessage);
+            return true;
+        }
+
         public async Task LoadAsync(GitRepository repository)
         {
-            _detailsRequest++;
+            _commitPresenter.Invalidate();
             bool repositoryChanged = _repository == null || _repository.RootPath != repository.RootPath;
             bool branchChanged = _loadedBranchName != repository.CurrentBranch;
             _repository = repository;
@@ -609,13 +599,14 @@ namespace Bough.App.ViewModels
             GitRepository repository = _repository;
             GitHistoryScope scope = _selectedScope;
             int existingCount = Commits.Count;
-            int request = ++_loadRequest;
+            string anchorHash = Commits[existingCount - 1].Hash;
             IsLoadingMore = true;
             IsLoading = true;
+            HistoryListResult result = null;
             try
             {
-                GitHistoryPage page = await _historyService.GetHistoryPageAsync(repository, existingCount - 1, 201, scope);
-                if (request != _loadRequest)
+                result = await _listPresenter.LoadNextAsync(repository, scope, existingCount, anchorHash);
+                if (result.IsCurrent == false)
                 {
                     return;
                 }
@@ -627,15 +618,12 @@ namespace Bough.App.ViewModels
                 {
                     return;
                 }
-                if (page.Commits.Count <= 1)
+                if (result.Error != null)
                 {
-                    throw new GitException("HistoryCommitListChanged", null, Array.Empty<object>());
+                    PageErrorText = _errorLocalizer.GetDisplayMessage(result.Error);
+                    return;
                 }
-                if (Commits[existingCount - 1].Hash != page.Commits[0].Hash)
-                {
-                    throw new GitException("HistoryCommitListChanged", null, Array.Empty<object>());
-                }
-
+                GitHistoryPage page = result.Page;
                 GitHistoryCommit[] newCommits = page.Commits.Skip(1).ToArray();
                 IReadOnlyList<HistoryGraphRow> rows = _graphCursor.Append(newCommits);
                 double graphWidth = Math.Max(_graphWidth, GetGraphWidth(rows));
@@ -656,7 +644,11 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                if (request != _loadRequest)
+                if (result == null)
+                {
+                    return;
+                }
+                if (_listPresenter.IsCurrent(result.RequestVersion) == false)
                 {
                     return;
                 }
@@ -668,7 +660,7 @@ namespace Bough.App.ViewModels
             }
             finally
             {
-                if (request == _loadRequest)
+                if (result != null && _listPresenter.IsCurrent(result.RequestVersion))
                 {
                     IsLoading = false;
                     IsLoadingMore = false;
@@ -685,15 +677,15 @@ namespace Bough.App.ViewModels
             }
 
             GitHistoryScope scope = _selectedScope;
-            int request = ++_loadRequest;
             IsLoadingMore = false;
             IsLoading = true;
             ErrorText = string.Empty;
             PageErrorText = string.Empty;
+            HistoryListResult result = null;
             try
             {
-                GitHistoryPage page = await _historyService.GetHistoryPageAsync(repository, 0, 200, scope);
-                if (request != _loadRequest)
+                result = await _listPresenter.LoadFirstAsync(repository, scope);
+                if (result.IsCurrent == false)
                 {
                     return;
                 }
@@ -705,6 +697,12 @@ namespace Bough.App.ViewModels
                 {
                     return;
                 }
+                if (result.Error != null)
+                {
+                    ErrorText = _errorLocalizer.GetDisplayMessage(result.Error);
+                    throw result.Error;
+                }
+                GitHistoryPage page = result.Page;
                 if (MatchesLoadedPrefix(page))
                 {
                     HasMore = Commits.Count > page.Commits.Count || page.HasMore;
@@ -733,15 +731,24 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                if (request == _loadRequest)
+                if (result == null)
                 {
-                    ErrorText = _errorLocalizer.GetDisplayMessage(exception);
-                    throw;
+                    return;
                 }
+                if (_listPresenter.IsCurrent(result.RequestVersion) == false)
+                {
+                    return;
+                }
+                if (_repository != repository)
+                {
+                    return;
+                }
+                ErrorText = _errorLocalizer.GetDisplayMessage(exception);
+                throw;
             }
             finally
             {
-                if (request == _loadRequest)
+                if (result != null && _listPresenter.IsCurrent(result.RequestVersion))
                 {
                     IsLoading = false;
                 }
@@ -835,7 +842,7 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(HasAuxiliary));
         }
 
-        private async Task LoadInspectionAsync(HistoryCommitItem selected, int request)
+        private async Task LoadInspectionAsync(HistoryCommitItem selected)
         {
             GitRepository repository = _repository;
             if (repository == null)
@@ -843,22 +850,27 @@ namespace Bough.App.ViewModels
                 return;
             }
 
+            HistoryCommitResult result = await _commitPresenter.LoadAsync(repository, selected.Hash);
+            if (result.IsCurrent == false)
+            {
+                return;
+            }
+            if (SelectedCommit != selected)
+            {
+                return;
+            }
+            if (_repository != repository)
+            {
+                return;
+            }
+            if (result.Error != null)
+            {
+                ErrorText = _errorLocalizer.GetDisplayMessage(result.Error);
+                return;
+            }
             try
             {
-                GitCommitInspection details = await _inspectionService.GetCommitAsync(repository, selected.Hash);
-                string fullMessage = await _commitMessageService.GetMessageAsync(repository, selected.Hash);
-                if (request != _detailsRequest)
-                {
-                    return;
-                }
-                if (SelectedCommit != selected)
-                {
-                    return;
-                }
-                if (_repository != repository)
-                {
-                    return;
-                }
+                GitCommitInspection details = result.Inspection;
                 _inspection = details;
                 OnPropertyChanged(nameof(Inspection));
                 OnPropertyChanged(nameof(AuthorDescription));
@@ -867,7 +879,7 @@ namespace Bough.App.ViewModels
                 OnPropertyChanged(nameof(HasParents));
                 OnPropertyChanged(nameof(HasMultipleParents));
                 OnPropertyChanged(nameof(ChangesSummary));
-                SelectedMessage = fullMessage;
+                SelectedMessage = result.Message;
                 if (details.Parents.Count > 0)
                 {
                     SelectedParent = details.Parents[0];
@@ -883,7 +895,7 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                if (request == _detailsRequest)
+                if (_commitPresenter.IsCurrent(result.RequestVersion))
                 {
                     ErrorText = _errorLocalizer.GetDisplayMessage(exception);
                 }

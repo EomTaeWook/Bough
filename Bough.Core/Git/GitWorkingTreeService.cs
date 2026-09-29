@@ -33,6 +33,46 @@ namespace Bough.Core.Git
 
         public GitIgnoreService Ignore { get; }
 
+        public void ValidateSelectedFiles(IReadOnlyList<GitWorktreeFile> expected, IReadOnlyList<GitWorktreeFile> current, bool staged)
+        {
+            if (expected.Count != current.Count)
+            {
+                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+            }
+
+            Dictionary<string, GitWorktreeFile> currentFiles = current.ToDictionary(file => file.Path, StringComparer.Ordinal);
+            foreach (GitWorktreeFile file in expected)
+            {
+                if (currentFiles.TryGetValue(file.Path, out GitWorktreeFile item) == false)
+                {
+                    throw new GitException("LocalSelectedFileChanged", null, file.Path);
+                }
+
+                bool available = item.IsUnstaged;
+                if (staged == true)
+                {
+                    available = item.IsStaged;
+                }
+                if (available == false)
+                {
+                    throw new GitException("LocalSelectedFileUnavailable", null, file.Path);
+                }
+
+                if (file.OriginalPath != item.OriginalPath)
+                {
+                    throw new GitException("LocalSelectedFileChanged", null, file.Path);
+                }
+                if (file.IndexStatus != item.IndexStatus)
+                {
+                    throw new GitException("LocalIndexChanged", null, file.Path);
+                }
+                if (file.WorktreeStatus != item.WorktreeStatus)
+                {
+                    throw new GitException("LocalWorkingFileChanged", null, file.Path);
+                }
+            }
+        }
+
         public async Task<GitWorktreeStatus> GetStatusAsync(GitRepository repository, CancellationToken cancellationToken = default)
         {
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, _statusArguments, false, cancellationToken);
@@ -239,7 +279,7 @@ namespace Bough.Core.Git
             }
 
             GitWorktreeStatus status = await GetStatusAsync(repository, cancellationToken);
-            Dictionary<string, GitWorktreeFile> currentFiles = status.Files.ToDictionary(file => file.Path, StringComparer.Ordinal);
+            Dictionary<string, List<GitWorktreeFile>> currentFiles = status.Files.GroupBy(file => file.Path, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.ToList(), StringComparer.Ordinal);
             Dictionary<string, string> indexEntries = await GetDiscardIndexEntriesAsync(repository, selected, cancellationToken);
             return await Task.Run(() =>
             {
@@ -253,12 +293,13 @@ namespace Bough.Core.Git
                         throw new GitException("WorkingDuplicateSelection", null, file.Path);
                     }
 
-                    if (currentFiles.TryGetValue(file.Path, out GitWorktreeFile current) == false)
+                    if (currentFiles.TryGetValue(file.Path, out List<GitWorktreeFile> candidates) == false)
                     {
                         throw new GitException("WorkingSelectedFileChanged", null, file.Path);
                     }
 
-                    if (DiscardStatusMatches(file, current) == false)
+                    GitWorktreeFile current = candidates.FirstOrDefault(candidate => DiscardStatusMatches(file, candidate));
+                    if (current == null)
                     {
                         throw new GitException("WorkingSelectedFileChanged", null, file.Path);
                     }
@@ -395,6 +436,50 @@ namespace Bough.Core.Git
             {
                 ExceptionDispatchInfo.Capture(result.Error).Throw();
             }
+        }
+
+        public async Task<IReadOnlyList<GitDiscardPlan>> PrepareStopTrackingAsync(GitRepository repository, IEnumerable<GitWorktreeFile> files, CancellationToken cancellationToken = default)
+        {
+            IReadOnlyList<GitDiscardPlan> plans = await PrepareDiscardsAsync(repository, files, cancellationToken);
+            foreach (GitDiscardPlan plan in plans)
+            {
+                ValidateStopTrackingPlan(plan);
+            }
+
+            return plans;
+        }
+
+        public async Task StopTrackingAsync(GitRepository repository, IReadOnlyList<GitDiscardPlan> plans, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            ArgumentNullException.ThrowIfNull(plans);
+            if (plans.Count == 0)
+            {
+                throw new GitException("WorkingSelectDiscardFile", null, Array.Empty<object>());
+            }
+
+            IReadOnlyList<GitDiscardPlan> current = await PrepareStopTrackingAsync(repository, plans.Select(plan => plan.File), cancellationToken);
+            for (int index = 0; index < plans.Count; index++)
+            {
+                if (DiscardFileMatches(plans[index], current[index]) == false)
+                {
+                    throw new GitException("WorkingSelectedFileChanged", null, plans[index].Path);
+                }
+
+                if (plans[index].IndexEntries != current[index].IndexEntries)
+                {
+                    throw new GitException("WorkingIndexChanged", null, plans[index].Path);
+                }
+            }
+
+            List<string> arguments = ["rm", "--cached", "--"];
+            foreach (GitDiscardPlan plan in current)
+            {
+                arguments.Add(LiteralPath(plan.Path));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            await _runner.RunAsync(repository.RootPath, arguments, false, cancellationToken);
         }
 
         public async Task StageAllAsync(GitRepository repository, CancellationToken cancellationToken = default)
@@ -774,6 +859,24 @@ namespace Bough.Core.Git
             }
 
             return expected.ContentHash == current.ContentHash;
+        }
+
+        private static void ValidateStopTrackingPlan(GitDiscardPlan plan)
+        {
+            if (plan.IsUntracked == true)
+            {
+                throw new GitException("WorkingSelectedFileChanged", null, plan.Path);
+            }
+
+            if (plan.File.IsConflict == true)
+            {
+                throw new GitException("WorkingSelectedFileChanged", null, plan.Path);
+            }
+
+            if (string.IsNullOrEmpty(plan.File.OriginalPath) == false)
+            {
+                throw new GitException("WorkingSelectedFileChanged", null, plan.Path);
+            }
         }
 
         private async Task<Dictionary<string, string>> GetDiscardIndexEntriesAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, CancellationToken cancellationToken)

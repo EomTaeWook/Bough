@@ -7,9 +7,9 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Bough.App.Localization;
+using Bough.App.Presenters;
 using Bough.Core.Git;
 using DataContainer.Generated;
-using Dignus.Collections;
 using Bough.Core.Git.Models;
 using Bough.Core.Internals;
 using Bough.App.Internals;
@@ -59,7 +59,12 @@ namespace Bough.App.Views
             Button confirm = new() { Content = confirmText };
             cancel.Click += delegate { dialog.Close(false); };
             confirm.Click += delegate { dialog.Close(true); };
-            dialog.Content = CreateContent(description, CreateButtons(cancel, confirm));
+            Grid content = new() { Margin = new Thickness(20), RowDefinitions = new RowDefinitions("*,Auto"), RowSpacing = 12 };
+            StackPanel buttons = CreateButtons(cancel, confirm);
+            Grid.SetRow(buttons, 1);
+            content.Children.Add(description);
+            content.Children.Add(buttons);
+            dialog.Content = content;
             return await dialog.ShowDialog<bool>(owner);
         }
 
@@ -106,42 +111,33 @@ namespace Bough.App.Views
             }
             dialog.Opened += delegate { ApplyPrimaryButtonColors(dialog, create, remoteCheckout); };
             dialog.ActualThemeVariantChanged += delegate { ApplyPrimaryButtonColors(dialog, create, remoteCheckout); };
-            ArrayQueue<string> requests = [];
-            Task consumerTask = Task.CompletedTask;
-            string processingName = null;
-            bool closeRequested = false;
+            BranchCreationPresenter presenter = new(submit);
 
             void UpdateControls()
             {
-                name.IsEnabled = closeRequested == false;
-                cancel.IsEnabled = closeRequested == false;
-                create.IsEnabled = closeRequested == false && string.IsNullOrWhiteSpace(name.Text) == false;
+                name.IsEnabled = presenter.IsInputClosed == false;
+                cancel.IsEnabled = presenter.IsInputClosed == false;
+                create.IsEnabled = presenter.IsInputClosed == false && string.IsNullOrWhiteSpace(name.Text) == false;
                 ApplyPrimaryButtonColors(dialog, create, remoteCheckout);
-                if (processingName == null)
+                if (presenter.ProcessingName == null)
                 {
                     progress.IsVisible = false;
                     return;
                 }
-                if (closeRequested)
+                if (presenter.IsCancelRequested)
                 {
-                    progress.Text = string.Format(CultureInfo.CurrentCulture, TagText("ReferenceBranchQueueClosing", stringHelper), processingName);
+                    progress.Text = string.Format(CultureInfo.CurrentCulture, TagText("ReferenceBranchQueueClosing", stringHelper), presenter.ProcessingName);
                 }
                 else
                 {
-                    progress.Text = string.Format(CultureInfo.CurrentCulture, TagText("ReferenceBranchQueueProgress", stringHelper), processingName, requests.Count);
+                    progress.Text = string.Format(CultureInfo.CurrentCulture, TagText("ReferenceBranchQueueProgress", stringHelper), presenter.ProcessingName, presenter.PendingCount);
                 }
                 progress.IsVisible = true;
             }
 
             void RequestClose()
             {
-                closeRequested = true;
-                requests.Clear();
-                UpdateControls();
-                if (consumerTask.IsCompleted)
-                {
-                    dialog.Close(false);
-                }
+                presenter.CancelPending();
             }
 
             void CloseWhenConsumerFinishes(bool result)
@@ -156,70 +152,44 @@ namespace Bough.App.Views
                 });
             }
 
-            async Task ConsumeRequestsAsync()
+            presenter.StateChanged += UpdateControls;
+            presenter.RequestFailed += delegate(string requestedName, string failure, Exception exception)
             {
-                bool completedSuccessfully = false;
-                bool hadFailure = false;
-                while (requests.Count > 0)
+                if (dialog.IsVisible == false)
                 {
-                    if (closeRequested)
-                    {
-                        break;
-                    }
-                    string requestedName = requests.Read();
-                    processingName = requestedName;
-                    UpdateControls();
-                    string failure;
-                    try
-                    {
-                        failure = await submit(requestedName);
-                    }
-                    catch (Exception exception)
-                    {
-                        failure = DisplayFailure(exception, stringHelper);
-                    }
-                    if (dialog.IsVisible == false)
-                    {
-                        return;
-                    }
-                    if (failure == null)
-                    {
-                        completedSuccessfully = true;
-                        processingName = null;
-                        UpdateControls();
-                        continue;
-                    }
-
-                    hadFailure = true;
-                    error.Text = $"{requestedName}: {failure}";
-                    error.IsVisible = true;
-                    processingName = null;
-                    UpdateControls();
+                    return;
                 }
-                if (closeRequested)
+                if (exception != null)
+                {
+                    failure = DisplayFailure(exception, stringHelper);
+                }
+                error.Text = $"{requestedName}: {failure}";
+                error.IsVisible = true;
+            };
+            presenter.Finished += delegate(bool succeeded)
+            {
+                if (succeeded)
+                {
+                    CloseWhenConsumerFinishes(true);
+                    return;
+                }
+                if (presenter.IsCancelRequested)
                 {
                     CloseWhenConsumerFinishes(false);
                     return;
                 }
-                if (completedSuccessfully && hadFailure == false)
-                {
-                    closeRequested = true;
-                    UpdateControls();
-                    CloseWhenConsumerFinishes(true);
-                    return;
-                }
                 progress.IsVisible = false;
                 name.Focus();
-            }
+            };
 
             cancel.Click += delegate { RequestClose(); };
             dialog.Closing += delegate(object sender, WindowClosingEventArgs eventArgs)
             {
-                if (consumerTask.IsCompleted)
+                if (presenter.IsRunning == false)
                 {
                     return;
                 }
-                if (processingName == null)
+                if (presenter.ProcessingName == null)
                 {
                     return;
                 }
@@ -228,11 +198,7 @@ namespace Bough.App.Views
             };
             dialog.Closed += delegate
             {
-                closeRequested = true;
-                if (requests.Count > 0)
-                {
-                    requests.Clear();
-                }
+                presenter.CancelPending();
             };
             name.TextChanged += delegate
             {
@@ -242,7 +208,7 @@ namespace Bough.App.Views
             };
             create.Click += delegate
             {
-                if (closeRequested)
+                if (presenter.IsInputClosed)
                 {
                     return;
                 }
@@ -250,17 +216,12 @@ namespace Bough.App.Views
                 {
                     return;
                 }
-                requests.Add(name.Text.Trim());
-                UpdateControls();
-                if (consumerTask.IsCompleted)
-                {
-                    consumerTask = ConsumeRequestsAsync();
-                }
+                presenter.Submit(name.Text.Trim());
             };
             dialog.Content = CreateContent(description, start, nameLabel, name, warningText, progress, error, CreateButtons(cancel, create));
             dialog.Opened += delegate { name.Focus(); };
             bool result = await dialog.ShowDialog<bool>(owner);
-            await consumerTask;
+            await presenter.Completion;
             return result;
         }
 
@@ -275,7 +236,7 @@ namespace Bough.App.Views
             Button cancel = new() { Content = TagText("ReferenceCancel", stringHelper), IsCancel = true, MinWidth = 80 };
             Button create = new() { Content = TagText("ReferenceTagAction", stringHelper), IsDefault = true, IsEnabled = false, MinWidth = 120 };
             create.Classes.Add("primary");
-            bool busy = false;
+            TagCreationPresenter presenter = new(submit);
             dialog.Opened += delegate
             {
                 error.Foreground = GetResourceBrush(dialog, "BoughBrushError");
@@ -289,7 +250,7 @@ namespace Bough.App.Views
             };
             dialog.Closing += delegate(object sender, WindowClosingEventArgs eventArgs)
             {
-                if (busy)
+                if (presenter.IsRunning)
                 {
                     eventArgs.Cancel = true;
                 }
@@ -297,13 +258,13 @@ namespace Bough.App.Views
             cancel.Click += delegate { dialog.Close(false); };
             name.TextChanged += delegate
             {
-                create.IsEnabled = busy == false && string.IsNullOrWhiteSpace(name.Text) == false;
+                create.IsEnabled = presenter.IsRunning == false && string.IsNullOrWhiteSpace(name.Text) == false;
                 ApplyPrimaryButtonColors(dialog, create, true);
                 error.IsVisible = false;
             };
             create.Click += async delegate
             {
-                if (busy)
+                if (presenter.IsRunning)
                 {
                     return;
                 }
@@ -312,30 +273,29 @@ namespace Bough.App.Views
                     return;
                 }
 
-                busy = true;
+                Task<TagCreationResult> operation = presenter.SubmitAsync(name.Text.Trim());
                 create.IsEnabled = false;
                 cancel.IsEnabled = false;
                 name.IsEnabled = false;
                 ApplyPrimaryButtonColors(dialog, create, true);
-                string failure;
-                try
+                TagCreationResult result = await operation;
+                if (dialog.IsVisible == false)
                 {
-                    failure = await submit(name.Text.Trim());
+                    return;
                 }
-                catch (Exception exception)
+                if (result.Succeeded)
                 {
-                    failure = DisplayFailure(exception, stringHelper);
-                }
-                if (failure == null)
-                {
-                    busy = false;
                     dialog.Close(true);
                     return;
+                }
+                string failure = result.Failure;
+                if (result.Error != null)
+                {
+                    failure = DisplayFailure(result.Error, stringHelper);
                 }
 
                 error.Text = failure;
                 error.IsVisible = true;
-                busy = false;
                 name.IsEnabled = true;
                 cancel.IsEnabled = true;
                 create.IsEnabled = string.IsNullOrWhiteSpace(name.Text) == false;

@@ -1022,8 +1022,8 @@
   {
     "Id": 1170,
     "Name": "DiscardTrackedImpact",
-    "Kor": "\uC791\uC5C5 \uD30C\uC77C\uC758 \uC2A4\uD14C\uC774\uC9D5\uB418\uC9C0 \uC54A\uC740 \uBCC0\uACBD\uB9CC \uC778\uB371\uC2A4 \uC0C1\uD0DC\uB85C \uB418\uB3CC\uB9BD\uB2C8\uB2E4. \uC774\uBBF8 \uC2A4\uD14C\uC774\uC9D5\uD55C \uB0B4\uC6A9\uC740 \uC720\uC9C0\uB429\uB2C8\uB2E4.",
-    "Eng": "Restore only unstaged working-tree changes from the index. Staged changes remain."
+    "Kor": "추적 파일 {0}개의 스테이징되지 않은 변경을 버립니다. 이름 변경 {1}개는 원래 경로로 되돌립니다. 이미 스테이징한 변경은 유지됩니다.",
+    "Eng": "Discard unstaged changes in {0} tracked files. Restore {1} renames to their original paths. Staged changes remain intact."
   },
   {
     "Id": 1171,
@@ -4978,5 +4978,335 @@
     "Name": "ReferenceRemoteBranchDeleteFailedWithoutOutput",
     "Kor": "{0} 원격 브랜치를 삭제하지 못했습니다(종료 코드 {1}).",
     "Eng": "Could not delete remote branch {0} (exit code {1})."
+  },
+  {
+    "Id": 2927,
+    "Name": "ConflictBatchCurrentFileLabel",
+    "Kor": "현재 파일의 남은 충돌 구간 {0}개",
+    "Eng": "{0} unresolved sections remaining in this file"
+  },
+  {
+    "Id": 2928,
+    "Name": "ConflictBatchTooltip",
+    "Kor": "이미 선택한 구간은 유지합니다. 최종 파일 미리보기만 바뀌며 저장·스테이징은 별도로 해야 합니다.",
+    "Eng": "Previous choices stay unchanged. This updates only the final-file preview; save and stage separately."
+  },
+  {
+    "Id": 2929,
+    "Name": "ConflictBatchReplaceEditsTitle",
+    "Kor": "직접 편집한 내용 바꾸기",
+    "Eng": "Replace manual edits"
+  },
+  {
+    "Id": 2930,
+    "Name": "ConflictBatchReplaceEditsMessage",
+    "Kor": "최종 파일을 직접 편집했습니다. 남은 구간에 일괄 선택을 적용하면 직접 편집한 내용이 사라집니다. 계속할까요?",
+    "Eng": "You edited the final file. Applying one choice to the remaining sections will replace those manual edits. Continue?"
+  },
+  {
+    "Id": 2931,
+    "Name": "ConflictBatchApplyButton",
+    "Kor": "일괄 적용",
+    "Eng": "Apply to remaining"
+  },
+  {
+    "Id": 2932,
+    "Name": "RebaseTargetChange",
+    "Kor": "리베이스 대상 · 적용된 커밋",
+    "Eng": "Rebase target · applied commits"
+  },
+  {
+    "Id": 2933,
+    "Name": "RebaseReplayChange",
+    "Kor": "다시 적용 중인 내 커밋",
+    "Eng": "My commit being replayed"
+  },
+  {
+    "Id": 2934,
+    "Name": "RebaseUseTarget",
+    "Kor": "리베이스 대상 사용",
+    "Eng": "Use rebase target"
+  },
+  {
+    "Id": 2935,
+    "Name": "RebaseUseReplay",
+    "Kor": "내 커밋 사용",
+    "Eng": "Use my commit"
+  },
+  {
+    "Id": 2936,
+    "Name": "RebaseTargetSource",
+    "Kor": "리베이스 대상 HEAD",
+    "Eng": "Rebase target HEAD"
+  },
+  {
+    "Id": 2937,
+    "Name": "RebaseReplaySource",
+    "Kor": "내 커밋 REBASE_HEAD",
+    "Eng": "My commit REBASE_HEAD"
+  },
+  {
+    "Id": 2938,
+    "Name": "RebaseBothOrderTip",
+    "Kor": "둘 다 사용하면 리베이스 대상 내용을 먼저, 다시 적용 중인 내 커밋 내용을 뒤에 둡니다.",
+    "Eng": "Use both places the rebase target content first, followed by my replayed commit."
+  },
+  {
+    "Id": 2939,
+    "Name": "RebaseProgressLabel",
+    "Kor": "리베이스 진행 중",
+    "Eng": "Rebase in progress"
+  },
+  {
+    "Id": 2940,
+    "Name": "RebaseResolveBeforeContinue",
+    "Kor": "남은 충돌 {0}건을 해결·스테이징하면 계속할 수 있습니다.",
+    "Eng": "Resolve and stage {0} remaining conflicts to continue."
+  },
+  {
+    "Id": 2941,
+    "Name": "RebaseReadyToContinue",
+    "Kor": "모든 충돌을 스테이징했습니다. 계속을 눌러 리베이스를 진행하세요.",
+    "Eng": "All conflicts are staged. Select Continue rebase to proceed."
+  },
+  {
+    "Id": 2942,
+    "Name": "RebaseContinueAction",
+    "Kor": "리베이스 계속",
+    "Eng": "Continue rebase"
+  },
+  {
+    "Id": 2943,
+    "Name": "RebaseNoLongerInProgress",
+    "Kor": "리베이스가 더 이상 진행 중이지 않습니다.",
+    "Eng": "The rebase is no longer in progress."
+  },
+  {
+    "Id": 2944,
+    "Name": "RebaseUnresolvedConflicts",
+    "Kor": "미해결 충돌 {0}건이 있어 리베이스를 계속할 수 없습니다.",
+    "Eng": "Cannot continue the rebase while {0} conflicts remain unresolved."
+  },
+  {
+    "Id": 2945,
+    "Name": "RebaseContinueFailed",
+    "Kor": "리베이스 계속에 실패했습니다(종료 코드 {0}). {1}",
+    "Eng": "Could not continue the rebase (exit code {0}). {1}"
+  },
+  {
+    "Id": 2946,
+    "Name": "RebaseNextConflicts",
+    "Kor": "리베이스에서 새 충돌 {0}건이 발생했습니다. 해결·스테이징한 뒤 계속하세요.",
+    "Eng": "The rebase has {0} new conflicts. Resolve and stage them, then continue."
+  },
+  {
+    "Id": 2947,
+    "Name": "RebaseContinueCompleted",
+    "Kor": "리베이스를 완료했습니다.",
+    "Eng": "Rebase completed."
+  },
+  {
+    "Id": 2948,
+    "Name": "RebaseContinueStillInProgress",
+    "Kor": "리베이스가 아직 진행 중입니다. Git 상태를 확인하세요.",
+    "Eng": "The rebase is still in progress. Check the Git state."
+  },
+  {
+    "Id": 2949,
+    "Name": "RebaseRepositoryChanged",
+    "Kor": "저장소 루트가 바뀌어 리베이스를 계속하지 않았습니다: {0}",
+    "Eng": "The repository root changed, so the rebase was not continued: {0}"
+  },
+  {
+    "Id": 2950,
+    "Name": "RebaseCheckingConflicts",
+    "Kor": "충돌 상태를 확인하는 중입니다.",
+    "Eng": "Checking the conflict state."
+  },
+  {
+    "Id": 2951,
+    "Name": "DefaultPullStrategyHeading",
+    "Kor": "Bough 기본 Pull 방식",
+    "Eng": "Bough default Pull strategy"
+  },
+  {
+    "Id": 2952,
+    "Name": "DefaultPullStrategyDescription",
+    "Kor": "모든 저장소에서 Bough의 기본 Pull 동작에 적용됩니다. Git CLI의 pull.rebase 및 pull.ff 설정은 변경하지 않습니다.",
+    "Eng": "Applies to Bough's default Pull action for every repository. Git CLI pull.rebase and pull.ff settings are not changed."
+  },
+  {
+    "Id": 2953,
+    "Name": "PullStrategyFastForwardOnly",
+    "Kor": "빠른 전진만",
+    "Eng": "Fast-forward only"
+  },
+  {
+    "Id": 2954,
+    "Name": "PullStrategyMerge",
+    "Kor": "병합",
+    "Eng": "Merge"
+  },
+  {
+    "Id": 2955,
+    "Name": "PullStrategyRebase",
+    "Kor": "리베이스",
+    "Eng": "Rebase"
+  },
+  {
+    "Id": 2956,
+    "Name": "DefaultPullStrategySaved",
+    "Kor": "Bough 기본 Pull 방식 저장: {0}",
+    "Eng": "Bough default Pull strategy saved: {0}"
+  },
+  {
+    "Id": 2957,
+    "Name": "RemotePullConfiguredDefaultTip",
+    "Kor": "기본 Pull: {0}. upstream이 없으면 받을 원격 브랜치를 선택합니다.",
+    "Eng": "Default Pull: {0}. Choose a remote branch if there is no upstream."
+  },
+  {
+    "Id": 2958,
+    "Name": "RemotePullConfiguredDefaultAutomation",
+    "Kor": "Pull (기본 방식: {0})",
+    "Eng": "Pull (default: {0})"
+  },
+  {
+    "Id": 2959,
+    "Name": "RemotePullStrategyMenuTip",
+    "Kor": "이번 Pull에 사용할 방식 또는 받을 브랜치를 선택합니다. 기본 방식: {0}",
+    "Eng": "Choose a strategy or source branch for this Pull. Default: {0}"
+  },
+  {
+    "Id": 2960,
+    "Name": "RemotePullChooseBranchDefaultTip",
+    "Kor": "받을 원격 브랜치를 고른 뒤 기본 방식({0})으로 Pull을 실행합니다.",
+    "Eng": "Choose a remote branch, then Pull with the default strategy ({0})."
+  },
+  {
+    "Id": 2961,
+    "Name": "RemotePullFastForwardAction",
+    "Kor": "빠른 전진만으로 받기",
+    "Eng": "Pull fast-forward only"
+  },
+  {
+    "Id": 2962,
+    "Name": "RemotePullDefaultSuffix",
+    "Kor": " (기본)",
+    "Eng": " (default)"
+  },
+  {
+    "Id": 2963,
+    "Name": "RemotePullStrategyMenuAutomation",
+    "Kor": "Pull 방식 메뉴 (기본: {0})",
+    "Eng": "Pull strategy menu (default: {0})"
+  },
+  {
+    "Id": 2964,
+    "Name": "RemotePullFastForwardTip",
+    "Kor": "현재 upstream에서 빠른 전진만으로 한 번 Pull합니다. upstream이 없으면 받을 원격 브랜치를 선택합니다.",
+    "Eng": "Pull once from the current upstream using fast-forward only. If there is no upstream, choose a remote branch."
+  },
+  {
+    "Id": 2965,
+    "Name": "DiscardTrackedSelectionCount",
+    "Kor": "선택한 추적 파일 {0}개의 변경 버리기",
+    "Eng": "Discard changes in {0} selected tracked files"
+  },
+  {
+    "Id": 2966,
+    "Name": "DeleteUntrackedSelectionCount",
+    "Kor": "선택한 미추적 파일 {0}개 삭제",
+    "Eng": "Delete {0} selected untracked files"
+  },
+  {
+    "Id": 2967,
+    "Name": "DiscardMixedSelectionCount",
+    "Kor": "변경 버리기 {0}개 · 미추적 파일 삭제 {1}개",
+    "Eng": "Discard changes in {0} tracked files · delete {1} untracked files"
+  },
+  {
+    "Id": 2968,
+    "Name": "DiscardTrackedTitle",
+    "Kor": "추적 파일 변경 버리기",
+    "Eng": "Discard tracked file changes"
+  },
+  {
+    "Id": 2969,
+    "Name": "DeleteUntrackedTitle",
+    "Kor": "미추적 파일 삭제",
+    "Eng": "Delete untracked files"
+  },
+  {
+    "Id": 2970,
+    "Name": "DiscardMixedTitle",
+    "Kor": "변경 버리기 및 미추적 파일 삭제",
+    "Eng": "Discard changes and delete untracked files"
+  },
+  {
+    "Id": 2971,
+    "Name": "DeleteUntrackedImpact",
+    "Kor": "미추적 파일 {0}개를 디스크에서 영구 삭제합니다.",
+    "Eng": "Permanently delete {0} untracked files from disk."
+  },
+  {
+    "Id": 2972,
+    "Name": "DiscardConfirmMixed",
+    "Kor": "변경 버리기 및 파일 삭제",
+    "Eng": "Discard changes and delete files"
+  },
+  {
+    "Id": 2973,
+    "Name": "StopTrackingSelectionCount",
+    "Kor": "선택한 추적 파일 {0}개 추적 중지",
+    "Eng": "Stop tracking {0} selected files"
+  },
+  {
+    "Id": 2974,
+    "Name": "StopTrackingTitle",
+    "Kor": "파일 추적 중지",
+    "Eng": "Stop tracking files"
+  },
+  {
+    "Id": 2975,
+    "Name": "StopTrackingDescription",
+    "Kor": "추적 파일 {0}개를 Git 인덱스에서만 제거합니다. 작업 파일은 삭제하지 않으며, 파일 삭제가 스테이징된 변경으로 표시됩니다. 계속 추적하지 않으려면 작업 후 별도로 무시 규칙을 추가하세요.",
+    "Eng": "Remove {0} tracked files from the Git index only. Working files are kept, and their deletion is staged. Add ignore rules separately afterward if they should remain untracked."
+  },
+  {
+    "Id": 2976,
+    "Name": "StopTrackingConfirm",
+    "Kor": "추적 중지",
+    "Eng": "Stop tracking"
+  },
+  {
+    "Id": 2977,
+    "Name": "LocalStopTrackingRequiresConfirmation",
+    "Kor": "추적 중지를 확인할 창을 열 수 없습니다.",
+    "Eng": "The stop-tracking confirmation window is unavailable."
+  },
+  {
+    "Id": 2978,
+    "Name": "DiscardTrackedContextMenu",
+    "Kor": "변경 버리기",
+    "Eng": "Discard changes"
+  },
+  {
+    "Id": 2979,
+    "Name": "DeleteUntrackedContextMenu",
+    "Kor": "파일 삭제",
+    "Eng": "Delete files"
+  },
+  {
+    "Id": 2980,
+    "Name": "DiscardMixedContextMenu",
+    "Kor": "변경 버리기 및 파일 삭제",
+    "Eng": "Discard changes and delete files"
+  },
+  {
+    "Id": 2981,
+    "Name": "StopTrackingContextMenu",
+    "Kor": "추적 중지",
+    "Eng": "Stop tracking"
   }
 ]

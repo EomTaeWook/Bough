@@ -11,6 +11,7 @@
 | [원격 작업과 Stash](RemoteAndStash.md) | Fetch, Pull, Push, Stash의 화면·실행·갱신 흐름 |
 | [GitHub 인증 계정 전환](GitHubAccountSwitching.md) | 저장소별 GitHub HTTPS 인증 계정 선택과 GCM 로그인 |
 | [화면 테마](AppearanceTheme.md) | 기본 밝은 테마와 어두움·시스템 설정 전환 |
-| [메인 창 ViewModel 역할 분리](MainWindowViewModelRefactor.md) | 충돌 편집과 저장소 목록을 분리하고 메인 창의 조정 역할을 명확히 하는 구조 |
-| [구현 작업 지시](ImplementationPlan.md) | 작업자별 소유 파일, 구현 순서, 검증 기준 |
+| [저장소 전환 응답성](RepositorySwitchResponsiveness.md) | 저장소 선택 직후 보여 줄 상태와 영역별 로딩 순서 |
+
+구현 구조와 작업자별 지시는 [개발 문서](../Docs/README.md)에서 관리한다.
 

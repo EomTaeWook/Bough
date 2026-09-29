@@ -9,7 +9,10 @@ using Bough.App.Appearance;
 using Bough.App.Localization;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
+using Bough.Core.Internals;
 using Bough.App.Internals;
+using Bough.App.Presenters;
+using Bough.App.ViewModels.Models;
 
 namespace Bough.App.ViewModels
 {
@@ -22,18 +25,22 @@ namespace Bough.App.ViewModels
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly AppearanceThemeService _appearanceTheme;
         private readonly GitOperationQueue _operationQueue;
+        private readonly GitExecutablePresenter _gitExecutablePresenter;
         private readonly ObservableCollection<GitRemote> _remotes;
         private readonly ObservableCollection<GitHubRemoteAccountItem> _gitHubRemotes;
+        private readonly Dictionary<string, string> _displayLabels = new();
         private GitRepository _repository;
+        private string _accountRepositoryText = string.Empty;
         private string _gitPathInput;
         private string _gitVersion;
         private string _localName;
         private string _localEmail;
         private string _globalName;
         private string _globalEmail;
-        private string _credentialHelper;
         private string _authorStatus;
         private string _statusMessage;
+        private GitExecutableActionResult _gitPathResult;
+        private GitSettingsDisplayResult _displayResult;
         private string _accountStatusText = string.Empty;
         private string _appearanceStatus = string.Empty;
         private bool _remoteOperationBusy;
@@ -51,16 +58,17 @@ namespace Bough.App.ViewModels
             _errorLocalizer = errorLocalizer;
             _appearanceTheme = appearanceTheme;
             _operationQueue = operationQueue;
+            _gitExecutablePresenter = new GitExecutablePresenter(settingsService);
             _appearanceTheme.ThemeChanged += OnAppearanceThemeChanged;
+            _settingsService.DefaultPullStrategyChanged += OnDefaultPullStrategyChanged;
             _gitPathInput = settingsService.ConfiguredGitPath;
             _gitVersion = string.Empty;
             _localName = string.Empty;
             _localEmail = string.Empty;
             _globalName = string.Empty;
             _globalEmail = string.Empty;
-            _credentialHelper = _stringHelper.GetString("NotConfigured");
-            _authorStatus = _stringHelper.GetString("SelectRepositoryPrompt");
-            _statusMessage = _stringHelper.GetString("GitSettingsHint");
+            _authorStatus = string.Empty;
+            _statusMessage = string.Empty;
             _remotes = [];
             _gitHubRemotes = [];
             Remotes = new ReadOnlyObservableCollection<GitRemote>(_remotes);
@@ -74,48 +82,68 @@ namespace Bough.App.ViewModels
 
         public ReadOnlyObservableCollection<GitRemote> Remotes { get; }
         public GitRepository CurrentRepository { get { return _repository; } }
-        public string AccountRepositoryText
-        {
-            get
-            {
-                if (_repository == null)
-                {
-                    return _stringHelper.GetString("SelectRepositoryPrompt");
-                }
-                return _stringHelper.Format("CurrentRepositoryDetails", _repository.DisplayName, _repository.RootPath);
-            }
-        }
+        public string AccountRepositoryText { get { return _accountRepositoryText; } }
         public ReadOnlyObservableCollection<GitHubRemoteAccountItem> GitHubRemotes { get; }
         public string AccountStatusText { get { return _accountStatusText; } private set { SetProperty(ref _accountStatusText, value); } }
-        public string AppearanceHeading { get { return _stringHelper.GetString("AppearanceHeading"); } }
-        public string AppearanceDescription { get { return _stringHelper.GetString("AppearanceDescription"); } }
-        public string AppearanceLightLabel { get { return _stringHelper.GetString("AppearanceLight"); } }
-        public string AppearanceDarkLabel { get { return _stringHelper.GetString("AppearanceDark"); } }
-        public string AppearanceSystemLabel { get { return _stringHelper.GetString("AppearanceSystem"); } }
-        public string GitExecutablePickerTitle { get { return _stringHelper.GetString("GitExecutablePickerTitle"); } }
-        public string SettingsTitle { get { return _stringHelper.GetString("SettingsTitle"); } }
-        public string RefreshLabel { get { return _stringHelper.GetString("RefreshButton"); } }
-        public string GitExecutableHeading { get { return _stringHelper.GetString("GitExecutableHeading"); } }
-        public string GitPathHint { get { return _stringHelper.GetString("GitPathHint"); } }
-        public string GitPathPlaceholder { get { return _stringHelper.GetString("GitPathPlaceholder"); } }
-        public string BrowseGitLabel { get { return _stringHelper.GetString("BrowseGitLabel"); } }
-        public string TestGitLabel { get { return _stringHelper.GetString("TestGitLabel"); } }
-        public string SaveGitPathLabel { get { return _stringHelper.GetString("SaveGitPathLabel"); } }
-        public string CommitAuthorHeading { get { return _stringHelper.GetString("CommitAuthorHeading"); } }
-        public string LocalAuthorHeading { get { return _stringHelper.GetString("LocalAuthorHeading"); } }
-        public string SaveLocalAuthorLabel { get { return _stringHelper.GetString("SaveLocalAuthorLabel"); } }
-        public string GlobalAuthorHeading { get { return _stringHelper.GetString("GlobalAuthorHeading"); } }
-        public string SaveGlobalAuthorLabel { get { return _stringHelper.GetString("SaveGlobalAuthorLabel"); } }
-        public string AccountsHeading { get { return _stringHelper.GetString("GitHubAccountsHeading"); } }
-        public string AccountsDescription { get { return _stringHelper.GetString("GitHubAccountsDescription"); } }
-        public string AccountsPurpose { get { return _stringHelper.GetString("GitHubAccountsPurpose"); } }
-        public string AccountsQueueHint { get { return _stringHelper.GetString("GitHubAccountsQueueHint"); } }
-        public string CredentialHelperHeading { get { return _stringHelper.GetString("CredentialHelperHeading"); } }
-        public string RemoteUrlsHeading { get { return _stringHelper.GetString("RemoteUrlsHeading"); } }
+        public string AppearanceHeading { get { return GetDisplayLabel(nameof(AppearanceHeading)); } }
+        public string AppearanceDescription { get { return GetDisplayLabel(nameof(AppearanceDescription)); } }
+        public string AppearanceLightLabel { get { return GetDisplayLabel(nameof(AppearanceLightLabel)); } }
+        public string AppearanceDarkLabel { get { return GetDisplayLabel(nameof(AppearanceDarkLabel)); } }
+        public string AppearanceSystemLabel { get { return GetDisplayLabel(nameof(AppearanceSystemLabel)); } }
+        public string DefaultPullStrategyHeading { get { return GetDisplayLabel(nameof(DefaultPullStrategyHeading)); } }
+        public string DefaultPullStrategyDescription { get { return GetDisplayLabel(nameof(DefaultPullStrategyDescription)); } }
+        public string PullStrategyFastForwardOnlyLabel { get { return GetDisplayLabel(nameof(PullStrategyFastForwardOnlyLabel)); } }
+        public string PullStrategyMergeLabel { get { return GetDisplayLabel(nameof(PullStrategyMergeLabel)); } }
+        public string PullStrategyRebaseLabel { get { return GetDisplayLabel(nameof(PullStrategyRebaseLabel)); } }
+        public string SettingsTitle { get { return GetDisplayLabel(nameof(SettingsTitle)); } }
+        public string GitSettingsHint { get { return GetDisplayLabel(nameof(GitSettingsHint)); } }
+        public string RefreshLabel { get { return GetDisplayLabel(nameof(RefreshLabel)); } }
+        public string GitExecutableHeading { get { return GetDisplayLabel(nameof(GitExecutableHeading)); } }
+        public string GitPathHint { get { return GetDisplayLabel(nameof(GitPathHint)); } }
+        public string GitPathPlaceholder { get { return GetDisplayLabel(nameof(GitPathPlaceholder)); } }
+        public string BrowseGitLabel { get { return GetDisplayLabel(nameof(BrowseGitLabel)); } }
+        public string TestGitLabel { get { return GetDisplayLabel(nameof(TestGitLabel)); } }
+        public string SaveGitPathLabel { get { return GetDisplayLabel(nameof(SaveGitPathLabel)); } }
+        public string CommitAuthorHeading { get { return GetDisplayLabel(nameof(CommitAuthorHeading)); } }
+        public string LocalAuthorHeading { get { return GetDisplayLabel(nameof(LocalAuthorHeading)); } }
+        public string SaveLocalAuthorLabel { get { return GetDisplayLabel(nameof(SaveLocalAuthorLabel)); } }
+        public string GlobalAuthorHeading { get { return GetDisplayLabel(nameof(GlobalAuthorHeading)); } }
+        public string SaveGlobalAuthorLabel { get { return GetDisplayLabel(nameof(SaveGlobalAuthorLabel)); } }
+        public string AccountsHeading { get { return GetDisplayLabel(nameof(AccountsHeading)); } }
+        public string AccountsDescription { get { return GetDisplayLabel(nameof(AccountsDescription)); } }
+        public string AccountsPurpose { get { return GetDisplayLabel(nameof(AccountsPurpose)); } }
+        public string AccountsQueueHint { get { return GetDisplayLabel(nameof(AccountsQueueHint)); } }
+        public string RemoteUrlsHeading { get { return GetDisplayLabel(nameof(RemoteUrlsHeading)); } }
+
+        private string GetDisplayLabel(string propertyName)
+        {
+            if (_displayLabels.TryGetValue(propertyName, out string value))
+            {
+                return value;
+            }
+            return string.Empty;
+        }
+
+        public void SetDisplayLabels(IReadOnlyDictionary<string, string> labels)
+        {
+            foreach (KeyValuePair<string, string> label in labels)
+            {
+                _displayLabels[label.Key] = label.Value;
+                OnPropertyChanged(label.Key);
+            }
+        }
+
+        public void SetAccountRepositoryText(string value)
+        {
+            SetProperty(ref _accountRepositoryText, value, nameof(AccountRepositoryText));
+        }
         public string AppearanceStatus { get { return _appearanceStatus; } private set { SetProperty(ref _appearanceStatus, value); } }
         public bool IsLightAppearance { get { return _appearanceTheme.SelectedMode == AppearanceThemeMode.Light; } }
         public bool IsDarkAppearance { get { return _appearanceTheme.SelectedMode == AppearanceThemeMode.Dark; } }
         public bool IsSystemAppearance { get { return _appearanceTheme.SelectedMode == AppearanceThemeMode.System; } }
+        public bool IsFastForwardOnlyPull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.FastForwardOnly; } }
+        public bool IsMergePull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.Merge; } }
+        public bool IsRebasePull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.Rebase; } }
         public bool IsRemoteOperationBusy { get { return _remoteOperationBusy; } }
 
         public async Task SelectAppearanceAsync(AppearanceThemeMode mode)
@@ -123,11 +151,11 @@ namespace Bough.App.ViewModels
             try
             {
                 await _appearanceTheme.SetThemeAsync(mode);
-                AppearanceStatus = string.Empty;
+                ShowDisplayResult(GitSettingsDisplayTarget.Appearance, string.Empty);
             }
             catch (Exception exception)
             {
-                AppearanceStatus = _errorLocalizer.GetDisplayMessage(exception);
+                ShowDisplayError(GitSettingsDisplayTarget.Appearance, exception);
             }
         }
 
@@ -137,6 +165,27 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(IsDarkAppearance));
             OnPropertyChanged(nameof(IsSystemAppearance));
         }
+
+        public void SelectDefaultPullStrategy(GitPullStrategy strategy)
+        {
+            try
+            {
+                _settingsService.SaveDefaultPullStrategy(strategy);
+                ShowDisplayResult(GitSettingsDisplayTarget.Status, "DefaultPullStrategySaved", strategy);
+            }
+            catch (Exception exception)
+            {
+                ShowDisplayError(GitSettingsDisplayTarget.Status, exception);
+            }
+        }
+
+        private void OnDefaultPullStrategyChanged(GitPullStrategy strategy)
+        {
+            OnPropertyChanged(nameof(IsFastForwardOnlyPull));
+            OnPropertyChanged(nameof(IsMergePull));
+            OnPropertyChanged(nameof(IsRebasePull));
+        }
+
         public AsyncRelayCommand TestGitCommand { get; }
         public AsyncRelayCommand SaveGitPathCommand { get; }
         public AsyncRelayCommand RefreshCommand { get; }
@@ -152,16 +201,82 @@ namespace Bough.App.ViewModels
                     return;
                 }
 
+                _gitExecutablePresenter.Invalidate();
+                GitPathResult = null;
                 GitVersion = string.Empty;
-                StatusMessage = _stringHelper.GetString("GitSettingsHint");
+                StatusMessage = string.Empty;
             }
         }
         public string GitVersion { get { return _gitVersion; } private set { SetProperty(ref _gitVersion, value); } }
+        public GitExecutableActionResult GitPathResult { get { return _gitPathResult; } private set { SetProperty(ref _gitPathResult, value); } }
+        public GitSettingsDisplayResult DisplayResult { get { return _displayResult; } private set { SetProperty(ref _displayResult, value); } }
+        internal StringHelper Strings { get { return _stringHelper; } }
+        internal GitErrorLocalizer Errors { get { return _errorLocalizer; } }
+
+        public void SetGitPathStatusMessage(GitExecutableActionResult result, string message)
+        {
+            if (ReferenceEquals(GitPathResult, result) == false)
+            {
+                return;
+            }
+
+            StatusMessage = message;
+        }
+
+        public void SetDisplayMessage(GitSettingsDisplayResult result, string message)
+        {
+            if (ReferenceEquals(DisplayResult, result) == false)
+            {
+                return;
+            }
+
+            if (result.Target == GitSettingsDisplayTarget.Appearance)
+            {
+                AppearanceStatus = message;
+                return;
+            }
+            if (result.Target == GitSettingsDisplayTarget.Account)
+            {
+                result.Account.StatusText = message;
+                return;
+            }
+            if (result.Target == GitSettingsDisplayTarget.AccountSummary)
+            {
+                AccountStatusText = message;
+                return;
+            }
+
+            StatusMessage = message;
+        }
+
+        public void SetAuthorStatusText(string message)
+        {
+            AuthorStatus = message;
+        }
+
+        private void ShowDisplayResult(GitSettingsDisplayTarget target, string code, params object[] arguments)
+        {
+            DisplayResult = new GitSettingsDisplayResult(target, code, arguments, null, null);
+        }
+
+        private void ShowDisplayError(GitSettingsDisplayTarget target, Exception error)
+        {
+            DisplayResult = new GitSettingsDisplayResult(target, string.Empty, Array.Empty<object>(), error, null);
+        }
+
+        private void ShowAccountResult(GitHubRemoteAccountItem account, string code, params object[] arguments)
+        {
+            DisplayResult = new GitSettingsDisplayResult(GitSettingsDisplayTarget.Account, code, arguments, null, account);
+        }
+
+        private void ShowAccountError(GitHubRemoteAccountItem account, Exception error)
+        {
+            DisplayResult = new GitSettingsDisplayResult(GitSettingsDisplayTarget.Account, string.Empty, Array.Empty<object>(), error, account);
+        }
         public string LocalName { get { return _localName; } set { SetProperty(ref _localName, value); } }
         public string LocalEmail { get { return _localEmail; } set { SetProperty(ref _localEmail, value); } }
         public string GlobalName { get { return _globalName; } set { SetProperty(ref _globalName, value); } }
         public string GlobalEmail { get { return _globalEmail; } set { SetProperty(ref _globalEmail, value); } }
-        public string CredentialHelper { get { return _credentialHelper; } private set { SetProperty(ref _credentialHelper, value); } }
         public string AuthorStatus { get { return _authorStatus; } private set { SetProperty(ref _authorStatus, value); } }
         public string StatusMessage { get { return _statusMessage; } private set { SetProperty(ref _statusMessage, value); } }
 
@@ -187,23 +302,23 @@ namespace Bough.App.ViewModels
             _requestVersion++;
             _accountCancellation?.Cancel();
             _repository = repository;
+            OnPropertyChanged(nameof(CurrentRepository));
+            StatusMessage = string.Empty;
             SaveLocalAuthorCommand.NotifyCanExecuteChanged();
             SaveGlobalAuthorCommand.NotifyCanExecuteChanged();
-            OnPropertyChanged(nameof(AccountRepositoryText));
             ClearRepositoryValues();
             if (repository == null)
             {
                 IsBusy = false;
-                StatusMessage = _stringHelper.GetString("SelectRepositoryPrompt");
                 return;
             }
 
-            await RefreshCoreAsync();
+            await RefreshCoreAsync(false);
         }
 
         public async Task RefreshAsync()
         {
-            await RefreshCoreAsync();
+            await RefreshCoreAsync(true);
         }
 
         public void SetRemoteOperationBusy(bool busy)
@@ -234,18 +349,18 @@ namespace Bough.App.ViewModels
             }
             if (item.IsSupported == false)
             {
-                item.StatusText = item.UnavailableReason;
+                ShowAccountResult(item, item.UnavailableReasonCode);
                 return;
             }
             string selectedName = userName?.Trim() ?? string.Empty;
             if (selectedName.Length == 0)
             {
-                item.StatusText = _stringHelper.GetString("GitHubUserNameRequired");
+                ShowAccountResult(item, "GitHubUserNameRequired");
                 return;
             }
             string remoteName = item.RemoteName;
             string successMessage = _stringHelper.Format("GitHubAccountSelected", remoteName, selectedName);
-            item.StatusText = _stringHelper.GetString("GcmOperationInProgress");
+            ShowAccountResult(item, "GcmOperationInProgress");
             _pendingAccountSelections++;
             UpdateAccountAvailability();
             try
@@ -278,7 +393,7 @@ namespace Bough.App.ViewModels
                         GitHubRemoteAccountItem refreshed = FindAccountRemote(remoteName);
                         if (refreshed != null)
                         {
-                            refreshed.StatusText = successMessage;
+                            ShowAccountResult(refreshed, "GitHubAccountSelected", remoteName, selectedName);
                         }
                     }
                     finally
@@ -292,7 +407,7 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                item.StatusText = _errorLocalizer.GetDisplayMessage(exception);
+                ShowAccountError(item, exception);
             }
             finally
             {
@@ -310,11 +425,11 @@ namespace Bough.App.ViewModels
             string requestedName = item.CandidateName?.Trim() ?? string.Empty;
             await RunAccountActionAsync(item, requestedName,
                 (repository, token) => _gitHubAccountService.LoginAsync(repository, requestedName, token),
-                _stringHelper.GetString("GcmLoginCompleted"));
+                "GcmLoginCompleted");
         }
 
         private async Task RunAccountActionAsync(GitHubRemoteAccountItem item, string candidateName,
-            Func<GitRepository, CancellationToken, Task> action, string successMessage)
+            Func<GitRepository, CancellationToken, Task> action, string successCode)
         {
             GitRepository repository = _repository;
             if (repository == null)
@@ -345,7 +460,7 @@ namespace Bough.App.ViewModels
             _accountLoginRunning = true;
             IsBusy = true;
             UpdateAccountAvailability();
-            item.StatusText = _stringHelper.GetString("GcmOperationInProgress");
+            ShowAccountResult(item, "GcmOperationInProgress");
             try
             {
                 await action(repository, cancellation.Token);
@@ -369,21 +484,21 @@ namespace Bough.App.ViewModels
                 GitHubRemoteAccountItem refreshed = FindAccountRemote(item.RemoteName);
                 if (refreshed != null)
                 {
-                    refreshed.StatusText = successMessage;
+                    ShowAccountResult(refreshed, successCode);
                 }
             }
             catch (OperationCanceledException)
             {
                 if (request == _requestVersion && _repository == repository)
                 {
-                    item.StatusText = _stringHelper.GetString("GitHubAccountActionCanceled");
+                    ShowAccountResult(item, "GitHubAccountActionCanceled");
                 }
             }
             catch (Exception exception)
             {
                 if (request == _requestVersion && _repository == repository)
                 {
-                    item.StatusText = _errorLocalizer.GetDisplayMessage(exception);
+                    ShowAccountError(item, exception);
                 }
             }
             finally
@@ -401,7 +516,7 @@ namespace Bough.App.ViewModels
             }
         }
 
-        private async Task<bool> RefreshCoreAsync()
+        private async Task<bool> RefreshCoreAsync(bool reportSuccess)
         {
             GitRepository repository = _repository;
             if (repository == null)
@@ -427,16 +542,12 @@ namespace Bough.App.ViewModels
                 LocalEmail = snapshot.LocalEmail;
                 GlobalName = snapshot.GlobalName;
                 GlobalEmail = snapshot.GlobalEmail;
-                string credentialHelper = snapshot.CredentialHelper;
-                if (credentialHelper.Length == 0)
-                {
-                    credentialHelper = _stringHelper.GetString("NotConfigured");
-                }
-                CredentialHelper = credentialHelper;
                 _remotes.Clear();
                 foreach (GitRemote remote in snapshot.Remotes) { _remotes.Add(remote); }
-                AuthorStatus = GetAuthorStatus(snapshot);
-                StatusMessage = _stringHelper.GetString("GitSettingsRefreshed");
+                if (reportSuccess)
+                {
+                    ShowDisplayResult(GitSettingsDisplayTarget.Status, "GitSettingsRefreshed");
+                }
                 IsBusy = false;
                 accountRefresh = RefreshAccountsInBackgroundAsync(repository, request, cancellation);
                 return true;
@@ -483,7 +594,7 @@ namespace Bough.App.ViewModels
                 {
                     return;
                 }
-                AccountStatusText = _errorLocalizer.GetDisplayMessage(exception);
+                ShowDisplayError(GitSettingsDisplayTarget.AccountSummary, exception);
             }
             finally
             {
@@ -499,7 +610,7 @@ namespace Bough.App.ViewModels
             string preserveCandidate, CancellationToken cancellationToken)
         {
             _gitHubRemotes.Clear();
-            AccountStatusText = _stringHelper.GetString("GitHubAccountsLoading");
+            ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, "GitHubAccountsLoading");
             try
             {
                 GitHubAccountSnapshot snapshot = await _gitHubAccountService.GetSnapshotAsync(repository, cancellationToken);
@@ -531,7 +642,7 @@ namespace Bough.App.ViewModels
                 foreach (GitHubRemoteAccount remote in snapshot.Remotes)
                 {
                     bool sharedUrl = urlCounts.TryGetValue(remote.FetchUrl, out int count) && count > 1;
-                    GitHubRemoteAccountItem item = new(remote, snapshot.KnownAccounts, sharedUrl, _stringHelper);
+                    GitHubRemoteAccountItem item = new(remote, snapshot.KnownAccounts, sharedUrl);
                     if (remote.RemoteName == preserveRemote && preserveCandidate.Length > 0)
                     {
                         item.CandidateName = preserveCandidate;
@@ -541,33 +652,33 @@ namespace Bough.App.ViewModels
                 UpdateAccountAvailability();
                 if (snapshot.IsGcmAvailable == false)
                 {
-                    AccountStatusText = _stringHelper.GetString(snapshot.AvailabilityMessageCode);
+                    ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, snapshot.AvailabilityMessageCode);
                 }
                 else if (snapshot.AccountListErrorCode.Length > 0)
                 {
-                    AccountStatusText = _stringHelper.GetString(snapshot.AccountListErrorCode);
+                    ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, snapshot.AccountListErrorCode);
                 }
                 else if (snapshot.Remotes.Count == 0)
                 {
-                    AccountStatusText = _stringHelper.GetString("GitHubNoRemotes");
+                    ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, "GitHubNoRemotes");
                 }
                 else
                 {
-                    AccountStatusText = _stringHelper.GetString("GitHubAccountScopeHint");
+                    ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, "GitHubAccountScopeHint");
                 }
             }
             catch (OperationCanceledException)
             {
                 if (request == _requestVersion && _repository == repository)
                 {
-                    AccountStatusText = _stringHelper.GetString("GitHubAccountLookupCanceled");
+                    ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, "GitHubAccountLookupCanceled");
                 }
             }
             catch (Exception exception)
             {
                 if (request == _requestVersion && _repository == repository)
                 {
-                    AccountStatusText = _errorLocalizer.GetDisplayMessage(exception);
+                    ShowDisplayError(GitSettingsDisplayTarget.AccountSummary, exception);
                 }
             }
         }
@@ -595,64 +706,43 @@ namespace Bough.App.ViewModels
 
         private async Task TestGitAsync()
         {
-            string candidatePath = GitPathInput;
-            IsBusy = true;
-            try
-            {
-                string version = await _settingsService.TestGitAsync(candidatePath);
-                if (GitPathInput != candidatePath)
-                {
-                    return;
-                }
-
-                GitVersion = version;
-                StatusMessage = _stringHelper.Format("GitPathVerified", version);
-            }
-            catch (Exception exception)
-            {
-                if (GitPathInput != candidatePath)
-                {
-                    return;
-                }
-
-                GitVersion = string.Empty;
-                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            await _gitExecutablePresenter.TestAsync(this);
         }
 
         private async Task SaveGitPathAsync()
         {
-            string candidatePath = GitPathInput;
+            await _gitExecutablePresenter.SaveAsync(this);
+        }
+
+        internal void BeginGitPathAction()
+        {
             IsBusy = true;
-            try
+        }
+
+        internal void ApplyGitPathAction(GitExecutableActionResult result)
+        {
+            if (result.Error != null)
             {
-                string version = await _settingsService.SaveGitPathAsync(candidatePath);
-                if (GitPathInput != candidatePath)
+                if (result.Kind == GitExecutableActionKind.Verified)
                 {
-                    return;
+                    GitVersion = string.Empty;
                 }
 
-                GitPathInput = _settingsService.ConfiguredGitPath;
-                GitVersion = version;
-                StatusMessage = _stringHelper.Format("GitPathSaved", version);
+                GitPathResult = result;
+                return;
             }
-            catch (Exception exception)
-            {
-                if (GitPathInput != candidatePath)
-                {
-                    return;
-                }
 
-                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
-            }
-            finally
+            if (result.Kind == GitExecutableActionKind.Saved)
             {
-                IsBusy = false;
+                GitPathInput = result.ConfiguredPath;
             }
+            GitVersion = result.Version;
+            GitPathResult = result;
+        }
+
+        internal void EndGitPathAction()
+        {
+            IsBusy = false;
         }
 
         private async Task SaveLocalAuthorAsync()
@@ -693,10 +783,17 @@ namespace Bough.App.ViewModels
                         {
                             return;
                         }
-                        bool refreshed = await RefreshCoreAsync();
+                        bool refreshed = await RefreshCoreAsync(false);
                         if (refreshed)
                         {
-                            StatusMessage = successMessage;
+                            if (global)
+                            {
+                                ShowDisplayResult(GitSettingsDisplayTarget.Status, "GlobalAuthorSaved");
+                            }
+                            else
+                            {
+                                ShowDisplayResult(GitSettingsDisplayTarget.Status, "LocalAuthorSaved");
+                            }
                         }
                     }
                     finally
@@ -712,7 +809,7 @@ namespace Bough.App.ViewModels
             {
                 if (IsCurrentRepository(repository))
                 {
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                    ShowDisplayError(GitSettingsDisplayTarget.Status, exception);
                 }
             }
         }
@@ -723,35 +820,9 @@ namespace Bough.App.ViewModels
             LocalEmail = string.Empty;
             GlobalName = string.Empty;
             GlobalEmail = string.Empty;
-            CredentialHelper = _stringHelper.GetString("NotConfigured");
-            AuthorStatus = _stringHelper.GetString("SelectRepositoryPrompt");
             _remotes.Clear();
             _gitHubRemotes.Clear();
-            AccountStatusText = _stringHelper.GetString("SelectRepositoryPrompt");
-        }
-
-        private string GetAuthorStatus(GitSettingsSnapshot snapshot)
-        {
-            string name = snapshot.LocalName;
-            if (string.IsNullOrWhiteSpace(name) == true)
-            {
-                name = snapshot.GlobalName;
-            }
-            string email = snapshot.LocalEmail;
-            if (string.IsNullOrWhiteSpace(email) == true)
-            {
-                email = snapshot.GlobalEmail;
-            }
-            if (string.IsNullOrWhiteSpace(name) == true)
-            {
-                return _stringHelper.GetString("GitAuthorNameMissing");
-            }
-            if (string.IsNullOrWhiteSpace(email) == true)
-            {
-                return _stringHelper.GetString("GitAuthorEmailMissing");
-            }
-
-            return _stringHelper.Format("GitAuthorSummary", name, email);
+            ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, "SelectRepositoryPrompt");
         }
 
         private bool CanRun()
@@ -780,112 +851,4 @@ namespace Bough.App.ViewModels
         }
     }
 
-    public class GitHubRemoteAccountItem : ViewModelBase
-    {
-        private readonly StringHelper _stringHelper;
-        private string _candidateName;
-        private string _statusText = string.Empty;
-        private bool _canChange;
-        private bool _canLogin;
-
-        public GitHubRemoteAccountItem(GitHubRemoteAccount remote, IReadOnlyList<string> knownAccounts, bool sharedUrl, StringHelper stringHelper)
-        {
-            _stringHelper = stringHelper;
-            RemoteName = remote.RemoteName;
-            string fetchUrl = remote.FetchUrl;
-            if (fetchUrl.Length == 0)
-            {
-                fetchUrl = _stringHelper.GetString("GitHubRemoteUrlNeedsReview");
-            }
-            string pushUrl = remote.PushUrl;
-            if (pushUrl.Length == 0)
-            {
-                pushUrl = _stringHelper.GetString("GitHubRemoteUrlNeedsReview");
-            }
-            FetchUrlText = _stringHelper.Format("GitHubFetchUrlLabel", fetchUrl);
-            PushUrlText = _stringHelper.Format("GitHubPushUrlLabel", pushUrl);
-            SelectedUserName = remote.SelectedUserName;
-            IsSupported = remote.CanSelect;
-            UnavailableReason = string.Empty;
-            if (remote.UnavailableReasonCode.Length > 0)
-            {
-                UnavailableReason = _stringHelper.GetString(remote.UnavailableReasonCode);
-            }
-            if (sharedUrl)
-            {
-                IsSupported = false;
-                UnavailableReason = _stringHelper.GetString("GitHubSharedRemoteUrlUnsupported");
-            }
-            KnownAccounts = knownAccounts;
-            _candidateName = remote.SelectedUserName;
-            if (remote.SelectedUserName.Length == 0)
-            {
-                SelectedAccountText = _stringHelper.GetString("GitHubNoSelectedAccount");
-            }
-            else if (remote.IsRepositorySelection)
-            {
-                SelectedAccountText = _stringHelper.Format("GitHubSelectedAccount", remote.SelectedUserName);
-            }
-            else
-            {
-                SelectedAccountText = _stringHelper.Format("GitHubInheritedAccount", remote.SelectedUserName);
-            }
-        }
-
-        public string RemoteName { get; }
-        public string FetchUrlText { get; }
-        public string PushUrlText { get; }
-        public string SelectedUserName { get; }
-        public string SelectedAccountText { get; }
-        public string ExistingAccountPlaceholder { get { return _stringHelper.GetString("GitHubExistingAccountPlaceholder"); } }
-        public string UserNamePlaceholder { get { return _stringHelper.GetString("GitHubPhotoUserName"); } }
-        public string RemoteUserNameAutomationName { get { return _stringHelper.GetString("GitHubRemoteUserNameAutomationName"); } }
-        public string SelectAccountLabel { get { return _stringHelper.GetString("GitHubSelectAccountLabel"); } }
-        public string AddAccountLabel { get { return _stringHelper.GetString("GitHubAddAccountLabel"); } }
-        public bool IsSupported { get; }
-        public string UnavailableReason { get; }
-        public bool HasUnavailableReason { get { return UnavailableReason.Length > 0; } }
-        public IReadOnlyList<string> KnownAccounts { get; }
-        public string CandidateName
-        {
-            get { return _candidateName; }
-            set
-            {
-                if (SetProperty(ref _candidateName, value))
-                {
-                    OnPropertyChanged(nameof(CanApply));
-                    OnPropertyChanged(nameof(SelectionPreviewText));
-                }
-            }
-        }
-        public string SelectionPreviewText
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(CandidateName))
-                {
-                    return _stringHelper.GetString("GitHubUserNameRequired");
-                }
-                return _stringHelper.Format("GitHubAccountSelectionPreview", RemoteName, CandidateName.Trim());
-            }
-        }
-        public string StatusText { get { return _statusText; } set { SetProperty(ref _statusText, value); } }
-        public bool CanChange
-        {
-            get { return _canChange; }
-            set
-            {
-                if (SetProperty(ref _canChange, value))
-                {
-                    OnPropertyChanged(nameof(CanApply));
-                }
-            }
-        }
-        public bool CanLogin
-        {
-            get { return _canLogin; }
-            set { SetProperty(ref _canLogin, value); }
-        }
-        public bool CanApply { get { return CanChange && string.IsNullOrWhiteSpace(CandidateName) == false; } }
-    }
 }

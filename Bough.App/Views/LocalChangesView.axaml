@@ -25,7 +25,6 @@
       <RowDefinition Height="*" MinHeight="180" />
       <RowDefinition Height="6" />
       <RowDefinition Height="190" MinHeight="190" MaxHeight="420" />
-      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
       <Grid ColumnDefinitions="*,Auto" Margin="20,0">
@@ -118,6 +117,7 @@
             <ListBox.ContextMenu>
               <ContextMenu Opened="UnstagedContextOpened" Background="{DynamicResource BoughBrushSurface}">
                 <MenuItem x:Name="DiscardContextItem" Click="DiscardContextClicked" />
+                <MenuItem x:Name="StopTrackingContextItem" Click="StopTrackingContextClicked" />
                 <MenuItem x:Name="IgnoreContextItem">
                   <MenuItem x:Name="IgnoreRepositoryItem" Click="IgnoreRepositoryClicked" />
                   <MenuItem x:Name="IgnoreLocalItem" Click="IgnoreLocalClicked" />
@@ -161,10 +161,27 @@
         <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="16,10">
           <TextBlock Text="{Binding PreviewDescription}" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
         </Border>
-        <ScrollViewer Grid.Row="1" Background="{DynamicResource BoughBrushInset}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-          <views:DiffPreviewTextBlock DiffText="{Binding PreviewText}" IsUnifiedDiff="{Binding PreviewIsUnifiedDiff}"
-                                      FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" TextWrapping="NoWrap"
-                                      Foreground="{DynamicResource BoughBrushText}" Padding="14" />
+        <ScrollViewer Grid.Row="1" Background="{DynamicResource BoughBrushInset}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <Grid ColumnDefinitions="Auto,*">
+            <Border Grid.Column="0" Background="{DynamicResource BoughBrushRaised}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,1,0">
+              <Grid x:Name="PreviewNumberGutter" ColumnDefinitions="Auto,Auto" PointerPressed="PreviewNumberGutterPressed">
+                <TextBlock Grid.Column="0" Text="{Binding PreviousLineNumbersText, ElementName=PreviewCode, x:CompileBindings=False}"
+                           IsVisible="{Binding PreviewIsUnifiedDiff}" MinWidth="34" Padding="5,0" TextAlignment="Right"
+                           FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" LineHeight="18" TextWrapping="NoWrap"
+                           Foreground="{DynamicResource BoughBrushTextSubtle}" />
+                <TextBlock Grid.Column="1" Text="{Binding CurrentLineNumbersText, ElementName=PreviewCode, x:CompileBindings=False}"
+                           MinWidth="34" Padding="5,0" TextAlignment="Right"
+                           FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" LineHeight="18" TextWrapping="NoWrap"
+                           Foreground="{DynamicResource BoughBrushTextSubtle}" />
+              </Grid>
+            </Border>
+            <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+              <views:DiffPreviewTextBlock x:Name="PreviewCode" DiffText="{Binding PreviewText}" IsUnifiedDiff="{Binding PreviewIsUnifiedDiff}"
+                                          FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" LineHeight="18" TextWrapping="NoWrap"
+                                          Foreground="{DynamicResource BoughBrushText}" SelectionBrush="{DynamicResource BoughBrushSelection}"
+                                          SelectionForegroundBrush="{DynamicResource BoughBrushSelectionText}" Padding="10,0,14,0" />
+            </ScrollViewer>
+          </Grid>
         </ScrollViewer>
       </Grid>
 
@@ -200,10 +217,6 @@
         </Grid>
       </Grid>
     </Grid>
-
-    <Border Grid.Row="4" Background="{DynamicResource BoughBrushErrorSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" Padding="14,8" IsVisible="{Binding HasError}">
-      <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource BoughBrushError}" TextWrapping="Wrap" />
-    </Border>
   </Grid>
   </ScrollViewer>
 </UserControl>

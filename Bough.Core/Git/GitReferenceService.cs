@@ -352,7 +352,12 @@ namespace Bough.Core.Git
             }
 
             await _runner.RunAsync(repository.RootPath, new string[] { "switch", "-c", branchName, commitResult.Output.Trim() }, false, cancellationToken);
-            return await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
+            GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
+            if (updated.CurrentBranch != branchName)
+            {
+                throw new GitException("ReferenceSwitchUnexpectedCurrent", null, branchName, updated.CurrentBranch);
+            }
+            return updated;
         }
 
         public async Task<GitRepository> TrackRemoteBranchAsync(GitRepository repository, GitRemoteBranch remoteBranch, string localName, CancellationToken cancellationToken = default)

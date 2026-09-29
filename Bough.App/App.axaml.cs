@@ -70,9 +70,11 @@ namespace Bough.App
                 StringHelper stringHelper = serviceProvider.GetService<StringHelper>();
                 GitErrorLocalizer errorLocalizer = serviceProvider.GetService<GitErrorLocalizer>();
                 GitOperationQueue operationQueue = serviceProvider.GetService<GitOperationQueue>();
+                GitSettingsService settingsService = serviceProvider.GetService<GitSettingsService>();
                 MainWindowViewModel viewModel = serviceProvider.GetService<MainWindowViewModel>();
                 Func<RemoteOperationsViewModel> createRemoteOperationSession = () => serviceProvider.GetService<RemoteOperationsViewModel>();
-                desktop.MainWindow = new MainWindow(viewModel, stringHelper, errorLocalizer, operationQueue, createRemoteOperationSession);
+                desktop.MainWindow = new MainWindow(viewModel, stringHelper, errorLocalizer, operationQueue, settingsService,
+                    createRemoteOperationSession);
             }
 
             base.OnFrameworkInitializationCompleted();

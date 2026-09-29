@@ -8,6 +8,7 @@ using Bough.Core.Git;
 using Bough.App.ViewModels.Models;
 using Bough.Core.Git.Models;
 using Bough.App.Internals;
+using Bough.App.Presenters;
 
 namespace Bough.App.ViewModels
 {
@@ -15,7 +16,7 @@ namespace Bough.App.ViewModels
     {
         private readonly GitStashService _stashService;
         private readonly GitWorkingTreeService _workingTreeService;
-        private readonly GitOperationQueue _operationQueue;
+        private readonly StashMutationPresenter _mutationPresenter;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly ObservableCollection<GitStashEntry> _stashes;
@@ -65,7 +66,7 @@ namespace Bough.App.ViewModels
 
             _stashService = stashService;
             _workingTreeService = workingTreeService;
-            _operationQueue = operationQueue;
+            _mutationPresenter = new StashMutationPresenter(stashService, workingTreeService, operationQueue);
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
             _stashes = [];
@@ -526,22 +527,10 @@ namespace Bough.App.ViewModels
             string message = StashMessage;
             bool includeUntracked = IncludeUntracked;
             GitWorktreeFile[] expectedFiles = _workingStatus?.Files.ToArray();
-            try
-            {
-                return await _operationQueue.EnqueueAsync(repository.RootPath, operationName,
-                    cancellationToken => UiQueuedOperation.RunAsync(() => RunMutationCoreAsync(repository, kind, entry, message, includeUntracked, expectedFiles, cancellationToken)));
-            }
-            catch (Exception exception)
-            {
-                if (IsCurrentRepository(repository) == true)
-                {
-                    ErrorText = _errorLocalizer.GetDisplayMessage(exception);
-                }
-                return new StashMutationResult(repository, kind, false, false, false, null, _errorLocalizer.GetDisplayMessage(exception));
-            }
+            return await _mutationPresenter.RunAsync(this, repository, kind, entry, message, includeUntracked, expectedFiles, operationName);
         }
 
-        private async Task<StashMutationResult> RunMutationCoreAsync(GitRepository repository, StashMutationKind kind, GitStashEntry entry, string message, bool includeUntracked, IReadOnlyList<GitWorktreeFile> expectedFiles, System.Threading.CancellationToken cancellationToken)
+        internal bool BeginMutation(GitRepository repository)
         {
             bool active = IsCurrentRepository(repository);
             if (active == true)
@@ -551,60 +540,11 @@ namespace Bough.App.ViewModels
                 ErrorText = string.Empty;
             }
 
-            string failure = null;
-            string success = null;
-            bool succeeded = false;
-            bool worktreeMayHaveChanged = false;
-            bool stashesMayHaveChanged = false;
-            GitStashSaveResult saved = null;
-            GitWorktreeStatus status = null;
-            try
-            {
-                switch (kind)
-                {
-                    case StashMutationKind.Save:
-                        GitWorktreeStatus current = await _workingTreeService.GetStatusAsync(repository, cancellationToken);
-                        ValidateSaveSelection(expectedFiles, current.Files, includeUntracked);
-                        saved = await _stashService.SaveWithEntriesAsync(repository, message, includeUntracked, cancellationToken);
-                        worktreeMayHaveChanged = true;
-                        stashesMayHaveChanged = true;
-                        succeeded = true;
-                        success = _stringHelper.Format("StashSavedNotice", saved.Created.Name);
-                        break;
-                    case StashMutationKind.Apply:
-                        await _stashService.ApplyAsync(repository, entry, cancellationToken);
-                        worktreeMayHaveChanged = true;
-                        succeeded = true;
-                        success = _stringHelper.Format("StashAppliedNotice", entry.Name);
-                        break;
-                    case StashMutationKind.Pop:
-                        await _stashService.PopAsync(repository, entry, cancellationToken);
-                        worktreeMayHaveChanged = true;
-                        stashesMayHaveChanged = true;
-                        succeeded = true;
-                        success = _stringHelper.Format("StashPoppedNotice", entry.Name);
-                        break;
-                    case StashMutationKind.Drop:
-                        await _stashService.DropAsync(repository, entry, cancellationToken);
-                        stashesMayHaveChanged = true;
-                        succeeded = true;
-                        success = _stringHelper.Format("StashDroppedNotice", entry.Name);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(kind));
-                }
-            }
-            catch (GitStashMutationException exception)
-            {
-                failure = _errorLocalizer.GetDisplayMessage(exception);
-                worktreeMayHaveChanged = exception.WorktreeMayHaveChanged;
-                stashesMayHaveChanged = exception.StashesMayHaveChanged;
-            }
-            catch (Exception exception)
-            {
-                failure = _errorLocalizer.GetDisplayMessage(exception);
-            }
+            return active;
+        }
 
+        internal int InvalidateMutationReads(GitRepository repository, bool succeeded, bool worktreeMayHaveChanged, bool stashesMayHaveChanged)
+        {
             bool invalidateReads = succeeded;
             if (worktreeMayHaveChanged == true)
             {
@@ -622,91 +562,97 @@ namespace Bough.App.ViewModels
                 }
             }
 
-            int requestVersion = _requestVersion;
+            return _requestVersion;
+        }
 
-            if (succeeded == true)
+        internal void ApplyMutationSuccess(GitRepository repository, int requestVersion, StashMutationKind kind, string entryName, string message)
+        {
+            if (IsCurrentRepository(repository) == false)
             {
-                if (IsCurrentRepository(repository) == true)
-                {
-                    if (requestVersion == _requestVersion)
-                    {
-                        StatusText = success;
-                        if (kind == StashMutationKind.Save)
-                        {
-                            if (StashMessage == message)
-                            {
-                                StashMessage = string.Empty;
-                            }
-                        }
-                    }
-                }
+                return;
+            }
+            if (requestVersion != _requestVersion)
+            {
+                return;
             }
 
-            if (stashesMayHaveChanged == true)
+            if (kind == StashMutationKind.Save)
             {
-                try
+                StatusText = _stringHelper.Format("StashSavedNotice", entryName);
+                if (StashMessage == message)
                 {
-                    IReadOnlyList<GitStashEntry> entries = saved?.Entries;
-                    if (entries == null)
-                    {
-                        entries = await _stashService.GetStashesAsync(repository, cancellationToken);
-                    }
-                    if (IsCurrentRepository(repository) == true)
-                    {
-                        if (requestVersion == _requestVersion)
-                        {
-                            ApplyEntries(entries);
-                        }
-                    }
+                    StashMessage = string.Empty;
                 }
-                catch (Exception exception)
-                {
-                    if (failure == null)
-                    {
-                        failure = _errorLocalizer.GetDisplayMessage(exception);
-                    }
-                }
+                return;
+            }
+            if (kind == StashMutationKind.Apply)
+            {
+                StatusText = _stringHelper.Format("StashAppliedNotice", entryName);
+                return;
+            }
+            if (kind == StashMutationKind.Pop)
+            {
+                StatusText = _stringHelper.Format("StashPoppedNotice", entryName);
+                return;
             }
 
-            if (worktreeMayHaveChanged == true)
+            StatusText = _stringHelper.Format("StashDroppedNotice", entryName);
+        }
+
+        internal void ApplyMutationEntries(GitRepository repository, int requestVersion, IReadOnlyList<GitStashEntry> entries)
+        {
+            if (IsCurrentRepository(repository) == false)
             {
-                try
-                {
-                    status = await _workingTreeService.GetStatusAsync(repository, cancellationToken);
-                    if (IsCurrentRepository(repository) == true)
-                    {
-                        if (requestVersion == _requestVersion)
-                        {
-                            SetWorktreeStatus(repository, status);
-                        }
-                    }
-                }
-                catch (Exception exception)
-                {
-                    if (failure == null)
-                    {
-                        failure = _errorLocalizer.GetDisplayMessage(exception);
-                    }
-                }
+                return;
+            }
+            if (requestVersion != _requestVersion)
+            {
+                return;
             }
 
-            if (failure != null)
+            ApplyEntries(entries);
+        }
+
+        internal void ApplyMutationStatus(GitRepository repository, int requestVersion, GitWorktreeStatus status)
+        {
+            if (IsCurrentRepository(repository) == false)
             {
-                if (IsCurrentRepository(repository) == true)
-                {
-                    ErrorText = failure;
-                }
+                return;
+            }
+            if (requestVersion != _requestVersion)
+            {
+                return;
             }
 
-            if (active == true)
+            SetWorktreeStatus(repository, status);
+        }
+
+        internal string GetMutationErrorText(Exception exception)
+        {
+            return _errorLocalizer.GetDisplayMessage(exception);
+        }
+
+        internal void ApplyMutationError(GitRepository repository, string errorText)
+        {
+            if (IsCurrentRepository(repository) == true)
             {
-                if (IsCurrentRepository(repository) == true)
-                {
-                    _isMutating = false;
-                    IsBusy = false;
-                }
+                ErrorText = errorText;
             }
-            return new StashMutationResult(repository, kind, succeeded, worktreeMayHaveChanged, stashesMayHaveChanged, status, failure ?? string.Empty);
+        }
+
+        internal void EndMutation(GitRepository repository, bool active)
+        {
+            if (active == false)
+            {
+                return;
+            }
+            if (IsCurrentRepository(repository) == false)
+            {
+                return;
+            }
+
+            _isMutating = false;
+            IsBusy = false;
         }
 
         private bool IsCurrentRepository(GitRepository repository)
@@ -723,42 +669,6 @@ namespace Bough.App.ViewModels
             }
 
             return string.Equals(_repository.RootPath, repository.RootPath, comparison);
-        }
-
-        private void ValidateSaveSelection(IReadOnlyList<GitWorktreeFile> expectedFiles, IReadOnlyList<GitWorktreeFile> currentFiles, bool includeUntracked)
-        {
-            if (expectedFiles == null)
-            {
-                throw new GitException("StashTargetsUnavailable", null, Array.Empty<object>());
-            }
-
-            GitWorktreeFile[] expected = expectedFiles.Where(file => includeUntracked || file.IsUntracked == false).ToArray();
-            GitWorktreeFile[] current = currentFiles.Where(file => includeUntracked || file.IsUntracked == false).ToArray();
-            if (expected.Length != current.Length)
-            {
-                throw new GitException("StashTargetsChanged", null, Array.Empty<object>());
-            }
-
-            Dictionary<string, GitWorktreeFile> currentByPath = current.ToDictionary(file => file.Path, StringComparer.Ordinal);
-            foreach (GitWorktreeFile file in expected)
-            {
-                if (currentByPath.TryGetValue(file.Path, out GitWorktreeFile item) == false)
-                {
-                    throw new GitException("StashTargetChanged", null, file.Path);
-                }
-                if (file.OriginalPath != item.OriginalPath)
-                {
-                    throw new GitException("StashTargetChanged", null, file.Path);
-                }
-                if (file.IndexStatus != item.IndexStatus)
-                {
-                    throw new GitException("StashTargetIndexChanged", null, file.Path);
-                }
-                if (file.WorktreeStatus != item.WorktreeStatus)
-                {
-                    throw new GitException("StashTargetChanged", null, file.Path);
-                }
-            }
         }
 
         private void ApplyEntries(IReadOnlyList<GitStashEntry> entries)

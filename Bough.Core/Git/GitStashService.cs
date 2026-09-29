@@ -22,6 +22,42 @@ namespace Bough.Core.Git
             _workingTreeService = workingTreeService;
         }
 
+        public void ValidateSaveSelection(IReadOnlyList<GitWorktreeFile> expectedFiles, IReadOnlyList<GitWorktreeFile> currentFiles, bool includeUntracked)
+        {
+            if (expectedFiles == null)
+            {
+                throw new GitException("StashTargetsUnavailable", null, Array.Empty<object>());
+            }
+
+            GitWorktreeFile[] expected = expectedFiles.Where(file => includeUntracked || file.IsUntracked == false).ToArray();
+            GitWorktreeFile[] current = currentFiles.Where(file => includeUntracked || file.IsUntracked == false).ToArray();
+            if (expected.Length != current.Length)
+            {
+                throw new GitException("StashTargetsChanged", null, Array.Empty<object>());
+            }
+
+            Dictionary<string, GitWorktreeFile> currentByPath = current.ToDictionary(file => file.Path, StringComparer.Ordinal);
+            foreach (GitWorktreeFile file in expected)
+            {
+                if (currentByPath.TryGetValue(file.Path, out GitWorktreeFile item) == false)
+                {
+                    throw new GitException("StashTargetChanged", null, file.Path);
+                }
+                if (file.OriginalPath != item.OriginalPath)
+                {
+                    throw new GitException("StashTargetChanged", null, file.Path);
+                }
+                if (file.IndexStatus != item.IndexStatus)
+                {
+                    throw new GitException("StashTargetIndexChanged", null, file.Path);
+                }
+                if (file.WorktreeStatus != item.WorktreeStatus)
+                {
+                    throw new GitException("StashTargetChanged", null, file.Path);
+                }
+            }
+        }
+
         public async Task<IReadOnlyList<GitStashEntry>> GetStashesAsync(GitRepository repository, CancellationToken cancellationToken = default)
         {
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, _listArguments, false, cancellationToken);

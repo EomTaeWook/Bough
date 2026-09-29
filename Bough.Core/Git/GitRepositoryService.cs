@@ -7,6 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Dignus.DependencyInjection.Attributes;
+using Bough.Core.Conflicts;
+using Bough.Core.Conflicts.Exceptions;
+using Bough.Core.Conflicts.Models;
 using Bough.Core.Git.Models;
 
 namespace Bough.Core.Git
@@ -17,12 +20,17 @@ namespace Bough.Core.Git
         private static readonly string[] _repositoryRootArguments = new string[] { "rev-parse", "--show-toplevel" };
         private static readonly string[] _currentBranchArguments = new string[] { "branch", "--show-current" };
         private static readonly string[] _conflictPathsArguments = new string[] { "diff", "--name-only", "--diff-filter=U", "-z" };
+        private static readonly string[] _rebaseMergePathArguments = new string[] { "rev-parse", "--git-path", "rebase-merge" };
+        private static readonly string[] _rebaseApplyPathArguments = new string[] { "rev-parse", "--git-path", "rebase-apply" };
+        private static readonly string[] _continueRebaseArguments = new string[] { "-c", "core.editor=true", "rebase", "--continue" };
         private static readonly string[] _incomingRevisions = new string[] { "MERGE_HEAD", "REBASE_HEAD", "CHERRY_PICK_HEAD" };
         private readonly GitCommandRunner _runner;
+        private readonly ConflictParser _parser;
 
-        public GitRepositoryService(GitCommandRunner runner)
+        public GitRepositoryService(GitCommandRunner runner, ConflictParser parser)
         {
             _runner = runner;
+            _parser = parser;
         }
 
         public async Task<GitRepository> OpenAsync(string path, CancellationToken cancellationToken = default)
@@ -69,7 +77,7 @@ namespace Bough.Core.Git
         }
 
         public async Task<GitConflictFile> LoadConflictAsync(GitRepository repository, string relativePath,
-            string incomingChangeLabel, string incomingIndexStageLabel, CancellationToken cancellationToken = default)
+            string currentSourceLabel, string incomingChangeLabel, string incomingIndexStageLabel, CancellationToken cancellationToken = default)
         {
             string fullPath = ResolvePath(repository.RootPath, relativePath);
             byte[] originalBytes = await File.ReadAllBytesAsync(fullPath, cancellationToken);
@@ -96,25 +104,128 @@ namespace Bough.Core.Git
             string baseText = await ReadStageAsync(repository, 1, relativePath, cancellationToken);
             string oursText = await ReadStageAsync(repository, 2, relativePath, cancellationToken);
             string theirsText = await ReadStageAsync(repository, 3, relativePath, cancellationToken);
-            string oursSource = await DescribeRevisionAsync(repository, "HEAD", repository.CurrentBranch, cancellationToken);
+            string oursSource = await DescribeRevisionAsync(repository, "HEAD", currentSourceLabel, cancellationToken);
             string theirsSource = await DescribeIncomingRevisionAsync(repository, incomingChangeLabel, incomingIndexStageLabel, cancellationToken);
 
             return new GitConflictFile(relativePath, workingText, baseText, oursText, theirsText, oursSource, theirsSource, Convert.ToHexString(SHA256.HashData(originalBytes)), hasUtf8Bom);
         }
 
-        public async Task SaveAndStageAsync(GitRepository repository, GitConflictFile conflict, string resolvedText, CancellationToken cancellationToken = default)
+        public async Task<bool> IsRebaseInProgressAsync(GitRepository repository, CancellationToken cancellationToken = default)
         {
+            GitCommandResult mergePathResult = await _runner.RunAsync(repository.RootPath, _rebaseMergePathArguments, false, cancellationToken);
+            string mergePath = Path.GetFullPath(Path.Combine(repository.RootPath, mergePathResult.Output.Trim()));
+            if (Directory.Exists(mergePath))
+            {
+                return true;
+            }
+
+            GitCommandResult applyPathResult = await _runner.RunAsync(repository.RootPath, _rebaseApplyPathArguments, false, cancellationToken);
+            string applyPath = Path.GetFullPath(Path.Combine(repository.RootPath, applyPathResult.Output.Trim()));
+            return Directory.Exists(applyPath);
+        }
+
+        public async Task<GitCommandResult> ContinueRebaseAsync(GitRepository repository, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            GitRepository current = await OpenAsync(repository.RootPath, cancellationToken);
+            StringComparison pathComparison = StringComparison.Ordinal;
+            if (OperatingSystem.IsWindows())
+            {
+                pathComparison = StringComparison.OrdinalIgnoreCase;
+            }
+            if (string.Equals(current.RootPath, repository.RootPath, pathComparison) == false)
+            {
+                throw new GitException("RebaseRepositoryChanged", null, repository.RootPath);
+            }
+
+            bool isRebaseInProgress = await IsRebaseInProgressAsync(current, cancellationToken);
+            if (isRebaseInProgress == false)
+            {
+                throw new GitException("RebaseNoLongerInProgress", null, Array.Empty<object>());
+            }
+
+            IReadOnlyList<string> conflicts = await GetConflictPathsAsync(current, cancellationToken);
+            if (conflicts.Count > 0)
+            {
+                throw new GitException("RebaseUnresolvedConflicts", null, conflicts.Count);
+            }
+
+            return await _runner.RunAsync(current.RootPath, _continueRebaseArguments, true, cancellationToken);
+        }
+
+        public async Task<GitConflictStageResult> SaveAndStageAsync(GitRepository repository, GitConflictFile conflict,
+            string resolvedText, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            IReadOnlyList<string> conflictPaths = await GetConflictPathsAsync(repository, cancellationToken);
+            StringComparison pathComparison = StringComparison.Ordinal;
+            if (OperatingSystem.IsWindows())
+            {
+                pathComparison = StringComparison.OrdinalIgnoreCase;
+            }
+            bool stillConflicted = conflictPaths.Any(path => string.Equals(path, conflict.RelativePath, pathComparison));
+            if (stillConflicted == false)
+            {
+                return new GitConflictStageResult(GitConflictStageOutcome.NoLongerConflicted);
+            }
+
             string fullPath = ResolvePath(repository.RootPath, conflict.RelativePath);
-            byte[] currentBytes = await File.ReadAllBytesAsync(fullPath, cancellationToken);
+            byte[] currentBytes;
+            try
+            {
+                currentBytes = await File.ReadAllBytesAsync(fullPath, cancellationToken);
+            }
+            catch (FileNotFoundException exception)
+            {
+                return new GitConflictStageResult(GitConflictStageOutcome.FileChanged, exception);
+            }
+            catch (DirectoryNotFoundException exception)
+            {
+                return new GitConflictStageResult(GitConflictStageOutcome.FileChanged, exception);
+            }
             string currentHash = Convert.ToHexString(SHA256.HashData(currentBytes));
             if (currentHash != conflict.OriginalContentHash)
             {
-                throw new GitException("RepositoryConflictFileChanged", null, conflict.RelativePath);
+                return new GitConflictStageResult(GitConflictStageOutcome.FileChanged);
+            }
+
+            ConflictDocument document;
+            try
+            {
+                document = await Task.Run(() => _parser.Parse(resolvedText, conflict.OursSource, conflict.TheirsSource), cancellationToken);
+            }
+            catch (ConflictParseException exception)
+            {
+                return new GitConflictStageResult(GitConflictStageOutcome.IncompleteMarkers, exception);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            if (document.Hunks.Count > 0)
+            {
+                return new GitConflictStageResult(GitConflictStageOutcome.UnresolvedMarkers);
+            }
+
+            try
+            {
+                currentBytes = await File.ReadAllBytesAsync(fullPath, cancellationToken);
+            }
+            catch (FileNotFoundException exception)
+            {
+                return new GitConflictStageResult(GitConflictStageOutcome.FileChanged, exception);
+            }
+            catch (DirectoryNotFoundException exception)
+            {
+                return new GitConflictStageResult(GitConflictStageOutcome.FileChanged, exception);
+            }
+            currentHash = Convert.ToHexString(SHA256.HashData(currentBytes));
+            if (currentHash != conflict.OriginalContentHash)
+            {
+                return new GitConflictStageResult(GitConflictStageOutcome.FileChanged);
             }
 
             UTF8Encoding encoding = new(conflict.HasUtf8Bom, true);
             await File.WriteAllTextAsync(fullPath, resolvedText, encoding, cancellationToken);
             await _runner.RunAsync(repository.RootPath, new string[] { "add", "--", conflict.RelativePath }, false, cancellationToken);
+            return new GitConflictStageResult(GitConflictStageOutcome.Succeeded);
         }
 
         private async Task<string> ReadStageAsync(GitRepository repository, int stage, string relativePath, CancellationToken cancellationToken)

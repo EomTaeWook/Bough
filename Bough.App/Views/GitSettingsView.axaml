@@ -16,10 +16,13 @@
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
     </Style>
   </UserControl.Styles>
-  <Grid RowDefinitions="Auto,*,Auto">
+  <Grid RowDefinitions="Auto,*">
     <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="22,15">
       <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Grid.Column="0" Text="{Binding SettingsTitle}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+        <StackPanel Grid.Column="0" Spacing="4">
+          <TextBlock Text="{Binding SettingsTitle}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+          <TextBlock Text="{Binding GitSettingsHint}" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" />
+        </StackPanel>
         <Button Grid.Column="1" Content="{Binding RefreshLabel}" Command="{Binding RefreshCommand}" />
       </Grid>
     </Border>
@@ -44,6 +47,26 @@
           </StackPanel>
           <TextBlock Text="{Binding AppearanceStatus}" FontSize="11" TextWrapping="Wrap"
                      Foreground="{DynamicResource BoughBrushError}" />
+        </StackPanel>
+
+        <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="{Binding DefaultPullStrategyHeading}" FontSize="11" FontWeight="Bold"
+                     Foreground="{DynamicResource BoughBrushTextMuted}" />
+          <TextBlock Text="{Binding DefaultPullStrategyDescription}" FontSize="11" TextWrapping="Wrap"
+                     Foreground="{DynamicResource BoughBrushTextSubtle}" />
+          <WrapPanel Orientation="Horizontal">
+            <RadioButton Content="{Binding PullStrategyFastForwardOnlyLabel}" GroupName="DefaultPullStrategy"
+                         IsChecked="{Binding IsFastForwardOnlyPull, Mode=OneWay}" Click="FastForwardOnlyPullClicked"
+                         AutomationProperties.Name="{Binding PullStrategyFastForwardOnlyLabel}" Margin="0,0,14,0" />
+            <RadioButton Content="{Binding PullStrategyMergeLabel}" GroupName="DefaultPullStrategy"
+                         IsChecked="{Binding IsMergePull, Mode=OneWay}" Click="MergePullClicked"
+                         AutomationProperties.Name="{Binding PullStrategyMergeLabel}" Margin="0,0,14,0" />
+            <RadioButton Content="{Binding PullStrategyRebaseLabel}" GroupName="DefaultPullStrategy"
+                         IsChecked="{Binding IsRebasePull, Mode=OneWay}" Click="RebasePullClicked"
+                         AutomationProperties.Name="{Binding PullStrategyRebaseLabel}" />
+          </WrapPanel>
         </StackPanel>
 
         <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
@@ -116,8 +139,6 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
           <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" Margin="0,6,0,0" />
-          <TextBlock Text="{Binding CredentialHelperHeading}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
-          <SelectableTextBlock Text="{Binding CredentialHelper}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
           <TextBlock Text="{Binding RemoteUrlsHeading}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
           <ItemsControl ItemsSource="{Binding Remotes}">
             <ItemsControl.ItemTemplate>
@@ -132,9 +153,5 @@
         </StackPanel>
       </StackPanel>
     </ScrollViewer>
-
-    <Border Grid.Row="2" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" Padding="14,8">
-      <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
-    </Border>
   </Grid>
 </UserControl>

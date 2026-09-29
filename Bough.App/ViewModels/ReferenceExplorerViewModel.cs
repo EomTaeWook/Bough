@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Localization;
+using Bough.App.Presenters;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
 using Bough.App.Internals;
@@ -15,13 +16,14 @@ namespace Bough.App.ViewModels
     public class ReferenceExplorerViewModel : ViewModelBase
     {
         private readonly GitReferenceService _referenceService;
-        private readonly GitCommitActionService _actionService;
+        private readonly ReferenceSnapshotPresenter _snapshotPresenter;
+        private readonly ReferenceBranchPresenter _branchPresenter;
+        private readonly ReferenceMutationPresenter _mutationPresenter;
         private readonly TerminalLauncher _terminalLauncher;
         private readonly RepositoryFolderLauncher _folderLauncher;
         private readonly PullRequestLauncher _pullRequestLauncher;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
-        private readonly GitOperationQueue _operationQueue;
         private readonly ObservableCollection<GitLocalBranch> _branches;
         private readonly ObservableCollection<GitRemote> _remotes;
         private readonly ObservableCollection<GitTag> _tags;
@@ -36,22 +38,21 @@ namespace Bough.App.ViewModels
         private string _pendingBranchSwitchMessage;
         private string _remoteCheckoutWarning;
         private bool _isBusy;
-        private int _requestVersion;
         private int _branchChangeVersion;
         private bool _branchChangeInProgress;
         private string _branchChangeTarget;
-        private CancellationTokenSource _loadCancellation;
 
         public ReferenceExplorerViewModel(GitReferenceService referenceService, GitCommitActionService actionService, TerminalLauncher terminalLauncher, RepositoryFolderLauncher folderLauncher, PullRequestLauncher pullRequestLauncher, StashViewModel stashViewModel, StringHelper stringHelper, GitOperationQueue operationQueue)
         {
             _referenceService = referenceService;
-            _actionService = actionService;
+            _snapshotPresenter = new ReferenceSnapshotPresenter(referenceService);
+            _branchPresenter = new ReferenceBranchPresenter(referenceService, operationQueue);
+            _mutationPresenter = new ReferenceMutationPresenter(referenceService, actionService, operationQueue);
             _terminalLauncher = terminalLauncher;
             _folderLauncher = folderLauncher;
             _pullRequestLauncher = pullRequestLauncher;
             _stringHelper = stringHelper;
             _errorLocalizer = new GitErrorLocalizer(stringHelper);
-            _operationQueue = operationQueue ?? throw new ArgumentNullException(nameof(operationQueue));
             _branches = [];
             _remotes = [];
             _tags = [];
@@ -231,7 +232,8 @@ namespace Bough.App.ViewModels
                 PendingBranchSwitchMessage = string.Empty;
                 BranchSwitchFailureMessage = string.Empty;
             }
-            InvalidatePendingRequests();
+            _snapshotPresenter.BindRepository(repository);
+            IsBusy = _branchChangeInProgress;
             _repository = repository;
             RefreshCommand.NotifyCanExecuteChanged();
             OpenTerminalCommand.NotifyCanExecuteChanged();
@@ -250,8 +252,7 @@ namespace Bough.App.ViewModels
 
         public void InvalidatePendingRequests()
         {
-            _requestVersion++;
-            _loadCancellation?.Cancel();
+            _snapshotPresenter.Invalidate();
             IsBusy = _branchChangeInProgress;
         }
 
@@ -268,23 +269,33 @@ namespace Bough.App.ViewModels
                 return false;
             }
 
-            _loadCancellation?.Cancel();
-            using CancellationTokenSource cancellation = new();
-            _loadCancellation = cancellation;
-            int request = ++_requestVersion;
             IsBusy = true;
             StatusMessage = _stringHelper.GetString("ReferenceLoading");
+            ReferenceSnapshotResult result = await _snapshotPresenter.LoadAsync(repository);
+            if (result.IsCurrent == false)
+            {
+                if (_snapshotPresenter.HasActiveLoad == false)
+                {
+                    IsBusy = _branchChangeInProgress;
+                }
+                return false;
+            }
+            if (_repository != repository)
+            {
+                return false;
+            }
             try
             {
-                GitReferenceSnapshot snapshot = await _referenceService.GetSnapshotAsync(repository, cancellation.Token);
-                if (request != _requestVersion)
+                if (result.Error != null)
+                {
+                    StatusMessage = _errorLocalizer.GetDisplayMessage(result.Error);
+                    return false;
+                }
+                if (result.Snapshot == null)
                 {
                     return false;
                 }
-                if (_repository != repository)
-                {
-                    return false;
-                }
+                GitReferenceSnapshot snapshot = result.Snapshot;
 
                 string selectedKey = SelectedTreeNode?.Key;
                 ClearItems();
@@ -298,25 +309,9 @@ namespace Bough.App.ViewModels
                 StatusMessage = string.Empty;
                 return true;
             }
-            catch (OperationCanceledException)
-            {
-                return false;
-            }
-            catch (Exception exception)
-            {
-                if (request == _requestVersion)
-                {
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
-                }
-                return false;
-            }
             finally
             {
-                if (_loadCancellation == cancellation)
-                {
-                    _loadCancellation = null;
-                }
-                if (request == _requestVersion)
+                if (_snapshotPresenter.RequestVersion == result.RequestVersion)
                 {
                     if (_branchChangeInProgress == false)
                     {
@@ -370,7 +365,7 @@ namespace Bough.App.ViewModels
 
         private async Task<bool> QueueBranchSwitchAsync(GitRepository repository, string branchName, string successMessage)
         {
-            GitOperationQueueState state = _operationQueue.GetState(repository.RootPath);
+            GitOperationQueueState state = _branchPresenter.GetQueueState(repository.RootPath);
             if (state.IsRunning)
             {
                 if (PendingBranchSwitchMessage.Length == 0)
@@ -381,22 +376,19 @@ namespace Bough.App.ViewModels
             BranchSwitchFailureMessage = string.Empty;
             try
             {
-                return await _operationQueue.EnqueueAsync(repository.RootPath,
-                    _stringHelper.Format("ReferenceSwitchOperationRunning", branchName), async token =>
-                {
-                    bool shownRepository = IsCurrentRepository(repository.RootPath);
-                    if (shownRepository)
+                return await _branchPresenter.SwitchAsync(repository, branchName,
+                    _stringHelper.Format("ReferenceSwitchOperationRunning", branchName), () =>
                     {
-                        _branchChangeInProgress = true;
-                        _branchChangeTarget = branchName;
-                        _loadCancellation?.Cancel();
-                        _requestVersion++;
-                        IsBusy = true;
-                        StatusMessage = _stringHelper.Format("ReferenceSwitchInProgress", branchName);
-                    }
-                    try
+                        if (IsCurrentRepository(repository.RootPath))
+                        {
+                            _branchChangeInProgress = true;
+                            _branchChangeTarget = branchName;
+                            _snapshotPresenter.Invalidate();
+                            IsBusy = true;
+                            StatusMessage = _stringHelper.Format("ReferenceSwitchInProgress", branchName);
+                        }
+                    }, async updated =>
                     {
-                        GitRepository updated = await _referenceService.SwitchBranchAsync(repository, branchName, token);
                         if (IsCurrentRepository(repository.RootPath) == false)
                         {
                             return true;
@@ -419,17 +411,15 @@ namespace Bough.App.ViewModels
                         }
                         RepositoryChanged?.Invoke(updated);
                         return refreshed;
-                    }
-                    finally
+                    }, () =>
                     {
                         if (IsCurrentRepository(repository.RootPath))
                         {
                             _branchChangeInProgress = false;
                             _branchChangeTarget = null;
-                            IsBusy = _loadCancellation != null;
+                            IsBusy = _snapshotPresenter.HasActiveLoad;
                         }
-                    }
-                });
+                    });
             }
             catch (Exception exception)
             {
@@ -490,9 +480,10 @@ namespace Bough.App.ViewModels
             }
 
             GitRepository repository = _repository;
-            return await QueueBranchDeletionAsync(repository, branch.Name,
+            return await QueueBranchDeletionAsync(repository,
                 _stringHelper.Format("ReferenceLocalBranchDeleted", branch.Name),
-                token => _referenceService.DeleteLocalBranchAsync(repository, branch, token));
+                applyResult => _mutationPresenter.DeleteLocalBranchAsync(repository, branch,
+                    _stringHelper.Format("ReferenceDeletingBranch", branch.Name), applyResult));
         }
 
         public async Task<bool> DeleteRemoteBranchAsync(string repositoryRoot, GitRemoteBranch branch)
@@ -508,20 +499,19 @@ namespace Bough.App.ViewModels
             }
 
             GitRepository repository = _repository;
-            return await QueueBranchDeletionAsync(repository, branch.FullName,
+            return await QueueBranchDeletionAsync(repository,
                 _stringHelper.Format("ReferenceRemoteBranchDeleted", branch.FullName),
-                token => _referenceService.DeleteRemoteBranchAsync(repository, branch, token));
+                applyResult => _mutationPresenter.DeleteRemoteBranchAsync(repository, branch,
+                    _stringHelper.Format("ReferenceDeletingBranch", branch.FullName), applyResult));
         }
 
-        private async Task<bool> QueueBranchDeletionAsync(GitRepository repository, string branchName, string successMessage, Func<CancellationToken, Task> action)
+        private async Task<bool> QueueBranchDeletionAsync(GitRepository repository, string successMessage,
+            Func<Func<Task<bool>>, Task<bool>> execute)
         {
             try
             {
-                return await _operationQueue.EnqueueAsync(repository.RootPath,
-                    _stringHelper.Format("ReferenceDeletingBranch", branchName), async token =>
+                return await execute(async () =>
                 {
-                    token.ThrowIfCancellationRequested();
-                    await action(token);
                     if (IsCurrentRepository(repository.RootPath) == false)
                     {
                         return true;
@@ -570,8 +560,9 @@ namespace Bough.App.ViewModels
                 StatusMessage = _stringHelper.GetString("ReferenceSourceBranchRequired");
                 return false;
             }
-            GitRepository repository = _repository;
-            return await RunBranchChangeAsync(() => _actionService.CreateFromBranchAsync(repository, branch.Name, branch.CommitHash, newName, true), _stringHelper.Format("ReferenceBranchCreated", newName), newName);
+            return await RunBranchChangeAsync(
+                (requested, operationName, runAndApply) => _mutationPresenter.CreateFromBranchAsync(requested, branch, newName, operationName, runAndApply),
+                _stringHelper.Format("ReferenceBranchCreated", newName), newName);
         }
 
         public async Task<bool> TrackMenuRemoteAsync(string repositoryRoot, GitRemoteBranch branch, string localName)
@@ -586,11 +577,11 @@ namespace Bough.App.ViewModels
                 return false;
             }
             GitRepository repository = _repository;
-            int request = _requestVersion;
+            int request = _snapshotPresenter.RequestVersion;
             try
             {
                 IReadOnlyList<GitLocalBranch> localBranches = await _referenceService.GetLocalBranchesAsync(repository);
-                if (request != _requestVersion)
+                if (request != _snapshotPresenter.RequestVersion)
                 {
                     return false;
                 }
@@ -610,13 +601,15 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                if (request == _requestVersion)
+                if (request == _snapshotPresenter.RequestVersion)
                 {
                     StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
                 }
                 return false;
             }
-            return await RunBranchChangeAsync(() => _actionService.TrackRemoteAsync(repository, branch, localName), _stringHelper.Format("ReferenceRemoteTrackingSwitched", branch.FullName, localName), localName);
+            return await RunBranchChangeAsync(
+                (requested, operationName, runAndApply) => _mutationPresenter.TrackRemoteAsync(requested, branch, localName, operationName, runAndApply),
+                _stringHelper.Format("ReferenceRemoteTrackingSwitched", branch.FullName, localName), localName);
         }
 
         public async Task<bool> PrepareRemoteBranchCheckoutAsync(string repositoryRoot, GitRemoteBranch branch)
@@ -633,14 +626,14 @@ namespace Bough.App.ViewModels
             }
             BranchSwitchFailureMessage = string.Empty;
             GitRepository repository = _repository;
-            int request = _requestVersion;
+            int request = _snapshotPresenter.RequestVersion;
             using CancellationTokenSource cancellation = new();
-            _loadCancellation = cancellation;
+            _snapshotPresenter.TrackExternal(cancellation);
             IsBusy = true;
             try
             {
                 IReadOnlyList<GitLocalBranch> localBranches = await _referenceService.GetLocalBranchesAsync(repository, cancellation.Token);
-                if (request != _requestVersion)
+                if (request != _snapshotPresenter.RequestVersion)
                 {
                     return false;
                 }
@@ -685,17 +678,14 @@ namespace Bough.App.ViewModels
                 if (trackingBranch != null)
                 {
                     bool canTreatAsCurrent = trackingBranch.IsCurrent;
-                    if (_operationQueue != null)
+                    GitOperationQueueState queueState = _branchPresenter.GetQueueState(repository.RootPath);
+                    if (queueState.IsRunning)
                     {
-                        GitOperationQueueState queueState = _operationQueue.GetState(repository.RootPath);
-                        if (queueState.IsRunning)
-                        {
-                            canTreatAsCurrent = false;
-                        }
-                        if (queueState.PendingCount > 0)
-                        {
-                            canTreatAsCurrent = false;
-                        }
+                        canTreatAsCurrent = false;
+                    }
+                    if (queueState.PendingCount > 0)
+                    {
+                        canTreatAsCurrent = false;
                     }
                     if (canTreatAsCurrent)
                     {
@@ -714,7 +704,7 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                if (request == _requestVersion)
+                if (request == _snapshotPresenter.RequestVersion)
                 {
                     StatusMessage = _stringHelper.Format("ReferenceRemoteCheckoutFailed", branch.FullName, CurrentBranchDisplay, _errorLocalizer.GetDisplayMessage(exception));
                     BranchSwitchFailureMessage = StatusMessage;
@@ -723,11 +713,8 @@ namespace Bough.App.ViewModels
             }
             finally
             {
-                if (_loadCancellation == cancellation)
-                {
-                    _loadCancellation = null;
-                }
-                if (request == _requestVersion)
+                _snapshotPresenter.ReleaseExternal(cancellation);
+                if (request == _snapshotPresenter.RequestVersion)
                 {
                     IsBusy = false;
                 }
@@ -858,8 +845,9 @@ namespace Bough.App.ViewModels
             {
                 return false;
             }
-            GitRepository repository = _repository;
-            return await RunBranchChangeAsync(() => _referenceService.CreateBranchAsync(repository, name, "HEAD"), _stringHelper.Format("ReferenceBranchCreatedAndSwitched", name), name);
+            return await RunBranchChangeAsync(
+                (requested, operationName, runAndApply) => _mutationPresenter.CreateBranchAsync(requested, name, operationName, runAndApply),
+                _stringHelper.Format("ReferenceBranchCreatedAndSwitched", name), name);
         }
 
         public async Task<bool> CreateTagFromSectionAsync(string repositoryRoot, string name)
@@ -872,11 +860,9 @@ namespace Bough.App.ViewModels
             GitRepository repository = _repository;
             try
             {
-                return await _operationQueue.EnqueueAsync(repository.RootPath, $"{_stringHelper.GetString("ReferenceCreateTag")} {name}", async token =>
-                {
-                    token.ThrowIfCancellationRequested();
-                    return await CreateTagCoreAsync(repository, name);
-                });
+                string operationName = $"{_stringHelper.GetString("ReferenceCreateTag")} {name}";
+                return await _mutationPresenter.CreateTagAsync(repository, name, operationName,
+                    () => ApplyTagResultAsync(repository, name));
             }
             catch (OperationCanceledException)
             {
@@ -892,21 +878,8 @@ namespace Bough.App.ViewModels
             }
         }
 
-        private async Task<bool> CreateTagCoreAsync(GitRepository repository, string name)
+        private async Task<bool> ApplyTagResultAsync(GitRepository repository, string name)
         {
-            try
-            {
-                await _referenceService.CreateLightweightTagAsync(repository, name, "HEAD");
-            }
-            catch (Exception exception)
-            {
-                if (IsCurrentRepository(repository.RootPath))
-                {
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
-                }
-                return false;
-            }
-
             if (_repository == null)
             {
                 return true;
@@ -931,7 +904,8 @@ namespace Bough.App.ViewModels
             return true;
         }
 
-        private async Task<bool> RunBranchChangeAsync(Func<Task<GitRepository>> action, string successMessage, string targetBranch)
+        private async Task<bool> RunBranchChangeAsync(Func<GitRepository, string, ReferenceBranchRunner, Task<bool>> execute,
+            string successMessage, string targetBranch)
         {
             GitRepository requestedRepository = _repository;
             if (requestedRepository == null)
@@ -942,11 +916,9 @@ namespace Bough.App.ViewModels
             }
             try
             {
-                return await _operationQueue.EnqueueAsync(requestedRepository.RootPath, _stringHelper.Format("ReferenceSwitchOperationRunning", targetBranch), async token =>
-                {
-                    token.ThrowIfCancellationRequested();
-                    return await RunBranchChangeCoreAsync(action, successMessage, targetBranch, requestedRepository);
-                });
+                string operationName = _stringHelper.Format("ReferenceSwitchOperationRunning", targetBranch);
+                return await execute(requestedRepository, operationName,
+                    action => RunBranchChangeCoreAsync(action, successMessage, targetBranch, requestedRepository));
             }
             catch (OperationCanceledException)
             {
@@ -981,8 +953,7 @@ namespace Bough.App.ViewModels
             int operation = ++_branchChangeVersion;
             _branchChangeInProgress = true;
             _branchChangeTarget = targetBranch;
-            _loadCancellation?.Cancel();
-            _requestVersion++;
+            _snapshotPresenter.Invalidate();
             IsBusy = true;
             BranchSwitchFailureMessage = string.Empty;
             StatusMessage = _stringHelper.Format("ReferenceSwitchOperationRunning", targetBranch);
@@ -1001,11 +972,6 @@ namespace Bough.App.ViewModels
                 {
                     return false;
                 }
-                if (updated.CurrentBranch != targetBranch)
-                {
-                    throw new GitException("ReferenceSwitchUnexpectedCurrent", null, targetBranch, updated.CurrentBranch);
-                }
-
                 _repository = updated;
                 bool refreshed = await RefreshCoreAsync();
                 if (operation != _branchChangeVersion)
@@ -1075,7 +1041,7 @@ namespace Bough.App.ViewModels
                 {
                     _branchChangeInProgress = false;
                     _branchChangeTarget = null;
-                    IsBusy = _loadCancellation != null;
+                    IsBusy = _snapshotPresenter.HasActiveLoad;
                 }
             }
         }

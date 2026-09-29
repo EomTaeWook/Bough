@@ -1,4 +1,5 @@
 using Bough.App.Localization;
+using Bough.App.Presenters;
 using Bough.Core.Conflicts;
 using Bough.Core.Conflicts.Exceptions;
 using Bough.Core.Git;
@@ -8,7 +9,6 @@ using Dignus.DependencyInjection.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Bough.Core.Conflicts.Models;
@@ -26,10 +26,10 @@ namespace Bough.App.ViewModels
         private readonly ConflictParser _parser;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
+        private readonly ConflictStagePresenter _stagePresenter;
 
         private readonly StringComparison _pathComparison;
         private readonly Dictionary<int, ResolutionChoiceType> _choices;
-        private IConflictStageCompletion _completion;
         private GitRepository _repository;
         private GitConflictFile _currentConflict;
         private ConflictDocument _document;
@@ -45,11 +45,14 @@ namespace Bough.App.ViewModels
         private string _baseText;
         private string _resultText;
         private string _loadedResultText;
+        private string _renderedResultText;
         private string _statusMessage;
         private string _currentChoiceText;
+        private ConflictStageResult _stageResult;
         private string _queueStatusText = string.Empty;
         private bool _hasDocument;
         private bool _isBusy;
+        private bool _isRebaseConflict;
         private int _activeSaveCount;
 
         public ConflictResolutionViewModel(GitRepositoryService repositoryService, GitOperationQueue operationQueue, ConflictParser parser, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
@@ -59,6 +62,7 @@ namespace Bough.App.ViewModels
             _parser = parser;
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
+            _stagePresenter = new ConflictStagePresenter(repositoryService, operationQueue, this);
             _pathComparison = StringComparison.Ordinal;
             if (OperatingSystem.IsWindows())
             {
@@ -74,6 +78,7 @@ namespace Bough.App.ViewModels
             _baseText = string.Empty;
             _resultText = string.Empty;
             _loadedResultText = string.Empty;
+            _renderedResultText = string.Empty;
             _statusMessage = _stringHelper.GetString("OpenRepositoryToFindConflicts");
             _currentChoiceText = _stringHelper.GetString("NoChoiceYet");
             _operationQueue.StateChanged += OnGitOperationQueueStateChanged;
@@ -84,7 +89,6 @@ namespace Bough.App.ViewModels
             ChooseTheirsCommand = new RelayCommand(ChooseTheirs, CanResolveCurrentHunk);
             ChooseBothCommand = new RelayCommand(ChooseBoth, CanResolveCurrentHunk);
             RemoveBothCommand = new RelayCommand(RemoveBoth, CanResolveCurrentHunk);
-            SaveAndStageCommand = new RelayCommand(() => _ = SaveAndStageAsync(), CanSaveAndStage);
         }
 
         public StringHelper Strings { get { return _stringHelper; } }
@@ -95,8 +99,12 @@ namespace Bough.App.ViewModels
         public RelayCommand ChooseTheirsCommand { get; }
         public RelayCommand ChooseBothCommand { get; }
         public RelayCommand RemoveBothCommand { get; }
-        public RelayCommand SaveAndStageCommand { get; }
         public bool IsSaving { get { return _activeSaveCount > 0; } }
+        public bool HasStageResult { get { return StageResult != null; } }
+        public bool HasGeneralStatus { get { return StageResult == null; } }
+        public ConflictStageResult StageResult { get { return _stageResult; } }
+        internal GitRepository StageRepository { get { return _repository; } }
+        internal GitConflictFile StageConflict { get { return _currentConflict; } }
         public string QueueStatusText { get { return _queueStatusText; } }
         public bool HasQueueStatus { get { return _queueStatusText.Length > 0; } }
         public bool HasUnsavedConflictEdits { get { return HasDocument && ResultText != _loadedResultText; } }
@@ -110,13 +118,112 @@ namespace Bough.App.ViewModels
         public string FinalFileText { get { return _stringHelper.GetString("FinalFile"); } }
         public string FinalFileHintText { get { return _stringHelper.GetString("FinalFileHint"); } }
         public string SaveAndStageText { get { return _stringHelper.GetString("SaveAndStage"); } }
-        public string CurrentChangeLabel { get { return _stringHelper.GetString("CurrentChange"); } }
-        public string IncomingChangeLabel { get { return _stringHelper.GetString("IncomingChange"); } }
-        public string UseCurrentChangeLabel { get { return _stringHelper.GetString("UseCurrentChange"); } }
-        public string UseIncomingChangeLabel { get { return _stringHelper.GetString("UseIncomingChange"); } }
+        public bool IsRebaseConflict { get { return _isRebaseConflict; } }
+        public string RebaseProgressLabel { get { return _stringHelper.GetString("RebaseProgressLabel"); } }
+        public string CurrentChangeLabel
+        {
+            get
+            {
+                if (_isRebaseConflict)
+                {
+                    return _stringHelper.GetString("RebaseTargetChange");
+                }
+                return _stringHelper.GetString("CurrentChange");
+            }
+        }
+        public string IncomingChangeLabel
+        {
+            get
+            {
+                if (_isRebaseConflict)
+                {
+                    return _stringHelper.GetString("RebaseReplayChange");
+                }
+                return _stringHelper.GetString("IncomingChange");
+            }
+        }
+        public string UseCurrentChangeLabel
+        {
+            get
+            {
+                if (_isRebaseConflict)
+                {
+                    return _stringHelper.GetString("RebaseUseTarget");
+                }
+                return _stringHelper.GetString("UseCurrentChange");
+            }
+        }
+        public string UseIncomingChangeLabel
+        {
+            get
+            {
+                if (_isRebaseConflict)
+                {
+                    return _stringHelper.GetString("RebaseUseReplay");
+                }
+                return _stringHelper.GetString("UseIncomingChange");
+            }
+        }
         public string UseBothLabel { get { return _stringHelper.GetString("UseBoth"); } }
+        public string UseBothTooltip
+        {
+            get
+            {
+                if (_isRebaseConflict)
+                {
+                    return _stringHelper.GetString("RebaseBothOrderTip");
+                }
+                return null;
+            }
+        }
         public string RemoveBothLabel { get { return _stringHelper.GetString("RemoveBoth"); } }
+        public string ConflictBatchCurrentFileText { get { return _stringHelper.Format("ConflictBatchCurrentFileLabel", RemainingHunkCount); } }
+        public string ConflictBatchTooltip { get { return _stringHelper.GetString("ConflictBatchTooltip"); } }
+        public string ConflictBatchReplaceEditsTitle { get { return _stringHelper.GetString("ConflictBatchReplaceEditsTitle"); } }
+        public string ConflictBatchReplaceEditsMessage { get { return _stringHelper.GetString("ConflictBatchReplaceEditsMessage"); } }
+        public string ConflictBatchApplyButtonText { get { return _stringHelper.GetString("ConflictBatchApplyButton"); } }
         public string ConflictCountText { get { return _stringHelper.Format("ConflictFileCount", ConflictFiles.Count); } }
+        public bool CanApplyRemaining
+        {
+            get
+            {
+                if (_document == null)
+                {
+                    return false;
+                }
+                if (IsBusy)
+                {
+                    return false;
+                }
+                if (ConflictFiles.Count == 0)
+                {
+                    return false;
+                }
+                return RemainingHunkCount > 0;
+            }
+        }
+
+        private int RemainingHunkCount
+        {
+            get
+            {
+                if (_document == null)
+                {
+                    return 0;
+                }
+
+                int remainingCount = 0;
+                foreach (ConflictHunk hunk in _document.Hunks)
+                {
+                    if (_choices.ContainsKey(hunk.Id))
+                    {
+                        continue;
+                    }
+                    remainingCount++;
+                }
+                return remainingCount;
+            }
+        }
 
         public string CurrentFilePath
         {
@@ -161,6 +268,7 @@ namespace Bough.App.ViewModels
             {
                 if (SetProperty(ref _resultText, value) == true)
                 {
+                    SetStageResult(null);
                     OnPropertyChanged(nameof(HasUnsavedConflictEdits));
                 }
             }
@@ -186,6 +294,7 @@ namespace Bough.App.ViewModels
                 if (SetProperty(ref _hasDocument, value) == true)
                 {
                     NotifyCommandStates();
+                    NotifyBatchState();
                 }
             }
         }
@@ -198,6 +307,7 @@ namespace Bough.App.ViewModels
                 if (SetProperty(ref _isBusy, value) == true)
                 {
                     NotifyCommandStates();
+                    NotifyBatchState();
                 }
             }
         }
@@ -241,7 +351,7 @@ namespace Bough.App.ViewModels
             {
                 throw new ArgumentNullException(nameof(completion));
             }
-            _completion = completion;
+            _stagePresenter.SetCompletion(completion);
         }
 
         public void BindRepository(GitRepository repository)
@@ -274,6 +384,7 @@ namespace Bough.App.ViewModels
                 ApplyGitOperationQueueState(_operationQueue.GetState(repository.RootPath));
             }
             _requestVersion++;
+            _stagePresenter.Invalidate();
             _loadVersion++;
             IsBusy = false;
             if (rootChanged == false)
@@ -301,6 +412,7 @@ namespace Bough.App.ViewModels
             }
 
             int request = ++_requestVersion;
+            _stagePresenter.Invalidate();
             string previousPath = _selectedFile?.RelativePath ?? string.Empty;
             SetSelectedFile(null);
             ConflictFiles.Clear();
@@ -310,6 +422,7 @@ namespace Bough.App.ViewModels
             }
             OnPropertyChanged(nameof(ConflictCountText));
             NotifyCommandStates();
+            NotifyBatchState();
 
             if (ConflictFiles.Count == 0)
             {
@@ -378,8 +491,34 @@ namespace Bough.App.ViewModels
 
             GitRepository repository = _repository;
             int loadVersion = ++_loadVersion;
+            bool isRebaseConflict = await _repositoryService.IsRebaseInProgressAsync(repository);
+            if (loadVersion != _loadVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
+            if (_selectedFile?.RelativePath != file.RelativePath)
+            {
+                return;
+            }
+
+            string currentChangeLabel = _stringHelper.GetString("CurrentChange");
+            string incomingChangeLabel = _stringHelper.GetString("IncomingChange");
+            string currentSourceLabel = repository.CurrentBranch;
+            string incomingSourceLabel = incomingChangeLabel;
+            if (isRebaseConflict)
+            {
+                currentChangeLabel = _stringHelper.GetString("RebaseTargetChange");
+                incomingChangeLabel = _stringHelper.GetString("RebaseReplayChange");
+                currentSourceLabel = _stringHelper.GetString("RebaseTargetSource");
+                incomingSourceLabel = _stringHelper.GetString("RebaseReplaySource");
+            }
+
             GitConflictFile conflict = await _repositoryService.LoadConflictAsync(repository, file.RelativePath,
-                _stringHelper.GetString("IncomingChange"), _stringHelper.GetString("ConflictIncomingIndexStage3"));
+                currentSourceLabel, incomingSourceLabel, _stringHelper.GetString("ConflictIncomingIndexStage3"));
             if (loadVersion != _loadVersion)
             {
                 return;
@@ -399,8 +538,7 @@ namespace Bough.App.ViewModels
 
             (ConflictDocument Document, string InitialResult) parsed = await Task.Run(() =>
             {
-                ConflictDocument document = _parser.Parse(conflict.WorkingText,
-                    _stringHelper.GetString("CurrentChange"), _stringHelper.GetString("IncomingChange"));
+                ConflictDocument document = _parser.Parse(conflict.WorkingText, currentChangeLabel, incomingChangeLabel);
                 string initialResult = document.Render(new Dictionary<int, ResolutionChoiceType>());
                 return (document, initialResult);
             });
@@ -418,17 +556,21 @@ namespace Bough.App.ViewModels
             }
             if (parsed.Document.Hunks.Count == 0)
             {
-                throw new ConflictParseException("ConflictTextMarkersMissing", file.RelativePath);
+                throw new Bough.Core.Conflicts.Exceptions.ConflictParseException("ConflictTextMarkersMissing", file.RelativePath);
             }
 
             _document = parsed.Document;
             _currentConflict = conflict;
+            _stagePresenter.Invalidate();
+            _isRebaseConflict = isRebaseConflict;
+            NotifyChangeLabels();
             _choices.Clear();
             _currentHunkIndex = 0;
             CurrentFilePath = conflict.RelativePath;
             OursSource = conflict.OursSource;
             TheirsSource = conflict.TheirsSource;
             BaseText = conflict.BaseText;
+            _renderedResultText = parsed.InitialResult;
             ResultText = parsed.InitialResult;
             _loadedResultText = ResultText;
             OnPropertyChanged(nameof(HasUnsavedConflictEdits));
@@ -450,10 +592,77 @@ namespace Bough.App.ViewModels
             }
             ConflictHunk hunk = _document.Hunks[_currentHunkIndex];
             _choices[hunk.Id] = choice;
-            ResultText = _document.Render(_choices);
+            _renderedResultText = _document.Render(_choices);
+            ResultText = _renderedResultText;
             CurrentChoiceText = GetChoiceName(choice);
             int resolvedCount = _choices.Values.Count(selectedChoice => selectedChoice != ResolutionChoiceType.Unresolved);
             StatusMessage = _stringHelper.Format("ConflictsSelectedNotice", resolvedCount, _document.Hunks.Count);
+            NotifyBatchState();
+        }
+
+        public async Task ApplyRemainingAsync(ResolutionChoiceType choice, Func<Task<bool>> confirmReplaceEdits)
+        {
+            if (confirmReplaceEdits == null)
+            {
+                throw new ArgumentNullException(nameof(confirmReplaceEdits));
+            }
+            if (CanApplyRemaining == false)
+            {
+                return;
+            }
+
+            ConflictDocument document = _document;
+            GitConflictFile conflict = _currentConflict;
+            int loadVersion = _loadVersion;
+            int requestVersion = _requestVersion;
+            string resultBeforeConfirmation = ResultText;
+            if (resultBeforeConfirmation != _renderedResultText)
+            {
+                bool replaceEdits = await confirmReplaceEdits();
+                if (replaceEdits == false)
+                {
+                    return;
+                }
+                if (loadVersion != _loadVersion)
+                {
+                    return;
+                }
+                if (requestVersion != _requestVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(_document, document) == false)
+                {
+                    return;
+                }
+                if (ReferenceEquals(_currentConflict, conflict) == false)
+                {
+                    return;
+                }
+                if (ResultText != resultBeforeConfirmation)
+                {
+                    return;
+                }
+                if (CanApplyRemaining == false)
+                {
+                    return;
+                }
+            }
+
+            foreach (ConflictHunk hunk in document.Hunks)
+            {
+                if (_choices.ContainsKey(hunk.Id))
+                {
+                    continue;
+                }
+                _choices.Add(hunk.Id, choice);
+            }
+
+            _renderedResultText = document.Render(_choices);
+            ResultText = _renderedResultText;
+            ShowCurrentHunk();
+            int resolvedCount = _choices.Values.Count(selectedChoice => selectedChoice != ResolutionChoiceType.Unresolved);
+            StatusMessage = _stringHelper.Format("ConflictsSelectedNotice", resolvedCount, document.Hunks.Count);
         }
 
         private void PreviousHunk()
@@ -492,189 +701,50 @@ namespace Bough.App.ViewModels
             }
             OnPropertyChanged(nameof(CurrentHunkText));
             NotifyCommandStates();
+            NotifyBatchState();
         }
 
-        public async Task<ConflictStageResult> SaveAndStageAsync()
+        public Task<ConflictStageResult> SaveAndStageAsync(string operationName)
         {
-            GitRepository repository = _repository;
-            GitConflictFile conflict = _currentConflict;
-            if (_completion == null)
-            {
-                string message = _stringHelper.GetString("ConflictStageUnavailable");
-                StatusMessage = message;
-                return new ConflictStageResult(repository, conflict?.RelativePath ?? string.Empty, ConflictStageOutcome.Failed, message);
-            }
-            if (repository == null)
-            {
-                string message = _stringHelper.GetString("OpenRepositoryToFindConflicts");
-                StatusMessage = message;
-                return new ConflictStageResult(null, string.Empty, ConflictStageOutcome.Failed, message);
-            }
-            if (conflict == null)
-            {
-                string message = _stringHelper.GetString("SelectConflictFile");
-                StatusMessage = message;
-                return new ConflictStageResult(repository, string.Empty, ConflictStageOutcome.Failed, message);
-            }
-            int request = _requestVersion;
-            string resultText = ResultText;
-            string stagedPath = conflict.RelativePath;
-            ConflictStageResult result;
-            try
-            {
-                result = await _operationQueue.EnqueueAsync(repository.RootPath, $"{_stringHelper.GetString("SaveAndStage")} · {stagedPath}",
-                    token => SaveAndStageCoreAsync(repository, conflict, resultText, request, token));
-            }
-            catch (OperationCanceledException exception)
-            {
-                result = new ConflictStageResult(repository, stagedPath, ConflictStageOutcome.Canceled,
-                    _stringHelper.GetString("ConflictStageCanceled"), exception);
-            }
-            catch (Exception exception)
-            {
-                result = new ConflictStageResult(repository, stagedPath, ConflictStageOutcome.Failed,
-                    _errorLocalizer.GetDisplayMessage(exception), exception);
-            }
-
-            if (IsCurrentStageRequest(repository, conflict, request) == false)
-            {
-                return result;
-            }
-            if (result.Succeeded)
-            {
-                _loadedResultText = resultText;
-                OnPropertyChanged(nameof(HasUnsavedConflictEdits));
-                try
-                {
-                    await _completion.CompleteConflictStageAsync(repository, stagedPath);
-                }
-                catch (Exception exception)
-                {
-                    result = new ConflictStageResult(repository, stagedPath, ConflictStageOutcome.RefreshFailed,
-                        _stringHelper.Format("ConflictStageRefreshFailed", stagedPath, _errorLocalizer.GetDisplayMessage(exception)), exception);
-                }
-            }
-            if (result.Outcome == ConflictStageOutcome.NoLongerConflicted)
-            {
-                result = await RefreshAfterStaleStageAsync(result);
-            }
-            if (result.Outcome == ConflictStageOutcome.FileChanged)
-            {
-                result = await RefreshAfterStaleStageAsync(result);
-            }
-            if (IsCurrentStageRequest(repository, conflict, request))
-            {
-                StatusMessage = result.Message;
-            }
-            return result;
+            return _stagePresenter.SaveAndStageAsync(operationName);
         }
 
-        private async Task<ConflictStageResult> RefreshAfterStaleStageAsync(ConflictStageResult result)
+        internal void SetStageResult(ConflictStageResult result)
         {
-            try
+            if (SetProperty(ref _stageResult, result, nameof(StageResult)) == false)
             {
-                await _completion.RefreshConflictStateAsync(result.Repository);
+                return;
             }
-            catch (Exception exception)
-            {
-                string message = $"{result.Message} {_errorLocalizer.GetDisplayMessage(exception)}";
-                return new ConflictStageResult(result.Repository, result.Path, result.Outcome, message, exception);
-            }
-            return result;
+            OnPropertyChanged(nameof(HasStageResult));
+            OnPropertyChanged(nameof(HasGeneralStatus));
         }
 
-        private async Task<ConflictStageResult> SaveAndStageCoreAsync(GitRepository repository, GitConflictFile conflict,
-            string resultText, int request, System.Threading.CancellationToken cancellationToken)
+        internal void MarkStageSaved(string resultText)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            bool ownsView = IsCurrentStageRequest(repository, conflict, request);
+            _loadedResultText = resultText;
+            OnPropertyChanged(nameof(HasUnsavedConflictEdits));
+        }
+
+        internal void BeginStageRequest(bool ownsView)
+        {
             _activeSaveCount++;
+            OnPropertyChanged(nameof(IsSaving));
             if (ownsView)
             {
                 _loadVersion++;
                 IsBusy = true;
             }
-            try
-            {
-                IReadOnlyList<string> conflictPaths = await _repositoryService.GetConflictPathsAsync(repository, cancellationToken);
-                bool stillConflicted = conflictPaths.Any(path => string.Equals(path, conflict.RelativePath, _pathComparison));
-                if (stillConflicted == false)
-                {
-                    return new ConflictStageResult(repository, conflict.RelativePath, ConflictStageOutcome.NoLongerConflicted,
-                        _stringHelper.Format("ConflictStageNoLongerConflicted", conflict.RelativePath));
-                }
-
-                GitConflictFile currentConflict;
-                try
-                {
-                    currentConflict = await _repositoryService.LoadConflictAsync(repository, conflict.RelativePath,
-                        _stringHelper.GetString("IncomingChange"), _stringHelper.GetString("ConflictIncomingIndexStage3"), cancellationToken);
-                }
-                catch (FileNotFoundException exception)
-                {
-                    return new ConflictStageResult(repository, conflict.RelativePath, ConflictStageOutcome.FileChanged,
-                        _stringHelper.Format("ConflictStageFileChanged", conflict.RelativePath), exception);
-                }
-                catch (DirectoryNotFoundException exception)
-                {
-                    return new ConflictStageResult(repository, conflict.RelativePath, ConflictStageOutcome.FileChanged,
-                        _stringHelper.Format("ConflictStageFileChanged", conflict.RelativePath), exception);
-                }
-                if (currentConflict.OriginalContentHash != conflict.OriginalContentHash)
-                {
-                    return new ConflictStageResult(repository, conflict.RelativePath, ConflictStageOutcome.FileChanged,
-                        _stringHelper.Format("ConflictStageFileChanged", conflict.RelativePath));
-                }
-
-                ConflictDocument resultDocument;
-                try
-                {
-                    resultDocument = await Task.Run(() => _parser.Parse(resultText,
-                        _stringHelper.GetString("CurrentChange"), _stringHelper.GetString("IncomingChange")), cancellationToken);
-                }
-                catch (ConflictParseException exception)
-                {
-                    return new ConflictStageResult(repository, conflict.RelativePath, ConflictStageOutcome.InvalidResolution,
-                        _stringHelper.GetString("IncompleteConflictMarkers"), exception);
-                }
-                cancellationToken.ThrowIfCancellationRequested();
-                if (resultDocument.Hunks.Count > 0)
-                {
-                    return new ConflictStageResult(repository, conflict.RelativePath, ConflictStageOutcome.InvalidResolution,
-                        _stringHelper.GetString("UnresolvedConflictMarkers"));
-                }
-
-                await _repositoryService.SaveAndStageAsync(repository, conflict, resultText, cancellationToken);
-                return new ConflictStageResult(repository, conflict.RelativePath, ConflictStageOutcome.Succeeded,
-                    _stringHelper.Format("FileStaged", conflict.RelativePath));
-            }
-            finally
-            {
-                _activeSaveCount--;
-                if (IsCurrentStageRequest(repository, conflict, request))
-                {
-                    IsBusy = false;
-                }
-            }
         }
 
-        private bool IsCurrentStageRequest(GitRepository repository, GitConflictFile conflict, int request)
+        internal void EndStageRequest(bool ownsView)
         {
-            if (request != _requestVersion)
+            _activeSaveCount--;
+            OnPropertyChanged(nameof(IsSaving));
+            if (ownsView)
             {
-                return false;
+                IsBusy = false;
             }
-            if (ReferenceEquals(_repository, repository) == false)
-            {
-                return false;
-            }
-            if (ReferenceEquals(_currentConflict, conflict) == false)
-            {
-                return false;
-            }
-            return true;
         }
-
         private async Task RunBusyAsync(Func<Task> action)
         {
             if (IsBusy == true)
@@ -751,17 +821,24 @@ namespace Bough.App.ViewModels
         {
             _document = null;
             _currentConflict = null;
+            _stagePresenter.Invalidate();
+            _isRebaseConflict = false;
+            NotifyChangeLabels();
             _choices.Clear();
             HasDocument = false;
             CurrentFilePath = _stringHelper.GetString("SelectConflictFile");
+            OursSource = _stringHelper.GetString("CurrentChange");
+            TheirsSource = _stringHelper.GetString("IncomingChange");
             OursText = string.Empty;
             TheirsText = string.Empty;
             BaseText = string.Empty;
             ResultText = string.Empty;
             _loadedResultText = string.Empty;
+            _renderedResultText = string.Empty;
             OnPropertyChanged(nameof(HasUnsavedConflictEdits));
             CurrentChoiceText = _stringHelper.GetString("NoChoiceYet");
             OnPropertyChanged(nameof(CurrentHunkText));
+            NotifyBatchState();
         }
 
         private bool CanMoveToPreviousHunk() { return _currentHunkIndex > 0; }
@@ -777,17 +854,20 @@ namespace Bough.App.ViewModels
 
         private bool CanResolveCurrentHunk() { return HasDocument; }
 
-        private bool CanSaveAndStage()
+        public bool CanSaveAndStage
         {
-            if (HasDocument == false)
+            get
             {
-                return false;
+                if (HasDocument == false)
+                {
+                    return false;
+                }
+                if (ConflictFiles.Count == 0)
+                {
+                    return false;
+                }
+                return true;
             }
-            if (ConflictFiles.Count == 0)
-            {
-                return false;
-            }
-            return true;
         }
 
         private void NotifyCommandStates()
@@ -798,7 +878,23 @@ namespace Bough.App.ViewModels
             ChooseTheirsCommand.NotifyCanExecuteChanged();
             ChooseBothCommand.NotifyCanExecuteChanged();
             RemoveBothCommand.NotifyCanExecuteChanged();
-            SaveAndStageCommand.NotifyCanExecuteChanged();
+            OnPropertyChanged(nameof(CanSaveAndStage));
+        }
+
+        private void NotifyBatchState()
+        {
+            OnPropertyChanged(nameof(ConflictBatchCurrentFileText));
+            OnPropertyChanged(nameof(CanApplyRemaining));
+        }
+
+        private void NotifyChangeLabels()
+        {
+            OnPropertyChanged(nameof(IsRebaseConflict));
+            OnPropertyChanged(nameof(CurrentChangeLabel));
+            OnPropertyChanged(nameof(IncomingChangeLabel));
+            OnPropertyChanged(nameof(UseCurrentChangeLabel));
+            OnPropertyChanged(nameof(UseIncomingChangeLabel));
+            OnPropertyChanged(nameof(UseBothTooltip));
         }
 
         private string GetChoiceName(ResolutionChoiceType choice)
@@ -806,9 +902,9 @@ namespace Bough.App.ViewModels
             switch (choice)
             {
                 case ResolutionChoiceType.Ours:
-                    return _stringHelper.GetString("UseCurrentChange");
+                    return UseCurrentChangeLabel;
                 case ResolutionChoiceType.Theirs:
-                    return _stringHelper.GetString("UseIncomingChange");
+                    return UseIncomingChangeLabel;
                 case ResolutionChoiceType.Both:
                     return _stringHelper.GetString("UseBoth");
                 case ResolutionChoiceType.Remove:

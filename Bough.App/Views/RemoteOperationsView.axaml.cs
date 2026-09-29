@@ -5,7 +5,9 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Bough.App.Localization;
+using Bough.App.Presenters;
 using Bough.App.ViewModels;
 using Bough.Core.Git;
 using Bough.App.ViewModels.Models;
@@ -18,6 +20,7 @@ namespace Bough.App.Views
     public partial class RemoteOperationsView : UserControl
     {
         private StringHelper _stringHelper;
+        private GitSettingsService _settingsService;
         public StringHelper StringHelper
         {
             get { return _stringHelper; }
@@ -33,15 +36,33 @@ namespace Bough.App.Views
                 PullButton.Content = value.GetString("RemotePullAction");
                 PushButton.Content = value.GetString("RemotePushAction");
                 AutomationProperties.SetName(FetchButton, value.GetString("RemoteFetchAction"));
-                AutomationProperties.SetName(PullButton, value.GetString("RemotePullFastForwardAutomation"));
                 AutomationProperties.SetName(PushButton, value.GetString("RemotePushAction"));
                 AutomationProperties.SetName(FetchMenuButton, value.GetString("RemoteFetchMenuAutomation"));
-                AutomationProperties.SetName(PullMenuButton, value.GetString("RemotePullMenuAutomation"));
                 AutomationProperties.SetName(PushMenuButton, value.GetString("RemotePushMenuAutomation"));
                 ToolTip.SetTip(FetchMenuButton, value.GetString("RemoteFetchMenuTip"));
-                ToolTip.SetTip(PullButton, value.GetString("RemotePullDefaultTip"));
-                ToolTip.SetTip(PullMenuButton, value.GetString("RemotePullMenuTip"));
                 ToolTip.SetTip(PushMenuButton, value.GetString("RemotePushMenuTip"));
+                UpdatePullStrategyPresentation();
+            }
+        }
+        public GitSettingsService SettingsService
+        {
+            get { return _settingsService; }
+            set
+            {
+                if (ReferenceEquals(_settingsService, value))
+                {
+                    return;
+                }
+                if (_settingsService != null)
+                {
+                    _settingsService.DefaultPullStrategyChanged -= OnDefaultPullStrategyChanged;
+                }
+                _settingsService = value;
+                if (_settingsService != null)
+                {
+                    _settingsService.DefaultPullStrategyChanged += OnDefaultPullStrategyChanged;
+                }
+                UpdatePullStrategyPresentation();
             }
         }
         public GitErrorLocalizer ErrorLocalizer { get; set; }
@@ -56,6 +77,79 @@ namespace Bough.App.Views
         public RemoteOperationsView()
         {
             InitializeComponent();
+        }
+
+        private void OnDefaultPullStrategyChanged(GitPullStrategy strategy)
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                UpdatePullStrategyPresentation();
+                return;
+            }
+            Dispatcher.UIThread.Post(UpdatePullStrategyPresentation);
+        }
+
+        private void UpdatePullStrategyPresentation()
+        {
+            if (StringHelper == null)
+            {
+                return;
+            }
+
+            string strategyName = GetPullStrategyName(GetDefaultPullStrategy());
+            AutomationProperties.SetName(PullButton, StringHelper.Format("RemotePullConfiguredDefaultAutomation", strategyName));
+            AutomationProperties.SetName(PullMenuButton, StringHelper.Format("RemotePullStrategyMenuAutomation", strategyName));
+            ToolTip.SetTip(PullButton, StringHelper.Format("RemotePullConfiguredDefaultTip", strategyName));
+            ToolTip.SetTip(PullMenuButton, StringHelper.Format("RemotePullStrategyMenuTip", strategyName));
+        }
+
+        private GitPullStrategy GetDefaultPullStrategy()
+        {
+            if (SettingsService == null)
+            {
+                return GitPullStrategy.FastForwardOnly;
+            }
+            return SettingsService.DefaultPullStrategy;
+        }
+
+        private string GetPullStrategyName(GitPullStrategy strategy)
+        {
+            if (strategy == GitPullStrategy.Merge)
+            {
+                return StringHelper.GetString("RemoteStrategyMerge");
+            }
+            if (strategy == GitPullStrategy.Rebase)
+            {
+                return StringHelper.GetString("RemoteStrategyRebase");
+            }
+            return StringHelper.GetString("RemoteStrategyFastForward");
+        }
+
+        private string GetPullStrategyMenuLabel(string key, string fallbackKey, GitPullStrategy strategy)
+        {
+            string label = StringHelper.GetString(key);
+            if (string.IsNullOrWhiteSpace(label))
+            {
+                label = StringHelper.GetString(fallbackKey);
+            }
+            if (string.IsNullOrWhiteSpace(label))
+            {
+                label = GetPullStrategyName(strategy);
+            }
+            if (string.IsNullOrWhiteSpace(label))
+            {
+                label = strategy.ToString();
+            }
+            if (GetDefaultPullStrategy() == strategy)
+            {
+                string suffix = StringHelper.GetString("RemotePullDefaultSuffix");
+                if (string.IsNullOrWhiteSpace(suffix))
+                {
+                    return label;
+                }
+                return label + suffix;
+            }
+            return label;
         }
 
         private void FetchMenuClicked(object sender, RoutedEventArgs eventArgs)
@@ -111,15 +205,19 @@ namespace Bough.App.Views
 
             ContextMenu menu = new();
             MenuItem pullFrom = new() { Header = StringHelper.GetString("RemotePullChooseBranch") };
-            ToolTip.SetTip(pullFrom, StringHelper.GetString("RemotePullChooseBranchTip"));
+            ToolTip.SetTip(pullFrom, StringHelper.Format("RemotePullChooseBranchDefaultTip", GetPullStrategyName(GetDefaultPullStrategy())));
             pullFrom.Click += PullFromClicked;
             menu.Items.Add(pullFrom);
             menu.Items.Add(new Separator());
-            MenuItem merge = new() { Header = StringHelper.GetString("RemotePullMergeAction") };
+            MenuItem fastForward = new() { Header = GetPullStrategyMenuLabel("RemotePullFastForwardAction", "RemotePullFastForwardAutomation", GitPullStrategy.FastForwardOnly) };
+            ToolTip.SetTip(fastForward, StringHelper.GetString("RemotePullFastForwardTip"));
+            fastForward.Click += FastForwardClicked;
+            menu.Items.Add(fastForward);
+            MenuItem merge = new() { Header = GetPullStrategyMenuLabel("RemotePullMergeAction", "RemoteStrategyMerge", GitPullStrategy.Merge) };
             ToolTip.SetTip(merge, StringHelper.GetString("RemotePullMergeTip"));
             merge.Click += MergeClicked;
             menu.Items.Add(merge);
-            MenuItem rebase = new() { Header = StringHelper.GetString("RemotePullRebaseAction") };
+            MenuItem rebase = new() { Header = GetPullStrategyMenuLabel("RemotePullRebaseAction", "RemoteStrategyRebase", GitPullStrategy.Rebase) };
             ToolTip.SetTip(rebase, StringHelper.GetString("RemotePullRebaseTip"));
             rebase.Click += RebaseClicked;
             menu.Items.Add(rebase);
@@ -192,7 +290,7 @@ namespace Bough.App.Views
             {
                 return;
             }
-            await RunPullAsync(viewModel, GitPullStrategy.FastForwardOnly, false);
+            await RunPullAsync(viewModel, GetDefaultPullStrategy(), false);
         }
 
         private async void PullFromClicked(object sender, RoutedEventArgs eventArgs)
@@ -205,7 +303,20 @@ namespace Bough.App.Views
             {
                 return;
             }
-            await RunPullAsync(viewModel, GitPullStrategy.FastForwardOnly, true);
+            await RunPullAsync(viewModel, GetDefaultPullStrategy(), true);
+        }
+
+        private async void FastForwardClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not RemoteOperationsViewModel viewModel)
+            {
+                return;
+            }
+            if (viewModel.CanPull == false)
+            {
+                return;
+            }
+            await RunPullAsync(viewModel, GitPullStrategy.FastForwardOnly, false);
         }
 
         private async void MergeClicked(object sender, RoutedEventArgs eventArgs)
@@ -418,81 +529,11 @@ namespace Bough.App.Views
             {
                 return;
             }
-            session.BindRepository(requestedRepository);
-            session.SelectedRemote = requestedRemote;
-            session.Prune = requestedPrune;
+            RemoteOperationPresenter presenter = new(OperationQueue, requestedRepository, session,
+                repositoryRequestVersion, requestedBranch, requestedRemote, requestedPrune, OperationFinishedAsync);
             using CancellationTokenSource cancellation = new();
-            Func<Task<bool>> observedOperation = () => OperationQueue.EnqueueAsync(
-                requestedRepository.RootPath, $"{operationName} · {target}", async token =>
-                {
-                    token.ThrowIfCancellationRequested();
-                    await session.SetRepositoryAsync(requestedRepository);
-                    token.ThrowIfCancellationRequested();
-                    session.SelectedRemote = requestedRemote;
-                    session.Prune = requestedPrune;
-                    StringComparison comparison = StringComparison.Ordinal;
-                    if (OperatingSystem.IsWindows())
-                    {
-                        comparison = StringComparison.OrdinalIgnoreCase;
-                    }
-                    GitRepository sessionRepository = session.CurrentRepository;
-                    if (sessionRepository == null)
-                    {
-                        throw new InvalidOperationException(StringHelper.GetString("RemoteQueueRepositoryUnavailable"));
-                    }
-                    if (string.Equals(sessionRepository.RootPath, requestedRepository.RootPath, comparison) == false)
-                    {
-                        throw new InvalidOperationException(StringHelper.GetString("RemoteQueueRepositoryChanged"));
-                    }
-                    if (kind == RemoteOperationKind.Fetch)
-                    {
-                        if (fetchAll == false)
-                        {
-                            if (session.SelectedRemote != requestedRemote)
-                            {
-                                throw new InvalidOperationException(StringHelper.GetString("RemoteQueueFetchRemoteChanged"));
-                            }
-                            if (session.CanFetch == false)
-                            {
-                                throw new InvalidOperationException(StringHelper.GetString("RemoteQueueFetchRemoteUnavailable"));
-                            }
-                        }
-                        if (fetchAll == true)
-                        {
-                            if (session.CanFetchAll == false)
-                            {
-                                throw new InvalidOperationException(StringHelper.GetString("RemoteQueueFetchAllUnavailable"));
-                            }
-                        }
-                    }
-                    if (kind == RemoteOperationKind.Pull || kind == RemoteOperationKind.Push)
-                    {
-                        if (session.CurrentBranchText != requestedBranch)
-                        {
-                            throw new InvalidOperationException(StringHelper.GetString("RemoteQueueBranchChanged"));
-                        }
-                    }
-                    try
-                    {
-                        return await operation(session);
-                    }
-                    finally
-                    {
-                        GitRepository completedRepository = session.CurrentRepository;
-                        if (completedRepository != null)
-                        {
-                            if (string.Equals(completedRepository.RootPath, requestedRepository.RootPath, comparison))
-                            {
-                                if (OperationFinishedAsync != null)
-                                {
-                                    await OperationFinishedAsync(completedRepository, session.LatestOperationStateSnapshot,
-                                        worktreeMayChange, repositoryRequestVersion);
-                                }
-                            }
-                        }
-                    }
-                }, cancellationToken: cancellation.Token);
-            RemoteOperationWindow dialog = new(session, operationName, target, observedOperation, closeOnSuccess, StringHelper, ErrorLocalizer, cancellation, OperationQueue, requestedRepository.RootPath);
+            Func<Task<bool>> observedOperation = () => presenter.ExecuteAsync(kind, fetchAll, operationName, target,
+                operation, worktreeMayChange, cancellation.Token);            RemoteOperationWindow dialog = new(session, operationName, target, observedOperation, closeOnSuccess, StringHelper, ErrorLocalizer, cancellation, OperationQueue, requestedRepository.RootPath);
             InternalDialogOpening?.Invoke();
             try
             {

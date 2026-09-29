@@ -18,7 +18,8 @@ namespace Bough.App.Internals
         Succeeded,
         NoLongerConflicted,
         FileChanged,
-        InvalidResolution,
+        IncompleteResolution,
+        UnresolvedResolution,
         Canceled,
         Failed,
         RefreshFailed

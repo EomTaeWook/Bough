@@ -6,13 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dignus.Collections;
 using Bough.Core.Git.Models;
+using Bough.Core.Internals;
 
 namespace Bough.Core.Git
 {
     public class GitSettingsService
     {
         private static readonly string[] _versionArguments = new string[] { "--version" };
-        private static readonly string[] _credentialHelperArguments = new string[] { "config", "--show-origin", "--get-all", "credential.helper" };
         private static readonly string[] _remoteArguments = new string[] { "remote" };
         private readonly GitCommandRunner _runner;
         private readonly GitExecutableSettings _executableSettings;
@@ -29,6 +29,19 @@ namespace Bough.Core.Git
         }
 
         public string ConfiguredGitPath { get { return _executableSettings.ConfiguredPath; } }
+        public GitPullStrategy DefaultPullStrategy { get { return _executableSettings.DefaultPullStrategy; } }
+        public event Action<GitPullStrategy> DefaultPullStrategyChanged;
+
+        public void SaveDefaultPullStrategy(GitPullStrategy strategy)
+        {
+            if (_executableSettings.DefaultPullStrategy == strategy)
+            {
+                return;
+            }
+
+            _executableSettings.SaveDefaultPullStrategy(strategy);
+            DefaultPullStrategyChanged?.Invoke(strategy);
+        }
 
         public async Task<string> TestGitAsync(string candidatePath, CancellationToken cancellationToken = default)
         {
@@ -75,16 +88,6 @@ namespace Bough.Core.Git
             string localEmail = await ReadConfigAsync(repository, "--local", "user.email", cancellationToken);
             string globalName = await ReadConfigAsync(repository, "--global", "user.name", cancellationToken);
             string globalEmail = await ReadConfigAsync(repository, "--global", "user.email", cancellationToken);
-            GitCommandResult helperResult = await _runner.RunAsync(repository.RootPath, _credentialHelperArguments, true, cancellationToken);
-            string helper = string.Empty;
-            if (helperResult.ExitCode == 0)
-            {
-                helper = helperResult.Output.Trim();
-            }
-            if (helperResult.ExitCode != 0 && helperResult.ExitCode != 1)
-            {
-                throw new GitException("GitCredentialHelperReadFailed", null, helperResult.Error.Trim());
-            }
 
             ArrayQueue<GitRemote> remotes = [];
             GitCommandResult remoteResult = await _runner.RunAsync(repository.RootPath, _remoteArguments, false, cancellationToken);
@@ -103,7 +106,7 @@ namespace Bough.Core.Git
                 remotes.Add(new GitRemote(name, url, Array.Empty<GitRemoteBranch>()));
             }
 
-            return new GitSettingsSnapshot(localName, localEmail, globalName, globalEmail, helper, remotes.ToArray());
+            return new GitSettingsSnapshot(localName, localEmail, globalName, globalEmail, remotes.ToArray());
         }
 
         public async Task SaveAuthorAsync(GitRepository repository, bool global, string name, string email, CancellationToken cancellationToken = default)

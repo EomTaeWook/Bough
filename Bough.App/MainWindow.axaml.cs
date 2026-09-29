@@ -17,6 +17,7 @@ namespace Bough.App
     {
         private readonly MainWindowViewModel _viewModel;
         private readonly StringHelper _stringHelper;
+        private readonly GitErrorLocalizer _errorLocalizer;
         private ConflictWindow _conflictWindow;
         private bool _closeConfirmed;
         private bool _wasDeactivated;
@@ -28,7 +29,8 @@ namespace Bough.App
         private DateTime _lastActivationRefreshUtc;
 
         public MainWindow(MainWindowViewModel viewModel, StringHelper stringHelper, GitErrorLocalizer errorLocalizer,
-            GitOperationQueue operationQueue, Func<RemoteOperationsViewModel> createRemoteOperationSession)
+            GitOperationQueue operationQueue, GitSettingsService settingsService,
+            Func<RemoteOperationsViewModel> createRemoteOperationSession)
         {
             if (viewModel == null)
             {
@@ -46,6 +48,10 @@ namespace Bough.App
             {
                 throw new ArgumentNullException(nameof(operationQueue));
             }
+            if (settingsService == null)
+            {
+                throw new ArgumentNullException(nameof(settingsService));
+            }
             if (createRemoteOperationSession == null)
             {
                 throw new ArgumentNullException(nameof(createRemoteOperationSession));
@@ -53,9 +59,11 @@ namespace Bough.App
 
             InitializeComponent();
             _stringHelper = stringHelper;
+            _errorLocalizer = errorLocalizer;
             _viewModel = viewModel;
             DataContext = _viewModel;
             RemoteOperationsPanel.StringHelper = stringHelper;
+            RemoteOperationsPanel.SettingsService = settingsService;
             RemoteOperationsPanel.ErrorLocalizer = errorLocalizer;
             RemoteOperationsPanel.OperationQueue = operationQueue;
             RemoteOperationsPanel.CreateOperationSession = createRemoteOperationSession;
@@ -306,7 +314,7 @@ namespace Bough.App
                 return;
             }
 
-            ConflictWindow window = new(_viewModel.Conflicts, _viewModel.RefreshAsync);
+            ConflictWindow window = new(_viewModel.Conflicts, _viewModel.RefreshAsync, _stringHelper, _errorLocalizer);
             window.Title = $"{_stringHelper.GetString("OpenResolve")} · {_viewModel.RepositoryName}";
             _conflictWindow = window;
             window.Closed += delegate
