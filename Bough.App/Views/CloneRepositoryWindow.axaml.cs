@@ -19,6 +19,7 @@ namespace Bough.App.Views
         private readonly GitErrorLocalizer _errorLocalizer;
         private CancellationTokenSource _cancellation;
         private bool _running;
+        private bool _cloneProcessStarted;
         private string _destination;
 
         public CloneRepositoryWindow(CloneRepositoryPresenter presenter, StringHelper strings, GitErrorLocalizer errorLocalizer)
@@ -141,6 +142,7 @@ namespace Bough.App.Views
             DestinationOutcomeText.Text = string.Empty;
             StatusText.Text = _strings.GetString("CloneQueued");
             SetRunning(true);
+            _cloneProcessStarted = false;
             _cancellation = new CancellationTokenSource();
             Progress<int> progress = new(percentage =>
             {
@@ -155,6 +157,7 @@ namespace Bough.App.Views
                 string destination = await _presenter.CloneAsync(remote, parent, folder,
                     _strings.GetString("CloneAction"), progress, () =>
                     {
+                        _cloneProcessStarted = true;
                         Dispatcher.UIThread.Post(() =>
                         {
                             if (_running == true)
@@ -181,6 +184,10 @@ namespace Bough.App.Views
                 _cancellation.Dispose();
                 _cancellation = null;
                 SetRunning(false);
+            }
+            if (_cloneProcessStarted == false)
+            {
+                return;
             }
             if (Path.Exists(_destination))
             {

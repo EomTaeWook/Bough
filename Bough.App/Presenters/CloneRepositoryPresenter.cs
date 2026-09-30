@@ -30,8 +30,7 @@ namespace Bough.App.Presenters
             return _operationQueue.EnqueueAsync(destination, operationName, async token =>
             {
                 _cloneService.ValidateDestination(remote, parentPath, folderName);
-                started?.Invoke();
-                return await _cloneService.CloneAsync(remote, parentPath, folderName, progress, token);
+                return await _cloneService.CloneAsync(remote, parentPath, folderName, progress, token, started);
             }, cancellationToken);
         }
     }

@@ -27,16 +27,16 @@ namespace Bough.Core.Git
 
         public Task<GitCommandResult> RunWithExecutableAsync(string executablePath, string workingDirectory, IEnumerable<string> arguments, bool allowFailure = false, CancellationToken cancellationToken = default)
         {
-            return RunCoreAsync(executablePath, workingDirectory, arguments, null, allowFailure, cancellationToken);
+            return RunCoreAsync(executablePath, workingDirectory, arguments, null, allowFailure, cancellationToken, null);
         }
 
-        public Task<GitCommandResult> RunWithProgressAsync(string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure = false, CancellationToken cancellationToken = default)
+        public Task<GitCommandResult> RunWithProgressAsync(string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure = false, CancellationToken cancellationToken = default, Action processStarted = null)
         {
             ArgumentNullException.ThrowIfNull(standardErrorProgress);
-            return RunCoreAsync(_executableSettings.ExecutablePath, workingDirectory, arguments, standardErrorProgress, allowFailure, cancellationToken);
+            return RunCoreAsync(_executableSettings.ExecutablePath, workingDirectory, arguments, standardErrorProgress, allowFailure, cancellationToken, processStarted);
         }
 
-        private async Task<GitCommandResult> RunCoreAsync(string executablePath, string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure, CancellationToken cancellationToken)
+        private async Task<GitCommandResult> RunCoreAsync(string executablePath, string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure, CancellationToken cancellationToken, Action processStarted)
         {
             ProcessStartInfo startInfo = new()
             {
@@ -69,6 +69,20 @@ namespace Bough.Core.Git
             catch (System.ComponentModel.Win32Exception exception)
             {
                 throw new GitException(GitException.ProcessStartFailedCode, exception, executablePath);
+            }
+
+            try
+            {
+                processStarted?.Invoke();
+            }
+            catch
+            {
+                if (process.HasExited == false)
+                {
+                    process.Kill(true);
+                    await process.WaitForExitAsync(CancellationToken.None);
+                }
+                throw;
             }
 
             Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);

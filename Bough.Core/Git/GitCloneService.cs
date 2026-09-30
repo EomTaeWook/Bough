@@ -100,7 +100,7 @@ namespace Bough.Core.Git
         }
 
         public async Task<string> CloneAsync(string remote, string parentPath, string folderName,
-            IProgress<int> progress, CancellationToken cancellationToken = default)
+            IProgress<int> progress, CancellationToken cancellationToken = default, Action processStarted = null)
         {
             string source = NormalizeRemote(remote);
             string destination = ValidateDestination(source, parentPath, folderName);
@@ -108,7 +108,7 @@ namespace Bough.Core.Git
             Progress<string> stderrProgress = new(line => ReportPercentage(line, progress));
             GitCommandResult result = await _runner.RunWithProgressAsync(parent,
                 new[] { "clone", "--progress", "--", source, destination }, stderrProgress,
-                true, cancellationToken);
+                true, cancellationToken, processStarted);
             if (result.ExitCode != 0)
             {
                 // Git may include credentials in stderr. Keep only the exit code at the UI boundary.
