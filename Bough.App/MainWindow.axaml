@@ -137,11 +137,13 @@
     <Grid Grid.Row="1" ColumnDefinitions="280,*">
       <Border Grid.Column="0" Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,1,0">
         <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="14">
-          <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="6,8,6,4">
+          <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6" Margin="6,8,6,4">
             <TextBlock Grid.Column="0" Text="{Binding RepositoryList.RepositoriesHeadingText}" FontSize="16" FontWeight="SemiBold"
                        VerticalAlignment="Center" />
             <Button Grid.Column="1" Content="{Binding RepositoryList.AddButtonText}" Click="OpenRepositoryClicked"
                     Padding="9,5" ToolTip.Tip="{Binding RepositoryList.AddRepositoryTooltipText}" />
+            <Button x:Name="CloneRepositoryButton" Grid.Column="2" Click="CloneRepositoryClicked"
+                    Padding="9,5" />
           </Grid>
 
           <ScrollViewer Grid.Row="1" MaxHeight="220" VerticalScrollBarVisibility="Auto"

@@ -422,6 +422,41 @@ namespace Bough.App.ViewModels
             }
         }
 
+        public void RegisterClonedRepository(string path)
+        {
+            RepositoryList.AddRecent(path);
+            try
+            {
+                RepositoryList.Save();
+            }
+            catch (IOException exception)
+            {
+                StatusMessage = _stringHelper.Format("RepositoryListSaveFailed", _errorLocalizer.GetDisplayMessage(exception));
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                StatusMessage = _stringHelper.Format("RepositoryListSaveFailed", _errorLocalizer.GetDisplayMessage(exception));
+            }
+        }
+
+        public async Task OpenClonedRepositoryAsync(string path)
+        {
+            int request = _repositoryRequestVersion + 1;
+            await OpenRepositoryAsync(path);
+            if (_repositoryRequestVersion != request)
+            {
+                return;
+            }
+            if (_repository != null)
+            {
+                if (_pathComparer.Equals(_repository.RootPath, path))
+                {
+                    return;
+                }
+            }
+            StatusMessage = _stringHelper.Format("CloneOpenFailed", StatusMessage);
+        }
+
         public async Task OpenRepositoryAsync(string path)
         {
             if (string.IsNullOrWhiteSpace(path) == true)

@@ -1,10 +1,11 @@
 # Bough 기획
 
-이 폴더는 Bough의 제품 화면과 작업 흐름을 기획한다. 스크린샷은 배치와 작업 흐름의 참고 자료이며, 실제 동작은 아래 문서를 기준으로 한다.
+이 폴더는 Bough의 제품 화면과 작업 흐름을 기획한다. 스크린샷은 배치와 작업 흐름의 참고 자료다. 문서에는 구현 중인 요구도 포함되므로 실제 반영 여부는 [구현 현황](../Docs/CurrentStatus.md)에서 확인한다.
 
 | 문서 | 내용 |
 | --- | --- |
 | [화면과 동작](GitClientWorkflow.md) | 탐색, 로컬 변경, 브랜치, 설정, 계정, 터미널의 사용자 흐름 |
+| [저장소 복제](RepositoryClone.md) | 원격 주소와 생성 위치 입력, Git 복제·취소·완료 후 저장소 열기 |
 | [커밋·브랜치 우클릭 동작](CommitActions.md) | 체크아웃, 브랜치 생성, 현재 브랜치 초기화의 메뉴와 확인 흐름 |
 | [커밋 상세와 파일 탐색](CommitInspection.md) | Commit·Changes·File Tree 탭, diff와 파일 메뉴 |
 | [충돌 해결 창 진입](ConflictEntry.md) | 실제 충돌 시 해결 창 자동 열기와 Local Changes에서 다시 열기 |

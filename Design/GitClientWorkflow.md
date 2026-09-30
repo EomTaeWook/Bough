@@ -4,6 +4,8 @@
 
 Bough의 상위 화면은 **Local Changes**, **History**로 나눈다. 왼쪽에는 저장소 선택과 Git 참조 탐색을 둔다. 상단에서 현재 저장소, 현재 브랜치, Git 실행 파일 상태를 확인할 수 있다. 커밋 그래프와 상세 화면은 상단의 **History** 항목에서 연다. 충돌 해결기는 실제 충돌이 있을 때 별도 창으로 열며 [충돌 해결 창 진입](ConflictEntry.md)을 따른다.
 
+저장소 목록의 `+`는 이미 있는 로컬 저장소를 추가한다. 별도의 **복제** 동작은 원격 주소 또는 로컬 경로에서 새 폴더로 저장소를 받아 목록에 등록하고 연다. 입력·검증·진행·취소 흐름은 [저장소 복제](RepositoryClone.md)를 따른다.
+
 **가볍고 빠른 반응이 Bough의 우선 목표다.** 저장소를 고르면 기본 Local Changes 화면과 사용 가능한 파일 상태부터 보여 주고, History·Stash·계정·원격 상세는 필요한 화면을 열 때 읽는다. 한 번의 사용자 동작 때문에 같은 Git 상태를 여러 번 읽거나 파일마다 Git 프로세스를 반복 실행하지 않는다. 긴 Git 작업과 계정 조회는 화면 입력을 막지 않고, 보이는 항목부터 제한된 수로 요청한다. 저장소·브랜치·화면이 바뀌면 불필요한 이전 요청을 취소하거나 결과를 버린다. 완료 뒤에는 영향을 받은 영역만 갱신한다. 기능이 안정되면 [저장소 전환 응답성](RepositorySwitchResponsiveness.md)을 포함해 체감 지연을 측정한다.
 
 ### 공통 상태 메시지
@@ -113,8 +115,9 @@ Bough의 상위 화면은 **Local Changes**, **History**로 나눈다. 왼쪽에
 
 - **화면 모양**에서는 [화면 테마](AppearanceTheme.md)에 따라 **밝음 / 어두움 / 시스템 설정**을 고른다. 기본은 밝음이며 변경은 즉시 모든 창에 적용되고 앱을 다시 열어도 유지된다.
 - Git 실행 파일은 먼저 시스템 `PATH`에서 찾는다. 설정에서 실행 파일 경로를 직접 선택하고 **Test Git**으로 경로와 버전을 확인할 수 있다. 선택 결과와 오류를 보여 준다.
+- **Bough 기본 Pull 방식**은 빠른 전진만·병합·재배치 중에서 고른다. 모든 저장소의 기본 Pull 버튼에 적용되고, Pull 메뉴에서 고른 일회성 방식은 저장값을 바꾸지 않는다. Git CLI의 `pull.rebase`와 `pull.ff` 설정도 변경하지 않는다.
 - 커밋 작성자의 `user.name`과 `user.email`은 현재 저장소 값과 전역 값을 구분해 표시한다. 저장 범위를 사용자가 선택한다. 값이 없으면 커밋 전에 안내한다. [Git config 문서](https://git-scm.com/docs/git-config)
-- **Accounts**는 원격 URL, HTTPS 자격 증명 도우미 또는 SSH 인증 방식을 안내한다. 초기 구현은 Git의 기존 credential helper와 SSH를 사용한다. Bough 설정 파일에 암호·토큰을 직접 저장하지 않는다. [Git credentials 문서](https://git-scm.com/docs/gitcredentials)
+- **Accounts**는 원격 URL과 GitHub HTTPS 계정 선택, SSH 인증 방식의 차이를 안내한다. Git은 기존 credential helper와 SSH를 사용하지만 Git 설정에서 읽은 `credential.helper` 출처·값 목록을 Bough 설정 화면에 노출하지 않는다. Bough 설정 파일에 암호·토큰을 직접 저장하지 않는다. [Git credentials 문서](https://git-scm.com/docs/gitcredentials)
 - GitHub HTTPS 원격과 Git Credential Manager가 있으면 [GitHub 인증 계정 전환](GitHubAccountSwitching.md)에 따라 **현재 저장소에서 쓸 GitHub 계정**을 선택하거나 추가할 수 있게 한다. 커밋 작성자 설정과 인증 계정은 별도로 표시한다. GitLab 계정 연결과 SSH 키 전환 UI는 제공자별 방식이 정해진 뒤 추가한다. 계정 연결이 없어도 로컬 저장소 작업은 가능하다.
 
 ## Terminal

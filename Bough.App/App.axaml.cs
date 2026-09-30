@@ -5,6 +5,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Bough.App.Appearance;
 using Bough.App.Localization;
+using Bough.App.Presenters;
 using Bough.App.ViewModels;
 using Bough.Core.Conflicts;
 using Bough.Core.Git;
@@ -70,10 +71,11 @@ namespace Bough.App
                 StringHelper stringHelper = serviceProvider.GetService<StringHelper>();
                 GitErrorLocalizer errorLocalizer = serviceProvider.GetService<GitErrorLocalizer>();
                 GitOperationQueue operationQueue = serviceProvider.GetService<GitOperationQueue>();
+                CloneRepositoryPresenter clonePresenter = serviceProvider.GetService<CloneRepositoryPresenter>();
                 GitSettingsService settingsService = serviceProvider.GetService<GitSettingsService>();
                 MainWindowViewModel viewModel = serviceProvider.GetService<MainWindowViewModel>();
                 Func<RemoteOperationsViewModel> createRemoteOperationSession = () => serviceProvider.GetService<RemoteOperationsViewModel>();
-                desktop.MainWindow = new MainWindow(viewModel, stringHelper, errorLocalizer, operationQueue, settingsService,
+                desktop.MainWindow = new MainWindow(viewModel, stringHelper, errorLocalizer, operationQueue, clonePresenter, settingsService,
                     createRemoteOperationSession);
             }
 

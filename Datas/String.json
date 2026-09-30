@@ -5308,5 +5308,167 @@
     "Name": "StopTrackingContextMenu",
     "Kor": "추적 중지",
     "Eng": "Stop tracking"
+  },
+  {
+    "Id": 2982,
+    "Name": "CloneAction",
+    "Kor": "복제",
+    "Eng": "Clone"
+  },
+  {
+    "Id": 2983,
+    "Name": "CloneTitle",
+    "Kor": "저장소 복제",
+    "Eng": "Clone repository"
+  },
+  {
+    "Id": 2984,
+    "Name": "CloneUrlLabel",
+    "Kor": "원격 URL 또는 로컬 경로",
+    "Eng": "Remote URL or local path"
+  },
+  {
+    "Id": 2985,
+    "Name": "CloneParentLabel",
+    "Kor": "저장할 상위 폴더",
+    "Eng": "Parent folder"
+  },
+  {
+    "Id": 2986,
+    "Name": "CloneFolderLabel",
+    "Kor": "새 폴더 이름",
+    "Eng": "New folder name"
+  },
+  {
+    "Id": 2987,
+    "Name": "CloneBrowseParent",
+    "Kor": "찾아보기",
+    "Eng": "Browse"
+  },
+  {
+    "Id": 2988,
+    "Name": "ClonePickParentTitle",
+    "Kor": "복제할 위치 선택",
+    "Eng": "Choose clone location"
+  },
+  {
+    "Id": 2989,
+    "Name": "CloneDestinationPreview",
+    "Kor": "생성 위치: {0}",
+    "Eng": "Destination: {0}"
+  },
+  {
+    "Id": 2990,
+    "Name": "CloneUrlRequired",
+    "Kor": "원격 주소를 입력하세요.",
+    "Eng": "Enter a remote address."
+  },
+  {
+    "Id": 2991,
+    "Name": "CloneUrlInvalid",
+    "Kor": "지원하지 않는 원격 주소입니다.",
+    "Eng": "The remote address is not supported."
+  },
+  {
+    "Id": 2992,
+    "Name": "CloneUrlContainsCredentials",
+    "Kor": "주소에 사용자 이름이나 토큰을 포함할 수 없습니다. Git 인증 도우미를 사용하세요.",
+    "Eng": "Remove credentials from the address and use the Git credential helper."
+  },
+  {
+    "Id": 2993,
+    "Name": "CloneParentRequired",
+    "Kor": "상위 폴더를 선택하세요.",
+    "Eng": "Choose a parent folder."
+  },
+  {
+    "Id": 2994,
+    "Name": "CloneParentMissing",
+    "Kor": "상위 폴더가 존재하지 않습니다.",
+    "Eng": "The parent folder does not exist."
+  },
+  {
+    "Id": 2995,
+    "Name": "CloneFolderRequired",
+    "Kor": "새 폴더 이름을 입력하세요.",
+    "Eng": "Enter a new folder name."
+  },
+  {
+    "Id": 2996,
+    "Name": "CloneFolderInvalid",
+    "Kor": "사용할 수 없는 폴더 이름입니다.",
+    "Eng": "The folder name is invalid."
+  },
+  {
+    "Id": 2997,
+    "Name": "CloneDestinationOccupied",
+    "Kor": "생성 위치가 이미 존재합니다: {0}",
+    "Eng": "The destination already exists: {0}"
+  },
+  {
+    "Id": 2998,
+    "Name": "CloneQueued",
+    "Kor": "복제 대기 중입니다.",
+    "Eng": "Waiting to clone."
+  },
+  {
+    "Id": 2999,
+    "Name": "CloneProgress",
+    "Kor": "Git 진행 단계: {0}%",
+    "Eng": "Git progress step: {0}%"
+  },
+  {
+    "Id": 3000,
+    "Name": "CloneRunning",
+    "Kor": "저장소를 복제하는 중입니다.",
+    "Eng": "Cloning the repository."
+  },
+  {
+    "Id": 3001,
+    "Name": "CloneSucceeded",
+    "Kor": "복제가 완료됐습니다.",
+    "Eng": "Clone completed."
+  },
+  {
+    "Id": 3002,
+    "Name": "CloneCancelled",
+    "Kor": "복제가 취소됐습니다.",
+    "Eng": "Clone canceled."
+  },
+  {
+    "Id": 3003,
+    "Name": "CloneGitFailed",
+    "Kor": "Git 복제 명령이 종료 코드 {0}으로 실패했습니다.",
+    "Eng": "Git clone failed with exit code {0}."
+  },
+  {
+    "Id": 3004,
+    "Name": "CloneDestinationPreserved",
+    "Kor": "생성 위치에 파일이 남아 있습니다: {0}. 수동으로 확인하세요.",
+    "Eng": "Files remain at {0}. Review them before reuse."
+  },
+  {
+    "Id": 3005,
+    "Name": "CloneDestinationAbsent",
+    "Kor": "생성 위치에 폴더가 만들어지지 않았습니다.",
+    "Eng": "No destination folder was created."
+  },
+  {
+    "Id": 3006,
+    "Name": "CloneOpenFailed",
+    "Kor": "복제는 완료됐지만 저장소를 열지 못했습니다: {0}",
+    "Eng": "Clone completed, but the repository could not be opened: {0}"
+  },
+  {
+    "Id": 3007,
+    "Name": "CloneStop",
+    "Kor": "중단",
+    "Eng": "Stop"
+  },
+  {
+    "Id": 3008,
+    "Name": "CloneClose",
+    "Kor": "닫기",
+    "Eng": "Close"
   }
 ]

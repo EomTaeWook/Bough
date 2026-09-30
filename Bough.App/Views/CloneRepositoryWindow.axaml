@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Bough.App.Views.CloneRepositoryWindow"
+        Width="600" MinWidth="480" Height="460" MinHeight="400"
+        CanResize="True" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{DynamicResource BoughBrushCanvas}">
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" RowSpacing="12" Margin="20">
+    <TextBlock x:Name="HeadingText" Grid.Row="0" FontSize="18" FontWeight="SemiBold"
+               Foreground="{DynamicResource BoughBrushText}" />
+    <StackPanel Grid.Row="1" Spacing="5">
+      <TextBlock x:Name="RemoteLabel" Foreground="{DynamicResource BoughBrushText}" />
+      <TextBox x:Name="RemoteInput" />
+    </StackPanel>
+    <StackPanel Grid.Row="2" Spacing="5">
+      <TextBlock x:Name="ParentLabel" Foreground="{DynamicResource BoughBrushText}" />
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <TextBox x:Name="ParentInput" Grid.Column="0" TextChanged="DestinationInputChanged" />
+        <Button x:Name="BrowseButton" Grid.Column="1" Click="BrowseClicked" />
+      </Grid>
+    </StackPanel>
+    <StackPanel Grid.Row="3" Spacing="5">
+      <TextBlock x:Name="FolderLabel" Foreground="{DynamicResource BoughBrushText}" />
+      <TextBox x:Name="FolderInput" TextChanged="DestinationInputChanged" />
+      <TextBlock x:Name="DestinationText" Foreground="{DynamicResource BoughBrushTextMuted}"
+                 TextWrapping="Wrap" FontSize="11" />
+    </StackPanel>
+    <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="8">
+        <TextBlock x:Name="StatusText" Foreground="{DynamicResource BoughBrushText}"
+                   TextWrapping="Wrap" />
+        <ProgressBar x:Name="CloneProgress" IsVisible="False" IsIndeterminate="True" Height="4" />
+        <TextBlock x:Name="DestinationOutcomeText" Foreground="{DynamicResource BoughBrushTextMuted}"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button x:Name="CancelButton" Click="CancelClicked" />
+      <Button x:Name="StartButton" Click="StartClicked" IsDefault="True" Classes="primary"
+              Background="{DynamicResource BoughBrushAccent}"
+              Foreground="{DynamicResource BoughBrushAccentText}" />
+    </StackPanel>
+  </Grid>
+</Window>

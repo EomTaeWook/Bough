@@ -64,6 +64,11 @@ namespace Bough.App.ViewModels
             _lastActivePath = rootPath;
         }
 
+        public void AddRecent(string rootPath)
+        {
+            AddRepository(rootPath);
+        }
+
         public bool Remove(RepositoryItem item)
         {
             if (item == null)

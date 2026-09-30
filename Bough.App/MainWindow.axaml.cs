@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Bough.App.Localization;
+using Bough.App.Presenters;
 using Bough.App.ViewModels;
 using Bough.App.Views;
 using Bough.Core.Git;
@@ -18,6 +19,7 @@ namespace Bough.App
         private readonly MainWindowViewModel _viewModel;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
+        private readonly CloneRepositoryPresenter _clonePresenter;
         private ConflictWindow _conflictWindow;
         private bool _closeConfirmed;
         private bool _wasDeactivated;
@@ -29,7 +31,7 @@ namespace Bough.App
         private DateTime _lastActivationRefreshUtc;
 
         public MainWindow(MainWindowViewModel viewModel, StringHelper stringHelper, GitErrorLocalizer errorLocalizer,
-            GitOperationQueue operationQueue, GitSettingsService settingsService,
+            GitOperationQueue operationQueue, CloneRepositoryPresenter clonePresenter, GitSettingsService settingsService,
             Func<RemoteOperationsViewModel> createRemoteOperationSession)
         {
             if (viewModel == null)
@@ -48,6 +50,10 @@ namespace Bough.App
             {
                 throw new ArgumentNullException(nameof(operationQueue));
             }
+            if (clonePresenter == null)
+            {
+                throw new ArgumentNullException(nameof(clonePresenter));
+            }
             if (settingsService == null)
             {
                 throw new ArgumentNullException(nameof(settingsService));
@@ -60,8 +66,11 @@ namespace Bough.App
             InitializeComponent();
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
+            _clonePresenter = clonePresenter;
             _viewModel = viewModel;
             DataContext = _viewModel;
+            CloneRepositoryButton.Content = _stringHelper.GetString("CloneAction");
+            ToolTip.SetTip(CloneRepositoryButton, _stringHelper.GetString("CloneTitle"));
             RemoteOperationsPanel.StringHelper = stringHelper;
             RemoteOperationsPanel.SettingsService = settingsService;
             RemoteOperationsPanel.ErrorLocalizer = errorLocalizer;
@@ -468,6 +477,31 @@ namespace Bough.App
                     return;
                 }
                 await _viewModel.OpenRepositoryAsync(path);
+            }
+            finally
+            {
+                _activationSuppressionDepth--;
+                CompleteInternalDialog();
+            }
+        }
+
+        private async void CloneRepositoryClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            _activationSuppressionDepth++;
+            try
+            {
+                CloneRepositoryWindow dialog = new(_clonePresenter, _stringHelper, _errorLocalizer);
+                string destination = await dialog.ShowDialog<string>(this);
+                if (string.IsNullOrWhiteSpace(destination))
+                {
+                    return;
+                }
+                _viewModel.RegisterClonedRepository(destination);
+                if (await CloseConflictWindowForRepositoryChangeAsync() == false)
+                {
+                    return;
+                }
+                await _viewModel.OpenClonedRepositoryAsync(destination);
             }
             finally
             {
