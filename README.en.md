@@ -6,6 +6,12 @@
 
 It aims to keep everyday Git work light and fast while making the context and outcome of conflict resolution clear.
 
+## Download
+
+[Download Bough v0.1.0-beta.1 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.1/Bough-v0.1.0-beta.1-win-x64.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.1)
+
+Extract the archive and run `Bough.App.exe`. Git must be installed; a separate .NET installation is not needed. This beta provides a Windows x64 package. On macOS, use the source build instructions below.
+
 ## Preview
 
 ### Conflict resolution

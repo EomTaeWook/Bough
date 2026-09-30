@@ -6,6 +6,12 @@
 
 일상적인 Git 작업은 가볍고 빠르게 처리하고, 병합 충돌에서는 변경의 맥락과 선택 결과를 쉽게 파악할 수 있는 경험을 지향합니다.
 
+## 다운로드
+
+[Bough v0.1.0-beta.1 Windows x64 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.1/Bough-v0.1.0-beta.1-win-x64.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.1)
+
+압축을 풀고 `Bough.App.exe`를 실행하세요. .NET 설치는 필요 없지만 Git은 설치돼 있어야 합니다. 이번 베타에는 Windows x64 패키지만 제공하며 macOS는 아래 소스 실행 방법을 사용해야 합니다.
+
 ## 화면 미리보기
 
 ### 충돌 해결
