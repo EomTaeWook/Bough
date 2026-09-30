@@ -27,11 +27,9 @@ namespace Bough.App.Presenters
             string operationName, IProgress<int> progress, Action started, CancellationToken cancellationToken)
         {
             string destination = _cloneService.ValidateDestination(remote, parentPath, folderName);
-            return _operationQueue.EnqueueAsync(destination, operationName, async token =>
-            {
-                _cloneService.ValidateDestination(remote, parentPath, folderName);
-                return await _cloneService.CloneAsync(remote, parentPath, folderName, progress, token, started);
-            }, cancellationToken);
+            return _operationQueue.EnqueueAsync(destination, operationName,
+                token => _cloneService.CloneAsync(remote, parentPath, folderName, progress, token, started),
+                cancellationToken);
         }
     }
 }
