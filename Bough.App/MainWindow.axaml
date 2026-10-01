@@ -130,12 +130,7 @@
                   Classes.active="{Binding IsGitSettingsView}" />
           <Border Width="1" Background="{DynamicResource BoughBrushBorder}" Margin="5,9" />
           <Button IsEnabled="{Binding HasRepository}" Focusable="True" ToolTip.Tip="{Binding OpenFolderToolTipText}"
-                  AutomationProperties.Name="{Binding OpenFolderAutomationName}" Padding="8,4">
-            <Button.Flyout>
-              <Flyout Placement="Bottom">
-                <Button Content="{Binding OpenFolderActionText}" Click="OpenFolderClicked" Focusable="True" />
-              </Flyout>
-            </Button.Flyout>
+                  AutomationProperties.Name="{Binding OpenFolderAutomationName}" Padding="8,4" Click="OpenFolderClicked">
             <StackPanel Spacing="0" HorizontalAlignment="Center">
               <TextBlock Text="↗" FontSize="15" HorizontalAlignment="Center" />
               <TextBlock Text="{Binding OpenInText}" FontSize="9" />
