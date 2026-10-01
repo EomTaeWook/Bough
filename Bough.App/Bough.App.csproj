@@ -11,6 +11,8 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <AssemblyName>Bough</AssemblyName>
+    <AssemblyTitle>Bough</AssemblyTitle>
   </PropertyGroup>
 
   <ItemGroup>
