@@ -71,7 +71,7 @@ You need the .NET 10 SDK and Git.
 dotnet run --project Bough.App/Bough.App.csproj
 ```
 
-Use `+` in the left sidebar to add an existing local repository, or **Clone** to create one from a remote URL or local path. Choose a parent folder and a new folder name; Bough adds and opens the repository when cloning finishes. If the repository has unresolved conflicts, choose a change for each section, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
+Use the **+ Repository** menu in the left sidebar to add an existing local repository or clone one from a remote URL or local path. Enter the destination folder path, or choose an empty folder with Browse; Bough adds and opens the repository when cloning finishes. If the repository has unresolved conflicts, choose a change for each section, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
 
 Select **History** at the top to see commits from all local and remote references in a branch graph. Selecting a commit shows its author, date, message, and changed files in the details panel. The first 200 commits are shown; scroll down to load older history. Selecting and inspecting a commit does not change the repository.
 

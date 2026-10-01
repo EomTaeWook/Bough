@@ -50,6 +50,33 @@
       <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
     </Style>
+    <Style Selector="Border.repositoryRow">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="CornerRadius" Value="5" />
+    </Style>
+    <Style Selector="Border.repositoryRow.active">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+    </Style>
+    <Style Selector="Button.repositoryRemove">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="Width" Value="26" />
+      <Setter Property="Height" Value="26" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextSubtle}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.repositoryRow:pointerover Button.repositoryRemove">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Border.repositoryRow:focus-within Button.repositoryRemove">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Button.repositoryRemove:focus">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
     <Style Selector="Button.navigation">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
@@ -137,40 +164,47 @@
     <Grid Grid.Row="1" ColumnDefinitions="280,*">
       <Border Grid.Column="0" Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,1,0">
         <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="14">
-          <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6" Margin="6,8,6,4">
-            <TextBlock Grid.Column="0" Text="{Binding RepositoryList.RepositoriesHeadingText}" FontSize="16" FontWeight="SemiBold"
+          <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="10,6,0,8">
+            <TextBlock Grid.Column="0" Text="{Binding RepositoryList.RepositoriesHeadingText}" FontSize="14" FontWeight="SemiBold"
                        VerticalAlignment="Center" />
-            <Button Grid.Column="1" Content="{Binding RepositoryList.AddButtonText}" Click="OpenRepositoryClicked"
-                    Padding="9,5" ToolTip.Tip="{Binding RepositoryList.AddRepositoryTooltipText}" />
-            <Button x:Name="CloneRepositoryButton" Grid.Column="2" Click="CloneRepositoryClicked"
-                    Padding="9,5" />
+            <Button x:Name="RepositoryActionsButton" Grid.Column="1" Padding="9,5" Focusable="True">
+              <Button.Flyout>
+                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                  <MenuItem x:Name="AddExistingRepositoryMenuItem" Click="OpenRepositoryClicked" />
+                  <MenuItem x:Name="CloneRepositoryMenuItem" Click="CloneRepositoryClicked" />
+                </MenuFlyout>
+              </Button.Flyout>
+            </Button>
           </Grid>
 
-          <ScrollViewer Grid.Row="1" MaxHeight="220" VerticalScrollBarVisibility="Auto"
+          <ScrollViewer x:Name="RepositoryListScrollViewer" Grid.Row="1" MaxHeight="220" VerticalScrollBarVisibility="Auto"
                         HorizontalScrollBarVisibility="Disabled"
                         Margin="0,0,0,12">
             <ItemsControl ItemsSource="{Binding RepositoryList.RepositoryGroups}" Margin="0,0,36,0">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="models:RepositoryGroup">
-                  <StackPanel Margin="0,5,0,7" Spacing="2">
-                    <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
-                               Foreground="{DynamicResource BoughBrushTextSubtle}" Margin="10,0,0,3"
-                               ToolTip.Tip="{Binding ParentPath}" />
+                  <StackPanel Margin="0,4,0,8" Spacing="3">
+                    <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource BoughBrushTextSubtle}" Margin="10,0,0,2"
+                               TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding ParentPath}"
+                               ToolTip.Placement="Top" ToolTip.ShowDelay="1000" />
                     <ItemsControl ItemsSource="{Binding Repositories}">
                       <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:RepositoryItem">
-                          <Grid ColumnDefinitions="*,Auto">
-                            <Button Grid.Column="0" Classes="repository" Classes.active="{Binding IsActive}"
-                                    HorizontalAlignment="Stretch"
-                                    Click="RepositoryClicked"
-                                     ToolTip.Tip="{Binding RootPath}" ToolTip.Placement="TopEdgeAlignedRight"
-                                     ToolTip.ShowDelay="1000" ToolTip.BetweenShowDelay="-1">
-                              <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                            </Button>
-                            <Button Grid.Column="1" Content="×" Click="RemoveRepositoryClicked"
-                                    ToolTip.Tip="{ReflectionBinding $parent[Window].DataContext.RepositoryList.RemoveFromListTooltipText}" Padding="7,4"
-                                    Background="Transparent" BorderThickness="0" />
-                          </Grid>
+                          <Border Classes="repositoryRow" Classes.active="{Binding IsActive}">
+                            <Grid ColumnDefinitions="*,26" MinHeight="32">
+                              <Button Grid.Column="0" Classes="repository" Classes.active="{Binding IsActive}"
+                                      HorizontalAlignment="Stretch" Click="RepositoryClicked"
+                                      ToolTip.Tip="{Binding RootPath}" ToolTip.Placement="TopEdgeAlignedRight"
+                                      ToolTip.ShowDelay="1000" ToolTip.BetweenShowDelay="-1"
+                                      AutomationProperties.Name="{Binding Name}" AutomationProperties.HelpText="{Binding RootPath}">
+                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                              </Button>
+                              <Button Grid.Column="1" Content="×" Classes="repositoryRemove" Click="RemoveRepositoryClicked"
+                                      ToolTip.Tip="{ReflectionBinding $parent[Window].DataContext.RepositoryList.RemoveFromListTooltipText}"
+                                      AutomationProperties.Name="{ReflectionBinding $parent[Window].DataContext.RepositoryList.RemoveFromListTooltipText}" />
+                            </Grid>
+                          </Border>
                         </DataTemplate>
                       </ItemsControl.ItemTemplate>
                     </ItemsControl>

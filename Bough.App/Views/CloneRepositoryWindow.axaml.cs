@@ -31,9 +31,9 @@ namespace Bough.App.Views
             Title = strings.GetString("CloneTitle");
             HeadingText.Text = Title;
             RemoteLabel.Text = strings.GetString("CloneUrlLabel");
-            ParentLabel.Text = strings.GetString("CloneParentLabel");
-            FolderLabel.Text = strings.GetString("CloneFolderLabel");
-            BrowseButton.Content = strings.GetString("CloneBrowseParent");
+            DestinationLabel.Text = strings.GetString("CloneDestinationLabel");
+            DestinationHint.Text = strings.GetString("CloneDestinationHint");
+            BrowseButton.Content = strings.GetString("CloneBrowseDestination");
             StartButton.Content = strings.GetString("CloneAction");
             CancelButton.Content = strings.GetString("Cancel");
             RemoteInput.Focus();
@@ -54,7 +54,7 @@ namespace Bough.App.Views
         {
             FolderPickerOpenOptions options = new()
             {
-                Title = _strings.GetString("ClonePickParentTitle"),
+                Title = _strings.GetString("ClonePickDestinationTitle"),
                 AllowMultiple = false
             };
             IReadOnlyList<IStorageFolder> folders = await StorageProvider.OpenFolderPickerAsync(options);
@@ -67,56 +67,7 @@ namespace Bough.App.Views
             {
                 return;
             }
-            ParentInput.Text = path;
-        }
-
-        private void DestinationInputChanged(object sender, TextChangedEventArgs eventArgs)
-        {
-            if (ParentInput == null)
-            {
-                return;
-            }
-            if (FolderInput == null)
-            {
-                return;
-            }
-            if (DestinationText == null)
-            {
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(ParentInput.Text))
-            {
-                DestinationText.Text = string.Empty;
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(FolderInput.Text))
-            {
-                DestinationText.Text = string.Empty;
-                return;
-            }
-            string folder = FolderInput.Text.Trim();
-            if (folder.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-            {
-                DestinationText.Text = string.Empty;
-                return;
-            }
-            try
-            {
-                string destination = Path.GetFullPath(Path.Combine(ParentInput.Text.Trim(), folder));
-                DestinationText.Text = _strings.Format("CloneDestinationPreview", destination);
-            }
-            catch (ArgumentException)
-            {
-                DestinationText.Text = string.Empty;
-            }
-            catch (NotSupportedException)
-            {
-                DestinationText.Text = string.Empty;
-            }
-            catch (PathTooLongException)
-            {
-                DestinationText.Text = string.Empty;
-            }
+            DestinationInput.Text = path;
         }
 
         private async void StartClicked(object sender, RoutedEventArgs eventArgs)
@@ -126,11 +77,10 @@ namespace Bough.App.Views
                 return;
             }
             string remote = RemoteInput.Text;
-            string parent = ParentInput.Text;
-            string folder = FolderInput.Text;
+            string destinationPath = DestinationInput.Text;
             try
             {
-                _destination = _presenter.ValidateDestination(remote, parent, folder);
+                _destination = _presenter.ValidateDestination(remote, destinationPath);
             }
             catch (Exception exception)
             {
@@ -138,7 +88,6 @@ namespace Bough.App.Views
                 return;
             }
 
-            DestinationText.Text = _strings.Format("CloneDestinationPreview", _destination);
             DestinationOutcomeText.Text = string.Empty;
             StatusText.Text = _strings.GetString("CloneQueued");
             SetRunning(true);
@@ -154,7 +103,7 @@ namespace Bough.App.Views
             });
             try
             {
-                string destination = await _presenter.CloneAsync(remote, parent, folder,
+                string destination = await _presenter.CloneAsync(remote, _destination,
                     _strings.GetString("CloneAction"), progress, () =>
                     {
                         _cloneProcessStarted = true;
@@ -213,8 +162,7 @@ namespace Bough.App.Views
         {
             _running = running;
             RemoteInput.IsEnabled = running == false;
-            ParentInput.IsEnabled = running == false;
-            FolderInput.IsEnabled = running == false;
+            DestinationInput.IsEnabled = running == false;
             BrowseButton.IsEnabled = running == false;
             StartButton.IsEnabled = running == false;
             if (running == true)

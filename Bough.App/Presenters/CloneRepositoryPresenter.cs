@@ -18,17 +18,17 @@ namespace Bough.App.Presenters
             _operationQueue = operationQueue;
         }
 
-        public string ValidateDestination(string remote, string parentPath, string folderName)
+        public string ValidateDestination(string remote, string destinationPath)
         {
-            return _cloneService.ValidateDestination(remote, parentPath, folderName);
+            return _cloneService.ValidateDestination(remote, destinationPath);
         }
 
-        public Task<string> CloneAsync(string remote, string parentPath, string folderName,
+        public Task<string> CloneAsync(string remote, string destinationPath,
             string operationName, IProgress<int> progress, Action started, CancellationToken cancellationToken)
         {
-            string destination = _cloneService.ValidateDestination(remote, parentPath, folderName);
+            string destination = _cloneService.ValidateDestination(remote, destinationPath);
             return _operationQueue.EnqueueAsync(destination, operationName,
-                token => _cloneService.CloneAsync(remote, parentPath, folderName, progress, token, started),
+                token => _cloneService.CloneAsync(remote, destination, progress, token, started),
                 cancellationToken);
         }
     }

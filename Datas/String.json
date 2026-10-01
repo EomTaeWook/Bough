@@ -5470,5 +5470,89 @@
     "Name": "CloneClose",
     "Kor": "닫기",
     "Eng": "Close"
+  },
+  {
+    "Id": 3009,
+    "Name": "CloneDestinationLabel",
+    "Kor": "복제할 폴더",
+    "Eng": "Destination folder"
+  },
+  {
+    "Id": 3010,
+    "Name": "CloneDestinationHint",
+    "Kor": "선택한 폴더에 바로 복제합니다. 새 폴더 경로를 직접 입력할 수도 있습니다.",
+    "Eng": "Clone into the selected folder, or enter a path for a new folder."
+  },
+  {
+    "Id": 3011,
+    "Name": "CloneBrowseDestination",
+    "Kor": "찾아보기",
+    "Eng": "Browse"
+  },
+  {
+    "Id": 3012,
+    "Name": "ClonePickDestinationTitle",
+    "Kor": "복제할 폴더 선택",
+    "Eng": "Choose destination folder"
+  },
+  {
+    "Id": 3013,
+    "Name": "CloneDestinationRequired",
+    "Kor": "복제할 폴더 경로를 입력하세요.",
+    "Eng": "Enter a destination folder path."
+  },
+  {
+    "Id": 3014,
+    "Name": "CloneDestinationInvalid",
+    "Kor": "복제할 폴더 경로가 올바르지 않습니다.",
+    "Eng": "The destination folder path is invalid."
+  },
+  {
+    "Id": 3015,
+    "Name": "CloneDestinationAbsoluteRequired",
+    "Kor": "복제할 폴더의 절대 경로를 입력하세요.",
+    "Eng": "Enter an absolute path for the destination folder."
+  },
+  {
+    "Id": 3016,
+    "Name": "CloneDestinationRootForbidden",
+    "Kor": "드라이브 또는 파일 시스템 루트에는 복제할 수 없습니다.",
+    "Eng": "Cannot clone into a drive or file system root."
+  },
+  {
+    "Id": 3017,
+    "Name": "CloneDestinationParentMissing",
+    "Kor": "복제할 폴더의 상위 폴더가 존재하지 않습니다.",
+    "Eng": "The destination folder's parent does not exist."
+  },
+  {
+    "Id": 3018,
+    "Name": "CloneDestinationFileExists",
+    "Kor": "복제 위치에 파일이 이미 있습니다: {0}",
+    "Eng": "A file already exists at the destination: {0}"
+  },
+  {
+    "Id": 3019,
+    "Name": "CloneDestinationNotEmpty",
+    "Kor": "복제할 폴더가 비어 있지 않습니다: {0}",
+    "Eng": "The destination folder is not empty: {0}"
+  },
+  {
+    "Id": 3020,
+    "Name": "RepositoryActionsButtonText",
+    "Kor": "+ 저장소",
+    "Eng": "+ Repository"
+  },
+  {
+    "Id": 3021,
+    "Name": "RepositoryActionsTooltip",
+    "Kor": "저장소 추가 또는 복제",
+    "Eng": "Add or clone a repository"
+  },
+  {
+    "Id": 3022,
+    "Name": "RepositoryAddExistingAction",
+    "Kor": "기존 저장소 추가",
+    "Eng": "Add existing repository"
   }
 ]

@@ -26,84 +26,94 @@ namespace Bough.Core.Git
             _runner = runner;
         }
 
-        public string ValidateDestination(string remote, string parentPath, string folderName)
+        public string ValidateDestination(string remote, string destinationPath)
         {
             NormalizeRemote(remote);
-            if (string.IsNullOrWhiteSpace(parentPath))
+            if (string.IsNullOrWhiteSpace(destinationPath))
             {
-                throw new GitException("CloneParentRequired", null, Array.Empty<object>());
+                throw new GitException("CloneDestinationRequired", null, Array.Empty<object>());
             }
-            string parent;
+            if (destinationPath != destinationPath.Trim())
+            {
+                throw new GitException("CloneDestinationInvalid", null, Array.Empty<object>());
+            }
+            if (Path.IsPathFullyQualified(destinationPath) == false)
+            {
+                throw new GitException("CloneDestinationAbsoluteRequired", null, Array.Empty<object>());
+            }
+            string destination;
             try
             {
-                parent = Path.GetFullPath(parentPath.Trim());
+                destination = Path.TrimEndingDirectorySeparator(Path.GetFullPath(destinationPath));
             }
             catch (ArgumentException exception)
             {
-                throw new GitException("CloneParentMissing", exception, Array.Empty<object>());
+                throw new GitException("CloneDestinationInvalid", exception, Array.Empty<object>());
             }
             catch (NotSupportedException exception)
             {
-                throw new GitException("CloneParentMissing", exception, Array.Empty<object>());
+                throw new GitException("CloneDestinationInvalid", exception, Array.Empty<object>());
             }
             catch (PathTooLongException exception)
             {
-                throw new GitException("CloneParentMissing", exception, Array.Empty<object>());
+                throw new GitException("CloneDestinationInvalid", exception, Array.Empty<object>());
             }
+            string root = Path.GetPathRoot(destination);
+            StringComparison comparison = StringComparison.Ordinal;
+            if (OperatingSystem.IsWindows())
+            {
+                comparison = StringComparison.OrdinalIgnoreCase;
+            }
+            if (string.Equals(destination, root, comparison))
+            {
+                throw new GitException("CloneDestinationRootForbidden", null, Array.Empty<object>());
+            }
+            string parent = Path.GetDirectoryName(destination);
             if (Directory.Exists(parent) == false)
             {
-                throw new GitException("CloneParentMissing", null, Array.Empty<object>());
+                throw new GitException("CloneDestinationParentMissing", null, Array.Empty<object>());
             }
-            if (string.IsNullOrWhiteSpace(folderName))
-            {
-                throw new GitException("CloneFolderRequired", null, Array.Empty<object>());
-            }
-            string name = folderName.Trim();
-            if (name == ".")
-            {
-                throw new GitException("CloneFolderInvalid", null, Array.Empty<object>());
-            }
-            if (name == "..")
-            {
-                throw new GitException("CloneFolderInvalid", null, Array.Empty<object>());
-            }
-            if (name != folderName)
-            {
-                throw new GitException("CloneFolderInvalid", null, Array.Empty<object>());
-            }
+            string name = Path.GetFileName(destination);
             if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
             {
-                throw new GitException("CloneFolderInvalid", null, Array.Empty<object>());
+                throw new GitException("CloneDestinationInvalid", null, Array.Empty<object>());
             }
             if (OperatingSystem.IsWindows())
             {
                 if (name.EndsWith('.'))
                 {
-                    throw new GitException("CloneFolderInvalid", null, Array.Empty<object>());
+                    throw new GitException("CloneDestinationInvalid", null, Array.Empty<object>());
+                }
+                if (name.EndsWith(' '))
+                {
+                    throw new GitException("CloneDestinationInvalid", null, Array.Empty<object>());
                 }
                 string firstPart = name.Split('.')[0];
                 if (_reservedWindowsNames.Contains(firstPart))
                 {
-                    throw new GitException("CloneFolderInvalid", null, Array.Empty<object>());
+                    throw new GitException("CloneDestinationInvalid", null, Array.Empty<object>());
                 }
-            }
-            string destination = Path.Combine(parent, name);
-            if (Directory.Exists(destination))
-            {
-                throw new GitException("CloneDestinationOccupied", null, destination);
             }
             if (File.Exists(destination))
             {
-                throw new GitException("CloneDestinationOccupied", null, destination);
+                throw new GitException("CloneDestinationFileExists", null, destination);
+            }
+            if (Directory.Exists(destination))
+            {
+                using IEnumerator<string> entries = Directory.EnumerateFileSystemEntries(destination).GetEnumerator();
+                if (entries.MoveNext())
+                {
+                    throw new GitException("CloneDestinationNotEmpty", null, destination);
+                }
             }
             return destination;
         }
 
-        public async Task<string> CloneAsync(string remote, string parentPath, string folderName,
+        public async Task<string> CloneAsync(string remote, string destinationPath,
             IProgress<int> progress, CancellationToken cancellationToken = default, Action processStarted = null)
         {
             string source = NormalizeRemote(remote);
-            string destination = ValidateDestination(source, parentPath, folderName);
+            string destination = ValidateDestination(source, destinationPath);
             string parent = Path.GetDirectoryName(destination);
             Progress<string> stderrProgress = new(line => ReportPercentage(line, progress));
             GitCommandResult result = await _runner.RunWithProgressAsync(parent,
