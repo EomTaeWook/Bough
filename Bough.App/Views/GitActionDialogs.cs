@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -8,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Bough.App.Localization;
 using Bough.App.Presenters;
+using Bough.App.ViewModels.Models;
 using Bough.Core.Git;
 using DataContainer.Generated;
 using Bough.Core.Git.Models;
@@ -68,39 +70,189 @@ namespace Bough.App.Views
             return await dialog.ShowDialog<bool>(owner);
         }
 
-        public static async Task<string> RequestTagDeletionRemoteAsync(Window owner, string tagName, string[] remoteNames, StringHelper stringHelper)
+        public static async Task<bool> RequestTagDeletionAsync(Window owner, GitTag tag, string[] remoteNames,
+            Func<string, CancellationToken, Task<GitRemoteTagDeletionPreview>> lookup,
+            Func<Task<string>> deleteLocal, Func<GitRemoteTagDeletionPreview, Task<string>> deleteRemote, StringHelper stringHelper)
         {
-            Window dialog = CreateWindow(TagText("TagDeleteSelectRemoteTitle", stringHelper));
-            TextBlock description = new()
+            Window dialog = CreateWindow(TagText("TagDeleteLocalMenu", stringHelper));
+            dialog.MaxHeight = 640;
+            dialog.CanResize = true;
+            RadioButton localScope = new() { Content = TagText("TagDeleteDialogLocalScope", stringHelper), GroupName = "TagDeletionScope", IsChecked = true };
+            RadioButton remoteScope = new() { Content = TagText("TagDeleteDialogRemoteScope", stringHelper), GroupName = "TagDeletionScope" };
+            StackPanel scopes = new() { Orientation = Orientation.Horizontal, Spacing = 16 };
+            scopes.Children.Add(localScope);
+            scopes.Children.Add(remoteScope);
+            TextBlock localImpact = new()
             {
-                Text = stringHelper.Format("TagDeleteRemotePrompt", tagName),
+                Text = stringHelper.Format("TagDeleteLocalConfirm", tag.Name, tag.ObjectId),
                 TextWrapping = TextWrapping.Wrap
             };
+            TextBlock remoteHint = new() { Text = TagText("TagDeleteDialogRemoteHint", stringHelper), TextWrapping = TextWrapping.Wrap };
+            TextBlock remoteLabel = new() { Text = TagText("TagDeleteSelectRemoteTitle", stringHelper) };
             ComboBox remotes = new() { ItemsSource = remoteNames, SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
             Avalonia.Automation.AutomationProperties.SetName(remotes, TagText("TagDeleteSelectRemoteTitle", stringHelper));
             ToolTip.SetTip(remotes, TagText("TagDeleteSelectRemoteTitle", stringHelper));
+            Button reload = new() { Content = TagText("TagDeleteDialogReload", stringHelper) };
+            Grid remoteSelection = new() { ColumnDefinitions = new ColumnDefinitions("*,Auto"), ColumnSpacing = 8 };
+            Grid.SetColumn(reload, 1);
+            remoteSelection.Children.Add(remotes);
+            remoteSelection.Children.Add(reload);
+            TextBlock remoteTarget = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            CheckBox remoteConfirmation = new() { IsVisible = false };
+            TextBlock confirmationLabel = new() { TextWrapping = TextWrapping.Wrap };
+            remoteConfirmation.Content = confirmationLabel;
+            StackPanel remoteContent = new() { Spacing = 12, IsVisible = false };
+            remoteContent.Children.Add(remoteHint);
+            remoteContent.Children.Add(remoteLabel);
+            remoteContent.Children.Add(remoteSelection);
+            remoteContent.Children.Add(remoteTarget);
+            remoteContent.Children.Add(remoteConfirmation);
+            TextBlock progress = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
             Button cancel = new() { Content = TagText("ReferenceCancel", stringHelper), IsCancel = true };
-            Button inspect = new() { Content = TagText("TagDeleteInspectRemoteAction", stringHelper), IsDefault = true };
-            inspect.Classes.Add("primary");
-            cancel.Click += delegate { dialog.Close(null); };
-            inspect.Click += delegate
+            Button delete = new() { Content = TagText("TagDeleteAction", stringHelper), IsDefault = true };
+            delete.Classes.Add("primary");
+            string initialRemote = string.Empty;
+            if (remoteNames.Length > 0)
             {
-                if (remotes.SelectedItem is not string remoteName)
+                initialRemote = remoteNames[0];
+            }
+            TagDeletionDialogPresenter presenter = new(initialRemote, lookup, deleteLocal, deleteRemote);
+
+            void Render()
+            {
+                TagDeletionDialogModel state = presenter.State;
+                bool editable = state.IsDeleting == false;
+                localScope.IsEnabled = editable;
+                remoteScope.IsEnabled = editable;
+                cancel.IsEnabled = editable;
+                localImpact.IsVisible = state.IsRemoteMode == false;
+                remoteContent.IsVisible = state.IsRemoteMode;
+                remotes.IsEnabled = editable;
+                reload.IsEnabled = editable;
+                if (state.IsLookingUp)
+                {
+                    reload.IsEnabled = false;
+                }
+                if (remoteNames.Length == 0)
+                {
+                    remotes.IsEnabled = false;
+                    reload.IsEnabled = false;
+                }
+                remoteHint.IsVisible = state.RemotePreview == null;
+                remoteTarget.IsVisible = state.RemotePreview != null;
+                remoteConfirmation.IsVisible = state.RemotePreview != null;
+                remoteConfirmation.IsEnabled = editable;
+                remoteConfirmation.IsChecked = state.RemoteConfirmed;
+                remoteTarget.Text = string.Empty;
+                confirmationLabel.Text = string.Empty;
+                if (state.RemotePreview != null)
+                {
+                    GitRemoteTagDeletionPreview preview = state.RemotePreview;
+                    remoteTarget.Text = stringHelper.Format("TagDeleteRemoteConfirm", preview.RemoteName, preview.TagName, preview.ObjectId);
+                    confirmationLabel.Text = stringHelper.Format("TagDeleteDialogConfirmRemote", preview.RemoteName, preview.TagName);
+                    Avalonia.Automation.AutomationProperties.SetName(remoteConfirmation, confirmationLabel.Text);
+                }
+                progress.Text = string.Empty;
+                if (state.IsLookingUp)
+                {
+                    progress.Text = stringHelper.Format("TagDeleteDialogLoading", state.RemoteName, tag.Name);
+                }
+                if (state.IsDeleting)
+                {
+                    progress.Text = TagText("TagDeleteDialogDeleting", stringHelper);
+                }
+                progress.IsVisible = string.IsNullOrEmpty(progress.Text) == false;
+                error.Text = state.FailureMessage ?? string.Empty;
+                if (state.Error != null)
+                {
+                    error.Text = DisplayFailure(state.Error, stringHelper);
+                }
+                if (state.IsRemoteMode)
+                {
+                    if (remoteNames.Length == 0)
+                    {
+                        error.Text = TagText("TagDeleteRemoteRequired", stringHelper);
+                    }
+                }
+                error.IsVisible = string.IsNullOrEmpty(error.Text) == false;
+                error.Foreground = GetResourceBrush(dialog, "BoughBrushError");
+                progress.Foreground = GetResourceBrush(dialog, "BoughBrushTextMuted");
+                delete.IsEnabled = state.CanDelete;
+                ApplyPrimaryButtonColors(dialog, delete, true);
+            }
+
+            presenter.StateChanged += Render;
+            localScope.PropertyChanged += async delegate(object sender, AvaloniaPropertyChangedEventArgs eventArgs)
+            {
+                if (eventArgs.Property != Avalonia.Controls.Primitives.ToggleButton.IsCheckedProperty)
                 {
                     return;
                 }
-                dialog.Close(remoteName);
+                if (localScope.IsChecked != true)
+                {
+                    return;
+                }
+                await presenter.SelectScopeAsync(false);
             };
-            Grid content = new() { Margin = new Thickness(20), RowDefinitions = new RowDefinitions("Auto,Auto,Auto"), RowSpacing = 12 };
-            StackPanel buttons = CreateButtons(cancel, inspect);
-            Grid.SetRow(remotes, 1);
-            Grid.SetRow(buttons, 2);
-            content.Children.Add(description);
-            content.Children.Add(remotes);
+            remoteScope.PropertyChanged += async delegate(object sender, AvaloniaPropertyChangedEventArgs eventArgs)
+            {
+                if (eventArgs.Property != Avalonia.Controls.Primitives.ToggleButton.IsCheckedProperty)
+                {
+                    return;
+                }
+                if (remoteScope.IsChecked != true)
+                {
+                    return;
+                }
+                await presenter.SelectScopeAsync(true);
+            };
+            remotes.SelectionChanged += async delegate { await presenter.SelectRemoteAsync(remotes.SelectedItem as string); };
+            reload.Click += async delegate { await presenter.ReloadAsync(); };
+            remoteConfirmation.PropertyChanged += delegate(object sender, AvaloniaPropertyChangedEventArgs eventArgs)
+            {
+                if (eventArgs.Property != Avalonia.Controls.Primitives.ToggleButton.IsCheckedProperty)
+                {
+                    return;
+                }
+                presenter.ConfirmRemote(remoteConfirmation.IsChecked == true);
+            };
+            cancel.Click += delegate { dialog.Close(false); };
+            delete.Click += async delegate
+            {
+                if (await presenter.DeleteAsync())
+                {
+                    dialog.Close(true);
+                }
+            };
+            dialog.Closing += delegate(object sender, WindowClosingEventArgs eventArgs)
+            {
+                if (presenter.State.IsDeleting)
+                {
+                    eventArgs.Cancel = true;
+                }
+            };
+            dialog.Closed += delegate { presenter.Close(); };
+            Grid content = new() { Margin = new Thickness(20), RowDefinitions = new RowDefinitions("*,Auto"), RowSpacing = 12 };
+            StackPanel body = new() { Spacing = 12 };
+            body.Children.Add(scopes);
+            body.Children.Add(localImpact);
+            body.Children.Add(remoteContent);
+            body.Children.Add(progress);
+            body.Children.Add(error);
+            ScrollViewer scroll = new() { Content = body, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto };
+            StackPanel buttons = CreateButtons(cancel, delete);
+            Grid.SetRow(buttons, 1);
+            content.Children.Add(scroll);
             content.Children.Add(buttons);
             dialog.Content = content;
-            dialog.Opened += delegate { remotes.Focus(); };
-            return await dialog.ShowDialog<string>(owner);
+            dialog.Opened += delegate
+            {
+                Render();
+                localScope.Focus();
+            };
+            dialog.ActualThemeVariantChanged += delegate { Render(); };
+            return await dialog.ShowDialog<bool>(owner);
         }
 
         public static async Task<bool> RequestReferenceRenameAsync(Window owner, string title, string oldName, bool isTag,

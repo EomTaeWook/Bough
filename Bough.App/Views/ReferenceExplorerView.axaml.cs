@@ -251,7 +251,7 @@ namespace Bough.App.Views
                 return;
             }
             MenuItem[] items = menu.Items.OfType<MenuItem>().ToArray();
-            if (items.Length < 14)
+            if (items.Length < 13)
             {
                 menu.Close();
                 return;
@@ -294,15 +294,12 @@ namespace Bough.App.Views
             items[10].Header = viewModel.ReferenceText("TagDeleteLocalMenu");
             items[10].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
             items[10].IsEnabled = true;
-            items[11].Header = viewModel.ReferenceText("TagDeleteRemoteMenu");
-            items[11].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
+            items[11].Header = viewModel.ReferenceText("ReferenceRenameBranchMenu");
+            items[11].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch;
             items[11].IsEnabled = true;
-            items[12].Header = viewModel.ReferenceText("ReferenceRenameBranchMenu");
-            items[12].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch;
+            items[12].Header = viewModel.ReferenceText("ReferenceRenameTagMenu");
+            items[12].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
             items[12].IsEnabled = true;
-            items[13].Header = viewModel.ReferenceText("ReferenceRenameTagMenu");
-            items[13].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
-            items[13].IsEnabled = true;
         }
 
         private void TreeContextClosed(object sender, RoutedEventArgs eventArgs)
@@ -311,43 +308,7 @@ namespace Bough.App.Views
             _menuRepositoryRoot = null;
         }
 
-        private async void DeleteLocalTagClicked(object sender, RoutedEventArgs eventArgs)
-        {
-            if (DataContext is not ReferenceExplorerViewModel viewModel)
-            {
-                return;
-            }
-            if (TopLevel.GetTopLevel(this) is not Window owner)
-            {
-                return;
-            }
-            if (sender is not MenuItem item)
-            {
-                return;
-            }
-            if (item.Tag is not ReferenceTreeNode node)
-            {
-                return;
-            }
-            if (node.Target is not GitTag tag)
-            {
-                return;
-            }
-            string repositoryRoot = item.CommandParameter as string;
-            bool confirmed = await GitActionDialogs.ConfirmAsync(owner,
-                viewModel.ReferenceText("TagDeleteLocalTitle"),
-                viewModel.Strings.Format("TagDeleteLocalConfirm", tag.Name, tag.ObjectId),
-                viewModel.ReferenceText("TagDeleteAction"), viewModel.Strings);
-            if (confirmed == false)
-            {
-                return;
-            }
-            await viewModel.DeleteLocalTagAsync(repositoryRoot, tag,
-                viewModel.ReferenceText("TagDeleteLocalTitle") + ": " + tag.Name,
-                viewModel.Strings.Format("TagDeleteLocalSucceeded", tag.Name));
-        }
-
-        private async void DeleteRemoteTagClicked(object sender, RoutedEventArgs eventArgs)
+        private async void DeleteTagClicked(object sender, RoutedEventArgs eventArgs)
         {
             if (DataContext is not ReferenceExplorerViewModel viewModel)
             {
@@ -371,36 +332,30 @@ namespace Bough.App.Views
             }
             string repositoryRoot = item.CommandParameter as string;
             string[] remoteNames = viewModel.Remotes.Select(remote => remote.Name).ToArray();
-            if (remoteNames.Length == 0)
-            {
-                viewModel.ReportTagDeletionError(new GitException("TagDeleteRemoteRequired", null, Array.Empty<object>()));
-                return;
-            }
-            string remoteName = await GitActionDialogs.RequestTagDeletionRemoteAsync(owner, tag.Name, remoteNames, viewModel.Strings);
-            if (remoteName == null)
-            {
-                return;
-            }
-            GitRemoteTagDeletionPreview preview = await viewModel.GetRemoteTagDeletionPreviewAsync(repositoryRoot, tag, remoteName);
-            if (preview == null)
-            {
-                return;
-            }
-            if (DataContext != viewModel)
-            {
-                return;
-            }
-            bool confirmed = await GitActionDialogs.ConfirmAsync(owner,
-                viewModel.ReferenceText("TagDeleteRemoteTitle"),
-                viewModel.Strings.Format("TagDeleteRemoteConfirm", preview.RemoteName, preview.TagName, preview.ObjectId),
-                viewModel.ReferenceText("TagDeleteAction"), viewModel.Strings);
-            if (confirmed == false)
-            {
-                return;
-            }
-            await viewModel.DeleteRemoteTagAsync(repositoryRoot, preview,
-                viewModel.ReferenceText("TagDeleteRemoteTitle") + ": " + preview.RemoteName + "/" + preview.TagName,
-                viewModel.Strings.Format("TagDeleteRemoteSucceeded", preview.RemoteName, preview.TagName));
+            await GitActionDialogs.RequestTagDeletionAsync(owner, tag, remoteNames,
+                (remoteName, token) => viewModel.GetRemoteTagDeletionPreviewAsync(repositoryRoot, tag, remoteName, token),
+                async () =>
+                {
+                    bool deleted = await viewModel.DeleteLocalTagAsync(repositoryRoot, tag,
+                        viewModel.ReferenceText("TagDeleteLocalTitle") + ": " + tag.Name,
+                        viewModel.Strings.Format("TagDeleteLocalSucceeded", tag.Name));
+                    if (deleted)
+                    {
+                        return null;
+                    }
+                    return viewModel.StatusMessage;
+                },
+                async preview =>
+                {
+                    bool deleted = await viewModel.DeleteRemoteTagAsync(repositoryRoot, preview,
+                        viewModel.ReferenceText("TagDeleteRemoteTitle") + ": " + preview.RemoteName + "/" + preview.TagName,
+                        viewModel.Strings.Format("TagDeleteRemoteSucceeded", preview.RemoteName, preview.TagName));
+                    if (deleted)
+                    {
+                        return null;
+                    }
+                    return viewModel.StatusMessage;
+                }, viewModel.Strings);
         }
 
         private async void RenameLocalBranchClicked(object sender, RoutedEventArgs eventArgs)

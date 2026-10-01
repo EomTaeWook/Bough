@@ -549,35 +549,24 @@ namespace Bough.App.ViewModels
             }
         }
 
-        public async Task<GitRemoteTagDeletionPreview> GetRemoteTagDeletionPreviewAsync(string repositoryRoot, GitTag tag, string remoteName)
+        public async Task<GitRemoteTagDeletionPreview> GetRemoteTagDeletionPreviewAsync(string repositoryRoot, GitTag tag,
+            string remoteName, CancellationToken cancellationToken = default)
         {
-            if (CanRunMenuAction(repositoryRoot) == false)
+            if (_repository == null)
             {
-                return null;
+                throw new GitException("ReferenceSwitchRepositoryRequired", null, Array.Empty<object>());
+            }
+            if (IsCurrentRepository(repositoryRoot) == false)
+            {
+                throw new GitException("ReferenceSwitchMenuRepositoryChanged", null, Array.Empty<object>());
             }
             GitRepository repository = _repository;
-            try
+            GitRemoteTagDeletionPreview preview = await _mutationPresenter.GetRemoteTagDeletionPreviewAsync(repository, tag, remoteName, cancellationToken);
+            if (_repository != repository)
             {
-                GitRemoteTagDeletionPreview preview = await _mutationPresenter.GetRemoteTagDeletionPreviewAsync(repository, tag, remoteName);
-                if (IsCurrentRepository(repositoryRoot) == false)
-                {
-                    return null;
-                }
-                return preview;
+                throw new GitException("ReferenceSwitchMenuRepositoryChanged", null, Array.Empty<object>());
             }
-            catch (Exception exception)
-            {
-                if (IsCurrentRepository(repositoryRoot))
-                {
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
-                }
-                return null;
-            }
-        }
-
-        public void ReportTagDeletionError(Exception exception)
-        {
-            StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+            return preview;
         }
 
         public Task<bool> DeleteLocalTagAsync(string repositoryRoot, GitTag tag, string operationName, string successMessage)

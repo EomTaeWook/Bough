@@ -5860,5 +5860,47 @@
     "Name": "ReferenceRenameQueueClosing",
     "Kor": "'{0}'으로 이름 변경 결과를 기다린 뒤 닫습니다.",
     "Eng": "Waiting for rename to '{0}' to finish before closing."
+  },
+  {
+    "Id": 3074,
+    "Name": "TagDeleteDialogLocalScope",
+    "Kor": "로컬 태그",
+    "Eng": "Local tag"
+  },
+  {
+    "Id": 3075,
+    "Name": "TagDeleteDialogRemoteScope",
+    "Kor": "원격 태그",
+    "Eng": "Remote tag"
+  },
+  {
+    "Id": 3076,
+    "Name": "TagDeleteDialogRemoteHint",
+    "Kor": "선택한 원격 서버의 태그만 삭제합니다. 다른 사용자에게 영향을 주며 로컬 태그와 브랜치는 유지됩니다.",
+    "Eng": "Only the tag on the selected remote server is deleted. This affects other users. Local tags and branches are preserved."
+  },
+  {
+    "Id": 3077,
+    "Name": "TagDeleteDialogLoading",
+    "Kor": "원격 '{0}'의 태그 '{1}'을 조회하는 중입니다.",
+    "Eng": "Inspecting tag '{1}' on remote '{0}'."
+  },
+  {
+    "Id": 3078,
+    "Name": "TagDeleteDialogConfirmRemote",
+    "Kor": "원격 '{0}'의 태그 '{1}'을 서버에서 삭제하는 영향을 확인했습니다.",
+    "Eng": "I confirm the impact of deleting tag '{1}' from remote '{0}' on the server."
+  },
+  {
+    "Id": 3079,
+    "Name": "TagDeleteDialogDeleting",
+    "Kor": "태그 삭제 결과를 기다리는 중입니다.",
+    "Eng": "Waiting for the tag deletion result."
+  },
+  {
+    "Id": 3080,
+    "Name": "TagDeleteDialogReload",
+    "Kor": "대상 다시 조회",
+    "Eng": "Reload target"
   }
 ]

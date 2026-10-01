@@ -77,7 +77,7 @@ Select **History** at the top to see commits from all local and remote reference
 
 Right-click a branch under **Git references** on the left to delete a local or remote branch. Confirm the target before deletion. The checked-out branch and a remote's default branch cannot be deleted, and local branches with unmerged commits are kept. Deleting a remote branch affects the server and other users.
 
-For tags, **Delete tag** removes only the local tag, while **Delete remote tag** removes only the tag on the selected remote. Renaming a local branch or tag does not rename remote references. Annotated and signed tags keep their original tag object. Deletion and renaming run through the repository operation queue after confirmation.
+For tags, **Delete tag** opens one dialog to choose local or remote deletion, with local selected by default. Remote deletion inspects the actual tag on the selected server and requires confirmation of its impact; the local tag is preserved. Renaming a local branch or tag does not rename remote references. Annotated and signed tags keep their original tag object. Deletion and renaming run through the repository operation queue after confirmation.
 
 ## Data generation
 

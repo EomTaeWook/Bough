@@ -78,8 +78,7 @@
                 <MenuItem Click="DeleteRemoteBranchClicked" />
                 <MenuItem Click="OpenPullRequestClicked" />
                 <MenuItem Click="CopyTreeNameClicked" />
-                <MenuItem Click="DeleteLocalTagClicked" />
-                <MenuItem Click="DeleteRemoteTagClicked" />
+                <MenuItem Click="DeleteTagClicked" />
                 <MenuItem Click="RenameLocalBranchClicked" />
                 <MenuItem Click="RenameLocalTagClicked" />
               </ContextMenu>
