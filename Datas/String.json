@@ -5546,8 +5546,8 @@
   {
     "Id": 3021,
     "Name": "RepositoryActionsTooltip",
-    "Kor": "저장소 추가 또는 복제",
-    "Eng": "Add or clone a repository"
+    "Kor": "기존 저장소를 추가하거나 새 저장소를 복제합니다.",
+    "Eng": "Add an existing repository or clone a new one."
   },
   {
     "Id": 3022,
