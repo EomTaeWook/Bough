@@ -10,6 +10,7 @@
 | [데이터 변환 도구 사용법](<데이터 변환 도구 사용법.md>) | `Excel/String.xlsx`에서 JSON·C#을 생성하는 순서와 검증 |
 | [Avalonia MVP 적용](AvaloniaMvpAdoption.md) | Core·Presenter·화면 상태·View의 책임 경계 |
 | [구현 현황](CurrentStatus.md) | 반영된 기능, 진행 중인 작업과 남은 검증 |
+| [릴리스](Releases.md) | 배포 버전, 다운로드와 패키지 생성 기록 |
 | [구현 작업 지시](ImplementationPlan.md) | 작업자별 소유 파일, 구현 순서와 검증 기준 |
 | [저장소별 Git 작업 큐](GitOperationQueue.md) | 변경 명령의 저장소별 FIFO 실행 경계 |
 | [브랜치 생성 창의 작업 큐](BranchDialogQueue.md) | 창 내부 입력 큐와 명시적 취소 |
