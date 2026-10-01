@@ -18,6 +18,7 @@ namespace Bough.Core.Git
         private static readonly string[] _submoduleConfigArguments = new string[] { "config", "--null", "--file", ".gitmodules", "--get-regexp", "^submodule\\..*\\.(path|url)$" };
         private static readonly string[] _submoduleTreeArguments = new string[] { "ls-tree", "-r", "-z", "HEAD" };
         private static readonly string[] _verifyHeadArguments = new string[] { "rev-parse", "--verify", "HEAD" };
+        private static readonly string[] _renameTagTransactionArguments = new string[] { "update-ref", "--no-deref", "--stdin" };
         private readonly GitCommandRunner _runner;
         private readonly GitRepositoryService _repositoryService;
 
@@ -72,7 +73,7 @@ namespace Bough.Core.Git
                     {
                         commitHash = fields[4];
                     }
-                    tags.Add(new GitTag(fields[0]["refs/tags/".Length..], commitHash));
+                    tags.Add(new GitTag(fields[0]["refs/tags/".Length..], commitHash, fields[1]));
                     continue;
                 }
 
@@ -373,6 +374,394 @@ namespace Bough.Core.Git
 
             await _runner.RunAsync(repository.RootPath, new string[] { "switch", "--track", "-c", localName, remoteBranch.FullName }, false, cancellationToken);
             return await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
+        }
+
+        public async Task<GitReferenceRenameResult> RenameLocalBranchAsync(GitRepository repository,
+            GitReferenceRenameRequest request, CancellationToken cancellationToken = default)
+        {
+            string oldName = await ValidateReferenceRenameAsync(repository, request, "refs/heads/", cancellationToken);
+            if (oldName == request.NewName)
+            {
+                return new GitReferenceRenameResult(await _repositoryService.OpenAsync(repository.RootPath, cancellationToken), false);
+            }
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath,
+                new string[] { "branch", "-m", "--", oldName, request.NewName }, true, cancellationToken);
+            if (result.ExitCode != 0)
+            {
+                throw new GitException("ReferenceRenameFailed", null, request.ReferenceName, "refs/heads/" + request.NewName, result.Error.Trim());
+            }
+            return await ReadReferenceRenameResultAsync(repository, oldName, request.NewName, cancellationToken);
+        }
+
+        public async Task<GitReferenceRenameResult> RenameLocalTagAsync(GitRepository repository,
+            GitReferenceRenameRequest request, CancellationToken cancellationToken = default)
+        {
+            string oldName = await ValidateReferenceRenameAsync(repository, request, "refs/tags/", cancellationToken);
+            if (oldName == request.NewName)
+            {
+                return new GitReferenceRenameResult(await _repositoryService.OpenAsync(repository.RootPath, cancellationToken), false);
+            }
+            string destination = "refs/tags/" + request.NewName;
+            string transaction = $"start\ncreate {destination} {request.ObjectId}\ndelete {request.ReferenceName} {request.ObjectId}\nprepare\ncommit\n";
+            try
+            {
+                await _runner.RunWithInputAsync(repository.RootPath, _renameTagTransactionArguments, transaction, cancellationToken);
+            }
+            catch (GitException exception)
+            {
+                if (exception.ErrorCode != null)
+                {
+                    throw;
+                }
+                throw new GitException("ReferenceRenameFailed", exception, request.ReferenceName, destination, exception.Message);
+            }
+            return await ReadReferenceRenameResultAsync(repository, oldName, request.NewName, cancellationToken);
+        }
+
+        private async Task<string> ValidateReferenceRenameAsync(GitRepository repository, GitReferenceRenameRequest request,
+            string prefix, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            ArgumentNullException.ThrowIfNull(request);
+            if (string.IsNullOrWhiteSpace(request.RepositoryRoot))
+            {
+                throw new GitException("ReferenceRenameRepositoryChanged", null, Array.Empty<object>());
+            }
+            StringComparison comparison = StringComparison.Ordinal;
+            if (OperatingSystem.IsWindows())
+            {
+                comparison = StringComparison.OrdinalIgnoreCase;
+            }
+            if (string.Equals(Path.GetFullPath(repository.RootPath), Path.GetFullPath(request.RepositoryRoot), comparison) == false)
+            {
+                throw new GitException("ReferenceRenameRepositoryChanged", null, Array.Empty<object>());
+            }
+            if (string.IsNullOrWhiteSpace(request.ReferenceName))
+            {
+                throw new GitException("ReferenceRenameSourceInvalid", null, request.ReferenceName ?? string.Empty);
+            }
+            if (request.ReferenceName.StartsWith(prefix, StringComparison.Ordinal) == false)
+            {
+                throw new GitException("ReferenceRenameSourceInvalid", null, request.ReferenceName);
+            }
+            GitCommandResult sourceFormat = await _runner.RunAsync(repository.RootPath,
+                new string[] { "check-ref-format", request.ReferenceName }, true, cancellationToken);
+            if (sourceFormat.ExitCode != 0)
+            {
+                throw new GitException("ReferenceRenameSourceInvalid", null, request.ReferenceName);
+            }
+            ValidateReferenceRenameObjectId(request);
+            if (string.IsNullOrWhiteSpace(request.NewName))
+            {
+                throw new GitException("ReferenceRenameNameRequired", null, Array.Empty<object>());
+            }
+            if (request.NewName.StartsWith("-", StringComparison.Ordinal))
+            {
+                throw new GitException("ReferenceRenameNameInvalid", null, request.NewName);
+            }
+            string destination = prefix + request.NewName;
+            GitCommandResult nameFormat = await _runner.RunAsync(repository.RootPath,
+                new string[] { "check-ref-format", destination }, true, cancellationToken);
+            if (nameFormat.ExitCode != 0)
+            {
+                throw new GitException("ReferenceRenameNameInvalid", null, request.NewName);
+            }
+            if (prefix == "refs/heads/")
+            {
+                GitCommandResult branchFormat = await _runner.RunAsync(repository.RootPath,
+                    new string[] { "check-ref-format", "--branch", request.NewName }, true, cancellationToken);
+                if (branchFormat.ExitCode != 0)
+                {
+                    throw new GitException("ReferenceRenameNameInvalid", null, request.NewName);
+                }
+                if (branchFormat.Output.Trim() != request.NewName)
+                {
+                    throw new GitException("ReferenceRenameNameInvalid", null, request.NewName);
+                }
+            }
+            string oldName = request.ReferenceName[prefix.Length..];
+            if (oldName != request.NewName)
+            {
+                string existing = await ReadRenameReferenceObjectIdAsync(repository, destination, false, cancellationToken);
+                if (existing.Length > 0)
+                {
+                    throw new GitException("ReferenceRenameDestinationExists", null, destination);
+                }
+            }
+            string current = await ReadRenameReferenceObjectIdAsync(repository, request.ReferenceName, true, cancellationToken);
+            if (current.Length == 0)
+            {
+                throw new GitException("ReferenceRenameSourceMissing", null, request.ReferenceName);
+            }
+            if (current != request.ObjectId)
+            {
+                throw new GitException("ReferenceRenameSourceChanged", null, request.ReferenceName);
+            }
+            return oldName;
+        }
+
+        private static void ValidateReferenceRenameObjectId(GitReferenceRenameRequest request)
+        {
+            if (request.ObjectId == null)
+            {
+                throw new GitException("ReferenceRenameInvalidObjectId", null, request.ReferenceName);
+            }
+            if (request.ObjectId.Length != 40 && request.ObjectId.Length != 64)
+            {
+                throw new GitException("ReferenceRenameInvalidObjectId", null, request.ReferenceName);
+            }
+            if (request.ObjectId.All(Uri.IsHexDigit) == false)
+            {
+                throw new GitException("ReferenceRenameInvalidObjectId", null, request.ReferenceName);
+            }
+        }
+
+        private async Task<string> ReadRenameReferenceObjectIdAsync(GitRepository repository, string reference,
+            bool requireDirect, CancellationToken cancellationToken)
+        {
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath,
+                new string[] { "for-each-ref", "--format=%(refname)%00%(objectname)%00%(symref)", reference }, true, cancellationToken);
+            if (result.ExitCode != 0)
+            {
+                throw new GitException("ReferenceRenameLookupFailed", null, reference, result.Error.Trim());
+            }
+            foreach (string line in SplitLines(result.Output))
+            {
+                string[] fields = line.Split('\0');
+                if (fields.Length != 3)
+                {
+                    continue;
+                }
+                if (fields[0] != reference)
+                {
+                    continue;
+                }
+                if (requireDirect)
+                {
+                    if (fields[2].Length > 0)
+                    {
+                        throw new GitException("ReferenceRenameSourceChanged", null, reference);
+                    }
+                }
+                return fields[1];
+            }
+            return string.Empty;
+        }
+
+        private async Task<GitReferenceRenameResult> ReadReferenceRenameResultAsync(GitRepository repository, string oldName,
+            string newName, CancellationToken cancellationToken)
+        {
+            try
+            {
+                GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
+                return new GitReferenceRenameResult(updated, true);
+            }
+            catch (GitException exception)
+            {
+                throw new GitException("ReferenceRenameStateReadFailed", exception, oldName, newName);
+            }
+        }
+
+        public async Task DeleteLocalTagAsync(GitRepository repository, GitTag tag, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            ArgumentNullException.ThrowIfNull(tag);
+            await ValidateTagDeletionNameAsync(repository, tag.Name, cancellationToken);
+            ValidateTagObjectId(tag.Name, tag.ObjectId);
+            string current = await ReadLocalTagObjectIdAsync(repository, tag, cancellationToken);
+            if (current.Length == 0)
+            {
+                throw new GitException("TagDeleteLocalMissing", null, tag.Name);
+            }
+            if (current != tag.ObjectId)
+            {
+                throw new GitException("TagDeleteLocalChanged", null, tag.Name);
+            }
+            GitCommandResult deleted = await _runner.RunAsync(repository.RootPath,
+                new string[] { "update-ref", "--no-deref", "-d", tag.ReferenceName, tag.ObjectId }, true, cancellationToken);
+            if (deleted.ExitCode == 0)
+            {
+                return;
+            }
+            current = await ReadLocalTagObjectIdAsync(repository, tag, cancellationToken);
+            if (current != tag.ObjectId)
+            {
+                throw new GitException("TagDeleteLocalChanged", null, tag.Name);
+            }
+            throw new GitException("TagDeleteLocalFailed", null, tag.Name, deleted.Error.Trim());
+        }
+
+        public async Task<GitRemoteTagDeletionPreview> GetRemoteTagDeletionPreviewAsync(GitRepository repository, string tagName,
+            string remoteName, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            await ValidateTagDeletionNameAsync(repository, tagName, cancellationToken);
+            string pushUrl = await ReadTagDeletionPushUrlAsync(repository, remoteName, cancellationToken);
+            string objectId = await ReadRemoteTagObjectIdAsync(repository, remoteName, pushUrl, tagName, cancellationToken);
+            return new GitRemoteTagDeletionPreview(repository.RootPath, remoteName, pushUrl, tagName, objectId);
+        }
+
+        public async Task DeleteRemoteTagAsync(GitRepository repository, GitRemoteTagDeletionPreview preview,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            ArgumentNullException.ThrowIfNull(preview);
+            StringComparison comparison = StringComparison.Ordinal;
+            if (OperatingSystem.IsWindows())
+            {
+                comparison = StringComparison.OrdinalIgnoreCase;
+            }
+            if (string.Equals(Path.GetFullPath(repository.RootPath), Path.GetFullPath(preview.RepositoryRoot), comparison) == false)
+            {
+                throw new GitException("TagDeleteRepositoryChanged", null, Array.Empty<object>());
+            }
+            await ValidateTagDeletionNameAsync(repository, preview.TagName, cancellationToken);
+            ValidateTagObjectId(preview.TagName, preview.ObjectId);
+            string pushUrl = await ReadTagDeletionPushUrlAsync(repository, preview.RemoteName, cancellationToken);
+            if (pushUrl != preview.PushUrl)
+            {
+                throw new GitException("TagDeleteRemoteUrlChanged", null, preview.RemoteName);
+            }
+            string current = await ReadRemoteTagObjectIdAsync(repository, preview.RemoteName, preview.PushUrl, preview.TagName, cancellationToken);
+            if (current != preview.ObjectId)
+            {
+                throw new GitException("TagDeleteRemoteChanged", null, preview.RemoteName, preview.TagName);
+            }
+            GitCommandResult deleted = await _runner.RunAsync(repository.RootPath,
+                new string[] { "push", "--porcelain", "--no-follow-tags", $"--force-with-lease={preview.ReferenceName}:{preview.ObjectId}", "--", preview.PushUrl, $":{preview.ReferenceName}" }, true, cancellationToken);
+            if (deleted.ExitCode != 0)
+            {
+                string error = RedactTagDeletionOutput(deleted.Error.Trim(), preview.PushUrl);
+                throw new GitException("TagDeleteRemoteFailed", null, preview.RemoteName, preview.TagName, error);
+            }
+        }
+
+        private async Task ValidateTagDeletionNameAsync(GitRepository repository, string name, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new GitException("TagDeleteInvalidName", null, name ?? string.Empty);
+            }
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath,
+                new string[] { "check-ref-format", "refs/tags/" + name }, true, cancellationToken);
+            if (result.ExitCode != 0)
+            {
+                throw new GitException("TagDeleteInvalidName", null, name);
+            }
+        }
+
+        private static void ValidateTagObjectId(string name, string objectId)
+        {
+            if (objectId == null)
+            {
+                throw new GitException("TagDeleteInvalidObjectId", null, name);
+            }
+            if (objectId.Length != 40 && objectId.Length != 64)
+            {
+                throw new GitException("TagDeleteInvalidObjectId", null, name);
+            }
+            if (objectId.All(Uri.IsHexDigit) == false)
+            {
+                throw new GitException("TagDeleteInvalidObjectId", null, name);
+            }
+        }
+
+        private async Task<string> ReadLocalTagObjectIdAsync(GitRepository repository, GitTag tag, CancellationToken cancellationToken)
+        {
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath,
+                new string[] { "for-each-ref", "--format=%(refname)%00%(objectname)%00%(symref)", tag.ReferenceName }, true, cancellationToken);
+            if (result.ExitCode != 0)
+            {
+                throw new GitException("TagDeleteLocalFailed", null, tag.Name, result.Error.Trim());
+            }
+            foreach (string line in SplitLines(result.Output))
+            {
+                string[] fields = line.Split('\0');
+                if (fields.Length != 3)
+                {
+                    continue;
+                }
+                if (fields[0] != tag.ReferenceName)
+                {
+                    continue;
+                }
+                if (fields[2].Length > 0)
+                {
+                    throw new GitException("TagDeleteLocalChanged", null, tag.Name);
+                }
+                return fields[1];
+            }
+            return string.Empty;
+        }
+
+        private async Task<string> ReadTagDeletionPushUrlAsync(GitRepository repository, string remoteName, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(remoteName))
+            {
+                throw new GitException("TagDeleteRemoteUnavailable", null, remoteName ?? string.Empty);
+            }
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath,
+                new string[] { "remote", "get-url", "--push", "--all", "--", remoteName }, true, cancellationToken);
+            if (result.ExitCode != 0)
+            {
+                throw new GitException("TagDeleteRemoteUnavailable", null, remoteName);
+            }
+            string[] urls = SplitLines(result.Output);
+            if (urls.Length > 1)
+            {
+                throw new GitException("TagDeleteRemoteMultiplePushUrls", null, remoteName);
+            }
+            if (urls.Length == 0)
+            {
+                throw new GitException("TagDeleteRemoteUnavailable", null, remoteName);
+            }
+            return urls[0];
+        }
+
+        private async Task<string> ReadRemoteTagObjectIdAsync(GitRepository repository, string remoteName, string pushUrl,
+            string tagName, CancellationToken cancellationToken)
+        {
+            string reference = "refs/tags/" + tagName;
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath,
+                new string[] { "ls-remote", "--refs", "--exit-code", "--", pushUrl, reference }, true, cancellationToken);
+            if (result.ExitCode == 2)
+            {
+                throw new GitException("TagDeleteRemoteTagMissing", null, remoteName, tagName);
+            }
+            if (result.ExitCode != 0)
+            {
+                throw new GitException("TagDeleteRemoteLookupFailed", null, remoteName, tagName, RedactTagDeletionOutput(result.Error.Trim(), pushUrl));
+            }
+            foreach (string line in SplitLines(result.Output))
+            {
+                int tab = line.IndexOf('\t');
+                if (tab < 0)
+                {
+                    continue;
+                }
+                if (line[(tab + 1)..] != reference)
+                {
+                    continue;
+                }
+                string objectId = line[..tab];
+                ValidateTagObjectId(tagName, objectId);
+                return objectId;
+            }
+            throw new GitException("TagDeleteRemoteTagMissing", null, remoteName, tagName);
+        }
+
+        private static string RedactTagDeletionOutput(string output, string pushUrl)
+        {
+            string safe = output.Replace(pushUrl, SanitizeUrl(pushUrl), StringComparison.Ordinal);
+            if (Uri.TryCreate(pushUrl, UriKind.Absolute, out Uri parsed))
+            {
+                if (parsed.UserInfo.Length > 0)
+                {
+                    safe = safe.Replace(parsed.UserInfo, "***", StringComparison.Ordinal);
+                    safe = safe.Replace(Uri.UnescapeDataString(parsed.UserInfo), "***", StringComparison.Ordinal);
+                }
+            }
+            return safe;
         }
 
         private async Task<IReadOnlyList<GitSubmodule>> ReadSubmodulesAsync(GitRepository repository, CancellationToken cancellationToken)

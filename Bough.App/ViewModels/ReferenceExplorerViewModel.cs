@@ -549,6 +549,163 @@ namespace Bough.App.ViewModels
             }
         }
 
+        public async Task<GitRemoteTagDeletionPreview> GetRemoteTagDeletionPreviewAsync(string repositoryRoot, GitTag tag, string remoteName)
+        {
+            if (CanRunMenuAction(repositoryRoot) == false)
+            {
+                return null;
+            }
+            GitRepository repository = _repository;
+            try
+            {
+                GitRemoteTagDeletionPreview preview = await _mutationPresenter.GetRemoteTagDeletionPreviewAsync(repository, tag, remoteName);
+                if (IsCurrentRepository(repositoryRoot) == false)
+                {
+                    return null;
+                }
+                return preview;
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentRepository(repositoryRoot))
+                {
+                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                }
+                return null;
+            }
+        }
+
+        public void ReportTagDeletionError(Exception exception)
+        {
+            StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+        }
+
+        public Task<bool> DeleteLocalTagAsync(string repositoryRoot, GitTag tag, string operationName, string successMessage)
+        {
+            return RunTagDeletionAsync(repositoryRoot, successMessage,
+                (repository, applyResult) => _mutationPresenter.DeleteLocalTagAsync(repository, tag, operationName, applyResult));
+        }
+
+        public Task<bool> DeleteRemoteTagAsync(string repositoryRoot, GitRemoteTagDeletionPreview preview, string operationName, string successMessage)
+        {
+            return RunTagDeletionAsync(repositoryRoot, successMessage,
+                (repository, applyResult) => _mutationPresenter.DeleteRemoteTagAsync(repository, preview, operationName, applyResult));
+        }
+
+        private async Task<bool> RunTagDeletionAsync(string repositoryRoot, string successMessage,
+            Func<GitRepository, Func<Task<bool>>, Task<bool>> execute)
+        {
+            if (CanRunMenuAction(repositoryRoot) == false)
+            {
+                return false;
+            }
+            GitRepository repository = _repository;
+            try
+            {
+                return await execute(repository, async () =>
+                {
+                    if (IsCurrentRepository(repositoryRoot) == false)
+                    {
+                        return true;
+                    }
+                    bool refreshed = await RefreshCoreAsync();
+                    if (IsCurrentRepository(repositoryRoot) == false)
+                    {
+                        return true;
+                    }
+                    if (refreshed)
+                    {
+                        StatusMessage = successMessage;
+                    }
+                    else
+                    {
+                        StatusMessage = _stringHelper.Format("TagDeleteRefreshFailed", successMessage, StatusMessage);
+                    }
+                    RepositoryChanged?.Invoke(_repository);
+                    return refreshed;
+                });
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentRepository(repositoryRoot))
+                {
+                    await RefreshCoreAsync();
+                    if (IsCurrentRepository(repositoryRoot) == false)
+                    {
+                        return false;
+                    }
+                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                }
+                return false;
+            }
+        }
+
+        public Task<bool> RenameLocalBranchAsync(GitReferenceRenameRequest request, string operationName,
+            Func<GitReferenceRenameResult, string> describeResult, Func<string, string, string> describeRefreshFailure)
+        {
+            return RunReferenceRenameAsync(request, describeResult, describeRefreshFailure,
+                (repository, applyResult) => _mutationPresenter.RenameLocalBranchAsync(repository, request, operationName, applyResult));
+        }
+
+        public Task<bool> RenameLocalTagAsync(GitReferenceRenameRequest request, string operationName,
+            Func<GitReferenceRenameResult, string> describeResult, Func<string, string, string> describeRefreshFailure)
+        {
+            return RunReferenceRenameAsync(request, describeResult, describeRefreshFailure,
+                (repository, applyResult) => _mutationPresenter.RenameLocalTagAsync(repository, request, operationName, applyResult));
+        }
+
+        private async Task<bool> RunReferenceRenameAsync(GitReferenceRenameRequest request,
+            Func<GitReferenceRenameResult, string> describeResult, Func<string, string, string> describeRefreshFailure,
+            Func<GitRepository, Func<GitReferenceRenameResult, Task<bool>>, Task<bool>> execute)
+        {
+            if (CanRunMenuAction(request.RepositoryRoot) == false)
+            {
+                return false;
+            }
+            GitRepository repository = _repository;
+            try
+            {
+                return await execute(repository, async result =>
+                {
+                    if (IsCurrentRepository(request.RepositoryRoot) == false)
+                    {
+                        return true;
+                    }
+                    _repository = result.Repository;
+                    bool refreshed = await RefreshCoreAsync();
+                    if (IsCurrentRepository(request.RepositoryRoot) == false)
+                    {
+                        return true;
+                    }
+                    string message = describeResult(result);
+                    if (refreshed)
+                    {
+                        StatusMessage = message;
+                    }
+                    else
+                    {
+                        StatusMessage = describeRefreshFailure(message, StatusMessage);
+                    }
+                    RepositoryChanged?.Invoke(result.Repository);
+                    return refreshed;
+                });
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentRepository(request.RepositoryRoot) == false)
+                {
+                    return false;
+                }
+                await RefreshCoreAsync();
+                if (IsCurrentRepository(request.RepositoryRoot) == false)
+                {
+                    return false;
+                }
+                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                return false;
+            }
+        }
+
         public async Task<bool> CreateFromBranchAsync(string repositoryRoot, GitLocalBranch branch, string newName)
         {
             if (CanRunMenuAction(repositoryRoot) == false)

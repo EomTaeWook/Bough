@@ -251,7 +251,7 @@ namespace Bough.App.Views
                 return;
             }
             MenuItem[] items = menu.Items.OfType<MenuItem>().ToArray();
-            if (items.Length < 10)
+            if (items.Length < 14)
             {
                 menu.Close();
                 return;
@@ -291,12 +291,205 @@ namespace Bough.App.Views
             items[8].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch || node.Kind == ReferenceTreeNodeKind.RemoteBranch;
             items[8].IsEnabled = true;
             items[9].IsVisible = node.IsEmpty == false;
+            items[10].Header = viewModel.ReferenceText("TagDeleteLocalMenu");
+            items[10].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
+            items[10].IsEnabled = true;
+            items[11].Header = viewModel.ReferenceText("TagDeleteRemoteMenu");
+            items[11].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
+            items[11].IsEnabled = true;
+            items[12].Header = viewModel.ReferenceText("ReferenceRenameBranchMenu");
+            items[12].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch;
+            items[12].IsEnabled = true;
+            items[13].Header = viewModel.ReferenceText("ReferenceRenameTagMenu");
+            items[13].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
+            items[13].IsEnabled = true;
         }
 
         private void TreeContextClosed(object sender, RoutedEventArgs eventArgs)
         {
             _menuNode = null;
             _menuRepositoryRoot = null;
+        }
+
+        private async void DeleteLocalTagClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not ReferenceExplorerViewModel viewModel)
+            {
+                return;
+            }
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
+            if (sender is not MenuItem item)
+            {
+                return;
+            }
+            if (item.Tag is not ReferenceTreeNode node)
+            {
+                return;
+            }
+            if (node.Target is not GitTag tag)
+            {
+                return;
+            }
+            string repositoryRoot = item.CommandParameter as string;
+            bool confirmed = await GitActionDialogs.ConfirmAsync(owner,
+                viewModel.ReferenceText("TagDeleteLocalTitle"),
+                viewModel.Strings.Format("TagDeleteLocalConfirm", tag.Name, tag.ObjectId),
+                viewModel.ReferenceText("TagDeleteAction"), viewModel.Strings);
+            if (confirmed == false)
+            {
+                return;
+            }
+            await viewModel.DeleteLocalTagAsync(repositoryRoot, tag,
+                viewModel.ReferenceText("TagDeleteLocalTitle") + ": " + tag.Name,
+                viewModel.Strings.Format("TagDeleteLocalSucceeded", tag.Name));
+        }
+
+        private async void DeleteRemoteTagClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not ReferenceExplorerViewModel viewModel)
+            {
+                return;
+            }
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
+            if (sender is not MenuItem item)
+            {
+                return;
+            }
+            if (item.Tag is not ReferenceTreeNode node)
+            {
+                return;
+            }
+            if (node.Target is not GitTag tag)
+            {
+                return;
+            }
+            string repositoryRoot = item.CommandParameter as string;
+            string[] remoteNames = viewModel.Remotes.Select(remote => remote.Name).ToArray();
+            if (remoteNames.Length == 0)
+            {
+                viewModel.ReportTagDeletionError(new GitException("TagDeleteRemoteRequired", null, Array.Empty<object>()));
+                return;
+            }
+            string remoteName = await GitActionDialogs.RequestTagDeletionRemoteAsync(owner, tag.Name, remoteNames, viewModel.Strings);
+            if (remoteName == null)
+            {
+                return;
+            }
+            GitRemoteTagDeletionPreview preview = await viewModel.GetRemoteTagDeletionPreviewAsync(repositoryRoot, tag, remoteName);
+            if (preview == null)
+            {
+                return;
+            }
+            if (DataContext != viewModel)
+            {
+                return;
+            }
+            bool confirmed = await GitActionDialogs.ConfirmAsync(owner,
+                viewModel.ReferenceText("TagDeleteRemoteTitle"),
+                viewModel.Strings.Format("TagDeleteRemoteConfirm", preview.RemoteName, preview.TagName, preview.ObjectId),
+                viewModel.ReferenceText("TagDeleteAction"), viewModel.Strings);
+            if (confirmed == false)
+            {
+                return;
+            }
+            await viewModel.DeleteRemoteTagAsync(repositoryRoot, preview,
+                viewModel.ReferenceText("TagDeleteRemoteTitle") + ": " + preview.RemoteName + "/" + preview.TagName,
+                viewModel.Strings.Format("TagDeleteRemoteSucceeded", preview.RemoteName, preview.TagName));
+        }
+
+        private async void RenameLocalBranchClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not ReferenceExplorerViewModel viewModel)
+            {
+                return;
+            }
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
+            if (sender is not MenuItem item)
+            {
+                return;
+            }
+            if (item.Tag is not ReferenceTreeNode node)
+            {
+                return;
+            }
+            if (node.Target is not GitLocalBranch branch)
+            {
+                return;
+            }
+            string repositoryRoot = item.CommandParameter as string;
+            string referenceName = "refs/heads/" + branch.Name;
+            await GitActionDialogs.RequestReferenceRenameAsync(owner, viewModel.ReferenceText("ReferenceRenameBranchMenu"),
+                branch.Name, false, async newName =>
+                {
+                    GitReferenceRenameRequest request = new(repositoryRoot, referenceName, branch.CommitHash, newName);
+                    bool renamed = await viewModel.RenameLocalBranchAsync(request,
+                        viewModel.ReferenceText("ReferenceRenameBranchMenu") + ": " + branch.Name,
+                        result => DescribeRenameResult(viewModel, result, "ReferenceRenameBranchSucceeded", branch.Name, newName),
+                        (message, error) => viewModel.Strings.Format("ReferenceRenameRefreshFailed", message, error));
+                    if (renamed)
+                    {
+                        return null;
+                    }
+                    return viewModel.StatusMessage;
+                }, viewModel.Strings);
+        }
+
+        private async void RenameLocalTagClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not ReferenceExplorerViewModel viewModel)
+            {
+                return;
+            }
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
+            if (sender is not MenuItem item)
+            {
+                return;
+            }
+            if (item.Tag is not ReferenceTreeNode node)
+            {
+                return;
+            }
+            if (node.Target is not GitTag tag)
+            {
+                return;
+            }
+            string repositoryRoot = item.CommandParameter as string;
+            await GitActionDialogs.RequestReferenceRenameAsync(owner, viewModel.ReferenceText("ReferenceRenameTagMenu"),
+                tag.Name, true, async newName =>
+                {
+                    GitReferenceRenameRequest request = new(repositoryRoot, tag.ReferenceName, tag.ObjectId, newName);
+                    bool renamed = await viewModel.RenameLocalTagAsync(request,
+                        viewModel.ReferenceText("ReferenceRenameTagMenu") + ": " + tag.Name,
+                        result => DescribeRenameResult(viewModel, result, "ReferenceRenameTagSucceeded", tag.Name, newName),
+                        (message, error) => viewModel.Strings.Format("ReferenceRenameRefreshFailed", message, error));
+                    if (renamed)
+                    {
+                        return null;
+                    }
+                    return viewModel.StatusMessage;
+                }, viewModel.Strings);
+        }
+
+        private static string DescribeRenameResult(ReferenceExplorerViewModel viewModel, GitReferenceRenameResult result,
+            string successKey, string oldName, string newName)
+        {
+            if (result.Changed == false)
+            {
+                return viewModel.Strings.Format("ReferenceRenameUnchanged", oldName);
+            }
+            return viewModel.Strings.Format(successKey, oldName, newName);
         }
 
         private void CreateSectionAddClicked(object sender, RoutedEventArgs eventArgs)

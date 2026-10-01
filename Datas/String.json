@@ -5554,5 +5554,311 @@
     "Name": "RepositoryAddExistingAction",
     "Kor": "기존 저장소 추가",
     "Eng": "Add existing repository"
+  },
+  {
+    "Id": 3023,
+    "Name": "TagDeleteLocalMenu",
+    "Kor": "태그 삭제",
+    "Eng": "Delete tag"
+  },
+  {
+    "Id": 3024,
+    "Name": "TagDeleteRemoteMenu",
+    "Kor": "원격 태그 삭제",
+    "Eng": "Delete remote tag"
+  },
+  {
+    "Id": 3025,
+    "Name": "TagDeleteLocalTitle",
+    "Kor": "로컬 태그 삭제",
+    "Eng": "Delete local tag"
+  },
+  {
+    "Id": 3026,
+    "Name": "TagDeleteLocalConfirm",
+    "Kor": "로컬 태그 '{0}'을 삭제합니다.\n태그 객체: {1}\n\n로컬 태그 참조만 삭제합니다. 원격 태그, 같은 이름의 브랜치, 작업 파일과 커밋은 유지됩니다.",
+    "Eng": "Delete local tag '{0}'.\nTag object: {1}\n\nOnly the local tag reference is deleted. Remote tags, branches with the same name, working files and commits are preserved."
+  },
+  {
+    "Id": 3027,
+    "Name": "TagDeleteRemoteTitle",
+    "Kor": "원격 태그 삭제",
+    "Eng": "Delete remote tag"
+  },
+  {
+    "Id": 3028,
+    "Name": "TagDeleteRemoteConfirm",
+    "Kor": "원격 '{0}'의 태그 '{1}'을 삭제합니다.\n태그 객체: {2}\n\n서버의 태그를 삭제하며 다른 사용자에게 영향을 줍니다. 로컬 태그와 같은 이름의 브랜치는 유지됩니다.",
+    "Eng": "Delete tag '{1}' from remote '{0}'.\nTag object: {2}\n\nThis deletes the tag on the server and affects other users. The local tag and branches with the same name are preserved."
+  },
+  {
+    "Id": 3029,
+    "Name": "TagDeleteAction",
+    "Kor": "삭제",
+    "Eng": "Delete"
+  },
+  {
+    "Id": 3030,
+    "Name": "TagDeleteSelectRemoteTitle",
+    "Kor": "태그를 삭제할 원격 선택",
+    "Eng": "Select remote for tag deletion"
+  },
+  {
+    "Id": 3031,
+    "Name": "TagDeleteRemotePrompt",
+    "Kor": "태그 '{0}'을 조회할 등록된 원격을 선택하세요. 다음 확인 창에서 서버 삭제 대상을 확인합니다.",
+    "Eng": "Select a registered remote to inspect tag '{0}'. Confirm the server deletion target in the next dialog."
+  },
+  {
+    "Id": 3032,
+    "Name": "TagDeleteInspectRemoteAction",
+    "Kor": "대상 확인",
+    "Eng": "Inspect target"
+  },
+  {
+    "Id": 3033,
+    "Name": "TagDeleteLocalSucceeded",
+    "Kor": "로컬 태그 '{0}'을 삭제했습니다.",
+    "Eng": "Deleted local tag '{0}'."
+  },
+  {
+    "Id": 3034,
+    "Name": "TagDeleteRemoteSucceeded",
+    "Kor": "원격 '{0}'의 태그 '{1}'을 삭제했습니다. 로컬 태그는 유지했습니다.",
+    "Eng": "Deleted tag '{1}' from remote '{0}'. The local tag was preserved."
+  },
+  {
+    "Id": 3035,
+    "Name": "TagDeleteRefreshFailed",
+    "Kor": "{0} 참조 갱신에 실패했습니다: {1}",
+    "Eng": "{0} Reference refresh failed: {1}"
+  },
+  {
+    "Id": 3036,
+    "Name": "TagDeleteInvalidName",
+    "Kor": "삭제할 태그 이름이 유효하지 않습니다: {0}",
+    "Eng": "The tag name is not valid for deletion: {0}"
+  },
+  {
+    "Id": 3037,
+    "Name": "TagDeleteInvalidObjectId",
+    "Kor": "태그 '{0}'의 확인한 객체 OID가 유효하지 않습니다. 참조 목록을 새로 고친 뒤 다시 확인하세요.",
+    "Eng": "The confirmed object OID for tag '{0}' is invalid. Refresh references and confirm again."
+  },
+  {
+    "Id": 3038,
+    "Name": "TagDeleteLocalMissing",
+    "Kor": "로컬 태그 '{0}'이 더 이상 존재하지 않습니다.",
+    "Eng": "Local tag '{0}' no longer exists."
+  },
+  {
+    "Id": 3039,
+    "Name": "TagDeleteLocalChanged",
+    "Kor": "확인 이후 로컬 태그 '{0}'이 변경되어 삭제하지 않았습니다. 다시 확인하세요.",
+    "Eng": "Local tag '{0}' changed after confirmation and was not deleted. Confirm again."
+  },
+  {
+    "Id": 3040,
+    "Name": "TagDeleteLocalFailed",
+    "Kor": "로컬 태그 '{0}'을 삭제하지 못했습니다: {1}",
+    "Eng": "Could not delete local tag '{0}': {1}"
+  },
+  {
+    "Id": 3041,
+    "Name": "TagDeleteRemoteRequired",
+    "Kor": "원격 태그를 삭제하려면 등록된 원격이 필요합니다.",
+    "Eng": "A registered remote is required to delete a remote tag."
+  },
+  {
+    "Id": 3042,
+    "Name": "TagDeleteRemoteUnavailable",
+    "Kor": "원격 '{0}'의 Push 주소를 확인할 수 없습니다.",
+    "Eng": "Could not resolve the push URL for remote '{0}'."
+  },
+  {
+    "Id": 3043,
+    "Name": "TagDeleteRemoteMultiplePushUrls",
+    "Kor": "원격 '{0}'에 Push 주소가 여러 개라 태그 삭제를 지원하지 않습니다.",
+    "Eng": "Tag deletion is not supported for remote '{0}' because it has multiple push URLs."
+  },
+  {
+    "Id": 3044,
+    "Name": "TagDeleteRemoteTagMissing",
+    "Kor": "원격 '{0}'에 태그 '{1}'이 없습니다.",
+    "Eng": "Remote '{0}' has no tag '{1}'."
+  },
+  {
+    "Id": 3045,
+    "Name": "TagDeleteRemoteLookupFailed",
+    "Kor": "원격 '{0}'의 태그 '{1}'을 조회하지 못했습니다: {2}",
+    "Eng": "Could not inspect tag '{1}' on remote '{0}': {2}"
+  },
+  {
+    "Id": 3046,
+    "Name": "TagDeleteRemoteChanged",
+    "Kor": "확인 이후 원격 '{0}'의 태그 '{1}'이 변경되어 삭제하지 않았습니다. 다시 확인하세요.",
+    "Eng": "Tag '{1}' on remote '{0}' changed after confirmation and was not deleted. Confirm again."
+  },
+  {
+    "Id": 3047,
+    "Name": "TagDeleteRemoteUrlChanged",
+    "Kor": "확인 이후 원격 '{0}'의 Push 주소가 변경되어 삭제하지 않았습니다.",
+    "Eng": "The push URL for remote '{0}' changed after confirmation. Nothing was deleted."
+  },
+  {
+    "Id": 3048,
+    "Name": "TagDeleteRemoteFailed",
+    "Kor": "원격 '{0}'의 태그 '{1}'을 삭제하지 못했습니다: {2}",
+    "Eng": "Could not delete tag '{1}' on remote '{0}': {2}"
+  },
+  {
+    "Id": 3049,
+    "Name": "TagDeleteRepositoryChanged",
+    "Kor": "태그 삭제를 확인한 저장소와 요청한 저장소가 다릅니다.",
+    "Eng": "The requested repository differs from the repository confirmed for tag deletion."
+  },
+  {
+    "Id": 3050,
+    "Name": "ReferenceRenameBranchMenu",
+    "Kor": "브랜치 이름 변경",
+    "Eng": "Rename branch"
+  },
+  {
+    "Id": 3051,
+    "Name": "ReferenceRenameTagMenu",
+    "Kor": "태그 이름 변경",
+    "Eng": "Rename tag"
+  },
+  {
+    "Id": 3052,
+    "Name": "ReferenceRenameOriginalName",
+    "Kor": "기존 이름",
+    "Eng": "Current name"
+  },
+  {
+    "Id": 3053,
+    "Name": "ReferenceRenameNewName",
+    "Kor": "새 이름",
+    "Eng": "New name"
+  },
+  {
+    "Id": 3054,
+    "Name": "ReferenceRenameLocalOnly",
+    "Kor": "로컬 참조만 변경합니다. 원격 브랜치와 태그는 변경하지 않습니다.",
+    "Eng": "Only the local reference is renamed. Remote branches and tags are not changed."
+  },
+  {
+    "Id": 3055,
+    "Name": "ReferenceRenameTagObjectsHint",
+    "Kor": "태그 참조 이름만 변경합니다. 객체 내부의 기존 이름·주석·서명은 유지됩니다.",
+    "Eng": "Only the tag reference name changes. The original name, annotation and signature inside the tag object are preserved."
+  },
+  {
+    "Id": 3056,
+    "Name": "ReferenceRenameAction",
+    "Kor": "이름 변경",
+    "Eng": "Rename"
+  },
+  {
+    "Id": 3057,
+    "Name": "ReferenceRenameBranchSucceeded",
+    "Kor": "로컬 브랜치 '{0}'의 이름을 '{1}'로 변경했습니다.",
+    "Eng": "Renamed local branch '{0}' to '{1}'."
+  },
+  {
+    "Id": 3058,
+    "Name": "ReferenceRenameTagSucceeded",
+    "Kor": "로컬 태그 '{0}'의 참조 이름을 '{1}'로 변경했습니다. 태그 객체는 유지했습니다.",
+    "Eng": "Renamed local tag reference '{0}' to '{1}'. The tag object was preserved."
+  },
+  {
+    "Id": 3059,
+    "Name": "ReferenceRenameUnchanged",
+    "Kor": "'{0}'은 기존 이름과 같아 변경하지 않았습니다.",
+    "Eng": "'{0}' is the current name. Nothing was changed."
+  },
+  {
+    "Id": 3060,
+    "Name": "ReferenceRenameRepositoryChanged",
+    "Kor": "이름 변경을 확인한 저장소와 실행할 저장소가 다릅니다.",
+    "Eng": "The execution repository differs from the repository confirmed for renaming."
+  },
+  {
+    "Id": 3061,
+    "Name": "ReferenceRenameSourceInvalid",
+    "Kor": "이름 변경 대상 로컬 참조가 유효하지 않습니다: {0}",
+    "Eng": "The local reference to rename is invalid: {0}"
+  },
+  {
+    "Id": 3062,
+    "Name": "ReferenceRenameSourceMissing",
+    "Kor": "이름 변경 대상 참조 '{0}'이 더 이상 존재하지 않습니다.",
+    "Eng": "Reference '{0}' no longer exists and cannot be renamed."
+  },
+  {
+    "Id": 3063,
+    "Name": "ReferenceRenameSourceChanged",
+    "Kor": "확인 이후 참조 '{0}'이 변경되어 이름을 바꾸지 않았습니다. 다시 확인하세요.",
+    "Eng": "Reference '{0}' changed after confirmation and was not renamed. Confirm again."
+  },
+  {
+    "Id": 3064,
+    "Name": "ReferenceRenameInvalidObjectId",
+    "Kor": "참조 '{0}'의 확인한 객체 OID가 유효하지 않습니다. 목록을 새로 고친 뒤 다시 확인하세요.",
+    "Eng": "The confirmed object OID for reference '{0}' is invalid. Refresh references and confirm again."
+  },
+  {
+    "Id": 3065,
+    "Name": "ReferenceRenameNameRequired",
+    "Kor": "새 이름을 입력하세요.",
+    "Eng": "Enter a new name."
+  },
+  {
+    "Id": 3066,
+    "Name": "ReferenceRenameNameInvalid",
+    "Kor": "새 이름이 유효하지 않습니다: {0}",
+    "Eng": "The new name is invalid: {0}"
+  },
+  {
+    "Id": 3067,
+    "Name": "ReferenceRenameDestinationExists",
+    "Kor": "목적지 참조 '{0}'이 이미 존재합니다. 덮어쓰지 않습니다.",
+    "Eng": "Destination reference '{0}' already exists. It will not be overwritten."
+  },
+  {
+    "Id": 3068,
+    "Name": "ReferenceRenameLookupFailed",
+    "Kor": "참조 '{0}'을 확인하지 못했습니다: {1}",
+    "Eng": "Could not inspect reference '{0}': {1}"
+  },
+  {
+    "Id": 3069,
+    "Name": "ReferenceRenameFailed",
+    "Kor": "참조 '{0}'을 '{1}'로 변경하지 못했습니다: {2}",
+    "Eng": "Could not rename reference '{0}' to '{1}': {2}"
+  },
+  {
+    "Id": 3070,
+    "Name": "ReferenceRenameRefreshFailed",
+    "Kor": "{0} 상태 갱신에 실패했습니다: {1}",
+    "Eng": "{0} State refresh failed: {1}"
+  },
+  {
+    "Id": 3071,
+    "Name": "ReferenceRenameStateReadFailed",
+    "Kor": "'{0}'에서 '{1}'로 이름 변경은 반영되었지만 저장소 상태를 읽지 못했습니다. 새로 고침하세요.",
+    "Eng": "The rename from '{0}' to '{1}' was applied, but repository state could not be read. Refresh the repository."
+  },
+  {
+    "Id": 3072,
+    "Name": "ReferenceRenameQueueProgress",
+    "Kor": "'{0}'으로 이름 변경 중 · 대기 {1}건",
+    "Eng": "Renaming to '{0}' · {1} queued"
+  },
+  {
+    "Id": 3073,
+    "Name": "ReferenceRenameQueueClosing",
+    "Kor": "'{0}'으로 이름 변경 결과를 기다린 뒤 닫습니다.",
+    "Eng": "Waiting for rename to '{0}' to finish before closing."
   }
 ]

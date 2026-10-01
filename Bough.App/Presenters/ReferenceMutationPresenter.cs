@@ -47,6 +47,51 @@ namespace Bough.App.Presenters
             });
         }
 
+        public Task<GitRemoteTagDeletionPreview> GetRemoteTagDeletionPreviewAsync(GitRepository repository, GitTag tag,
+            string remoteName, CancellationToken cancellationToken = default)
+        {
+            return _referenceService.GetRemoteTagDeletionPreviewAsync(repository, tag.Name, remoteName, cancellationToken);
+        }
+
+        public Task<bool> DeleteLocalTagAsync(GitRepository repository, GitTag tag, string operationName,
+            Func<Task<bool>> applyResult)
+        {
+            return RunDeletionAsync(repository, operationName,
+                token => _referenceService.DeleteLocalTagAsync(repository, tag, token), applyResult);
+        }
+
+        public Task<bool> DeleteRemoteTagAsync(GitRepository repository, GitRemoteTagDeletionPreview preview, string operationName,
+            Func<Task<bool>> applyResult)
+        {
+            return RunDeletionAsync(repository, operationName,
+                token => _referenceService.DeleteRemoteTagAsync(repository, preview, token), applyResult);
+        }
+
+        public Task<bool> RenameLocalBranchAsync(GitRepository repository, GitReferenceRenameRequest request,
+            string operationName, Func<GitReferenceRenameResult, Task<bool>> applyResult)
+        {
+            return RunRenameAsync(repository, operationName,
+                token => _referenceService.RenameLocalBranchAsync(repository, request, token), applyResult);
+        }
+
+        public Task<bool> RenameLocalTagAsync(GitRepository repository, GitReferenceRenameRequest request,
+            string operationName, Func<GitReferenceRenameResult, Task<bool>> applyResult)
+        {
+            return RunRenameAsync(repository, operationName,
+                token => _referenceService.RenameLocalTagAsync(repository, request, token), applyResult);
+        }
+
+        private Task<bool> RunRenameAsync(GitRepository repository, string operationName,
+            Func<CancellationToken, Task<GitReferenceRenameResult>> action, Func<GitReferenceRenameResult, Task<bool>> applyResult)
+        {
+            return _operationQueue.EnqueueAsync(repository.RootPath, operationName, async token =>
+            {
+                token.ThrowIfCancellationRequested();
+                GitReferenceRenameResult result = await action(token);
+                return await applyResult(result);
+            });
+        }
+
         public Task<bool> CreateFromBranchAsync(GitRepository repository, GitLocalBranch branch, string newName,
             string operationName, ReferenceBranchRunner runAndApply)
         {

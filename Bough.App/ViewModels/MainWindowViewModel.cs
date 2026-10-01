@@ -26,6 +26,7 @@ namespace Bough.App.ViewModels
         private readonly MainWindowRemoteCompletionPresenter _remoteCompletionPresenter;
         private readonly StringComparer _pathComparer;
         private readonly Dictionary<string, string> _autoOpenedConflicts;
+        private readonly Dictionary<string, int> _historyReferenceVersions;
         private GitRepository _repository;
         private string _repositoryName;
         private string _repositoryMeta;
@@ -51,6 +52,7 @@ namespace Bough.App.ViewModels
         private bool _isRemoteLoading;
         private bool _isRebaseInProgress;
         private int _repositoryRequestVersion;
+        private int _historyReferenceChangeVersion;
         private CancellationTokenSource _repositoryOpenCancellation;
 
         public MainWindowViewModel(GitRepositoryService repositoryService, GitOperationQueue operationQueue, MainWindowChildren children, ConflictResolutionViewModel conflicts, RepositoryListViewModel repositoryList, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
@@ -69,6 +71,7 @@ namespace Bough.App.ViewModels
                 _pathComparer = StringComparer.Ordinal;
             }
             _autoOpenedConflicts = new Dictionary<string, string>(_pathComparer);
+            _historyReferenceVersions = new Dictionary<string, int>(_pathComparer);
             History = children.History;
             LocalChanges = children.LocalChanges;
             References = children.References;
@@ -592,7 +595,7 @@ namespace Bough.App.ViewModels
             }
             if (loadHistory == true)
             {
-                _ = ObserveRepositoryAreaAsync(() => History.LoadAsync(repository), request, null);
+                _ = ObserveRepositoryAreaAsync(() => LoadHistoryAsync(repository, request), request, null);
             }
         }
 
@@ -878,9 +881,10 @@ namespace Bough.App.ViewModels
             }
             if (refreshHistory == true)
             {
+                _historyReferenceVersions[updated.RootPath] = ++_historyReferenceChangeVersion;
                 if (IsHistoryView == true)
                 {
-                    _ = ObserveRepositoryAreaAsync(() => History.LoadAsync(updated), request, null);
+                    _ = ObserveRepositoryAreaAsync(() => LoadHistoryAsync(updated, request), request, null);
                 }
             }
             try
@@ -891,6 +895,41 @@ namespace Bough.App.ViewModels
             {
                 StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
             }
+        }
+
+        private async Task LoadHistoryAsync(GitRepository repository, int request)
+        {
+            _historyReferenceVersions.TryGetValue(repository.RootPath, out int referenceVersion);
+            await History.LoadAsync(repository);
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
+            if (ReferenceEquals(History.CurrentRepository, repository) == false)
+            {
+                return;
+            }
+            if (History.IsLoading == true)
+            {
+                return;
+            }
+            if (History.ErrorText.Length > 0)
+            {
+                return;
+            }
+            if (_historyReferenceVersions.TryGetValue(repository.RootPath, out int currentVersion) == false)
+            {
+                return;
+            }
+            if (currentVersion != referenceVersion)
+            {
+                return;
+            }
+            _historyReferenceVersions.Remove(repository.RootPath);
         }
 
         private async void OnTagCommitSelected(string commitHash)
@@ -907,9 +946,14 @@ namespace Bough.App.ViewModels
             int request = _repositoryRequestVersion;
             try
             {
+                bool requiresHistoryLoad = _historyReferenceVersions.ContainsKey(requestRepository.RootPath);
                 if (ReferenceEquals(History.CurrentRepository, requestRepository) == false)
                 {
-                    await History.LoadAsync(requestRepository);
+                    requiresHistoryLoad = true;
+                }
+                if (requiresHistoryLoad == true)
+                {
+                    await LoadHistoryAsync(requestRepository, request);
                 }
                 if (request != _repositoryRequestVersion)
                 {
@@ -1141,17 +1185,20 @@ namespace Bough.App.ViewModels
             GitRepository repository = _repository;
             if (ReferenceEquals(History.CurrentRepository, repository) == true)
             {
-                if (History.IsLoading == true)
+                if (_historyReferenceVersions.ContainsKey(repository.RootPath) == false)
                 {
-                    return Task.CompletedTask;
-                }
-                if (History.ErrorText.Length == 0)
-                {
-                    return Task.CompletedTask;
+                    if (History.IsLoading == true)
+                    {
+                        return Task.CompletedTask;
+                    }
+                    if (History.ErrorText.Length == 0)
+                    {
+                        return Task.CompletedTask;
+                    }
                 }
             }
             int request = _repositoryRequestVersion;
-            _ = ObserveRepositoryAreaAsync(() => History.LoadAsync(repository), request, null);
+            _ = ObserveRepositoryAreaAsync(() => LoadHistoryAsync(repository, request), request, null);
             return Task.CompletedTask;
         }
 

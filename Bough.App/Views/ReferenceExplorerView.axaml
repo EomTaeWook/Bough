@@ -78,6 +78,10 @@
                 <MenuItem Click="DeleteRemoteBranchClicked" />
                 <MenuItem Click="OpenPullRequestClicked" />
                 <MenuItem Click="CopyTreeNameClicked" />
+                <MenuItem Click="DeleteLocalTagClicked" />
+                <MenuItem Click="DeleteRemoteTagClicked" />
+                <MenuItem Click="RenameLocalBranchClicked" />
+                <MenuItem Click="RenameLocalTagClicked" />
               </ContextMenu>
             </Border.ContextMenu>
             <Grid ColumnDefinitions="17,*,Auto" MinWidth="0" MinHeight="19">

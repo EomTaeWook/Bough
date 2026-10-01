@@ -47,7 +47,7 @@ Bough is designed to show the source of each conflicting change and preview the 
 
 - **Repository cloning:** Clone a remote URL or local path into a new folder, then add and open it from the recent repository list.
 - **Local changes:** Inspect changed files and diffs with line numbers, stage and unstage, commit, discard changes, stop tracking files, and ignore untracked files.
-- **History and references:** Browse the commit graph and file changes; create, switch, and delete branches; create tags.
+- **History and references:** Browse the commit graph and file changes; create, switch, delete, and rename branches; create, delete, and rename tags.
 - **Remotes and stashes:** Fetch, Pull, and Push; configure the default Pull strategy or choose one for a single Pull; save, apply, and delete stashes.
 - **Conflict resolution:** Inspect merge or rebase changes, choose individual sections or apply one choice to the remaining sections, edit and preview the result, then save and stage it or continue a rebase.
 
@@ -76,6 +76,8 @@ Use the **+** menu beside the Repositories heading in the left sidebar to add an
 Select **History** at the top to see commits from all local and remote references in a branch graph. Selecting a commit shows its author, date, message, and changed files in the details panel. The first 200 commits are shown; scroll down to load older history. Selecting and inspecting a commit does not change the repository.
 
 Right-click a branch under **Git references** on the left to delete a local or remote branch. Confirm the target before deletion. The checked-out branch and a remote's default branch cannot be deleted, and local branches with unmerged commits are kept. Deleting a remote branch affects the server and other users.
+
+For tags, **Delete tag** removes only the local tag, while **Delete remote tag** removes only the tag on the selected remote. Renaming a local branch or tag does not rename remote references. Annotated and signed tags keep their original tag object. Deletion and renaming run through the repository operation queue after confirmation.
 
 ## Data generation
 

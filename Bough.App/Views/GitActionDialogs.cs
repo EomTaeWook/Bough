@@ -68,6 +68,166 @@ namespace Bough.App.Views
             return await dialog.ShowDialog<bool>(owner);
         }
 
+        public static async Task<string> RequestTagDeletionRemoteAsync(Window owner, string tagName, string[] remoteNames, StringHelper stringHelper)
+        {
+            Window dialog = CreateWindow(TagText("TagDeleteSelectRemoteTitle", stringHelper));
+            TextBlock description = new()
+            {
+                Text = stringHelper.Format("TagDeleteRemotePrompt", tagName),
+                TextWrapping = TextWrapping.Wrap
+            };
+            ComboBox remotes = new() { ItemsSource = remoteNames, SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
+            Avalonia.Automation.AutomationProperties.SetName(remotes, TagText("TagDeleteSelectRemoteTitle", stringHelper));
+            ToolTip.SetTip(remotes, TagText("TagDeleteSelectRemoteTitle", stringHelper));
+            Button cancel = new() { Content = TagText("ReferenceCancel", stringHelper), IsCancel = true };
+            Button inspect = new() { Content = TagText("TagDeleteInspectRemoteAction", stringHelper), IsDefault = true };
+            inspect.Classes.Add("primary");
+            cancel.Click += delegate { dialog.Close(null); };
+            inspect.Click += delegate
+            {
+                if (remotes.SelectedItem is not string remoteName)
+                {
+                    return;
+                }
+                dialog.Close(remoteName);
+            };
+            Grid content = new() { Margin = new Thickness(20), RowDefinitions = new RowDefinitions("Auto,Auto,Auto"), RowSpacing = 12 };
+            StackPanel buttons = CreateButtons(cancel, inspect);
+            Grid.SetRow(remotes, 1);
+            Grid.SetRow(buttons, 2);
+            content.Children.Add(description);
+            content.Children.Add(remotes);
+            content.Children.Add(buttons);
+            dialog.Content = content;
+            dialog.Opened += delegate { remotes.Focus(); };
+            return await dialog.ShowDialog<string>(owner);
+        }
+
+        public static async Task<bool> RequestReferenceRenameAsync(Window owner, string title, string oldName, bool isTag,
+            Func<string, Task<string>> submit, StringHelper stringHelper)
+        {
+            Window dialog = CreateWindow(title);
+            TextBlock original = new() { Text = TagText("ReferenceRenameOriginalName", stringHelper) + ": " + oldName, TextWrapping = TextWrapping.Wrap };
+            TextBlock scope = new() { Text = TagText("ReferenceRenameLocalOnly", stringHelper), TextWrapping = TextWrapping.Wrap };
+            TextBlock tagHint = new() { Text = TagText("ReferenceRenameTagObjectsHint", stringHelper), IsVisible = isTag, TextWrapping = TextWrapping.Wrap };
+            string nameLabel = TagText("ReferenceRenameNewName", stringHelper);
+            TextBlock label = new() { Text = nameLabel };
+            TextBox name = new() { Text = oldName, PlaceholderText = nameLabel };
+            Avalonia.Automation.AutomationProperties.SetName(name, nameLabel);
+            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            TextBlock progress = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            Button cancel = new() { Content = TagText("ReferenceCancel", stringHelper), IsCancel = true, MinWidth = 80 };
+            Button rename = new() { Content = TagText("ReferenceRenameAction", stringHelper), IsDefault = true, MinWidth = 100 };
+            rename.Classes.Add("primary");
+            BranchCreationPresenter presenter = new(submit);
+
+            void UpdateControls()
+            {
+                name.IsEnabled = presenter.IsInputClosed == false;
+                cancel.IsEnabled = presenter.IsInputClosed == false;
+                rename.IsEnabled = presenter.IsInputClosed == false && string.IsNullOrWhiteSpace(name.Text) == false;
+                ApplyPrimaryButtonColors(dialog, rename, true);
+                progress.IsVisible = presenter.ProcessingName != null;
+                if (presenter.ProcessingName == null)
+                {
+                    return;
+                }
+                if (presenter.IsCancelRequested)
+                {
+                    progress.Text = stringHelper.Format("ReferenceRenameQueueClosing", presenter.ProcessingName);
+                    return;
+                }
+                progress.Text = stringHelper.Format("ReferenceRenameQueueProgress", presenter.ProcessingName, presenter.PendingCount);
+            }
+
+            void CloseAfterRequests(bool result)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (dialog.IsVisible == false)
+                    {
+                        return;
+                    }
+                    dialog.Close(result);
+                });
+            }
+
+            presenter.StateChanged += UpdateControls;
+            presenter.RequestFailed += delegate(string requestedName, string failure, Exception exception)
+            {
+                if (dialog.IsVisible == false)
+                {
+                    return;
+                }
+                if (exception != null)
+                {
+                    failure = DisplayFailure(exception, stringHelper);
+                }
+                error.Text = requestedName + ": " + failure;
+                error.IsVisible = true;
+            };
+            presenter.Finished += delegate(bool succeeded)
+            {
+                if (succeeded)
+                {
+                    CloseAfterRequests(true);
+                    return;
+                }
+                if (presenter.IsCancelRequested)
+                {
+                    CloseAfterRequests(false);
+                    return;
+                }
+                progress.IsVisible = false;
+                name.Focus();
+            };
+            cancel.Click += delegate { presenter.CancelPending(); };
+            dialog.Closing += delegate(object sender, WindowClosingEventArgs eventArgs)
+            {
+                if (presenter.IsRunning == false)
+                {
+                    return;
+                }
+                eventArgs.Cancel = true;
+                presenter.CancelPending();
+            };
+            dialog.Closed += delegate { presenter.CancelPending(); };
+            name.TextChanged += delegate
+            {
+                UpdateControls();
+                error.IsVisible = false;
+            };
+            rename.Click += delegate
+            {
+                if (presenter.IsInputClosed)
+                {
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(name.Text))
+                {
+                    return;
+                }
+                presenter.Submit(name.Text.Trim());
+            };
+            void ApplyColors()
+            {
+                error.Foreground = GetResourceBrush(dialog, "BoughBrushError");
+                progress.Foreground = GetResourceBrush(dialog, "BoughBrushTextMuted");
+                ApplyPrimaryButtonColors(dialog, rename, true);
+            }
+            dialog.Content = CreateContent(original, scope, tagHint, label, name, progress, error, CreateButtons(cancel, rename));
+            dialog.Opened += delegate
+            {
+                ApplyColors();
+                name.Focus();
+                name.SelectAll();
+            };
+            dialog.ActualThemeVariantChanged += delegate { ApplyColors(); };
+            bool result = await dialog.ShowDialog<bool>(owner);
+            await presenter.Completion;
+            return result;
+        }
+
         public static async Task<bool> RequestNewBranchAsync(Window owner, string title, string startPoint, string suggestedName, Func<string, Task<string>> submit, StringHelper stringHelper = null, bool remoteCheckout = false, string warning = null)
         {
             Window dialog = CreateWindow(title);

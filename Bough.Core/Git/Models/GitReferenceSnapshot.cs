@@ -73,14 +73,17 @@ namespace Bough.Core.Git.Models
 
     public class GitTag
     {
-        public GitTag(string name, string commitHash)
+        public GitTag(string name, string commitHash, string objectId)
         {
             Name = name;
             CommitHash = commitHash;
+            ObjectId = objectId;
         }
 
         public string Name { get; }
         public string CommitHash { get; }
+        public string ObjectId { get; }
+        public string ReferenceName { get { return "refs/tags/" + Name; } }
     }
 
     public class GitStash

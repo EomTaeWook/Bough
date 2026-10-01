@@ -6,7 +6,8 @@
 
 - 원격 URL 또는 로컬 경로에서 지정한 새 경로 또는 기존 빈 폴더로 저장소를 복제하고 최근 목록에 등록해 여는 흐름. 임시 bare 원격에서 새 경로·기존 빈 폴더의 실제 복제와 잘못된 목적지 거부를 확인했다.
 - Local Changes의 diff·줄 선택, 스테이징·해제, 커밋, 변경 폐기·추적 중지·무시와 Stash 작업.
-- History의 커밋 그래프·상세·파일 탐색과 브랜치 생성·전환·삭제, 태그 생성.
+- History의 커밋 그래프·상세·파일 탐색과 브랜치 생성·전환·삭제, 태그 생성과 로컬·원격 태그 삭제. 태그 삭제 후 숨겨진 History는 저장소별 참조 변경 상태를 기록하고 복귀 시 다시 읽도록 연결했다. 이번 MainWindow 연결은 검증 미실시다.
+- 로컬 브랜치·태그 이름 변경: 입력창과 FIFO Presenter, 실행 직전 대상 확인, 강제 덮어쓰기 없는 브랜치 변경과 태그 참조 트랜잭션을 연결했다. 주석·서명 태그 객체와 원격 참조는 유지하며, 관련 문자열 24키는 Excel·JSON에 반영했다. GitCommandRunner stdin API는 기존 RunWithInputAsync(root, arguments, standardInput, CancellationToken=default) 단일 public 계약을 유지한다. Runner 정정은 검증 미실시다.
 - Fetch·Pull·Push, 설정 가능한 기본 Pull 방식, 충돌 구간별·일괄 선택과 저장·스테이징, 리베이스 계속.
 - 저장소별 FIFO Git 작업 큐, 한국어·영어 문자열 리소스, 밝음·어두움 테마.
 - 1차 MVP 책임 분리: Local Changes·Stash·Git Settings, History·참조, 충돌 Save/Stage·원격 완료 흐름에 Core 서비스와 기능별 Presenter를 연결했다. 세부 경계는 [Avalonia MVP 적용](AvaloniaMvpAdoption.md)을 따른다.

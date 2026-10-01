@@ -36,7 +36,7 @@ namespace Bough.Core.Git
             return RunCoreAsync(_executableSettings.ExecutablePath, workingDirectory, arguments, standardErrorProgress, allowFailure, cancellationToken, processStarted);
         }
 
-        private async Task<GitCommandResult> RunCoreAsync(string executablePath, string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure, CancellationToken cancellationToken, Action processStarted)
+        private async Task<GitCommandResult> RunCoreAsync(string executablePath, string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure, CancellationToken cancellationToken, Action processStarted, string standardInput = null)
         {
             ProcessStartInfo startInfo = new()
             {
@@ -49,6 +49,12 @@ namespace Bough.Core.Git
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
+
+            if (standardInput != null)
+            {
+                startInfo.RedirectStandardInput = true;
+                startInfo.StandardInputEncoding = new UTF8Encoding(false);
+            }
 
             foreach (string argument in arguments)
             {
@@ -74,32 +80,46 @@ namespace Bough.Core.Git
             try
             {
                 processStarted?.Invoke();
-            }
-            catch
-            {
-                if (process.HasExited == false)
-                {
-                    process.Kill(true);
-                    await process.WaitForExitAsync(CancellationToken.None);
-                }
-                throw;
-            }
 
-            Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-            Task<string> errorTask;
-            if (standardErrorProgress == null)
-            {
-                errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
-            }
-            else
-            {
-                errorTask = ReadErrorWithProgressAsync(process.StandardError, standardErrorProgress, cancellationToken);
-            }
-            try
-            {
+                Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+                Task<string> errorTask;
+                if (standardErrorProgress == null)
+                {
+                    errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+                }
+                else
+                {
+                    errorTask = ReadErrorWithProgressAsync(process.StandardError, standardErrorProgress, cancellationToken);
+                }
+
+                if (standardInput != null)
+                {
+                    await process.StandardInput.WriteAsync(standardInput.AsMemory(), cancellationToken);
+                    await process.StandardInput.FlushAsync(cancellationToken);
+                    process.StandardInput.Close();
+                }
+
                 await process.WaitForExitAsync(cancellationToken);
+                await Task.WhenAll(outputTask, errorTask);
+                GitCommandResult result = new(process.ExitCode, await outputTask, await errorTask);
+
+                if (allowFailure == false)
+                {
+                    if (result.ExitCode != 0)
+                    {
+                        string error = result.Error.Trim();
+                        if (error.Length == 0)
+                        {
+                            throw new GitException(GitException.ExitWithoutErrorMessageCode, null, result.ExitCode);
+                        }
+
+                        throw new GitException(error);
+                    }
+                }
+
+                return result;
             }
-            catch (OperationCanceledException)
+            finally
             {
                 if (process.HasExited == false)
                 {
@@ -112,25 +132,7 @@ namespace Bough.Core.Git
                     }
                     await process.WaitForExitAsync(CancellationToken.None);
                 }
-                throw;
             }
-            GitCommandResult result = new(process.ExitCode, await outputTask, await errorTask);
-
-            if (allowFailure == false)
-            {
-                if (result.ExitCode != 0)
-                {
-                    string error = result.Error.Trim();
-                    if (error.Length == 0)
-                    {
-                        throw new GitException(GitException.ExitWithoutErrorMessageCode, null, result.ExitCode);
-                    }
-
-                    throw new GitException(error);
-                }
-            }
-
-            return result;
         }
 
         private static async Task<string> ReadErrorWithProgressAsync(StreamReader reader, IProgress<string> progress, CancellationToken cancellationToken)
@@ -171,83 +173,14 @@ namespace Bough.Core.Git
             return output.ToString();
         }
 
-        public async Task<GitCommandResult> RunWithInputAsync(string workingDirectory, IEnumerable<string> arguments, string standardInput, CancellationToken cancellationToken = default)
+        public Task<GitCommandResult> RunWithInputAsync(string workingDirectory, IEnumerable<string> arguments, string standardInput, CancellationToken cancellationToken = default)
         {
             if (standardInput == null)
             {
                 throw new ArgumentNullException(nameof(standardInput));
             }
 
-            ProcessStartInfo startInfo = new()
-            {
-                FileName = _executableSettings.ExecutablePath,
-                WorkingDirectory = workingDirectory,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                StandardInputEncoding = new UTF8Encoding(false),
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            foreach (string argument in arguments)
-            {
-                startInfo.ArgumentList.Add(argument);
-            }
-
-            using Process process = new();
-            process.StartInfo = startInfo;
-            try
-            {
-                process.Start();
-            }
-            catch (InvalidOperationException exception)
-            {
-                throw new GitException(GitException.ProcessStartFailedCode, exception, startInfo.FileName);
-            }
-            catch (System.ComponentModel.Win32Exception exception)
-            {
-                throw new GitException(GitException.ProcessStartFailedCode, exception, startInfo.FileName);
-            }
-
-            try
-            {
-                Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-                Task<string> errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
-                await process.StandardInput.WriteAsync(standardInput.AsMemory(), cancellationToken);
-                process.StandardInput.Close();
-                await process.WaitForExitAsync(cancellationToken);
-                GitCommandResult result = new(process.ExitCode, await outputTask, await errorTask);
-                if (result.ExitCode != 0)
-                {
-                    string error = result.Error.Trim();
-                    if (error.Length == 0)
-                    {
-                        throw new GitException(GitException.ExitWithoutErrorMessageCode, null, result.ExitCode);
-                    }
-
-                    throw new GitException(error);
-                }
-
-                return result;
-            }
-            finally
-            {
-                if (process.HasExited == false)
-                {
-                    try
-                    {
-                        process.Kill(true);
-                    }
-                    catch (InvalidOperationException)
-                    {
-                    }
-
-                    await process.WaitForExitAsync(CancellationToken.None);
-                }
-            }
+            return RunCoreAsync(_executableSettings.ExecutablePath, workingDirectory, arguments, null, false, cancellationToken, null, standardInput);
         }
 
         public async Task<byte[]> RunBytesAsync(string workingDirectory, IEnumerable<string> arguments, int maxBytes, CancellationToken cancellationToken = default)
