@@ -40,6 +40,27 @@
       <Setter Property="Background" Value="{DynamicResource BoughBrushDiffHunkSurface}" />
       <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushDiffHunk}" />
     </Style>
+    <Style Selector="Button.repositoryActions">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextMuted}" />
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border x:Name="RepositoryActionsSurface" Background="Transparent" BorderBrush="Transparent"
+                  BorderThickness="1" CornerRadius="5">
+            <Path Width="14" Height="14" Data="M 1,7 L 13,7 M 7,1 L 7,13"
+                  Stroke="{TemplateBinding Foreground}" StrokeThickness="1.5" StrokeLineCap="Round"
+                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="Button.repositoryActions:pointerover /template/ Border#RepositoryActionsSurface">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+    </Style>
+    <Style Selector="Button.repositoryActions:focus-visible /template/ Border#RepositoryActionsSurface">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" />
+    </Style>
     <Style Selector="Button.repository">
       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
       <Setter Property="Background" Value="Transparent" />
@@ -162,8 +183,8 @@
           <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="10,6,0,8">
             <TextBlock Grid.Column="0" Text="{Binding RepositoryList.RepositoriesHeadingText}" FontSize="14" FontWeight="SemiBold"
                        VerticalAlignment="Center" />
-            <Button x:Name="RepositoryActionsButton" Grid.Column="1" Content="+"
-                    Width="30" Height="30" MinWidth="0" MinHeight="0" Padding="0" FontSize="20"
+            <Button x:Name="RepositoryActionsButton" Grid.Column="1" Classes="repositoryActions"
+                    Width="30" Height="30" MinWidth="0" MinHeight="0" Padding="0"
                     Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Focusable="True">
               <Button.Flyout>
