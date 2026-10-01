@@ -5444,14 +5444,14 @@
   {
     "Id": 3004,
     "Name": "CloneDestinationPreserved",
-    "Kor": "생성 위치에 파일이 남아 있습니다: {0}. 수동으로 확인하세요.",
-    "Eng": "Files remain at {0}. Review them before reuse."
+    "Kor": "복제 위치가 남아 있습니다: {0}. 기존 폴더일 수도 있으므로 내용을 확인하세요.",
+    "Eng": "The destination still exists at {0}. It may have existed before cloning; review it before reuse."
   },
   {
     "Id": 3005,
     "Name": "CloneDestinationAbsent",
-    "Kor": "생성 위치에 폴더가 만들어지지 않았습니다.",
-    "Eng": "No destination folder was created."
+    "Kor": "복제 위치에 폴더가 없습니다.",
+    "Eng": "No destination folder exists."
   },
   {
     "Id": 3006,
@@ -5475,13 +5475,13 @@
     "Id": 3009,
     "Name": "CloneDestinationLabel",
     "Kor": "복제할 폴더",
-    "Eng": "Destination folder"
+    "Eng": "Clone destination folder"
   },
   {
     "Id": 3010,
     "Name": "CloneDestinationHint",
-    "Kor": "선택한 폴더에 바로 복제합니다. 새 폴더 경로를 직접 입력할 수도 있습니다.",
-    "Eng": "Clone into the selected folder, or enter a path for a new folder."
+    "Kor": "기존 빈 폴더 또는 새 폴더의 절대 경로를 입력하세요.",
+    "Eng": "Enter an absolute path to an existing empty folder or a new folder."
   },
   {
     "Id": 3011,
@@ -5493,7 +5493,7 @@
     "Id": 3012,
     "Name": "ClonePickDestinationTitle",
     "Kor": "복제할 폴더 선택",
-    "Eng": "Choose destination folder"
+    "Eng": "Choose a destination folder"
   },
   {
     "Id": 3013,
@@ -5511,24 +5511,24 @@
     "Id": 3015,
     "Name": "CloneDestinationAbsoluteRequired",
     "Kor": "복제할 폴더의 절대 경로를 입력하세요.",
-    "Eng": "Enter an absolute path for the destination folder."
+    "Eng": "Enter an absolute destination folder path."
   },
   {
     "Id": 3016,
     "Name": "CloneDestinationRootForbidden",
-    "Kor": "드라이브 또는 파일 시스템 루트에는 복제할 수 없습니다.",
+    "Kor": "드라이브 또는 파일 시스템의 루트 폴더에는 복제할 수 없습니다.",
     "Eng": "Cannot clone into a drive or file system root."
   },
   {
     "Id": 3017,
     "Name": "CloneDestinationParentMissing",
     "Kor": "복제할 폴더의 상위 폴더가 존재하지 않습니다.",
-    "Eng": "The destination folder's parent does not exist."
+    "Eng": "The parent folder of the destination does not exist."
   },
   {
     "Id": 3018,
     "Name": "CloneDestinationFileExists",
-    "Kor": "복제 위치에 파일이 이미 있습니다: {0}",
+    "Kor": "복제할 위치에 파일이 이미 존재합니다: {0}",
     "Eng": "A file already exists at the destination: {0}"
   },
   {
