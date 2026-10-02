@@ -6,6 +6,9 @@
              x:DataType="vm:GitSettingsViewModel"
              Background="{DynamicResource BoughBrushCanvas}">
   <UserControl.Styles>
+    <Style Selector="Button">
+      <Setter Property="MinHeight" Value="32" />
+    </Style>
     <Style Selector="TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
     </Style>
@@ -17,24 +20,24 @@
     </Style>
   </UserControl.Styles>
   <Grid RowDefinitions="Auto,*">
-    <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="22,15">
-      <Grid ColumnDefinitions="*,Auto">
-        <StackPanel Grid.Column="0" Spacing="4">
+    <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="12">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <StackPanel Grid.Column="0" Spacing="8">
           <TextBlock Text="{Binding SettingsTitle}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
           <TextBlock Text="{Binding GitSettingsHint}" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" />
         </StackPanel>
-        <Button Grid.Column="1" Content="{Binding RefreshLabel}" Command="{Binding RefreshCommand}" />
+        <Button Grid.Column="1" Content="{Binding RefreshLabel}" Command="{Binding RefreshCommand}" VerticalAlignment="Center" />
       </Grid>
     </Border>
 
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-      <StackPanel Margin="22" Spacing="20" MaxWidth="700" HorizontalAlignment="Left">
+      <StackPanel Margin="12" Spacing="16" MaxWidth="700" HorizontalAlignment="Left">
         <StackPanel Spacing="8">
           <TextBlock Text="{Binding AppearanceHeading}" FontSize="11" FontWeight="Bold"
                      Foreground="{DynamicResource BoughBrushTextMuted}" />
           <TextBlock Text="{Binding AppearanceDescription}" FontSize="11" TextWrapping="Wrap"
                      Foreground="{DynamicResource BoughBrushTextSubtle}" />
-          <StackPanel Orientation="Horizontal" Spacing="14">
+          <StackPanel Orientation="Horizontal" Spacing="8">
             <RadioButton Content="{Binding AppearanceLightLabel}" GroupName="AppearanceTheme"
                          IsChecked="{Binding IsLightAppearance, Mode=OneWay}" Click="LightAppearanceClicked"
                          AutomationProperties.Name="{Binding AppearanceLightLabel}" />
@@ -59,10 +62,10 @@
           <WrapPanel Orientation="Horizontal">
             <RadioButton Content="{Binding PullStrategyFastForwardOnlyLabel}" GroupName="DefaultPullStrategy"
                          IsChecked="{Binding IsFastForwardOnlyPull, Mode=OneWay}" Click="FastForwardOnlyPullClicked"
-                         AutomationProperties.Name="{Binding PullStrategyFastForwardOnlyLabel}" Margin="0,0,14,0" />
+                         AutomationProperties.Name="{Binding PullStrategyFastForwardOnlyLabel}" Margin="0,0,8,0" />
             <RadioButton Content="{Binding PullStrategyMergeLabel}" GroupName="DefaultPullStrategy"
                          IsChecked="{Binding IsMergePull, Mode=OneWay}" Click="MergePullClicked"
-                         AutomationProperties.Name="{Binding PullStrategyMergeLabel}" Margin="0,0,14,0" />
+                         AutomationProperties.Name="{Binding PullStrategyMergeLabel}" Margin="0,0,8,0" />
             <RadioButton Content="{Binding PullStrategyRebaseLabel}" GroupName="DefaultPullStrategy"
                          IsChecked="{Binding IsRebasePull, Mode=OneWay}" Click="RebasePullClicked"
                          AutomationProperties.Name="{Binding PullStrategyRebaseLabel}" />
@@ -116,7 +119,7 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:GitHubRemoteAccountItem">
                 <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="5" Padding="12" Margin="0,4">
-                  <StackPanel Spacing="6">
+                  <StackPanel Spacing="8">
                     <TextBlock Text="{Binding RemoteName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
                     <TextBlock Text="{Binding FetchUrlText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding PushUrlText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />

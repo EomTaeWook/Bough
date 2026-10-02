@@ -24,6 +24,8 @@ This screen shows a reproduced text merge conflict. Compare both changes, choose
 
 ![Bough History showing the commit graph, changed files, and code preview](Docs/images/history.png)
 
+See the branch graph and reference badges together, then inspect the selected commit and its changed files.
+
 ## Why Bough?
 
 Conflict resolution in existing Git GUIs can be difficult when:

@@ -24,8 +24,8 @@
   </UserControl.Styles>
 
   <Grid RowDefinitions="Auto,*">
-    <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="10,7">
-      <StackPanel Spacing="2">
+    <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="12">
+      <StackPanel Spacing="8">
         <TextBlock Text="{Binding ReferenceTitle}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}"
                    TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding ReferenceTitle}" />
         <TextBlock Text="{Binding CurrentBranchDisplay}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}"
@@ -35,7 +35,7 @@
 
     <TreeView x:Name="ReferenceTree" Grid.Row="1" ItemsSource="{Binding TreeRoots}"
               SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}"
-              KeyDown="TreeKeyDown" Margin="3,5,3,5"
+              KeyDown="TreeKeyDown" Margin="4,8,4,8"
               Background="{DynamicResource BoughBrushSidebar}" Foreground="{DynamicResource BoughBrushText}"
               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
               ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -73,21 +73,22 @@
                 <MenuItem Click="OpenStashesClicked" />
                 <MenuItem Click="SwitchMenuBranchClicked" />
                 <MenuItem Click="CreateFromBranchClicked" />
-                <MenuItem Click="DeleteLocalBranchClicked" />
                 <MenuItem Click="TrackMenuRemoteClicked" />
-                <MenuItem Click="DeleteRemoteBranchClicked" />
                 <MenuItem Click="OpenPullRequestClicked" />
-                <MenuItem Click="CopyTreeNameClicked" />
-                <MenuItem Click="DeleteTagClicked" />
                 <MenuItem Click="RenameLocalBranchClicked" />
                 <MenuItem Click="RenameLocalTagClicked" />
+                <MenuItem Click="CopyTreeNameClicked" />
+                <Separator />
+                <MenuItem Click="DeleteLocalBranchClicked" />
+                <MenuItem Click="DeleteRemoteBranchClicked" />
+                <MenuItem Click="DeleteTagClicked" />
               </ContextMenu>
             </Border.ContextMenu>
-            <Grid ColumnDefinitions="17,*,Auto" MinWidth="0" MinHeight="19">
+            <Grid ColumnDefinitions="20,*,Auto" MinWidth="0" MinHeight="19">
               <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="12"
-                         VerticalAlignment="Center" Foreground="{DynamicResource BoughBrushTextMuted}" />
+                         HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource BoughBrushTextMuted}" />
               <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="12"
-                         MinWidth="0" ToolTip.Tip="{Binding ToolTipText}"
+                         MinWidth="0" Margin="4,0,0,0" ToolTip.Tip="{Binding ToolTipText}"
                          Classes.referenceSection="{Binding IsSection}"
                          Classes.referenceCurrent="{Binding IsCurrent}"
                          Classes.referenceEmpty="{Binding IsEmpty}"

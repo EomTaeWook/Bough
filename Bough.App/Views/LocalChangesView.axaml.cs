@@ -89,6 +89,7 @@ namespace Bough.App.Views
 
         private void BindContextMenuLabels()
         {
+            UnstagedDangerSeparator.IsVisible = false;
             _contextStagedRepository = null;
             _contextStagedFile = null;
             _contextDiscardPaths = Array.Empty<string>();
@@ -511,6 +512,7 @@ namespace Bough.App.Views
 
         private void UnstagedContextOpened(object sender, RoutedEventArgs eventArgs)
         {
+            UnstagedDangerSeparator.IsVisible = false;
             if (DataContext is not LocalChangesViewModel viewModel)
             {
                 DiscardContextItem.IsEnabled = false;
@@ -555,6 +557,7 @@ namespace Bough.App.Views
             bool canIgnore = viewModel.CanIgnorePaths(_contextDiscardPaths);
             IgnoreContextItem.IsVisible = canIgnore;
             IgnoreContextItem.IsEnabled = canIgnore;
+            UnstagedDangerSeparator.IsVisible = canIgnore;
             IgnoreRepositoryItem.Header = viewModel.IgnoreRepositoryText;
             IgnoreLocalItem.Header = viewModel.IgnoreLocalText;
             ToolTip.SetTip(IgnoreRepositoryItem, viewModel.IgnoreRepositoryText);

@@ -12,6 +12,7 @@
 - Fetch·Pull·Push, 설정 가능한 기본 Pull 방식, 충돌 구간별·일괄 선택과 저장·스테이징, 리베이스 계속.
 - 저장소별 FIFO Git 작업 큐, 한국어·영어 문자열 리소스, 밝음·어두움 테마.
 - 1차 MVP 책임 분리: Local Changes·Stash·Git Settings, History·참조, 충돌 Save/Stage·원격 완료 흐름에 Core 서비스와 기능별 Presenter를 연결했다. 세부 경계는 [Avalonia MVP 적용](AvaloniaMvpAdoption.md)을 따른다.
+- [UI 간격과 동작 배치](../Design/UIConsistency.md): 담당 화면의 8/12/16px 간격, 32px 버튼, 확인창 버튼 배치와 위험 동작 메뉴 그룹을 정리했다. 사이드바·도구막대·참조·History·Local Changes·Stash·설정과 소유 대화상자를 포함한다. 구현 완료 보고 기준으로 반영하며 별도 검증은 미실시다.
 
 ## 확인한 UI
 

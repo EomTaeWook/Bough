@@ -4,18 +4,18 @@
         Width="600" MinWidth="480" Height="400" MinHeight="340"
         CanResize="True" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
         Background="{DynamicResource BoughBrushCanvas}">
-  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="12" Margin="20">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="16" Margin="12">
     <TextBlock x:Name="HeadingText" Grid.Row="0" FontSize="18" FontWeight="SemiBold"
                Foreground="{DynamicResource BoughBrushText}" />
-    <StackPanel Grid.Row="1" Spacing="5">
+    <StackPanel Grid.Row="1" Spacing="8">
       <TextBlock x:Name="RemoteLabel" Foreground="{DynamicResource BoughBrushText}" />
       <TextBox x:Name="RemoteInput" />
     </StackPanel>
-    <StackPanel Grid.Row="2" Spacing="5">
+    <StackPanel Grid.Row="2" Spacing="8">
       <TextBlock x:Name="DestinationLabel" Foreground="{DynamicResource BoughBrushText}" />
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
         <TextBox x:Name="DestinationInput" Grid.Column="0" />
-        <Button x:Name="BrowseButton" Grid.Column="1" Click="BrowseClicked" />
+        <Button x:Name="BrowseButton" Grid.Column="1" Click="BrowseClicked" Height="32" MinWidth="80" Padding="12,4" />
       </Grid>
       <TextBlock x:Name="DestinationHint" Foreground="{DynamicResource BoughBrushTextMuted}"
                  TextWrapping="Wrap" FontSize="11" />
@@ -30,8 +30,8 @@
       </StackPanel>
     </ScrollViewer>
     <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-      <Button x:Name="CancelButton" Click="CancelClicked" />
-      <Button x:Name="StartButton" Click="StartClicked" IsDefault="True" Classes="primary"
+      <Button x:Name="CancelButton" Click="CancelClicked" Height="32" MinWidth="80" Padding="12,4" />
+      <Button x:Name="StartButton" Click="StartClicked" IsDefault="True" Classes="primary" Height="32" MinWidth="80" Padding="12,4"
               Background="{DynamicResource BoughBrushAccent}"
               Foreground="{DynamicResource BoughBrushAccentText}" />
     </StackPanel>

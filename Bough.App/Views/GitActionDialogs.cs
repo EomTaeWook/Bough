@@ -61,12 +61,7 @@ namespace Bough.App.Views
             Button confirm = new() { Content = confirmText };
             cancel.Click += delegate { dialog.Close(false); };
             confirm.Click += delegate { dialog.Close(true); };
-            Grid content = new() { Margin = new Thickness(20), RowDefinitions = new RowDefinitions("*,Auto"), RowSpacing = 12 };
-            StackPanel buttons = CreateButtons(cancel, confirm);
-            Grid.SetRow(buttons, 1);
-            content.Children.Add(description);
-            content.Children.Add(buttons);
-            dialog.Content = content;
+            dialog.Content = CreateContent(description, CreateButtons(cancel, confirm));
             return await dialog.ShowDialog<bool>(owner);
         }
 
@@ -79,7 +74,7 @@ namespace Bough.App.Views
             dialog.CanResize = true;
             RadioButton localScope = new() { Content = TagText("TagDeleteDialogLocalScope", stringHelper), GroupName = "TagDeletionScope", IsChecked = true };
             RadioButton remoteScope = new() { Content = TagText("TagDeleteDialogRemoteScope", stringHelper), GroupName = "TagDeletionScope" };
-            StackPanel scopes = new() { Orientation = Orientation.Horizontal, Spacing = 16 };
+            StackPanel scopes = new() { Orientation = Orientation.Horizontal, Spacing = 8 };
             scopes.Children.Add(localScope);
             scopes.Children.Add(remoteScope);
             TextBlock localImpact = new()
@@ -92,7 +87,7 @@ namespace Bough.App.Views
             ComboBox remotes = new() { ItemsSource = remoteNames, SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
             Avalonia.Automation.AutomationProperties.SetName(remotes, TagText("TagDeleteSelectRemoteTitle", stringHelper));
             ToolTip.SetTip(remotes, TagText("TagDeleteSelectRemoteTitle", stringHelper));
-            Button reload = new() { Content = TagText("TagDeleteDialogReload", stringHelper) };
+            Button reload = new() { Content = TagText("TagDeleteDialogReload", stringHelper), Height = 32, MinWidth = 80 };
             Grid remoteSelection = new() { ColumnDefinitions = new ColumnDefinitions("*,Auto"), ColumnSpacing = 8 };
             Grid.SetColumn(reload, 1);
             remoteSelection.Children.Add(remotes);
@@ -101,7 +96,7 @@ namespace Bough.App.Views
             CheckBox remoteConfirmation = new() { IsVisible = false };
             TextBlock confirmationLabel = new() { TextWrapping = TextWrapping.Wrap };
             remoteConfirmation.Content = confirmationLabel;
-            StackPanel remoteContent = new() { Spacing = 12, IsVisible = false };
+            StackPanel remoteContent = new() { Spacing = 8, IsVisible = false };
             remoteContent.Children.Add(remoteHint);
             remoteContent.Children.Add(remoteLabel);
             remoteContent.Children.Add(remoteSelection);
@@ -233,8 +228,8 @@ namespace Bough.App.Views
                 }
             };
             dialog.Closed += delegate { presenter.Close(); };
-            Grid content = new() { Margin = new Thickness(20), RowDefinitions = new RowDefinitions("*,Auto"), RowSpacing = 12 };
-            StackPanel body = new() { Spacing = 12 };
+            Grid content = new() { Margin = new Thickness(12), RowDefinitions = new RowDefinitions("*,Auto"), RowSpacing = 16 };
+            StackPanel body = new() { Spacing = 8 };
             body.Children.Add(scopes);
             body.Children.Add(localImpact);
             body.Children.Add(remoteContent);
@@ -685,6 +680,7 @@ namespace Bough.App.Views
                 Title = title,
                 Width = 480,
                 MinHeight = 170,
+                MaxHeight = 640,
                 SizeToContent = SizeToContent.Height,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 CanResize = false
@@ -728,18 +724,58 @@ namespace Bough.App.Views
             return dialog.Foreground;
         }
 
-        private static StackPanel CreateContent(params Control[] controls)
+        private static Grid CreateContent(params Control[] controls)
         {
-            StackPanel content = new() { Margin = new Avalonia.Thickness(20), Spacing = 12 };
-            foreach (Control control in controls)
+            Grid content = new() { Margin = new Thickness(12), RowDefinitions = new RowDefinitions("*,Auto"), RowSpacing = 16 };
+            StackPanel body = new() { Spacing = 8 };
+            for (int index = 0; index < controls.Length - 1; index++)
             {
-                content.Children.Add(control);
+                body.Children.Add(controls[index]);
             }
+            ScrollViewer scroll = new()
+            {
+                Content = body,
+                VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled
+            };
+            Control buttons = controls[controls.Length - 1];
+            Grid.SetRow(buttons, 1);
+            content.Children.Add(scroll);
+            content.Children.Add(buttons);
             return content;
         }
 
         private static StackPanel CreateButtons(Button cancel, Button confirm)
         {
+            cancel.MinWidth = Math.Max(80, cancel.MinWidth);
+            confirm.MinWidth = Math.Max(80, confirm.MinWidth);
+            cancel.Height = Math.Max(32, cancel.MinHeight);
+            confirm.Height = Math.Max(32, confirm.MinHeight);
+            if (confirm.Classes.Contains("primary") == false)
+            {
+                confirm.Classes.Add("primary");
+            }
+            confirm.AttachedToVisualTree += delegate
+            {
+                if (TopLevel.GetTopLevel(confirm) is not Window dialog)
+                {
+                    return;
+                }
+                ApplyPrimaryButtonColors(dialog, confirm, true);
+                dialog.ActualThemeVariantChanged += delegate { ApplyPrimaryButtonColors(dialog, confirm, true); };
+            };
+            confirm.PropertyChanged += delegate(object sender, AvaloniaPropertyChangedEventArgs eventArgs)
+            {
+                if (eventArgs.Property != Button.IsEnabledProperty)
+                {
+                    return;
+                }
+                if (TopLevel.GetTopLevel(confirm) is not Window dialog)
+                {
+                    return;
+                }
+                ApplyPrimaryButtonColors(dialog, confirm, true);
+            };
             StackPanel buttons = new() { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right };
             buttons.Children.Add(cancel);
             buttons.Children.Add(confirm);

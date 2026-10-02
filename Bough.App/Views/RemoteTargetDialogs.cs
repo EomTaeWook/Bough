@@ -334,7 +334,7 @@ namespace Bough.App.Views
 
         private static StackPanel CreateContent(params Control[] controls)
         {
-            StackPanel content = new() { Margin = new Thickness(20), Spacing = 10 };
+            StackPanel content = new() { Margin = new Thickness(12), Spacing = 8 };
             foreach (Control control in controls)
             {
                 content.Children.Add(control);
@@ -344,7 +344,13 @@ namespace Bough.App.Views
 
         private static StackPanel CreateButtons(Button cancel, Button confirm)
         {
-            StackPanel buttons = new() { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Spacing = 8 };
+            cancel.Height = 32;
+            cancel.MinWidth = 80;
+            cancel.Padding = new Thickness(12, 4);
+            confirm.Height = 32;
+            confirm.MinWidth = 80;
+            confirm.Padding = new Thickness(12, 4);
+            StackPanel buttons = new() { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Spacing = 8, Margin = new Thickness(0, 8, 0, 0) };
             buttons.Children.Add(cancel);
             buttons.Children.Add(confirm);
             return buttons;

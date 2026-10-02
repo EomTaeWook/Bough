@@ -9,7 +9,8 @@
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
     </Style>
     <Style Selector="Button">
-      <Setter Property="Padding" Value="14,8" />
+      <Setter Property="Padding" Value="12,4" />
+      <Setter Property="Height" Value="32" />
       <Setter Property="CornerRadius" Value="7" />
       <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
@@ -73,7 +74,7 @@
     <Grid Grid.Row="0" ColumnDefinitions="280,*">
       <Border Grid.Column="0" Background="{DynamicResource BoughBrushInset}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,1,0">
           <Grid Grid.Column="0" RowDefinitions="Auto,*">
-          <StackPanel Grid.Row="0" Margin="6,8,6,14" Spacing="5">
+          <StackPanel Grid.Row="0" Margin="12,12,12,16" Spacing="8">
             <TextBlock Text="{Binding FilesToResolveText}" FontSize="16" FontWeight="SemiBold" />
             <TextBlock Text="{Binding ConflictCountText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" />
           </StackPanel>
@@ -98,28 +99,28 @@
       </Border>
       <Grid Grid.Column="1" RowDefinitions="64,Auto,Auto,Auto,*">
         <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
-          <Grid ColumnDefinitions="*,Auto,Auto" Margin="18,0">
+          <Grid ColumnDefinitions="*,Auto,Auto" Margin="16,0">
             <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="3">
               <TextBlock Text="{Binding CurrentFilePath}" FontSize="15" FontWeight="SemiBold"
                          TextTrimming="CharacterEllipsis" />
-              <StackPanel Orientation="Horizontal" Spacing="10">
+              <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock Text="{Binding CurrentHunkText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" />
                 <TextBlock Text="{Binding RebaseProgressLabel}" IsVisible="{Binding IsRebaseConflict}"
                            Foreground="{DynamicResource BoughBrushWarning}" FontSize="12" FontWeight="SemiBold" />
               </StackPanel>
             </StackPanel>
             <Button Grid.Column="1" Content="{Binding PreviousButtonText}" Command="{Binding PreviousHunkCommand}"
-                    VerticalAlignment="Center" Margin="0,0,6,0" />
+                    VerticalAlignment="Center" Margin="0,0,8,0" />
             <Button Grid.Column="2" Content="{Binding NextButtonText}" Command="{Binding NextHunkCommand}"
                     VerticalAlignment="Center" />
           </Grid>
         </Border>
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="16,14">
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="16" ColumnSpacing="8">
           <Border Grid.Column="0" Background="{DynamicResource BoughBrushDiffAddedSurface}" BorderBrush="{DynamicResource BoughBrushDiffAdded}" BorderThickness="1"
-                  CornerRadius="10" Margin="0,0,6,0">
+                  CornerRadius="10">
             <Grid RowDefinitions="60,Auto">
-              <Border Grid.Row="0" Background="{DynamicResource BoughBrushDiffAddedSurface}" CornerRadius="9,9,0,0" Padding="15,10">
+              <Border Grid.Row="0" Background="{DynamicResource BoughBrushDiffAddedSurface}" CornerRadius="9,9,0,0" Padding="12,8">
                 <StackPanel Spacing="4">
                   <TextBlock Text="{Binding CurrentChangeLabel}" Foreground="{DynamicResource BoughBrushDiffAdded}" FontWeight="SemiBold" />
                   <TextBlock Text="{Binding OursSource}" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11"
@@ -133,9 +134,9 @@
           </Border>
 
           <Border Grid.Column="1" Background="{DynamicResource BoughBrushDiffHunkSurface}" BorderBrush="{DynamicResource BoughBrushDiffHunk}" BorderThickness="1"
-                  CornerRadius="10" Margin="6,0,0,0">
+                  CornerRadius="10">
             <Grid RowDefinitions="60,Auto">
-              <Border Grid.Row="0" Background="{DynamicResource BoughBrushDiffHunkSurface}" CornerRadius="9,9,0,0" Padding="15,10">
+              <Border Grid.Row="0" Background="{DynamicResource BoughBrushDiffHunkSurface}" CornerRadius="9,9,0,0" Padding="12,8">
                 <StackPanel Spacing="4">
                   <TextBlock Text="{Binding IncomingChangeLabel}" Foreground="{DynamicResource BoughBrushDiffHunk}" FontWeight="SemiBold" />
                   <TextBlock Text="{Binding TheirsSource}" Foreground="{DynamicResource BoughBrushDiffHunk}" FontSize="11"
@@ -150,8 +151,8 @@
         </Grid>
 
         <Border Grid.Row="2" Background="{DynamicResource BoughBrushSurface}"
-                BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,1" Padding="10">
-          <StackPanel Orientation="Horizontal" Spacing="7" HorizontalAlignment="Center">
+                BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,1" Padding="12">
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
             <Button Classes="ours" Content="{Binding UseCurrentChangeLabel}" Command="{Binding ChooseOursCommand}" />
             <Button Classes="theirs" Content="{Binding UseIncomingChangeLabel}" Command="{Binding ChooseTheirsCommand}" />
             <Button Content="{Binding UseBothLabel}" Command="{Binding ChooseBothCommand}"
@@ -165,13 +166,13 @@
 
         <Border Grid.Row="3" Background="{DynamicResource BoughBrushRaised}"
                 BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1"
-                Padding="16,9" ToolTip.Tip="{Binding ConflictBatchTooltip}">
-          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                Padding="12" ToolTip.Tip="{Binding ConflictBatchTooltip}">
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
             <StackPanel Orientation="Horizontal" Spacing="8">
               <TextBlock Text="{Binding ConflictBatchApplyButtonText}" FontWeight="SemiBold" />
               <TextBlock Text="{Binding ConflictBatchCurrentFileText}" Foreground="{DynamicResource BoughBrushTextMuted}" />
             </StackPanel>
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="7">
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
               <Button Classes="ours" Content="{Binding UseCurrentChangeLabel}" IsEnabled="{Binding CanApplyRemaining}"
                       Click="ApplyRemainingOurs" />
               <Button Classes="theirs" Content="{Binding UseIncomingChangeLabel}" IsEnabled="{Binding CanApplyRemaining}"
@@ -186,7 +187,7 @@
         </Border>
 
         <Border Grid.Row="4" Background="{DynamicResource BoughBrushInset}">
-          <Grid RowDefinitions="48,*" Margin="16,0,16,14">
+          <Grid RowDefinitions="48,*" Margin="16,0,16,16">
             <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
               <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                 <TextBlock Text="{Binding FinalFileText}" FontSize="14" FontWeight="SemiBold" />
@@ -194,7 +195,7 @@
                            Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="11" VerticalAlignment="Center" />
               </StackPanel>
               <Button Grid.Column="1" Classes="primary" Content="{Binding SaveAndStageText}"
-                      IsEnabled="{Binding CanSaveAndStage}" Click="SaveAndStageClicked" VerticalAlignment="Center" />
+                      IsEnabled="{Binding CanSaveAndStage}" Click="SaveAndStageClicked" VerticalAlignment="Center" MinWidth="80" />
             </Grid>
             <Border Grid.Row="1" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="8">
               <TextBox Classes="code" Text="{Binding ResultText, Mode=TwoWay}"

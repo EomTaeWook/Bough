@@ -268,11 +268,14 @@ namespace Bough.App.Views
             items[2].Header = viewModel.ReferenceText("ReferenceOpenStashes");
             items[3].Header = viewModel.ReferenceText("ReferenceSwitchBranch");
             items[4].Header = viewModel.ReferenceText("ReferenceCreateFromBranch");
-            items[5].Header = viewModel.ReferenceText("ReferenceDeleteLocalBranch");
-            items[6].Header = viewModel.ReferenceText("ReferenceCheckoutRemoteBranch");
-            items[7].Header = viewModel.ReferenceText("ReferenceDeleteRemoteBranch");
-            items[8].Header = viewModel.ReferenceText("ReferenceCreatePullRequest");
+            items[5].Header = viewModel.ReferenceText("ReferenceCheckoutRemoteBranch");
+            items[6].Header = viewModel.ReferenceText("ReferenceCreatePullRequest");
+            items[7].Header = viewModel.ReferenceText("ReferenceRenameBranchMenu");
+            items[8].Header = viewModel.ReferenceText("ReferenceRenameTagMenu");
             items[9].Header = viewModel.ReferenceText("ReferenceCopyName");
+            items[10].Header = viewModel.ReferenceText("ReferenceDeleteLocalBranch");
+            items[11].Header = viewModel.ReferenceText("ReferenceDeleteRemoteBranch");
+            items[12].Header = viewModel.ReferenceText("TagDeleteLocalMenu");
             items[0].IsVisible = node.IsBranchSection;
             items[0].IsEnabled = true;
             items[1].IsVisible = node.IsTagSection;
@@ -282,24 +285,25 @@ namespace Bough.App.Views
             items[3].IsEnabled = true;
             items[4].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch;
             items[4].IsEnabled = true;
-            items[5].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch;
-            items[5].IsEnabled = node.IsCurrent == false;
-            items[6].IsVisible = node.Kind == ReferenceTreeNodeKind.RemoteBranch;
+            items[5].IsVisible = node.Kind == ReferenceTreeNodeKind.RemoteBranch;
+            items[5].IsEnabled = true;
+            items[6].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch || node.Kind == ReferenceTreeNodeKind.RemoteBranch;
             items[6].IsEnabled = true;
-            items[7].IsVisible = node.Kind == ReferenceTreeNodeKind.RemoteBranch;
-            items[7].IsEnabled = viewModel.IsRemoteDefaultBranch(node.Target as GitRemoteBranch) == false;
-            items[8].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch || node.Kind == ReferenceTreeNodeKind.RemoteBranch;
+            items[7].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch;
+            items[7].IsEnabled = true;
+            items[8].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
             items[8].IsEnabled = true;
             items[9].IsVisible = node.IsEmpty == false;
-            items[10].Header = viewModel.ReferenceText("TagDeleteLocalMenu");
-            items[10].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
-            items[10].IsEnabled = true;
-            items[11].Header = viewModel.ReferenceText("ReferenceRenameBranchMenu");
-            items[11].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch;
-            items[11].IsEnabled = true;
-            items[12].Header = viewModel.ReferenceText("ReferenceRenameTagMenu");
+            items[10].IsVisible = node.Kind == ReferenceTreeNodeKind.Branch;
+            items[10].IsEnabled = node.IsCurrent == false;
+            items[11].IsVisible = node.Kind == ReferenceTreeNodeKind.RemoteBranch;
+            items[11].IsEnabled = viewModel.IsRemoteDefaultBranch(node.Target as GitRemoteBranch) == false;
             items[12].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
             items[12].IsEnabled = true;
+            foreach (Separator separator in menu.Items.OfType<Separator>())
+            {
+                separator.IsVisible = items[10].IsVisible || items[11].IsVisible || items[12].IsVisible;
+            }
         }
 
         private void TreeContextClosed(object sender, RoutedEventArgs eventArgs)
