@@ -13,6 +13,11 @@
 - 저장소별 FIFO Git 작업 큐, 한국어·영어 문자열 리소스, 밝음·어두움 테마.
 - 1차 MVP 책임 분리: Local Changes·Stash·Git Settings, History·참조, 충돌 Save/Stage·원격 완료 흐름에 Core 서비스와 기능별 Presenter를 연결했다. 세부 경계는 [Avalonia MVP 적용](AvaloniaMvpAdoption.md)을 따른다.
 - [UI 간격과 동작 배치](../Design/UIConsistency.md): 담당 화면의 8/12/16px 간격, 32px 버튼, 확인창 버튼 배치와 위험 동작 메뉴 그룹을 정리했다. 사이드바·도구막대·참조·History·Local Changes·Stash·설정과 소유 대화상자를 포함한다. 구현 완료 보고 기준으로 반영하며 별도 검증은 미실시다.
+- Windows x64 Release의 자체 포함 단일 파일 설정과 JSON·로그 기본 설정 로더를 반영했다. 개발 실행의 외부 파일과 기존 사용자 설정·저장소 목록·로그 저장 위치는 유지한다. 배포 파일 생성·게시 전 단계이며 실행 검증은 미실시다.
+
+## README 화면
+
+History·Local Changes·충돌 해결의 최신 앱 콘텐츠 이미지를 `Docs/images`에 반영했다. 격리한 실제 ViewModel과 데모 저장소를 사용해 밝은 테마·영어 UI·1360×850 크기로 촬영했으며 운영체제 제목 표시줄은 포함하지 않는다. Windows 화면 캡처 접근 제한 때문에 Avalonia `RenderTargetBitmap`으로 콘텐츠를 저장했다. 이 이미지 제작은 별도의 기능·회귀 검증을 수행했다는 의미가 아니다.
 
 ## 확인한 UI
 

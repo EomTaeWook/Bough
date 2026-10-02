@@ -8,9 +8,20 @@ namespace Bough.App
     {
         public void Load()
         {
-            string dataPath = Path.Combine(AppContext.BaseDirectory, "Datas");
-            TemplateLoader.Load(dataPath, new TemplateDeserializer());
+            TemplateLoader.Load(ReadJson, new TemplateDeserializer());
             TemplateLoader.MakeRefTemplate();
+        }
+
+        private static string ReadJson(string fileName)
+        {
+#if DEBUG
+            string filePath = Path.Combine(AppContext.BaseDirectory, "Datas", fileName);
+            if (File.Exists(filePath))
+            {
+                return File.ReadAllText(filePath);
+            }
+#endif
+            return PackagedResources.ReadText($"Bough.Datas.{fileName}");
         }
     }
 }

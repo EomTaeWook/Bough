@@ -18,13 +18,21 @@ Extract the archive and run `Bough.exe`. Git must be installed; a separate .NET 
 
 ![Bough conflict window showing both changes, individual and batch choices, and the final file preview](Docs/images/conflict.png)
 
-This screen shows a reproduced text merge conflict. Compare both changes, choose how to resolve each section, and review the final file.
+This screen shows a reproduced text merge conflict. Compare the origins of both changes, resolve individual sections or apply one choice to the remaining sections in the current file, and edit the final result.
 
 ### History
 
 ![Bough History showing the commit graph, changed files, and code preview](Docs/images/history.png)
 
-See the branch graph and reference badges together, then inspect the selected commit and its changed files.
+See the branch graph alongside local branch, remote branch, and tag badges, then inspect the selected merge commit and its changed files.
+
+### Local changes
+
+![Bough Local Changes showing staged and working files, a diff with previous and current line numbers, and the commit area](Docs/images/local-changes.png)
+
+Browse staged changes and working files separately, and read diffs with previous and current line numbers. Prepare a commit message in the area below the preview.
+
+The screenshots show actual app content from demo repositories using the light theme and English UI. Operating system title bars are omitted.
 
 ## Why Bough?
 

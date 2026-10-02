@@ -72,3 +72,7 @@ if (requestVersion != _requestVersion)
 - C#과 Markdown의 줄 끝은 CRLF로 유지한다.
 - Visual Studio의 **일관성 없는 줄 끝** 경고를 띄우지 않으려면 현재 경고 창의 **이 대화 상자 항상 표시**를 해제하거나 `도구 > 옵션 > 환경 > 문서 > 로드 시 일관된 줄 끝 확인(Check for consistent line endings on load)`을 끈다. 이 설정은 개발자별 Visual Studio 설정이며 저장소 파일의 줄 끝 규칙은 위의 CRLF를 따른다.
 - 변경 후 파일 경로와 상대 링크를 확인하고 `git diff --check`를 실행한다.
+
+## 릴리스 배포
+
+[공통 릴리스 정책](ReusableArchitecture/ReleasePolicy.md)을 적용한다. Bough의 Windows x64 기본 배포물은 런타임·네이티브 라이브러리·필수 데이터와 기본 설정을 포함한 단일 `Bough.exe`다. 사용자별 저장 정책은 유지하며, 릴리스 파일 생성·게시와 별도 검증의 실행 범위를 구분한다.

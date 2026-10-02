@@ -5552,8 +5552,8 @@
   {
     "Id": 3022,
     "Name": "RepositoryAddExistingAction",
-    "Kor": "기존 저장소 추가",
-    "Eng": "Add existing repository"
+    "Kor": "저장소 열기",
+    "Eng": "Open repository"
   },
   {
     "Id": 3023,

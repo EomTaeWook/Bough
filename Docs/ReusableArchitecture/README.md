@@ -21,6 +21,7 @@
 | 문서 | 적용 대상 | 핵심 내용 |
 |---|---|---|
 | [`CodingConvention`](CodingConvention.md) | C#·Unity·Markdown 저장소 | 작업 범위, C# 표현, 시간·난수, 생성 데이터, 문서와 검증 기준 |
+| [`ReleasePolicy`](ReleasePolicy.md) | 단일 실행 파일 배포를 지원하는 데스크톱 앱 | 실행 파일 하나에 필수 런타임·데이터·설정 포함, 게시와 다운로드 안내 |
 
 ### 아키텍처 패키지
 

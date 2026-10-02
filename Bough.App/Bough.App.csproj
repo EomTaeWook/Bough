@@ -15,6 +15,15 @@
     <AssemblyTitle>Bough</AssemblyTitle>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>embedded</DebugType>
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
@@ -23,17 +32,33 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\AppIcon.ico" />
     <AvaloniaResource Include="Assets\AppIcon.png" />
-    <ProjectReference Include="..\Bough.Core\Bough.Core.csproj" />
-    <ProjectReference Include="..\DataContainer\DataContainer.csproj" />
+    <ProjectReference Include="..\Bough.Core\Bough.Core.csproj">
+      <AdditionalProperties Condition="'$(Configuration)' == 'Release'">DebugType=embedded;CopyOutputSymbolsToPublishDirectory=false</AdditionalProperties>
+    </ProjectReference>
+    <ProjectReference Include="..\DataContainer\DataContainer.csproj">
+      <AdditionalProperties Condition="'$(Configuration)' == 'Release'">DebugType=embedded;CopyOutputSymbolsToPublishDirectory=false</AdditionalProperties>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
     <None Update="DignusLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory Condition="'$(Configuration)' != 'Release'">PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory Condition="'$(Configuration)' == 'Release'">Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)' == 'Release'">Never</CopyToPublishDirectory>
     </None>
     <Content Include="..\Datas\*.json" Link="Datas\%(Filename)%(Extension)">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory Condition="'$(Configuration)' != 'Release'">PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory Condition="'$(Configuration)' == 'Release'">Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory Condition="'$(Configuration)' == 'Release'">Never</CopyToPublishDirectory>
     </Content>
+    <EmbeddedResource Include="..\Datas\*.json" LogicalName="Bough.Datas.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="DignusLog.config" LogicalName="Bough.DignusLog.config" />
+    <EmbeddedResource Include="..\LICENSE" LogicalName="Bough.Licenses.Bough.txt" />
+    <EmbeddedResource Include="$(NuGetPackageRoot)dignus\1.3.0\LICENSE" LogicalName="Bough.Licenses.Dignus.txt"
+                      Condition="Exists('$(NuGetPackageRoot)dignus\1.3.0\LICENSE')" />
+    <EmbeddedResource Include="$(NuGetPackageRoot)dignus.log\1.0.13\LICENSE" LogicalName="Bough.Licenses.Dignus.Log.txt"
+                      Condition="Exists('$(NuGetPackageRoot)dignus.log\1.0.13\LICENSE')" />
+    <EmbeddedResource Include="Assets\Licenses\*.txt" LogicalName="Bough.Licenses.%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
