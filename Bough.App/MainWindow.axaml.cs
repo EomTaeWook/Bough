@@ -69,11 +69,14 @@ namespace Bough.App
             _clonePresenter = clonePresenter;
             _viewModel = viewModel;
             DataContext = _viewModel;
-            ToolTip.SetTip(RepositoryActionsButton, _stringHelper.GetString("RepositoryActionsTooltip"));
-            Avalonia.Automation.AutomationProperties.SetName(RepositoryActionsButton,
-                _stringHelper.GetString("RepositoryActionsTooltip"));
-            AddExistingRepositoryMenuItem.Header = _stringHelper.GetString("RepositoryAddExistingAction");
-            CloneRepositoryMenuItem.Header = _stringHelper.GetString("CloneTitle");
+            OpenRepositoryButton.Content = _stringHelper.GetString("RepositoryAddExistingAction");
+            ToolTip.SetTip(OpenRepositoryButton, _viewModel.RepositoryList.AddRepositoryTooltipText);
+            Avalonia.Automation.AutomationProperties.SetName(OpenRepositoryButton,
+                _stringHelper.GetString("RepositoryAddExistingAction"));
+            CloneRepositoryButton.Content = _stringHelper.GetString("CloneAction");
+            ToolTip.SetTip(CloneRepositoryButton, _stringHelper.GetString("CloneTitle"));
+            Avalonia.Automation.AutomationProperties.SetName(CloneRepositoryButton,
+                _stringHelper.GetString("CloneTitle"));
             RemoteOperationsPanel.StringHelper = stringHelper;
             RemoteOperationsPanel.SettingsService = settingsService;
             RemoteOperationsPanel.ErrorLocalizer = errorLocalizer;

@@ -40,27 +40,6 @@
       <Setter Property="Background" Value="{DynamicResource BoughBrushDiffHunkSurface}" />
       <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushDiffHunk}" />
     </Style>
-    <Style Selector="Button.repositoryActions">
-      <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextMuted}" />
-      <Setter Property="FocusAdorner" Value="{x:Null}" />
-      <Setter Property="Template">
-        <ControlTemplate>
-          <Border x:Name="RepositoryActionsSurface" Background="Transparent" BorderBrush="Transparent"
-                  BorderThickness="1" CornerRadius="5">
-            <Path Width="14" Height="14" Data="M 1,7 L 13,7 M 7,1 L 7,13"
-                  Stroke="{TemplateBinding Foreground}" StrokeThickness="1.5" StrokeLineCap="Round"
-                  HorizontalAlignment="Center" VerticalAlignment="Center" />
-          </Border>
-        </ControlTemplate>
-      </Setter>
-    </Style>
-    <Style Selector="Button.repositoryActions:pointerover /template/ Border#RepositoryActionsSurface">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
-    </Style>
-    <Style Selector="Button.repositoryActions:focus-visible /template/ Border#RepositoryActionsSurface">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" />
-    </Style>
     <Style Selector="Button.repository">
       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
       <Setter Property="Background" Value="Transparent" />
@@ -183,26 +162,15 @@
 
     <Grid Grid.Row="1" ColumnDefinitions="280,*">
       <Border Grid.Column="0" Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,1,0">
-        <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
-          <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="12,0,0,8">
-            <TextBlock Grid.Column="0" Text="{Binding RepositoryList.RepositoriesHeadingText}" FontSize="14" FontWeight="SemiBold"
+        <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+          <Grid Grid.Row="0" RowDefinitions="Auto,*,Auto" MaxHeight="280" VerticalAlignment="Top" Margin="0,0,0,16">
+            <TextBlock Grid.Row="0" Text="{Binding RepositoryList.RepositoriesHeadingText}" FontSize="14" FontWeight="SemiBold"
+                       Margin="12,0,0,8"
                        VerticalAlignment="Center" />
-            <Button x:Name="RepositoryActionsButton" Grid.Column="1" Classes="repositoryActions"
-                    Width="30" Height="30" MinWidth="0" MinHeight="0" Padding="0"
-                    Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
-                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Focusable="True">
-              <Button.Flyout>
-                <MenuFlyout Placement="BottomEdgeAlignedRight">
-                  <MenuItem x:Name="AddExistingRepositoryMenuItem" Click="OpenRepositoryClicked" />
-                  <MenuItem x:Name="CloneRepositoryMenuItem" Click="CloneRepositoryClicked" />
-                </MenuFlyout>
-              </Button.Flyout>
-            </Button>
-          </Grid>
 
           <ScrollViewer x:Name="RepositoryListScrollViewer" Grid.Row="1" MaxHeight="220" VerticalScrollBarVisibility="Auto"
                         HorizontalScrollBarVisibility="Disabled"
-                        Margin="0,0,0,16">
+                        Margin="0,0,0,8">
             <ItemsControl ItemsSource="{Binding RepositoryList.RepositoryGroups}" Margin="0,0,36,0">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="models:RepositoryGroup">
@@ -237,14 +205,24 @@
             </ItemsControl>
           </ScrollViewer>
 
-          <Border Grid.Row="2" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
+            <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="8">
+              <Button x:Name="OpenRepositoryButton" Grid.Column="0" Click="OpenRepositoryClicked"
+                      MinHeight="32" Padding="8,4" HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center" Focusable="True" />
+              <Button x:Name="CloneRepositoryButton" Grid.Column="1" Click="CloneRepositoryClicked"
+                      MinHeight="32" Padding="8,4" HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center" Focusable="True" />
+            </Grid>
+          </Grid>
+
+          <Border Grid.Row="1" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
             <Grid>
               <views:ReferenceExplorerView DataContext="{Binding References}" />
               <ProgressBar IsVisible="{Binding IsReferencesLoading}" IsIndeterminate="True"
                            Height="3" VerticalAlignment="Top" />
             </Grid>
           </Border>
-          <Border Grid.Row="3" IsVisible="{Binding HasSidebarStatus}"
+          <Border Grid.Row="2" IsVisible="{Binding HasSidebarStatus}"
                   Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}"
                   BorderThickness="0,1,0,0" Padding="12,8">
             <StackPanel Spacing="8">

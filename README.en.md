@@ -55,7 +55,7 @@ Bough is designed to show the source of each conflicting change and preview the 
 
 ## Features
 
-- **Repository cloning:** Clone a remote URL or local path into a new folder, then add and open it from the recent repository list.
+- **Open and clone repositories:** Open an existing local repository, or clone a remote URL or local path into a new path or an empty folder and add it to the repository list.
 - **Local changes:** Inspect changed files and diffs with line numbers, stage and unstage, commit, discard changes, stop tracking files, and ignore untracked files.
 - **History and references:** Browse the commit graph and file changes; create, switch, delete, and rename branches; create, delete, and rename tags.
 - **Remotes and stashes:** Fetch, Pull, and Push; configure the default Pull strategy or choose one for a single Pull; save, apply, and delete stashes.
@@ -81,7 +81,7 @@ You need the .NET 10 SDK and Git.
 dotnet run --project Bough.App/Bough.App.csproj
 ```
 
-Use the **+** menu beside the Repositories heading in the left sidebar to add an existing local repository or clone one from a remote URL or local path. Enter the destination folder path, or choose an empty folder with Browse; Bough adds and opens the repository when cloning finishes. If the repository has unresolved conflicts, choose a change for each section, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
+Select **Open repository** below the repository list in the left sidebar to choose a local folder, or select **Clone** to open the clone dialog directly. Enter the destination folder path, or choose an empty folder with Browse; Bough adds and opens the repository when cloning finishes. Use the list to switch repositories; the remove button appears on hover or keyboard focus. If the repository has unresolved conflicts, choose a change for each section, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
 
 Select **History** at the top to see commits from all local and remote references in a branch graph. Selecting a commit shows its author, date, message, and changed files in the details panel. The first 200 commits are shown; scroll down to load older history. Selecting and inspecting a commit does not change the repository.
 
