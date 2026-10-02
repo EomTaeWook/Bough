@@ -8,9 +8,9 @@
 
 ## 다운로드
 
-[Bough v0.1.0-beta.2 Windows x64 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.2/Bough-v0.1.0-beta.2-win-x64.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.2)
+[Bough v0.1.0-beta.3 Windows x64 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.3/Bough-v0.1.0-beta.3-win-x64.exe) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.3)
 
-압축을 풀고 `Bough.exe`를 실행하세요. .NET 설치는 필요 없지만 Git은 설치돼 있어야 합니다. 이번 베타에는 Windows x64 패키지만 제공하며 macOS는 아래 소스 실행 방법을 사용해야 합니다.
+다운로드한 단일 `.exe` 파일을 실행하세요. 압축 해제나 .NET 설치는 필요 없지만 Git은 설치돼 있어야 합니다. 이번 베타에는 Windows x64 실행파일만 제공하며 macOS는 아래 소스 실행 방법을 사용해야 합니다.
 
 ## 화면 미리보기
 

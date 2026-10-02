@@ -1,5 +1,23 @@
 # 릴리스
 
+## v0.1.0-beta.3
+
+- 배포일: 2026-10-02
+- 소스 커밋: `c23b0bb`
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.3)
+- [Windows x64 단일 실행파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.3/Bough-v0.1.0-beta.3-win-x64.exe)
+- 다운로드한 실행파일을 바로 실행한다. 압축 해제·별도 .NET 설치는 필요 없으며 Git은 별도로 설치한다.
+
+자체 포함 단일 실행파일, JSON·로그 기본 설정 임베딩, UI 간격과 대화상자 배치 통일, 저장소 목록 아래의 열기·복제 직접 진입을 포함한다. [공통 릴리스 정책](ReusableArchitecture/ReleasePolicy.md)을 적용한다. 기존 사용자 설정·저장소 목록·로그 저장 위치는 유지하며 이전 ZIP 릴리스도 보존한다. 이번 배포를 위한 별도 테스트·UI 동작 검증은 수행하지 않았다.
+
+다음 명령으로 배포 파일을 생성했다.
+
+```powershell
+dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.3 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.3\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.3\win-x64\
+```
+
+출력 `Bough.exe`를 `Bough-v0.1.0-beta.3-win-x64.exe` 이름으로 게시했다. 실행 시 네이티브 라이브러리의 내부 추출은 런타임이 처리한다. macOS 배포 파일은 포함하지 않는다.
+
 ## v0.1.0-beta.2
 
 - 배포일: 2026-10-02

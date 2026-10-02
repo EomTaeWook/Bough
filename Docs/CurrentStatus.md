@@ -14,7 +14,7 @@
 - 1차 MVP 책임 분리: Local Changes·Stash·Git Settings, History·참조, 충돌 Save/Stage·원격 완료 흐름에 Core 서비스와 기능별 Presenter를 연결했다. 세부 경계는 [Avalonia MVP 적용](AvaloniaMvpAdoption.md)을 따른다.
 - [UI 간격과 동작 배치](../Design/UIConsistency.md): 담당 화면의 8/12/16px 간격, 32px 버튼, 확인창 버튼 배치와 위험 동작 메뉴 그룹을 정리했다. 사이드바·도구막대·참조·History·Local Changes·Stash·설정과 소유 대화상자를 포함한다. 구현 완료 보고 기준으로 반영하며 별도 검증은 미실시다.
 - 저장소 헤더는 제목만 표시하고 목록 아래 같은 폭의 저장소 열기·복제 버튼을 고정했다. 두 버튼은 폴더 선택·복제 창으로 직접 연결하며 목록만 스크롤한다. 제거 버튼의 hover·키보드 포커스 표시와 36px 스크롤바 여백을 유지했다. 이번 배치 변경은 검증 미실시다.
-- Windows x64 Release의 자체 포함 단일 파일 설정과 JSON·로그 기본 설정 로더를 반영했다. 개발 실행의 외부 파일과 기존 사용자 설정·저장소 목록·로그 저장 위치는 유지한다. 배포 파일 생성·게시 전 단계이며 실행 검증은 미실시다.
+- Windows x64 Release의 자체 포함 단일 파일 설정과 JSON·로그 기본 설정 로더를 반영했다. 개발 실행의 외부 파일과 기존 사용자 설정·저장소 목록·로그 저장 위치는 유지한다. `c23b0bb` 소스에서 배포 파일을 생성해 [v0.1.0-beta.3](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.3) 베타로 게시했다. 별도 실행·기능 검증은 미실시다.
 
 ## README 화면
 
