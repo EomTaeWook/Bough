@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +8,8 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Bough.App.Localization;
 using Bough.App.Presenters;
+using Bough.Core.Git;
+using Bough.Core.Git.Models;
 
 namespace Bough.App.Views
 {
@@ -19,7 +20,7 @@ namespace Bough.App.Views
         private readonly GitErrorLocalizer _errorLocalizer;
         private CancellationTokenSource _cancellation;
         private bool _running;
-        private bool _cloneProcessStarted;
+        private volatile bool _cloneProcessStarted;
         private string _destination;
 
         public CloneRepositoryWindow(CloneRepositoryPresenter presenter, StringHelper strings, GitErrorLocalizer errorLocalizer)
@@ -78,17 +79,17 @@ namespace Bough.App.Views
             }
             string remote = RemoteInput.Text;
             string destinationPath = DestinationInput.Text;
+            DestinationOutcomeText.Text = string.Empty;
             try
             {
                 _destination = _presenter.ValidateDestination(remote, destinationPath);
             }
             catch (Exception exception)
             {
-                StatusText.Text = _errorLocalizer.GetDisplayMessage(exception);
+                StatusText.Text = GetSafeFailureMessage(exception);
                 return;
             }
 
-            DestinationOutcomeText.Text = string.Empty;
             StatusText.Text = _strings.GetString("CloneQueued");
             SetRunning(true);
             _cloneProcessStarted = false;
@@ -126,7 +127,7 @@ namespace Bough.App.Views
             }
             catch (Exception exception)
             {
-                StatusText.Text = _errorLocalizer.GetDisplayMessage(exception);
+                StatusText.Text = GetSafeFailureMessage(exception);
             }
             finally
             {
@@ -138,14 +139,57 @@ namespace Bough.App.Views
             {
                 return;
             }
-            if (Path.Exists(_destination))
+            // Keep retry disabled until this attempt's destination has been inspected.
+            // The probe only reads metadata/one entry; it never deletes or changes files.
+            StartButton.IsEnabled = false;
+            try
             {
-                DestinationOutcomeText.Text = _strings.Format("CloneDestinationPreserved", _destination);
+                GitCloneDestinationState state = await _presenter.GetDestinationStateAsync(_destination);
+                string key = "CloneDestinationInspectionFailed";
+                switch (state)
+                {
+                    case GitCloneDestinationState.Absent:
+                        key = "CloneDestinationMissingAfterAttempt";
+                        break;
+                    case GitCloneDestinationState.EmptyDirectory:
+                        key = "CloneDestinationEmptyAfterAttempt";
+                        break;
+                    case GitCloneDestinationState.ContainsContent:
+                        key = "CloneDestinationContentsAfterAttempt";
+                        break;
+                }
+                DestinationOutcomeText.Text = _strings.Format(key, _destination);
             }
-            else
+            finally
             {
-                DestinationOutcomeText.Text = _strings.GetString("CloneDestinationAbsent");
+                StartButton.IsEnabled = true;
             }
+        }
+
+        private string GetSafeFailureMessage(Exception exception)
+        {
+            // Structured clone/runner exceptions contain only validated paths and numeric
+            // codes. An unstructured message may contain a remote URL or credentials.
+            if (exception is GitException gitException)
+            {
+                if (string.IsNullOrWhiteSpace(gitException.ErrorCode) == false)
+                {
+                    return _errorLocalizer.GetDisplayMessage(gitException);
+                }
+            }
+            if (exception is UnauthorizedAccessException)
+            {
+                return _errorLocalizer.GetDisplayMessage(exception);
+            }
+            if (exception is System.IO.IOException)
+            {
+                return _errorLocalizer.GetDisplayMessage(exception);
+            }
+            if (exception is System.Security.SecurityException)
+            {
+                return _errorLocalizer.GetDisplayMessage(exception);
+            }
+            return _strings.GetString("CloneFailureUnexpected");
         }
 
         private void CancelClicked(object sender, RoutedEventArgs eventArgs)

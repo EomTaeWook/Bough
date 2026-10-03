@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.Core.Git;
+using Bough.Core.Git.Models;
 using Dignus.DependencyInjection.Attributes;
 
 namespace Bough.App.Presenters
@@ -30,6 +31,11 @@ namespace Bough.App.Presenters
             return _operationQueue.EnqueueAsync(destination, operationName,
                 token => _cloneService.CloneAsync(remote, destination, progress, token, started),
                 cancellationToken);
+        }
+
+        public Task<GitCloneDestinationState> GetDestinationStateAsync(string destination)
+        {
+            return Task.Run(() => _cloneService.GetDestinationState(destination));
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -115,16 +116,256 @@ namespace Bough.Core.Git
             string source = NormalizeRemote(remote);
             string destination = ValidateDestination(source, destinationPath);
             string parent = Path.GetDirectoryName(destination);
-            Progress<string> stderrProgress = new(line => ReportPercentage(line, progress));
+            CloneProgress stderrProgress = new(progress);
             GitCommandResult result = await _runner.RunWithProgressAsync(parent,
                 new[] { "clone", "--progress", "--", source, destination }, stderrProgress,
                 true, cancellationToken, processStarted);
             if (result.ExitCode != 0)
             {
-                // Git may include credentials in stderr. Keep only the exit code at the UI boundary.
-                throw new GitException("CloneGitFailed", null, result.ExitCode);
+                // Inspect diagnostics in memory only. Never carry addresses, headers, or stderr
+                // into display arguments, exception messages, inner exceptions, or logs.
+                throw new GitException(ClassifyFailure(result.Error), null, result.ExitCode);
             }
             return destination;
+        }
+
+        public GitCloneDestinationState GetDestinationState(string destination)
+        {
+            try
+            {
+                FileAttributes attributes = File.GetAttributes(destination);
+                if ((attributes & FileAttributes.Directory) == 0)
+                {
+                    return GitCloneDestinationState.ContainsContent;
+                }
+                using IEnumerator<string> entries = Directory.EnumerateFileSystemEntries(destination).GetEnumerator();
+                if (entries.MoveNext())
+                {
+                    return GitCloneDestinationState.ContainsContent;
+                }
+                return GitCloneDestinationState.EmptyDirectory;
+            }
+            catch (FileNotFoundException)
+            {
+                return GitCloneDestinationState.Absent;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return GitCloneDestinationState.Absent;
+            }
+            catch (IOException)
+            {
+                return GitCloneDestinationState.InspectionFailed;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return GitCloneDestinationState.InspectionFailed;
+            }
+            catch (SecurityException)
+            {
+                return GitCloneDestinationState.InspectionFailed;
+            }
+            catch (ArgumentException)
+            {
+                return GitCloneDestinationState.InspectionFailed;
+            }
+            catch (NotSupportedException)
+            {
+                return GitCloneDestinationState.InspectionFailed;
+            }
+        }
+
+        private static string ClassifyFailure(string standardError)
+        {
+            // Git's wording depends on Git/transport/provider and locale. Unrecognised
+            // diagnostics deliberately remain unknown; exit code 128 proves no cause.
+            using StringReader reader = new(standardError);
+            string fallback = "CloneFailureUnknown";
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                string diagnostic = line.Trim();
+                if (diagnostic.StartsWith("fatal:", StringComparison.OrdinalIgnoreCase) == false)
+                {
+                    if (diagnostic.StartsWith("error:", StringComparison.OrdinalIgnoreCase) == false)
+                    {
+                        if (diagnostic.StartsWith("remote:", StringComparison.OrdinalIgnoreCase) == false)
+                        {
+                            // OpenSSH reports an authentication failure without a Git prefix.
+                            if (diagnostic.EndsWith("Permission denied (publickey).", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return "CloneFailureAuthentication";
+                            }
+                            if (diagnostic.EndsWith("Permission denied (publickey,password).", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return "CloneFailureAuthentication";
+                            }
+                            if (diagnostic.StartsWith("ssh:", StringComparison.OrdinalIgnoreCase) == false)
+                            {
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                // Strip quoted address/path fields before classifying. A token or URL must
+                // not itself be evidence for a failure category, even though never displayed.
+                diagnostic = Regex.Replace(diagnostic, @"'[^']*'|""[^""]*""", string.Empty);
+                if (ContainsDiagnostic(diagnostic, "authentication failed"))
+                {
+                    return "CloneFailureAuthentication";
+                }
+                if (ContainsDiagnostic(diagnostic, "invalid username or password"))
+                {
+                    return "CloneFailureAuthentication";
+                }
+                if (ContainsDiagnostic(diagnostic, "invalid username or token"))
+                {
+                    return "CloneFailureAuthentication";
+                }
+                if (ContainsDiagnostic(diagnostic, "could not read username for"))
+                {
+                    return "CloneFailureAuthentication";
+                }
+                if (ContainsDiagnostic(diagnostic, "could not read password for"))
+                {
+                    return "CloneFailureAuthentication";
+                }
+                if (ContainsDiagnostic(diagnostic, "requested URL returned error: 401"))
+                {
+                    return "CloneFailureAuthentication";
+                }
+                if (ContainsDiagnostic(diagnostic, "requested URL returned error: 403"))
+                {
+                    return "CloneFailureRemoteAccessDenied";
+                }
+                if (ContainsDiagnostic(diagnostic, "access denied"))
+                {
+                    if (diagnostic.StartsWith("remote:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return "CloneFailureRemoteAccessDenied";
+                    }
+                }
+                if (ContainsDiagnostic(diagnostic, "no space left on device"))
+                {
+                    return "CloneFailureDiskFull";
+                }
+                if (ContainsDiagnostic(diagnostic, "disk quota exceeded"))
+                {
+                    return "CloneFailureDiskFull";
+                }
+                if (ContainsDiagnostic(diagnostic, "not an empty directory"))
+                {
+                    return "CloneFailureDestinationConflict";
+                }
+                if (ContainsDiagnostic(diagnostic, "permission denied"))
+                {
+                    if (IsLocalWriteDiagnostic(diagnostic))
+                    {
+                        return "CloneFailureFileAccess";
+                    }
+                }
+                if (ContainsDiagnostic(diagnostic, "access is denied"))
+                {
+                    if (IsLocalWriteDiagnostic(diagnostic))
+                    {
+                        return "CloneFailureFileAccess";
+                    }
+                }
+                if (IsConnectionDiagnostic(diagnostic))
+                {
+                    return "CloneFailureConnection";
+                }
+                if (ContainsDiagnostic(diagnostic, "repository not found"))
+                {
+                    fallback = "CloneFailureRepositoryUnavailable";
+                }
+                if (diagnostic.StartsWith("fatal: repository ", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (diagnostic.EndsWith("not found", StringComparison.OrdinalIgnoreCase))
+                    {
+                        fallback = "CloneFailureRepositoryUnavailable";
+                    }
+                    if (diagnostic.EndsWith("does not exist", StringComparison.OrdinalIgnoreCase))
+                    {
+                        fallback = "CloneFailureRepositoryUnavailable";
+                    }
+                }
+                if (ContainsDiagnostic(diagnostic, "could not read from remote repository"))
+                {
+                    // This message alone does not distinguish an incorrect address from
+                    // missing repository permissions or another transport failure.
+                    fallback = "CloneFailureRepositoryUnavailable";
+                }
+            }
+            return fallback;
+        }
+
+        private static bool IsLocalWriteDiagnostic(string diagnostic)
+        {
+            if (diagnostic.StartsWith("remote:", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            if (ContainsDiagnostic(diagnostic, "could not create work tree dir"))
+            {
+                return true;
+            }
+            if (ContainsDiagnostic(diagnostic, "unable to create file"))
+            {
+                return true;
+            }
+            if (ContainsDiagnostic(diagnostic, "cannot create directory"))
+            {
+                return true;
+            }
+            if (ContainsDiagnostic(diagnostic, "cannot mkdir"))
+            {
+                return true;
+            }
+            if (ContainsDiagnostic(diagnostic, "unable to write"))
+            {
+                return true;
+            }
+            return ContainsDiagnostic(diagnostic, "could not write");
+        }
+
+        private static bool IsConnectionDiagnostic(string diagnostic)
+        {
+            if (ContainsDiagnostic(diagnostic, "could not resolve host"))
+            {
+                return true;
+            }
+            if (ContainsDiagnostic(diagnostic, "could not resolve proxy"))
+            {
+                return true;
+            }
+            if (ContainsDiagnostic(diagnostic, "failed to connect"))
+            {
+                return true;
+            }
+            if (ContainsDiagnostic(diagnostic, "connection timed out"))
+            {
+                return true;
+            }
+            if (ContainsDiagnostic(diagnostic, "connection refused"))
+            {
+                return true;
+            }
+            if (ContainsDiagnostic(diagnostic, "network is unreachable"))
+            {
+                return true;
+            }
+            if (ContainsDiagnostic(diagnostic, "SSL certificate problem"))
+            {
+                return true;
+            }
+            return ContainsDiagnostic(diagnostic, "unable to access") && ContainsDiagnostic(diagnostic, "TLS");
+        }
+
+        private static bool ContainsDiagnostic(string diagnostic, string fragment)
+        {
+            return diagnostic.Contains(fragment, StringComparison.OrdinalIgnoreCase);
         }
 
         private static string NormalizeRemote(string remote)
@@ -206,6 +447,23 @@ namespace Bough.Core.Git
                 return;
             }
             progress.Report(percentage);
+        }
+
+        private class CloneProgress : IProgress<string>
+        {
+            private readonly IProgress<int> _progress;
+
+            public CloneProgress(IProgress<int> progress)
+            {
+                _progress = progress;
+            }
+
+            public void Report(string line)
+            {
+                // Only numeric progress crosses into a UI callback. Raw diagnostics are
+                // consumed on the runner's read path and are never posted to the UI.
+                ReportPercentage(line, _progress);
+            }
         }
     }
 }
