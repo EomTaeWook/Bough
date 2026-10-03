@@ -1,5 +1,22 @@
 # 릴리스
 
+## v0.1.0-beta.4
+
+- 배포일: 2026-10-03
+- 소스 커밋: `ad5f414`
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.4)
+- [Windows x64 단일 실행파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.4/Bough-v0.1.0-beta.4-win-x64.exe)
+
+복제 실패의 종료 코드와 함께 Git 진단에서 식별한 인증·접근·연결·저장공간·파일 쓰기·목적지 충돌 원인을 표시한다. 원인을 식별하지 못한 경우에는 일반 실패 문구를 사용한다. 민감한 stderr·원격 주소·헤더는 표시·로그·예외 인수에 전달하지 않는다. 목적지 상태는 없음·빈 폴더·내용 남음·조회 실패로 구분하며 빈 폴더는 실패 원인을 해결한 뒤 같은 경로로 다시 시도할 수 있다고 안내한다. 자동 삭제는 하지 않는다.
+
+배포 파일은 다음 명령으로 생성했다. 별도 테스트·복제 재현·UI 동작 검증은 수행하지 않았으며 제보된 종료 코드 128의 실제 원인은 미확정이다.
+
+```powershell
+dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.4 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.4\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.4\win-x64\
+```
+
+출력 `Bough.exe`를 버전이 포함된 이름으로 게시했으며 이전 릴리스도 보존한다. .NET 런타임은 포함하며 Git은 별도로 설치한다. macOS 배포 파일은 포함하지 않는다.
+
 ## v0.1.0-beta.3
 
 - 배포일: 2026-10-02

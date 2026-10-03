@@ -8,7 +8,7 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-[Download Bough v0.1.0-beta.3 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.3/Bough-v0.1.0-beta.3-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.3)
+[Download Bough v0.1.0-beta.4 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.4/Bough-v0.1.0-beta.4-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.4)
 
 Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. This beta provides a Windows x64 executable. On macOS, use the source build instructions below.
 
