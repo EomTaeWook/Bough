@@ -1,8 +1,9 @@
 using Bough.App.Localization;
+using Bough.App.ViewModels;
 using Bough.Core.Git;
 using Dignus.DependencyInjection.Attributes;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.Composition
 {
     [Injectable(Dignus.DependencyInjection.LifeScope.Singleton)]
     public class MainWindowChildren

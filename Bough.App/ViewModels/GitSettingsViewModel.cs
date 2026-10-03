@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Controls;
 using Bough.App.Appearance;
+using Bough.App.Commands;
 using Bough.App.Localization;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
@@ -24,6 +25,7 @@ namespace Bough.App.ViewModels
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly AppearanceThemeService _appearanceTheme;
+        private readonly LanguageSelectionPresenter _languagePresenter;
         private readonly GitOperationQueue _operationQueue;
         private readonly GitExecutablePresenter _gitExecutablePresenter;
         private readonly ObservableCollection<GitRemote> _remotes;
@@ -43,6 +45,7 @@ namespace Bough.App.ViewModels
         private GitSettingsDisplayResult _displayResult;
         private string _accountStatusText = string.Empty;
         private string _appearanceStatus = string.Empty;
+        private string _languageStatus = string.Empty;
         private bool _remoteOperationBusy;
         private bool _accountLoginRunning;
         private int _pendingAccountSelections;
@@ -50,13 +53,14 @@ namespace Bough.App.ViewModels
         private bool _isBusy;
         private int _requestVersion;
 
-        public GitSettingsViewModel(GitSettingsService settingsService, GitHubAccountService gitHubAccountService, StringHelper stringHelper, AppearanceThemeService appearanceTheme, GitErrorLocalizer errorLocalizer, GitOperationQueue operationQueue)
+        public GitSettingsViewModel(GitSettingsService settingsService, GitHubAccountService gitHubAccountService, StringHelper stringHelper, AppearanceThemeService appearanceTheme, GitErrorLocalizer errorLocalizer, GitOperationQueue operationQueue, LanguageSelectionPresenter languagePresenter)
         {
             _settingsService = settingsService;
             _gitHubAccountService = gitHubAccountService;
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
             _appearanceTheme = appearanceTheme;
+            _languagePresenter = languagePresenter;
             _operationQueue = operationQueue;
             _gitExecutablePresenter = new GitExecutablePresenter(settingsService);
             _appearanceTheme.ThemeChanged += OnAppearanceThemeChanged;
@@ -86,6 +90,13 @@ namespace Bough.App.ViewModels
         public ReadOnlyObservableCollection<GitHubRemoteAccountItem> GitHubRemotes { get; }
         public string AccountStatusText { get { return _accountStatusText; } private set { SetProperty(ref _accountStatusText, value); } }
         public string AppearanceHeading { get { return GetDisplayLabel(nameof(AppearanceHeading)); } }
+        public string LanguageHeading { get { return GetDisplayLabel(nameof(LanguageHeading)); } }
+        public string LanguageDescription { get { return GetDisplayLabel(nameof(LanguageDescription)); } }
+        public string KoreanLanguageLabel { get { return GetDisplayLabel(nameof(KoreanLanguageLabel)); } }
+        public string EnglishLanguageLabel { get { return GetDisplayLabel(nameof(EnglishLanguageLabel)); } }
+        public string LanguageStatus { get { return _languageStatus; } private set { SetProperty(ref _languageStatus, value); } }
+        public bool IsKoreanLanguage { get { return _stringHelper.Language == StringLanguage.Korean; } }
+        public bool IsEnglishLanguage { get { return _stringHelper.Language == StringLanguage.English; } }
         public string AppearanceDescription { get { return GetDisplayLabel(nameof(AppearanceDescription)); } }
         public string AppearanceLightLabel { get { return GetDisplayLabel(nameof(AppearanceLightLabel)); } }
         public string AppearanceDarkLabel { get { return GetDisplayLabel(nameof(AppearanceDarkLabel)); } }
@@ -145,6 +156,24 @@ namespace Bough.App.ViewModels
         public bool IsMergePull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.Merge; } }
         public bool IsRebasePull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.Rebase; } }
         public bool IsRemoteOperationBusy { get { return _remoteOperationBusy; } }
+
+        public async Task SelectLanguageAsync(StringLanguage language)
+        {
+            try
+            {
+                await _languagePresenter.SelectAsync(language);
+                ShowDisplayResult(GitSettingsDisplayTarget.Language, "AppLanguageSaved");
+            }
+            catch (Exception exception)
+            {
+                ShowDisplayError(GitSettingsDisplayTarget.Language, exception);
+            }
+            finally
+            {
+                OnPropertyChanged(nameof(IsKoreanLanguage));
+                OnPropertyChanged(nameof(IsEnglishLanguage));
+            }
+        }
 
         public async Task SelectAppearanceAsync(AppearanceThemeMode mode)
         {
@@ -230,6 +259,11 @@ namespace Bough.App.ViewModels
                 return;
             }
 
+            if (result.Target == GitSettingsDisplayTarget.Language)
+            {
+                LanguageStatus = message;
+                return;
+            }
             if (result.Target == GitSettingsDisplayTarget.Appearance)
             {
                 AppearanceStatus = message;

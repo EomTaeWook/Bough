@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Bough.App.ViewModels.Models
+namespace Bough.App.Persistence
 {
     public class RepositoryListState
     {

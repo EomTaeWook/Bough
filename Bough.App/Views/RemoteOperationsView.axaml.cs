@@ -21,27 +21,15 @@ namespace Bough.App.Views
     {
         private StringHelper _stringHelper;
         private GitSettingsService _settingsService;
+        private readonly LanguageChangeBinding _languageBinding;
         public StringHelper StringHelper
         {
             get { return _stringHelper; }
             set
             {
                 _stringHelper = value;
-                if (value == null)
-                {
-                    return;
-                }
-                UpstreamLabel.Text = value.GetString("RemoteUpstreamLabel");
-                FetchButton.Content = value.GetString("RemoteFetchAction");
-                PullButton.Content = value.GetString("RemotePullAction");
-                PushButton.Content = value.GetString("RemotePushAction");
-                AutomationProperties.SetName(FetchButton, value.GetString("RemoteFetchAction"));
-                AutomationProperties.SetName(PushButton, value.GetString("RemotePushAction"));
-                AutomationProperties.SetName(FetchMenuButton, value.GetString("RemoteFetchMenuAutomation"));
-                AutomationProperties.SetName(PushMenuButton, value.GetString("RemotePushMenuAutomation"));
-                ToolTip.SetTip(FetchMenuButton, value.GetString("RemoteFetchMenuTip"));
-                ToolTip.SetTip(PushMenuButton, value.GetString("RemotePushMenuTip"));
-                UpdatePullStrategyPresentation();
+                RefreshLocalizedLabels();
+                _languageBinding?.Rebind();
             }
         }
         public GitSettingsService SettingsService
@@ -77,6 +65,26 @@ namespace Bough.App.Views
         public RemoteOperationsView()
         {
             InitializeComponent();
+            _languageBinding = LanguageChangeBinding.Bind(this, () => _stringHelper, RefreshLocalizedLabels);
+        }
+
+        private void RefreshLocalizedLabels()
+        {
+            if (_stringHelper == null)
+            {
+                return;
+            }
+            UpstreamLabel.Text = _stringHelper.GetString("RemoteUpstreamLabel");
+            FetchActionLabel.Text = _stringHelper.GetString("RemoteFetchAction");
+            PullActionLabel.Text = _stringHelper.GetString("RemotePullAction");
+            PushActionLabel.Text = _stringHelper.GetString("RemotePushAction");
+            AutomationProperties.SetName(FetchButton, _stringHelper.GetString("RemoteFetchAction"));
+            AutomationProperties.SetName(PushButton, _stringHelper.GetString("RemotePushAction"));
+            AutomationProperties.SetName(FetchMenuButton, _stringHelper.GetString("RemoteFetchMenuAutomation"));
+            AutomationProperties.SetName(PushMenuButton, _stringHelper.GetString("RemotePushMenuAutomation"));
+            ToolTip.SetTip(FetchMenuButton, _stringHelper.GetString("RemoteFetchMenuTip"));
+            ToolTip.SetTip(PushMenuButton, _stringHelper.GetString("RemotePushMenuTip"));
+            UpdatePullStrategyPresentation();
         }
 
         private void OnDefaultPullStrategyChanged(GitPullStrategy strategy)

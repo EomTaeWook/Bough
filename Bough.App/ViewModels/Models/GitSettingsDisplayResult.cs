@@ -1,5 +1,4 @@
 using System;
-using Bough.App.ViewModels;
 
 namespace Bough.App.ViewModels.Models
 {

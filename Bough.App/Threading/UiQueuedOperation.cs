@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.Threading
 {
     internal static class UiQueuedOperation
     {

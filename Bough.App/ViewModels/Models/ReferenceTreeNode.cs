@@ -2,7 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using Bough.App.Internals;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.ViewModels.Models
 {
     public class ReferenceTreeNode : ViewModelBase
     {
@@ -32,9 +32,9 @@ namespace Bough.App.ViewModels
         }
 
         public string Key { get; }
-        public string Label { get; }
+        public string Label { get; private set; }
         public string Icon { get; }
-        public string ToolTipText { get; }
+        public string ToolTipText { get; private set; }
         public ReferenceTreeNodeKind Kind { get; }
         public object Target { get; }
         public bool IsCurrent { get; }
@@ -42,12 +42,26 @@ namespace Bough.App.ViewModels
         public bool IsBranchSection { get; }
         public bool IsTagSection { get { return Kind == ReferenceTreeNodeKind.Section && Key == "tags"; } }
         public bool HasSectionAction { get { return IsBranchSection || IsTagSection; } }
-        public string ActionText { get; }
-        public string CurrentBranchText { get; }
-        public string AccessibleLabel { get; }
+        public string ActionText { get; private set; }
+        public string CurrentBranchText { get; private set; }
+        public string AccessibleLabel { get; private set; }
         public bool IsStashSection { get { return Kind == ReferenceTreeNodeKind.Section && Key == "stashes"; } }
         public bool IsEmpty { get { return Kind == ReferenceTreeNodeKind.Empty; } }
         public ObservableCollection<ReferenceTreeNode> Children { get; }
+
+        public void UpdateLocalization(string label, string toolTipText, string actionText, string currentBranchText)
+        {
+            Label = label;
+            ToolTipText = toolTipText;
+            ActionText = actionText;
+            CurrentBranchText = currentBranchText;
+            AccessibleLabel = label;
+            if (IsCurrent)
+            {
+                AccessibleLabel = $"{label} ({currentBranchText})";
+            }
+            RefreshLocalization();
+        }
 
         public bool IsExpanded
         {

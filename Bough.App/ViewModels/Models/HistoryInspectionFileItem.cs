@@ -1,13 +1,19 @@
 using Bough.App.Localization;
 using Bough.Core.Git;
 using System.Collections.ObjectModel;
-using Bough.App.ViewModels.Models;
 using Bough.Core.Git.Models;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.ViewModels.Models
 {
     public class HistoryInspectionFileItem : ViewModelBase
     {
+        private LocalizedText _diffReasonLocalization;
+        public void SetLocalizedDiffReason(LocalizedText text)
+        {
+            DiffReason = text.GetText(_stringHelper);
+            _diffReasonLocalization = text;
+        }
+
         private bool _isExpanded;
         private bool _isLoaded;
         private bool _isLoading;
@@ -64,7 +70,21 @@ namespace Bough.App.ViewModels
         public bool IsLoaded { get { return _isLoaded; } set { SetProperty(ref _isLoaded, value); } }
         public bool IsLoading { get { return _isLoading; } set { SetProperty(ref _isLoading, value); } }
         public string DiffText { get { return _diffText; } set { SetProperty(ref _diffText, value); } }
-        public string DiffReason { get { return _diffReason; } set { SetProperty(ref _diffReason, value); } }
+        public string DiffReason
+        {
+            get
+            {
+                if (_diffReasonLocalization != null)
+                {
+                    return _diffReasonLocalization.GetText(_stringHelper);
+                }
+                return _diffReason;
+            }
+            set
+            {
+                _diffReasonLocalization = null; SetProperty(ref _diffReason, value);
+            }
+        }
         public bool HasRawDiff { get { return DiffLines.Count == 0 && DiffText.Length > 0; } }
 
         public void OnDiffLinesChanged()

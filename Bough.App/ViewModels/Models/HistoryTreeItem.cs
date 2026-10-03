@@ -3,7 +3,7 @@ using Bough.App.Localization;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.ViewModels.Models
 {
     public class HistoryTreeItem : ViewModelBase
     {
@@ -24,6 +24,14 @@ namespace Bough.App.ViewModels
         }
 
         public GitCommitTreeEntry Entry { get; }
+        public override void RefreshLocalization()
+        {
+            foreach (HistoryTreeItem child in Children)
+            {
+                child.RefreshLocalization();
+            }
+            base.RefreshLocalization();
+        }
         public ObservableCollection<HistoryTreeItem> Children { get; }
         public string Path { get { return Entry.Path; } }
         public string ToolTipPath { get { if (IsPlaceholder) return Name; return Path; } }

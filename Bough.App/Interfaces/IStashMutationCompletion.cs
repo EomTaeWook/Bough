@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Bough.App.ViewModels.Models;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.Interfaces
 {
     public interface IStashMutationCompletion
     {

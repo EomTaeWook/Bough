@@ -6,7 +6,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Controls;
+using Bough.App.Commands;
 using Bough.App.Localization;
+using Bough.App.Services;
 using Bough.App.Presenters;
 using Bough.Core.Git;
 using DataContainer.Generated;
@@ -18,8 +20,30 @@ namespace Bough.App.ViewModels
 {
     public class HistoryViewModel : ViewModelBase
     {
+        private LocalizedText _previewReasonLocalization;
+        private LocalizedText _errorTextLocalization;
+        private LocalizedText _pageErrorTextLocalization;
+        private void SetLocalizedPreviewReason(LocalizedText text)
+        {
+            PreviewReason = text.GetText(_stringHelper);
+            _previewReasonLocalization = text;
+        }
+
+        private void SetLocalizedErrorText(LocalizedText text)
+        {
+            ErrorText = text.GetText(_stringHelper);
+            _errorTextLocalization = text;
+        }
+
+        private void SetLocalizedPageErrorText(LocalizedText text)
+        {
+            PageErrorText = text.GetText(_stringHelper);
+            _pageErrorTextLocalization = text;
+        }
+
         private readonly HistoryListPresenter _listPresenter;
         private readonly HistoryCommitPresenter _commitPresenter;
+        private readonly HistoryFileTreePresenter _fileTreePresenter;
         private readonly HistoryActionPresenter _actionPresenter;
         private readonly GitCommitInspectionService _inspectionService;
         private readonly GitCommitFileActionService _fileActionService;
@@ -49,6 +73,8 @@ namespace Bough.App.ViewModels
         private string _auxiliaryText;
         private string _auxiliaryTitle;
         private int _selectedTab;
+        private bool _isFileTreeView;
+        private Task _inspectionLoadTask = Task.CompletedTask;
         private int _inspectionRequest;
         private int _expandRequest;
         private int _treeRequest;
@@ -61,6 +87,7 @@ namespace Bough.App.ViewModels
         {
             _listPresenter = new HistoryListPresenter(historyService);
             _commitPresenter = new HistoryCommitPresenter(inspectionService, commitMessageService);
+            _fileTreePresenter = new HistoryFileTreePresenter(inspectionService);
             _actionPresenter = new HistoryActionPresenter(actionService, operationQueue);
             _inspectionService = inspectionService;
             _fileActionService = fileActionService;
@@ -89,6 +116,27 @@ namespace Bough.App.ViewModels
         }
 
         public ObservableCollection<HistoryCommitItem> Commits { get; }
+        public override void RefreshLocalization()
+        {
+            Labels.RefreshLocalization();
+            foreach (HistoryCommitItem commit in Commits)
+            {
+                commit.RefreshLocalization();
+            }
+            foreach (HistoryInspectionFileItem file in ChangedFiles)
+            {
+                file.RefreshLocalization();
+            }
+            foreach (HistoryTreeItem root in TreeRoots)
+            {
+                root.RefreshLocalization();
+            }
+            foreach (HistoryTreeItem root in VisibleTreeRoots)
+            {
+                root.RefreshLocalization();
+            }
+            base.RefreshLocalization();
+        }
         public StringHelper Strings { get { return _stringHelper; } }
         public HistoryLabels Labels { get; }
         public event Action<GitRepository> RepositoryChanged;
@@ -173,26 +221,41 @@ namespace Bough.App.ViewModels
         public string TreeSearch { get { return _treeSearch; } set { if (SetProperty(ref _treeSearch, value) == true) _ = FilterTreeAsync(); } }
         public string PreviewPath { get { return _previewPath; } private set { SetProperty(ref _previewPath, value); } }
         public string PreviewText { get { return _previewText; } private set { SetProperty(ref _previewText, value); } }
-        public string PreviewReason { get { return _previewReason; } private set { SetProperty(ref _previewReason, value); } }
+        public string PreviewReason
+        {
+            get
+            {
+                if (_previewReasonLocalization != null)
+                {
+                    return _previewReasonLocalization.GetText(_stringHelper);
+                }
+                return _previewReason;
+            }
+            private set
+            {
+                _previewReasonLocalization = null; SetProperty(ref _previewReason, value);
+            }
+        }
         public string AuxiliaryTitle { get { return _auxiliaryTitle; } private set { SetProperty(ref _auxiliaryTitle, value); } }
         public string AuxiliaryText { get { return _auxiliaryText; } private set { SetProperty(ref _auxiliaryText, value); } }
         public bool HasAuxiliary { get { return AuxiliaryTitle.Length > 0; } }
         public int SelectedTab
         {
             get { return _selectedTab; }
-            set
+            set { SetProperty(ref _selectedTab, value); }
+        }
+        public bool IsFileTreeView
+        {
+            get { return _isFileTreeView; }
+            private set
             {
-                if (SetProperty(ref _selectedTab, value) == false)
+                if (SetProperty(ref _isFileTreeView, value))
                 {
-                    return;
+                    OnPropertyChanged(nameof(IsCommitDetailView));
                 }
-                if (value != 2)
-                {
-                    return;
-                }
-                _ = LoadTreeAsync();
             }
         }
+        public bool IsCommitDetailView { get { return HasSelection && IsFileTreeView == false; } }
         public HistoryInspectionFileItem SelectedChangedFile
         {
             get { return _selectedChangedFile; }
@@ -230,9 +293,17 @@ namespace Bough.App.ViewModels
         public int ListVersion { get { return _listVersion; } }
         public string PageErrorText
         {
-            get { return _pageErrorText; }
+            get
+            {
+                if (_pageErrorTextLocalization != null)
+                {
+                    return _pageErrorTextLocalization.GetText(_stringHelper);
+                }
+                return _pageErrorText;
+            }
             private set
             {
+                _pageErrorTextLocalization = null;
                 if (SetProperty(ref _pageErrorText, value) == false)
                 {
                     return;
@@ -295,9 +366,17 @@ namespace Bough.App.ViewModels
 
         public string ErrorText
         {
-            get { return _errorText; }
+            get
+            {
+                if (_errorTextLocalization != null)
+                {
+                    return _errorTextLocalization.GetText(_stringHelper);
+                }
+                return _errorText;
+            }
             private set
             {
+                _errorTextLocalization = null;
                 if (SetProperty(ref _errorText, value) == true)
                 {
                     OnPropertyChanged(nameof(HasLoadError));
@@ -330,12 +409,14 @@ namespace Bough.App.ViewModels
 
                 OnPropertyChanged(nameof(HasSelection));
                 OnPropertyChanged(nameof(HasNoSelection));
+                OnPropertyChanged(nameof(IsCommitDetailView));
                 SelectedMessage = string.Empty;
                 ClearInspection();
                 _commitPresenter.Invalidate();
+                _inspectionLoadTask = Task.CompletedTask;
                 if (value != null)
                 {
-                    _ = LoadInspectionAsync(value);
+                    _inspectionLoadTask = LoadInspectionAsync(value);
                 }
             }
         }
@@ -620,7 +701,7 @@ namespace Bough.App.ViewModels
                 }
                 if (result.Error != null)
                 {
-                    PageErrorText = _errorLocalizer.GetDisplayMessage(result.Error);
+                    SetLocalizedPageErrorText(new LocalizedText(result.Error));
                     return;
                 }
                 GitHistoryPage page = result.Page;
@@ -656,7 +737,7 @@ namespace Bough.App.ViewModels
                 {
                     return;
                 }
-                PageErrorText = _errorLocalizer.GetDisplayMessage(exception);
+                SetLocalizedPageErrorText(new LocalizedText(exception));
             }
             finally
             {
@@ -699,7 +780,7 @@ namespace Bough.App.ViewModels
                 }
                 if (result.Error != null)
                 {
-                    ErrorText = _errorLocalizer.GetDisplayMessage(result.Error);
+                    SetLocalizedErrorText(new LocalizedText(result.Error));
                     throw result.Error;
                 }
                 GitHistoryPage page = result.Page;
@@ -743,7 +824,7 @@ namespace Bough.App.ViewModels
                 {
                     return;
                 }
-                ErrorText = _errorLocalizer.GetDisplayMessage(exception);
+                SetLocalizedErrorText(new LocalizedText(exception));
                 throw;
             }
             finally
@@ -810,6 +891,7 @@ namespace Bough.App.ViewModels
 
         private void ClearInspection()
         {
+            IsFileTreeView = false;
             _inspectionRequest++;
             _expandRequest++;
             _treeRequest++;
@@ -865,7 +947,7 @@ namespace Bough.App.ViewModels
             }
             if (result.Error != null)
             {
-                ErrorText = _errorLocalizer.GetDisplayMessage(result.Error);
+                SetLocalizedErrorText(new LocalizedText(result.Error));
                 return;
             }
             try
@@ -888,16 +970,12 @@ namespace Bough.App.ViewModels
                 {
                     await LoadChangesAsync();
                 }
-                if (SelectedTab == 2)
-                {
-                    await LoadTreeAsync();
-                }
             }
             catch (Exception exception)
             {
                 if (_commitPresenter.IsCurrent(result.RequestVersion))
                 {
-                    ErrorText = _errorLocalizer.GetDisplayMessage(exception);
+                    SetLocalizedErrorText(new LocalizedText(exception));
                 }
             }
         }
@@ -948,7 +1026,7 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                if (request == _inspectionRequest) ErrorText = _errorLocalizer.GetDisplayMessage(exception);
+                if (request == _inspectionRequest) SetLocalizedErrorText(new LocalizedText(exception));
             }
         }
 
@@ -1014,7 +1092,7 @@ namespace Bough.App.ViewModels
                 }
 
                 file.DiffText = diff.Text;
-                file.DiffReason = LocalizeFileReason(diff.ReasonCode, diff.ReasonArguments);
+                file.SetLocalizedDiffReason(new LocalizedText(diff.ReasonCode, diff.ReasonArguments.ToArray()));
                 file.DiffLines.Clear();
                 foreach (GitUnifiedDiffHunk hunk in diff.Hunks)
                 {
@@ -1035,7 +1113,7 @@ namespace Bough.App.ViewModels
             {
                 if (ChangedFiles.Contains(file) == true)
                 {
-                    file.DiffReason = _errorLocalizer.GetDisplayMessage(exception);
+                    file.SetLocalizedDiffReason(new LocalizedText(exception));
                     file.IsLoaded = true;
                 }
             }
@@ -1065,6 +1143,77 @@ namespace Bough.App.ViewModels
             foreach (HistoryInspectionFileItem file in ChangedFiles) file.IsExpanded = false;
         }
 
+        public async Task BrowseCommitFilesAsync(string repositoryRoot, string commitHash)
+        {
+            GitRepository repository = RequireRepository(repositoryRoot);
+            await SelectCommitAsync(commitHash);
+            if (_repository != repository)
+            {
+                return;
+            }
+            HistoryCommitItem selected = SelectedCommit;
+            if (selected == null)
+            {
+                return;
+            }
+            if (selected.Hash != commitHash)
+            {
+                return;
+            }
+
+            await _inspectionLoadTask;
+            if (_repository != repository)
+            {
+                return;
+            }
+            if (SelectedCommit != selected)
+            {
+                return;
+            }
+            if (_inspection == null)
+            {
+                return;
+            }
+            if (_inspection.Hash != commitHash)
+            {
+                return;
+            }
+            await OpenFileTreeAsync();
+        }
+
+        private async Task OpenFileTreeAsync()
+        {
+            IsFileTreeView = true;
+            CloseAuxiliary();
+            TreeSearch = string.Empty;
+            _previewRequest++;
+            PreviewPath = string.Empty;
+            PreviewText = string.Empty;
+            PreviewReason = string.Empty;
+            _selectedTreeFile = null;
+            OnPropertyChanged(nameof(SelectedTreeFile));
+            await LoadTreeAsync();
+        }
+
+        public async Task CloseFileTreeAsync()
+        {
+            IsFileTreeView = false;
+            _previewRequest++;
+            PreviewPath = string.Empty;
+            PreviewText = string.Empty;
+            PreviewReason = string.Empty;
+            if (SelectedTab != 1)
+            {
+                return;
+            }
+            HistoryInspectionFileItem selected = SelectedChangedFile;
+            if (selected == null)
+            {
+                return;
+            }
+            await OpenFileAsync(selected.Path, selected.File.StatusCode == 'D');
+        }
+
         public async Task LoadTreeAsync()
         {
             GitRepository repository = _repository;
@@ -1084,7 +1233,7 @@ namespace Bough.App.ViewModels
             int request = ++_treeRequest;
             try
             {
-                GitCommitTreeListing listing = await _inspectionService.GetTreeEntriesAsync(repository, inspection.Hash);
+                GitCommitTreeListing listing = await _fileTreePresenter.LoadAsync(repository, inspection.Hash);
                 if (request != _treeRequest)
                 {
                     return;
@@ -1102,7 +1251,7 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                if (request == _treeRequest) ErrorText = _errorLocalizer.GetDisplayMessage(exception);
+                if (request == _treeRequest) SetLocalizedErrorText(new LocalizedText(exception));
             }
         }
 
@@ -1114,10 +1263,6 @@ namespace Bough.App.ViewModels
                 return;
             }
             if (item.IsLoaded == true)
-            {
-                return;
-            }
-            if (item.IsLoading == true)
             {
                 return;
             }
@@ -1134,7 +1279,7 @@ namespace Bough.App.ViewModels
             item.IsLoading = true;
             try
             {
-                GitCommitTreeListing listing = await _inspectionService.GetTreeEntriesAsync(repository, inspection.Hash, item.Path);
+                GitCommitTreeListing listing = await _fileTreePresenter.LoadAsync(repository, inspection.Hash, item.Path);
                 if (_repository != repository)
                 {
                     return;
@@ -1143,7 +1288,7 @@ namespace Bough.App.ViewModels
                 {
                     return;
                 }
-                if (item.IsExpanded == false)
+                if (item.IsLoaded == true)
                 {
                     return;
                 }
@@ -1189,7 +1334,7 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                if (request == _treeFilterRequest) ErrorText = _errorLocalizer.GetDisplayMessage(exception);
+                if (request == _treeFilterRequest) SetLocalizedErrorText(new LocalizedText(exception));
             }
         }
 
@@ -1229,63 +1374,10 @@ namespace Bough.App.ViewModels
             if (item.IsDirectory == true)
             {
                 try { await ExpandTreeAsync(item); }
-                catch (Exception exception) { ErrorText = _errorLocalizer.GetDisplayMessage(exception); }
+                catch (Exception exception) { SetLocalizedErrorText(new LocalizedText(exception)); }
                 return;
             }
             await OpenFileAsync(item.Path, false);
-        }
-
-        public async Task ShowInTreeAsync(string path)
-        {
-            GitRepository repository = _repository;
-            GitCommitInspection inspection = _inspection;
-            if (repository == null)
-            {
-                return;
-            }
-            if (inspection == null)
-            {
-                return;
-            }
-            TreeSearch = string.Empty;
-            SelectedTab = 2;
-            await LoadTreeAsync();
-            if (_repository != repository)
-            {
-                return;
-            }
-            if (_inspection != inspection)
-            {
-                return;
-            }
-            string[] segments = path.Split('/');
-            ObservableCollection<HistoryTreeItem> level = TreeRoots;
-            HistoryTreeItem found = null;
-            string current = string.Empty;
-            foreach (string segment in segments)
-            {
-                if (current.Length > 0) current += "/";
-                current += segment;
-                found = level.FirstOrDefault(item => item.Path == current);
-                if (found == null)
-                {
-                    return;
-                }
-                if (found.IsDirectory == true)
-                {
-                    await ExpandTreeAsync(found);
-                    if (_repository != repository)
-                    {
-                        return;
-                    }
-                    if (_inspection != inspection)
-                    {
-                        return;
-                    }
-                    level = found.Children;
-                }
-            }
-            SelectedTreeFile = found;
         }
 
         public async Task OpenFileAsync(string path, bool deleted)
@@ -1305,13 +1397,13 @@ namespace Bough.App.ViewModels
             if (deleted == true) revision = SelectedParent;
             if (revision.Length == 0)
             {
-                PreviewReason = _stringHelper.GetString("HistoryPreviewFileAbsent");
+                SetLocalizedPreviewReason(new LocalizedText("HistoryPreviewFileAbsent"));
                 return;
             }
             int request = ++_previewRequest;
             PreviewPath = $"{path} @ {revision.Substring(0, 8)}";
             PreviewText = string.Empty;
-            PreviewReason = _stringHelper.GetString("HistoryPreviewLoading");
+            SetLocalizedPreviewReason(new LocalizedText("HistoryPreviewLoading"));
             try
             {
                 GitCommitFileContent content = await _inspectionService.GetFileContentAsync(repository, revision, path);
@@ -1332,15 +1424,15 @@ namespace Bough.App.ViewModels
                     return;
                 }
                 PreviewText = content.Text;
-                PreviewReason = LocalizeFileReason(content.ReasonCode, content.ReasonArguments);
+                SetLocalizedPreviewReason(new LocalizedText(content.ReasonCode, content.ReasonArguments.ToArray()));
                 if (content.ReasonCode == "HistorySubmoduleGitlink")
                 {
-                    PreviewReason = _stringHelper.Format("HistoryPreviewTarget", PreviewReason, content.ObjectHash);
+                    SetLocalizedPreviewReason(new LocalizedText("HistoryPreviewTarget", new LocalizedText(content.ReasonCode, content.ReasonArguments.ToArray()), content.ObjectHash));
                 }
             }
             catch (Exception exception)
             {
-                if (request == _previewRequest) PreviewReason = _errorLocalizer.GetDisplayMessage(exception);
+                if (request == _previewRequest) SetLocalizedPreviewReason(new LocalizedText(exception));
             }
         }
 
@@ -1376,7 +1468,7 @@ namespace Bough.App.ViewModels
                 AuxiliaryText = string.Join("\n", page.Entries.Select(entry => $"{entry.CommitHash.Substring(0, 8)}  {entry.AuthoredAt:yyyy-MM-dd}  {entry.Author}  {entry.Title}  {entry.PreviousPath}"));
                 OnPropertyChanged(nameof(HasAuxiliary));
             }
-            catch (Exception exception) { ErrorText = _errorLocalizer.GetDisplayMessage(exception); }
+            catch (Exception exception) { SetLocalizedErrorText(new LocalizedText(exception)); }
         }
 
         public GitRepository RequireSelectedRepository(string root, string hash)

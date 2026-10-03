@@ -11,10 +11,8 @@ using Bough.App.Localization;
 using Bough.App.Presenters;
 using Bough.App.ViewModels.Models;
 using Bough.Core.Git;
-using DataContainer.Generated;
 using Bough.Core.Git.Models;
 using Bough.Core.Internals;
-using Bough.App.Internals;
 
 namespace Bough.App.Views
 {
@@ -32,20 +30,23 @@ namespace Bough.App.Views
     {
         public static string TagText(string name, StringHelper stringHelper = null)
         {
+            return ResolveStrings(stringHelper).GetString(name);
+        }
+
+        private static StringHelper ResolveStrings(StringHelper stringHelper)
+        {
             if (stringHelper != null)
             {
-                return stringHelper.GetString(name);
+                return stringHelper;
             }
-            StringTemplate template = TemplateContainer<StringTemplate>.Find(name);
-            if (template == null)
+            if (Application.Current is App app)
             {
-                return name;
+                if (app.Strings != null)
+                {
+                    return app.Strings;
+                }
             }
-            if (CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ko")
-            {
-                return template.Kor;
-            }
-            return template.Eng;
+            throw new ArgumentNullException(nameof(stringHelper));
         }
 
         public static string FormatTagText(string name, string value, StringHelper stringHelper = null)
@@ -661,16 +662,7 @@ namespace Bough.App.Views
 
         private static string DisplayFailure(Exception exception, StringHelper stringHelper)
         {
-            if (stringHelper == null)
-            {
-                StringLanguage language = StringLanguage.English;
-                if (CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ko")
-                {
-                    language = StringLanguage.Korean;
-                }
-                stringHelper = new StringHelper(new StringLanguageSelection(language));
-            }
-            return new GitErrorLocalizer(stringHelper).GetDisplayMessage(exception);
+            return new GitErrorLocalizer(ResolveStrings(stringHelper)).GetDisplayMessage(exception);
         }
 
         private static Window CreateWindow(string title)

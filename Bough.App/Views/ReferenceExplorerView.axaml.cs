@@ -7,6 +7,8 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Bough.App.ViewModels;
+using Bough.App.Localization;
+using Bough.App.ViewModels.Models;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
 using Bough.App.Internals;
@@ -21,6 +23,7 @@ namespace Bough.App.Views
         public ReferenceExplorerView()
         {
             InitializeComponent();
+            LanguageChangeBinding.Bind(this, () => (DataContext as ReferenceExplorerViewModel)?.Strings);
             ReferenceTree.AddHandler(InputElement.PointerPressedEvent, TreeNodePointerPressed, RoutingStrategies.Bubble, true);
         }
 

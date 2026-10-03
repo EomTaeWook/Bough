@@ -5,7 +5,7 @@ using System.Linq;
 using Bough.App.ViewModels.Models;
 using Bough.Core.Git.Models;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.Services
 {
     public class HistoryGraphBuilder
     {

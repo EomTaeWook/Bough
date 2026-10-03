@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Bough.App.Interfaces;
+using Bough.App.Localization;
 using Bough.App.ViewModels;
 using Bough.App.ViewModels.Models;
 
@@ -10,6 +12,7 @@ namespace Bough.App.Views
         public StashView()
         {
             InitializeComponent();
+            LanguageChangeBinding.Bind(this, () => (DataContext as StashViewModel)?.Strings);
         }
 
         private async void ApplyClicked(object sender, RoutedEventArgs eventArgs)

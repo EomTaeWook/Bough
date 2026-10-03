@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Bough.App.Localization;
 using Bough.Core.Git;
-using Bough.App.ViewModels.Models;
 using Bough.Core.Git.Models;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.ViewModels.Models
 {
     public class HistoryCommitItem : ViewModelBase
     {
@@ -55,6 +54,14 @@ namespace Bough.App.ViewModels
         }
 
         public GitHistoryCommit Commit { get; }
+        public override void RefreshLocalization()
+        {
+            foreach (HistoryReferenceItem reference in References)
+            {
+                reference.RefreshLocalization();
+            }
+            base.RefreshLocalization();
+        }
         public HistoryGraphRow Graph { get; }
         public double GraphWidth { get { return _graphWidth; } set { SetProperty(ref _graphWidth, value); } }
         public IReadOnlyList<HistoryReferenceItem> References { get { return _references; } }

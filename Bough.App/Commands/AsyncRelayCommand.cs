@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.Commands
 {
     public class AsyncRelayCommand : ICommand
     {

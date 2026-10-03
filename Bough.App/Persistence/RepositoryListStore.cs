@@ -2,9 +2,8 @@ using System;
 using System.IO;
 using System.Text.Json;
 using Bough.Core.Git;
-using Bough.App.ViewModels.Models;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.Persistence
 {
     public class RepositoryListStore
     {

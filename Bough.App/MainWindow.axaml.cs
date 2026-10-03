@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Bough.App.Localization;
 using Bough.App.Presenters;
 using Bough.App.ViewModels;
+using Bough.App.ViewModels.Models;
 using Bough.App.Views;
 using Bough.Core.Git;
 
@@ -29,6 +31,22 @@ namespace Bough.App
         private int _activationSuppressionDepth;
         private int _activationVersion;
         private DateTime _lastActivationRefreshUtc;
+
+        private void RefreshLocalizedLabels()
+        {
+            ToolTip.SetTip(RepositoryActionsButton, _stringHelper.GetString("RepositoryActionsTooltip"));
+            Avalonia.Automation.AutomationProperties.SetName(RepositoryActionsButton, _stringHelper.GetString("RepositoryActionsButtonText"));
+            OpenRepositoryActionLabel.Text = _stringHelper.GetString("RepositoryAddExistingAction");
+            OpenRepositoryMenuItem.Header = _stringHelper.GetString("RepositoryAddExistingAction");
+            ToolTip.SetTip(OpenRepositoryMenuItem, _viewModel.RepositoryList.AddRepositoryTooltipText);
+            ToolTip.SetTip(OpenRepositoryButton, _viewModel.RepositoryList.AddRepositoryTooltipText);
+            Avalonia.Automation.AutomationProperties.SetName(OpenRepositoryButton, _stringHelper.GetString("RepositoryAddExistingAction"));
+            CloneRepositoryActionLabel.Text = _stringHelper.GetString("CloneAction");
+            CloneRepositoryMenuItem.Header = _stringHelper.GetString("CloneAction");
+            ToolTip.SetTip(CloneRepositoryMenuItem, _stringHelper.GetString("CloneTitle"));
+            ToolTip.SetTip(CloneRepositoryButton, _stringHelper.GetString("CloneTitle"));
+            Avalonia.Automation.AutomationProperties.SetName(CloneRepositoryButton, _stringHelper.GetString("CloneTitle"));
+        }
 
         public MainWindow(MainWindowViewModel viewModel, StringHelper stringHelper, GitErrorLocalizer errorLocalizer,
             GitOperationQueue operationQueue, CloneRepositoryPresenter clonePresenter, GitSettingsService settingsService,
@@ -69,14 +87,9 @@ namespace Bough.App
             _clonePresenter = clonePresenter;
             _viewModel = viewModel;
             DataContext = _viewModel;
-            OpenRepositoryButton.Content = _stringHelper.GetString("RepositoryAddExistingAction");
-            ToolTip.SetTip(OpenRepositoryButton, _viewModel.RepositoryList.AddRepositoryTooltipText);
-            Avalonia.Automation.AutomationProperties.SetName(OpenRepositoryButton,
-                _stringHelper.GetString("RepositoryAddExistingAction"));
-            CloneRepositoryButton.Content = _stringHelper.GetString("CloneAction");
-            ToolTip.SetTip(CloneRepositoryButton, _stringHelper.GetString("CloneTitle"));
-            Avalonia.Automation.AutomationProperties.SetName(CloneRepositoryButton,
-                _stringHelper.GetString("CloneTitle"));
+            RepositoryPickerPanel.DataContext = _viewModel;
+            LanguageChangeBinding.Bind(this, () => _stringHelper, RefreshLocalizedLabels);
+            RefreshLocalizedLabels();
             RemoteOperationsPanel.StringHelper = stringHelper;
             RemoteOperationsPanel.SettingsService = settingsService;
             RemoteOperationsPanel.ErrorLocalizer = errorLocalizer;
@@ -406,6 +419,27 @@ namespace Bough.App
             return true;
         }
 
+        private void RepositoryActionsClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (sender is not Button button)
+            {
+                return;
+            }
+
+            CloseRepositoryMenus();
+            ContextMenu menu = button.ContextMenu;
+            OpenRepositoryMenuItem.IsEnabled = _viewModel.IsRepositoryMutationInProgress == false;
+            menu.PlacementConstraintAdjustment = PopupPositionerConstraintAdjustment.FlipX |
+                PopupPositionerConstraintAdjustment.SlideX | PopupPositionerConstraintAdjustment.FlipY;
+            menu.Open(button);
+        }
+
+        private void CloseRepositoryMenus()
+        {
+            RepositoryPickerButton.Flyout.Hide();
+            RepositoryActionsButton.ContextMenu?.Close();
+        }
+
         private async void RepositoryClicked(object sender, RoutedEventArgs eventArgs)
         {
             if (sender is not Button button)
@@ -420,6 +454,7 @@ namespace Bough.App
             {
                 return;
             }
+            CloseRepositoryMenus();
             if (item.RootPath != _viewModel.CurrentRepositoryRoot)
             {
                 if (await CloseConflictWindowForRepositoryChangeAsync() == false)
@@ -446,6 +481,7 @@ namespace Bough.App
             }
             if (item.RootPath == _viewModel.CurrentRepositoryRoot)
             {
+                CloseRepositoryMenus();
                 if (await CloseConflictWindowForRepositoryChangeAsync() == false)
                 {
                     return;
@@ -456,6 +492,7 @@ namespace Bough.App
 
         private async void OpenRepositoryClicked(object sender, RoutedEventArgs eventArgs)
         {
+            CloseRepositoryMenus();
             if (_viewModel.IsRepositoryMutationInProgress == true)
             {
                 return;
@@ -493,6 +530,7 @@ namespace Bough.App
 
         private async void CloneRepositoryClicked(object sender, RoutedEventArgs eventArgs)
         {
+            CloseRepositoryMenus();
             _activationSuppressionDepth++;
             try
             {

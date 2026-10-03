@@ -18,7 +18,7 @@
         <Button x:Name="BrowseButton" Grid.Column="1" Click="BrowseClicked" Height="32" MinWidth="80" Padding="12,4" />
       </Grid>
       <TextBlock x:Name="DestinationHint" Foreground="{DynamicResource BoughBrushTextMuted}"
-                 TextWrapping="Wrap" FontSize="11" />
+                 TextWrapping="Wrap" FontSize="12" />
     </StackPanel>
     <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
       <StackPanel Spacing="8">

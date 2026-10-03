@@ -1,4 +1,5 @@
 using Bough.App.Localization;
+using Bough.App.Persistence;
 using Dignus.DependencyInjection.Attributes;
 using System;
 using System.Collections.ObjectModel;
@@ -9,7 +10,7 @@ using Bough.App.ViewModels.Models;
 namespace Bough.App.ViewModels
 {
     [Injectable(Dignus.DependencyInjection.LifeScope.Singleton)]
-    public class RepositoryListViewModel
+    public class RepositoryListViewModel : ViewModelBase
     {
         private readonly RepositoryListStore _store;
         private readonly StringHelper _stringHelper;

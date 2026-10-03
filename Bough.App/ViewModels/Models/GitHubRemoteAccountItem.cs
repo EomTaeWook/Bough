@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Bough.Core.Git.Models;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.ViewModels.Models
 {
     public class GitHubRemoteAccountItem : ViewModelBase
     {

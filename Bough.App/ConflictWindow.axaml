@@ -55,7 +55,7 @@
     </Style>
     <Style Selector="TextBox.code">
       <Setter Property="FontFamily" Value="Cascadia Mono, Menlo, monospace" />
-      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontSize" Value="14" />
       <Setter Property="Background" Value="{DynamicResource BoughBrushInset}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
       <Setter Property="BorderThickness" Value="0" />
@@ -90,7 +90,7 @@
                   <TextBlock Grid.Row="0" Text="{Binding FileName}" FontWeight="SemiBold"
                              TextTrimming="CharacterEllipsis" />
                   <TextBlock Grid.Row="1" Text="{Binding DirectoryName}" Foreground="{DynamicResource BoughBrushTextSubtle}"
-                             FontSize="11" TextTrimming="CharacterEllipsis" />
+                             FontSize="12" TextTrimming="CharacterEllipsis" />
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
@@ -123,7 +123,7 @@
               <Border Grid.Row="0" Background="{DynamicResource BoughBrushDiffAddedSurface}" CornerRadius="9,9,0,0" Padding="12,8">
                 <StackPanel Spacing="4">
                   <TextBlock Text="{Binding CurrentChangeLabel}" Foreground="{DynamicResource BoughBrushDiffAdded}" FontWeight="SemiBold" />
-                  <TextBlock Text="{Binding OursSource}" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11"
+                  <TextBlock Text="{Binding OursSource}" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12"
                              TextTrimming="CharacterEllipsis" />
                 </StackPanel>
               </Border>
@@ -139,7 +139,7 @@
               <Border Grid.Row="0" Background="{DynamicResource BoughBrushDiffHunkSurface}" CornerRadius="9,9,0,0" Padding="12,8">
                 <StackPanel Spacing="4">
                   <TextBlock Text="{Binding IncomingChangeLabel}" Foreground="{DynamicResource BoughBrushDiffHunk}" FontWeight="SemiBold" />
-                  <TextBlock Text="{Binding TheirsSource}" Foreground="{DynamicResource BoughBrushDiffHunk}" FontSize="11"
+                  <TextBlock Text="{Binding TheirsSource}" Foreground="{DynamicResource BoughBrushDiffHunk}" FontSize="12"
                              TextTrimming="CharacterEllipsis" />
                 </StackPanel>
               </Border>
@@ -192,7 +192,7 @@
               <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                 <TextBlock Text="{Binding FinalFileText}" FontSize="14" FontWeight="SemiBold" />
                 <TextBlock Text="{Binding FinalFileHintText}"
-                           Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="11" VerticalAlignment="Center" />
+                           Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" VerticalAlignment="Center" />
               </StackPanel>
               <Button Grid.Column="1" Classes="primary" Content="{Binding SaveAndStageText}"
                       IsEnabled="{Binding CanSaveAndStage}" Click="SaveAndStageClicked" VerticalAlignment="Center" MinWidth="80" />
@@ -209,11 +209,11 @@
     <Border Grid.Row="1" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
       <Grid ColumnDefinitions="*,Auto,180" Margin="16,0">
         <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" IsVisible="{Binding HasGeneralStatus}"
-                   Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                   Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
         <TextBlock x:Name="StageStatusBlock" Grid.Column="0" IsVisible="{Binding HasStageResult}"
-                   Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                   Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
         <TextBlock Grid.Column="1" Text="{Binding QueueStatusText}" IsVisible="{Binding HasQueueStatus}"
-                   Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" VerticalAlignment="Center" Margin="12,0"
+                   Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" VerticalAlignment="Center" Margin="12,0"
                    MaxWidth="300" TextTrimming="CharacterEllipsis" />
         <ProgressBar Grid.Column="2" IsVisible="{Binding IsBusy}" IsIndeterminate="True" Height="3" VerticalAlignment="Center" />
       </Grid>

@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.ViewModels.Models
 {
     public class RepositoryItem : ViewModelBase
     {

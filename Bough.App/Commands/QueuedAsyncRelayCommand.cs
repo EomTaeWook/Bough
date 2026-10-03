@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Dignus.Log;
 
-namespace Bough.App.ViewModels
+namespace Bough.App.Commands
 {
     public class QueuedAsyncRelayCommand : ICommand
     {

@@ -8,7 +8,7 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-[Download Bough v0.1.0-beta.4 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.4/Bough-v0.1.0-beta.4-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.4)
+[Windows x64 public beta downloads and release notes](https://github.com/EomTaeWook/Bough/releases)
 
 Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. This beta provides a Windows x64 executable. On macOS, use the source build instructions below.
 
@@ -75,13 +75,27 @@ The project is under active development. [Implementation status](Docs/CurrentSta
 
 ## Run
 
-You need the .NET 10 SDK and Git.
+### Run the release
+
+1. Install Git. If Bough cannot find it, set the `git.exe` path under **Settings → Git executable**.
+2. Save the Windows x64 `.exe` from the download link above in a folder of your choice and run it. No archive extraction, separate .NET installation, or copying of DLLs, data, or configuration files is required.
+3. Use **+ → Open repository** in the top toolbar to select an existing repository, or **+ → Clone** to enter a remote URL or local path and a destination folder. The destination can be a new path or an empty folder.
+4. Select the current repository in the header to switch between recent repositories. Review files and diffs under **Local changes**, stage files, and commit. Use **History** to browse past commits.
+5. Choose Korean or English under **Settings → Language**. Korean is the default; changes apply immediately and are saved for the next launch.
+
+User settings and recent repositories are stored in `%LocalAppData%\Bough` on Windows. Replacing the executable with an updated version preserves these settings.
+
+### Run from source
+
+Development requires the .NET 10 SDK and Git. Run the following command from the repository root. macOS can also run from source; this beta does not include a macOS package.
 
 ```powershell
 dotnet run --project Bough.App/Bough.App.csproj
 ```
 
-Select **Open repository** below the repository list in the left sidebar to choose a local folder, or select **Clone** to open the clone dialog directly. Enter the destination folder path, or choose an empty folder with Browse; Bough adds and opens the repository when cloning finishes. Use the list to switch repositories; the remove button appears on hover or keyboard focus. If the repository has unresolved conflicts, choose a change for each section, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
+### Work with repositories
+
+Bough adds and opens the repository when cloning finishes. The list's remove button appears on hover or keyboard focus. If the repository has unresolved conflicts, choose a change for each section, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
 
 When cloning fails, Bough shows the cause identified from Git diagnostics, such as authentication, repository access, connection, storage space, or file writing. Destination status is reported separately. If the folder is empty, you can retry using the same path after resolving the clone error. When the cause cannot be identified, Bough shows a general failure message and the exit code.
 
@@ -104,7 +118,7 @@ cd ../JsonToCSharp
 ./JsonToCSharp.exe --no-pause
 ```
 
-The bundled converter may exit with a `Console.ReadKey` exception after generating the files. If that happens, check both the completion message and changes to the generated output. UI text is read from `StringTemplate`: Korean is used when the operating system UI language is Korean, and English is used otherwise.
+The bundled converter may exit with a `Console.ReadKey` exception after generating the files. If that happens, check both the completion message and changes to the generated output. UI text is read from `StringTemplate` using the language selected in the app settings.
 
 ## License
 

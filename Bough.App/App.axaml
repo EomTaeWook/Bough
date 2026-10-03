@@ -4,6 +4,48 @@
              RequestedThemeVariant="Light">
   <Application.Styles>
     <FluentTheme />
+    <Style Selector="TextBlock">
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="SelectableTextBlock">
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="MenuItem">
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="CheckBox">
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="RadioButton">
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="PathIcon.boughIcon">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+    <Style Selector="Button PathIcon.boughIcon">
+      <Setter Property="Foreground" Value="{ReflectionBinding $parent[Button].Foreground}" />
+    </Style>
+    <Style Selector="MenuItem PathIcon.boughIcon">
+      <Setter Property="Foreground" Value="{ReflectionBinding $parent[MenuItem].Foreground}" />
+    </Style>
+    <Style Selector="PathIcon.boughChevronIcon">
+      <Setter Property="Width" Value="10" />
+      <Setter Property="Height" Value="10" />
+    </Style>
     <Style Selector="Window">
       <Setter Property="Background" Value="{DynamicResource BoughBrushCanvas}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
@@ -77,6 +119,9 @@
   </Application.Styles>
   <Application.Resources>
     <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="/Assets/ActionIcons.axaml" />
+      </ResourceDictionary.MergedDictionaries>
       <ResourceDictionary.ThemeDictionaries>
       <ResourceDictionary x:Key="Light">
         <Color x:Key="BoughColorHeader">#A7C6DB</Color>
@@ -187,14 +232,14 @@
         <SolidColorBrush x:Key="BoughBrushTextMuted" Color="#B5C9B8" />
         <Color x:Key="BoughColorTextSubtle">#8FA596</Color>
         <SolidColorBrush x:Key="BoughBrushTextSubtle" Color="#8FA596" />
-        <Color x:Key="BoughColorAccent">#D6F36A</Color>
-        <SolidColorBrush x:Key="BoughBrushAccent" Color="#D6F36A" />
-        <Color x:Key="BoughColorAccentText">#111511</Color>
-        <SolidColorBrush x:Key="BoughBrushAccentText" Color="#111511" />
-        <Color x:Key="BoughColorSelection">#284635</Color>
-        <SolidColorBrush x:Key="BoughBrushSelection" Color="#284635" />
-        <Color x:Key="BoughColorSelectionText">#F0F8E7</Color>
-        <SolidColorBrush x:Key="BoughBrushSelectionText" Color="#F0F8E7" />
+        <Color x:Key="BoughColorAccent">#8FC8F0</Color>
+        <SolidColorBrush x:Key="BoughBrushAccent" Color="#8FC8F0" />
+        <Color x:Key="BoughColorAccentText">#102333</Color>
+        <SolidColorBrush x:Key="BoughBrushAccentText" Color="#102333" />
+        <Color x:Key="BoughColorSelection">#253E52</Color>
+        <SolidColorBrush x:Key="BoughBrushSelection" Color="#253E52" />
+        <Color x:Key="BoughColorSelectionText">#E9F3FC</Color>
+        <SolidColorBrush x:Key="BoughBrushSelectionText" Color="#E9F3FC" />
         <Color x:Key="BoughColorDisabled">#28332D</Color>
         <SolidColorBrush x:Key="BoughBrushDisabled" Color="#28332D" />
         <Color x:Key="BoughColorDisabledText">#87958B</Color>
@@ -223,8 +268,8 @@
         <SolidColorBrush x:Key="BoughBrushDiffHunk" Color="#B5A5F0" />
         <Color x:Key="BoughColorDiffHunkSurface">#302A46</Color>
         <SolidColorBrush x:Key="BoughBrushDiffHunkSurface" Color="#302A46" />
-        <Color x:Key="BoughColorFocus">#B5D869</Color>
-        <SolidColorBrush x:Key="BoughBrushFocus" Color="#B5D869" />
+        <Color x:Key="BoughColorFocus">#9DD4FF</Color>
+        <SolidColorBrush x:Key="BoughBrushFocus" Color="#9DD4FF" />
         <Color x:Key="BoughColorGraphOne">#7FC5DD</Color>
         <SolidColorBrush x:Key="BoughBrushGraphOne" Color="#7FC5DD" />
         <Color x:Key="BoughColorGraphTwo">#D5A0D0</Color>
