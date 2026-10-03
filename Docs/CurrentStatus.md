@@ -27,6 +27,8 @@
 - 어두운 테마의 연두색 강조를 하늘색 `#8FC8F0`으로 바꾸고 선택면·선택 글자·포커스 색도 같은 계열로 맞췄다. 현재 브랜치와 주요 동작이 공통 강조색을 사용한다. 이번 색상 변경은 검증 미실시다.
 - Windows x64 Release의 자체 포함 단일 파일 설정과 JSON·로그 기본 설정 로더를 반영했다. 개발 실행의 외부 파일과 기존 사용자 설정·저장소 목록·로그 저장 위치는 유지한다. `ad5f414` 소스에서 배포 파일을 생성해 [v0.1.0-beta.4](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.4) 베타로 게시했다. 별도 실행·기능 검증은 미실시다.
 
+- `6cf89ca` 소스의 Windows x64 자체 포함 단일 실행 파일을 [v0.1.0-beta.5](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.5)로 게시했다. 배포 생성과 README 촬영 외의 별도 테스트·기능 및 회귀 검증은 수행하지 않았다.
+
 ## README 화면
 
 History·Local Changes·충돌 해결의 최신 앱 콘텐츠 이미지를 `Docs/images`에 반영했다. 격리한 실제 ViewModel과 데모 저장소를 사용해 밝은 테마·영어 UI·1360×850 크기로 촬영했으며 운영체제 제목 표시줄은 포함하지 않는다. Windows 화면 캡처 접근 제한 때문에 Avalonia `RenderTargetBitmap`으로 콘텐츠를 저장했다. 이 이미지 제작은 별도의 기능·회귀 검증을 수행했다는 의미가 아니다.

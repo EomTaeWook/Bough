@@ -1,10 +1,11 @@
 # 릴리스
 
-## v0.1.0-beta.5 배포 파일 생성
+## v0.1.0-beta.5
 
-- 생성일: 2026-10-03
-- 배포 파일: `.codex-build/release-v0.1.0-beta.5/Bough-v0.1.0-beta.5-win-x64.exe`
-- 게시 상태: GitHub 인증 대기. 릴리스·태그·공개 다운로드는 아직 만들지 않았다.
+- 배포일: 2026-10-03
+- 소스 커밋: `6cf89ca`
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.5)
+- [Windows x64 단일 실행파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.5/Bough-v0.1.0-beta.5-win-x64.exe)
 
 저장소 열기·복제를 상단 `+` 메뉴로 옮기고 현재 저장소 헤더에서 최근 목록을 선택한다. 작업·상태 아이콘, 글씨 크기, 버튼 간격과 테마 색상을 정리했다. 설정에서 한국어·영어를 선택하면 즉시 적용하고 다음 실행에도 유지하며 OS UI 언어 감지는 제거했다. 파일 트리 진입 메뉴를 제거하고 명령·인터페이스·저장·UI 큐 보조 코드를 역할별 폴더로 분리했다. 한영 README의 실행 안내와 History·Local Changes·충돌 해결 이미지를 갱신했다.
 
@@ -14,7 +15,7 @@
 dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.5 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.5\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.5\win-x64\
 ```
 
-출력 `Bough.exe`를 버전이 포함된 이름으로 복사했다. .NET 런타임·필수 JSON·기본 로그 설정·네이티브 라이브러리를 포함하며 Git은 별도로 설치한다. 기존 사용자 설정·최근 저장소 목록·로그 저장 정책과 이전 릴리스는 유지한다. macOS 배포 파일은 포함하지 않는다.
+출력 `Bough.exe`를 버전이 포함된 이름으로 게시했다. .NET 런타임·필수 JSON·기본 로그 설정·네이티브 라이브러리를 포함하며 Git은 별도로 설치한다. 기존 사용자 설정·최근 저장소 목록·로그 저장 정책과 이전 릴리스는 유지한다. macOS 배포 파일은 포함하지 않는다.
 
 ## v0.1.0-beta.4
 
