@@ -10,12 +10,32 @@ namespace Bough.App.Localization
     [Injectable(Dignus.DependencyInjection.LifeScope.Singleton)]
     public class StringHelper
     {
+        private StringLanguage _language;
+
         public StringHelper(StringLanguageSelection languageSelection)
         {
             Language = languageSelection.Language;
         }
 
-        public StringLanguage Language { get; set; }
+        public event Action<StringLanguage> LanguageChanged;
+
+        public StringLanguage Language
+        {
+            get { return _language; }
+            internal set
+            {
+                if (Enum.IsDefined(value) == false)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+                if (_language == value)
+                {
+                    return;
+                }
+                _language = value;
+                LanguageChanged?.Invoke(value);
+            }
+        }
 
         public string GetString(int id)
         {

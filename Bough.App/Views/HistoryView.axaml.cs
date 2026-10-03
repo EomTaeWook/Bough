@@ -12,6 +12,8 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Bough.App.ViewModels;
+using Bough.App.Localization;
+using Bough.App.ViewModels.Models;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
 using Bough.Core.Internals;
@@ -35,6 +37,7 @@ namespace Bough.App.Views
         public HistoryView()
         {
             InitializeComponent();
+            LanguageChangeBinding.Bind(this, () => (DataContext as HistoryViewModel)?.Strings);
             AddHandler(TreeViewItem.ExpandedEvent, TreeExpanded);
             HistoryCommitList.TemplateApplied += (_, _) => AttachCommitScrollViewer();
             DataContextChanged += (_, _) => AttachLayoutViewModel();
@@ -342,6 +345,15 @@ namespace Bough.App.Views
             }
         }
 
+        private async void CloseFileTreeClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not HistoryViewModel viewModel)
+            {
+                return;
+            }
+            await viewModel.CloseFileTreeAsync();
+        }
+
         private async void CopyCommitShaClicked(object sender, RoutedEventArgs eventArgs)
         {
             if (_menuCommitHash == null)
@@ -623,15 +635,14 @@ namespace Bough.App.Views
             _menuRepositoryRoot = viewModel.CurrentRepository.RootPath;
             _menuCommitHash = viewModel.Inspection.Hash;
             MenuItem[] items = menu.Items.OfType<MenuItem>().ToArray();
-            if (items.Length < 6) return;
+            if (items.Length < 5) return;
             string workingPath = viewModel.FileActions.GetWorkingPath(viewModel.CurrentRepository, _menuFilePath);
             items[0].IsEnabled = isDirectory == false;
             items[1].IsEnabled = isDirectory == false && isGitlink == false && File.Exists(workingPath);
             if (items[1].IsEnabled == false) ToolTip.SetTip(items[1], viewModel.Strings.GetString("HistoryWorkingFileAbsentTooltip"));
             else ToolTip.SetTip(items[1], string.Empty);
             items[2].IsEnabled = isDirectory == false;
-            items[3].IsEnabled = isDirectory == false && _menuFileDeleted == false;
-            items[4].IsEnabled = isDirectory == false && isGitlink == false && _menuFileDeleted == false;
+            items[3].IsEnabled = isDirectory == false && isGitlink == false && _menuFileDeleted == false;
         }
 
         private bool TryGetFileContext(out HistoryViewModel viewModel, out GitRepository repository)
@@ -664,7 +675,13 @@ namespace Bough.App.Views
             {
                 return;
             }
-            if (viewModel.SelectedTab == 0) viewModel.SelectedTab = 1;
+            if (viewModel.IsFileTreeView == false)
+            {
+                if (viewModel.SelectedTab == 0)
+                {
+                    viewModel.SelectedTab = 1;
+                }
+            }
             await viewModel.OpenFileAsync(_menuFilePath, _menuFileDeleted);
         }
 
@@ -707,15 +724,6 @@ namespace Bough.App.Views
                 return;
             }
             await viewModel.ShowFileHistoryAsync(_menuFilePath);
-        }
-
-        private async void ShowInTreeClicked(object sender, RoutedEventArgs eventArgs)
-        {
-            if (TryGetFileContext(out HistoryViewModel viewModel, out GitRepository repository) == false)
-            {
-                return;
-            }
-            await viewModel.ShowInTreeAsync(_menuFilePath);
         }
 
         private async void SaveFileClicked(object sender, RoutedEventArgs eventArgs)

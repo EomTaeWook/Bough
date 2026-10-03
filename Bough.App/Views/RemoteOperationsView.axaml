@@ -33,37 +33,61 @@
       <Border BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
         <Grid ColumnDefinitions="Auto,1,Auto">
           <Button x:Name="FetchButton" Grid.Column="0" Classes="remoteActionSegment" Click="FetchClicked"
-                  IsEnabled="{Binding CanFetch}" Padding="12,4" />
+                  IsEnabled="{Binding CanFetch}" Padding="12,4">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource BoughIconFetch}" Classes="boughIcon" />
+              <TextBlock x:Name="FetchActionLabel" VerticalAlignment="Center"
+                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
+            </StackPanel>
+          </Button>
           <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorderStrong}" />
-          <Button x:Name="FetchMenuButton" Grid.Column="2" Classes="remoteActionSegment" Content="▾" Click="FetchMenuClicked"
-                  IsEnabled="{Binding CanFetchAll}" Padding="8,4" />
+          <Button x:Name="FetchMenuButton" Grid.Column="2" Classes="remoteActionSegment" Click="FetchMenuClicked"
+                  IsEnabled="{Binding CanFetchAll}" Padding="8,4">
+            <PathIcon Data="{StaticResource BoughIconChevronDown}" Classes="boughIcon boughChevronIcon" />
+          </Button>
         </Grid>
       </Border>
       <Border BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
         <Grid ColumnDefinitions="Auto,1,Auto">
           <Button x:Name="PullButton" Grid.Column="0" Classes="remoteActionSegment" Click="PullClicked"
-                  IsEnabled="{Binding CanPull}" Padding="12,4" />
+                  IsEnabled="{Binding CanPull}" Padding="12,4">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource BoughIconPull}" Classes="boughIcon" />
+              <TextBlock x:Name="PullActionLabel" VerticalAlignment="Center"
+                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
+            </StackPanel>
+          </Button>
           <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorderStrong}" />
-          <Button x:Name="PullMenuButton" Grid.Column="2" Classes="remoteActionSegment" Content="▾" Click="PullMenuClicked"
-                  IsEnabled="{Binding CanPull}" Padding="8,4" />
+          <Button x:Name="PullMenuButton" Grid.Column="2" Classes="remoteActionSegment" Click="PullMenuClicked"
+                  IsEnabled="{Binding CanPull}" Padding="8,4">
+            <PathIcon Data="{StaticResource BoughIconChevronDown}" Classes="boughIcon boughChevronIcon" />
+          </Button>
         </Grid>
       </Border>
       <Border BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
         <Grid ColumnDefinitions="Auto,1,Auto">
           <Button x:Name="PushButton" Grid.Column="0" Classes="remoteActionSegment" Click="PushClicked"
                   IsEnabled="{Binding CanPush}" Padding="12,4"
-                  ToolTip.Tip="{Binding PushAvailabilityText}" />
+                  ToolTip.Tip="{Binding PushAvailabilityText}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource BoughIconPush}" Classes="boughIcon" />
+              <TextBlock x:Name="PushActionLabel" VerticalAlignment="Center"
+                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
+            </StackPanel>
+          </Button>
           <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorderStrong}" />
-          <Button x:Name="PushMenuButton" Grid.Column="2" Classes="remoteActionSegment" Content="▾" Click="PushMenuClicked"
-                  IsEnabled="{Binding CanPushTo}" Padding="8,4" />
+          <Button x:Name="PushMenuButton" Grid.Column="2" Classes="remoteActionSegment" Click="PushMenuClicked"
+                  IsEnabled="{Binding CanPushTo}" Padding="8,4">
+            <PathIcon Data="{StaticResource BoughIconChevronDown}" Classes="boughIcon boughChevronIcon" />
+          </Button>
         </Grid>
       </Border>
     </StackPanel>
     <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
-      <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="10"
+      <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12"
                  TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StatusText}" />
       <TextBlock Grid.Column="1" Text="{Binding PushAvailabilityText}" IsVisible="{Binding HasNoOutgoingPushCommits}"
-                 Foreground="{DynamicResource BoughBrushWarning}" FontSize="10" MaxWidth="260" TextTrimming="CharacterEllipsis"
+                 Foreground="{DynamicResource BoughBrushWarning}" FontSize="12" MaxWidth="260" TextTrimming="CharacterEllipsis"
                  ToolTip.Tip="{Binding PushAvailabilityText}" />
     </Grid>
   </Grid>

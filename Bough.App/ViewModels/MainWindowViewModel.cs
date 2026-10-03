@@ -1,3 +1,6 @@
+using Bough.App.Commands;
+using Bough.App.Composition;
+using Bough.App.Interfaces;
 using Bough.App.Localization;
 using Bough.App.Presenters;
 using Bough.Core.Git;
@@ -112,6 +115,16 @@ namespace Bough.App.ViewModels
         public event Action ConflictResolutionCompleted;
 
         public ConflictResolutionViewModel Conflicts { get; }
+        public override void RefreshLocalization()
+        {
+            RepositoryList.RefreshLocalization();
+            if (HasRepository == false)
+            {
+                RepositoryName = _stringHelper.GetString("OpenRepositoryPrompt");
+                RepositoryMeta = _stringHelper.GetString("RepositorySidebarHint");
+            }
+            base.RefreshLocalization();
+        }
         public RepositoryListViewModel RepositoryList { get; }
         public HistoryViewModel History { get; }
         public ReferenceExplorerViewModel References { get; }
@@ -121,6 +134,7 @@ namespace Bough.App.ViewModels
 
         public string LocalChangesNavigationText { get { return _stringHelper.GetString("LocalChangesHeading"); } }
         public string HistoryNavigationText { get { return _stringHelper.GetString("MainHistoryNavigation"); } }
+        public string SettingsNavigationText { get { return _stringHelper.GetString("SettingsTitle"); } }
         public string OpenFolderToolTipText { get { return _stringHelper.GetString("MainOpenFolderToolTip"); } }
         public string OpenFolderAutomationName { get { return _stringHelper.GetString("MainOpenFolderAutomationName"); } }
         public string OpenFolderActionText { get { return _stringHelper.GetString("MainOpenFolderAction"); } }
@@ -302,6 +316,7 @@ namespace Bough.App.ViewModels
                 }
                 _gitSettingsStatusViewVersion++;
                 _visibleGitSettingsStatusMessage = string.Empty;
+                OnPropertyChanged(nameof(IsRepositoryStartView));
                 NotifySidebarStatusChanged();
             }
         }
@@ -369,6 +384,11 @@ namespace Bough.App.ViewModels
             MainStatusMessage = string.Empty;
         }
 
+        public bool IsRepositoryStartView
+        {
+            get { return HasRepository == false && IsGitSettingsView == false; }
+        }
+
         public bool HasRepository
         {
             get
@@ -379,6 +399,7 @@ namespace Bough.App.ViewModels
             {
                 if (SetProperty(ref _hasRepository, value) == true)
                 {
+                    OnPropertyChanged(nameof(IsRepositoryStartView));
                     NotifyCommandStates();
                 }
             }

@@ -8,7 +8,7 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-[Download Bough v0.1.0-beta.4 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.4/Bough-v0.1.0-beta.4-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.4)
+[Download Bough v0.1.0-beta.5 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.5/Bough-v0.1.0-beta.5-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.5)
 
 Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. Windows x64 is the current release platform. Running on macOS has not yet been verified.
 
@@ -73,17 +73,29 @@ Additional screens and workflows are described in the [design notes](Design/READ
 
 The project is under active development. [Implementation status](Docs/CurrentStatus.md) (Korean) separates available features from checks still pending. See [development docs](Docs/README.md) and [design notes](Design/README.md) for more detail.
 
-## Run from source
+## Run
 
-You need the .NET 10 SDK and Git.
+### Run the release
+
+1. Install Git. If Bough cannot find it, set the `git.exe` path under **Settings → Git executable**.
+2. Save the Windows x64 `.exe` from the download link above in a folder of your choice and run it. No archive extraction, separate .NET installation, or copying of DLLs, data, or configuration files is required.
+3. Use **+ → Open repository** in the top toolbar to select an existing repository, or **+ → Clone** to enter a remote URL or local path and a destination folder. The destination can be a new path or an empty folder.
+4. Select the current repository in the header to switch between recent repositories. Review files and diffs under **Local changes**, stage files, and commit. Use **History** to browse past commits.
+5. Choose Korean or English under **Settings → Language**. Korean is the default; changes apply immediately and are saved for the next launch.
+
+User settings and recent repositories are stored in `%LocalAppData%\Bough` on Windows. Replacing the executable with an updated version preserves these settings.
+
+### Run from source
+
+Development requires the .NET 10 SDK and Git. Run the following command from the repository root. There is no macOS package, and running from source on macOS has not yet been verified.
 
 ```powershell
 dotnet run --project Bough.App/Bough.App.csproj
 ```
 
-## Workflow
+### Work with repositories
 
-Select **Open repository** below the repository list in the left sidebar to choose a local folder, or select **Clone** to open the clone dialog directly. Enter the destination folder path, or choose an empty folder with Browse; Bough adds and opens the repository when cloning finishes. Use the list to switch repositories; the remove button appears on hover or keyboard focus. If the repository has unresolved conflicts, choose a change for each section, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
+Bough adds and opens the repository when cloning finishes. The list's remove button appears on hover or keyboard focus. If the repository has unresolved conflicts, choose a change for each section, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
 
 When cloning fails, Bough shows the cause identified from Git diagnostics, such as authentication, repository access, connection, storage space, or file writing. Destination status is reported separately. If the folder is empty, you can retry using the same path after resolving the clone error. When the cause cannot be identified, Bough shows a general failure message and the exit code.
 
@@ -95,7 +107,7 @@ For tags, **Delete tag** opens one dialog to choose local or remote deletion, wi
 
 ## Data generation
 
-UI strings originate in `Excel/String.xlsx`, with runtime data in `Datas/String.json`. Debug runs read JSON from the output directory; Release builds read JSON embedded in the executable. Korean is used when the operating system UI language is Korean, and English is used otherwise.
+UI strings originate in `Excel/String.xlsx`, with runtime data in `Datas/String.json`. Debug runs read JSON from the output directory; Release builds read JSON embedded in the executable. Choose Korean or English under **Settings → Language**. Korean is the default, changes apply immediately, and the selection is saved for subsequent runs.
 
 Existing Excel and JSON entries are not fully synchronized, so regenerating all data immediately can remove existing keys. Follow the [data conversion guide](<Docs/데이터 변환 도구 사용법.md>) (Korean) for source editing, conversion steps, Git LFS, and converter limitations.
 

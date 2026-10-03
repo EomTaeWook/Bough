@@ -1,3 +1,5 @@
+using Bough.App.Commands;
+using Bough.App.Interfaces;
 using Bough.App.Localization;
 using Bough.App.Presenters;
 using Bough.Core.Conflicts;
@@ -21,6 +23,27 @@ namespace Bough.App.ViewModels
     [Injectable(Dignus.DependencyInjection.LifeScope.Singleton)]
     public class ConflictResolutionViewModel : ViewModelBase
     {
+        private LocalizedText _statusMessageLocalization;
+        private LocalizedText _currentChoiceTextLocalization;
+        private LocalizedText _currentFilePathLocalization;
+        private void SetLocalizedStatusMessage(LocalizedText text)
+        {
+            StatusMessage = text.GetText(_stringHelper);
+            _statusMessageLocalization = text;
+        }
+
+        private void SetLocalizedCurrentChoiceText(LocalizedText text)
+        {
+            CurrentChoiceText = text.GetText(_stringHelper);
+            _currentChoiceTextLocalization = text;
+        }
+
+        private void SetLocalizedCurrentFilePath(LocalizedText text)
+        {
+            CurrentFilePath = text.GetText(_stringHelper);
+            _currentFilePathLocalization = text;
+        }
+
         private readonly GitRepositoryService _repositoryService;
         private readonly GitOperationQueue _operationQueue;
         private readonly ConflictParser _parser;
@@ -70,7 +93,7 @@ namespace Bough.App.ViewModels
             }
             _choices = [];
             ConflictFiles = [];
-            _currentFilePath = _stringHelper.GetString("SelectConflictFile");
+            SetLocalizedCurrentFilePath(new LocalizedText("SelectConflictFile"));
             _oursSource = _stringHelper.GetString("CurrentChange");
             _theirsSource = _stringHelper.GetString("IncomingChange");
             _oursText = string.Empty;
@@ -79,8 +102,8 @@ namespace Bough.App.ViewModels
             _resultText = string.Empty;
             _loadedResultText = string.Empty;
             _renderedResultText = string.Empty;
-            _statusMessage = _stringHelper.GetString("OpenRepositoryToFindConflicts");
-            _currentChoiceText = _stringHelper.GetString("NoChoiceYet");
+            SetLocalizedStatusMessage(new LocalizedText("OpenRepositoryToFindConflicts"));
+            SetLocalizedCurrentChoiceText(new LocalizedText("NoChoiceYet"));
             _operationQueue.StateChanged += OnGitOperationQueueStateChanged;
 
             PreviousHunkCommand = new RelayCommand(PreviousHunk, CanMoveToPreviousHunk);
@@ -227,21 +250,45 @@ namespace Bough.App.ViewModels
 
         public string CurrentFilePath
         {
-            get { return _currentFilePath; }
-            private set { SetProperty(ref _currentFilePath, value); }
+            get
+            {
+                if (_currentFilePathLocalization != null)
+                {
+                    return _currentFilePathLocalization.GetText(_stringHelper);
+                }
+                return _currentFilePath;
+            }
+            private set { _currentFilePathLocalization = null; SetProperty(ref _currentFilePath, value); }
         }
 
         public string OursSource
         {
-            get { return _oursSource; }
-            private set { SetProperty(ref _oursSource, value); }
+            get
+            {
+                if (_oursSourceLocalization != null)
+                {
+                    return _oursSourceLocalization.GetText(_stringHelper);
+                }
+                return _oursSource;
+            }
+            private set { _oursSourceLocalization = null; SetProperty(ref _oursSource, value); }
         }
 
         public string TheirsSource
         {
-            get { return _theirsSource; }
-            private set { SetProperty(ref _theirsSource, value); }
+            get
+            {
+                if (_theirsSourceLocalization != null)
+                {
+                    return _theirsSourceLocalization.GetText(_stringHelper);
+                }
+                return _theirsSource;
+            }
+            private set { _theirsSourceLocalization = null; SetProperty(ref _theirsSource, value); }
         }
+
+        private LocalizedText _oursSourceLocalization = new("CurrentChange");
+        private LocalizedText _theirsSourceLocalization = new("IncomingChange");
 
         public string OursText
         {
@@ -276,14 +323,28 @@ namespace Bough.App.ViewModels
 
         public string StatusMessage
         {
-            get { return _statusMessage; }
-            private set { SetProperty(ref _statusMessage, value); }
+            get
+            {
+                if (_statusMessageLocalization != null)
+                {
+                    return _statusMessageLocalization.GetText(_stringHelper);
+                }
+                return _statusMessage;
+            }
+            private set { _statusMessageLocalization = null; SetProperty(ref _statusMessage, value); }
         }
 
         public string CurrentChoiceText
         {
-            get { return _currentChoiceText; }
-            private set { SetProperty(ref _currentChoiceText, value); }
+            get
+            {
+                if (_currentChoiceTextLocalization != null)
+                {
+                    return _currentChoiceTextLocalization.GetText(_stringHelper);
+                }
+                return _currentChoiceText;
+            }
+            private set { _currentChoiceTextLocalization = null; SetProperty(ref _currentChoiceText, value); }
         }
 
         public bool HasDocument
@@ -396,7 +457,7 @@ namespace Bough.App.ViewModels
             ConflictFiles.Clear();
             OnPropertyChanged(nameof(ConflictCountText));
             ClearDocument();
-            StatusMessage = _stringHelper.GetString("OpenRepositoryToFindConflicts");
+            SetLocalizedStatusMessage(new LocalizedText("OpenRepositoryToFindConflicts"));
         }
 
         public void DiscardClosedWindowEdits()
@@ -428,11 +489,11 @@ namespace Bough.App.ViewModels
             {
                 if (HasUnsavedConflictEdits == true)
                 {
-                    StatusMessage = _stringHelper.GetString("ConflictResolvedExternallyWithUnsavedEdits");
+                    SetLocalizedStatusMessage(new LocalizedText("ConflictResolvedExternallyWithUnsavedEdits"));
                     return true;
                 }
                 ClearDocument();
-                StatusMessage = _stringHelper.GetString("NoUnresolvedConflicts");
+                SetLocalizedStatusMessage(new LocalizedText("NoUnresolvedConflicts"));
                 return true;
             }
 
@@ -517,8 +578,9 @@ namespace Bough.App.ViewModels
                 incomingSourceLabel = _stringHelper.GetString("RebaseReplaySource");
             }
 
+            string incomingIndexSource = _stringHelper.GetString("ConflictIncomingIndexStage3");
             GitConflictFile conflict = await _repositoryService.LoadConflictAsync(repository, file.RelativePath,
-                currentSourceLabel, incomingSourceLabel, _stringHelper.GetString("ConflictIncomingIndexStage3"));
+                currentSourceLabel, incomingSourceLabel, incomingIndexSource);
             if (loadVersion != _loadVersion)
             {
                 return;
@@ -569,6 +631,28 @@ namespace Bough.App.ViewModels
             CurrentFilePath = conflict.RelativePath;
             OursSource = conflict.OursSource;
             TheirsSource = conflict.TheirsSource;
+            if (isRebaseConflict)
+            {
+                if (conflict.OursSource == currentSourceLabel)
+                {
+                    _oursSourceLocalization = new LocalizedText("RebaseTargetSource");
+                }
+            }
+            if (conflict.TheirsSource == incomingSourceLabel)
+            {
+                string sourceKey = "IncomingChange";
+                if (isRebaseConflict)
+                {
+                    sourceKey = "RebaseReplaySource";
+                }
+                _theirsSourceLocalization = new LocalizedText(sourceKey);
+            }
+            if (conflict.TheirsSource == incomingIndexSource)
+            {
+                _theirsSourceLocalization = new LocalizedText("ConflictIncomingIndexStage3");
+            }
+            OnPropertyChanged(nameof(OursSource));
+            OnPropertyChanged(nameof(TheirsSource));
             BaseText = conflict.BaseText;
             _renderedResultText = parsed.InitialResult;
             ResultText = parsed.InitialResult;
@@ -576,7 +660,7 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(HasUnsavedConflictEdits));
             HasDocument = true;
             ShowCurrentHunk();
-            StatusMessage = _stringHelper.Format("ResolveConflictsPrompt", _document.Hunks.Count);
+            SetLocalizedStatusMessage(new LocalizedText("ResolveConflictsPrompt", _document.Hunks.Count));
         }
 
         private void ChooseOurs() { ResolveCurrent(ResolutionChoiceType.Ours); }
@@ -596,7 +680,7 @@ namespace Bough.App.ViewModels
             ResultText = _renderedResultText;
             CurrentChoiceText = GetChoiceName(choice);
             int resolvedCount = _choices.Values.Count(selectedChoice => selectedChoice != ResolutionChoiceType.Unresolved);
-            StatusMessage = _stringHelper.Format("ConflictsSelectedNotice", resolvedCount, _document.Hunks.Count);
+            SetLocalizedStatusMessage(new LocalizedText("ConflictsSelectedNotice", resolvedCount, _document.Hunks.Count));
             NotifyBatchState();
         }
 
@@ -662,7 +746,7 @@ namespace Bough.App.ViewModels
             ResultText = _renderedResultText;
             ShowCurrentHunk();
             int resolvedCount = _choices.Values.Count(selectedChoice => selectedChoice != ResolutionChoiceType.Unresolved);
-            StatusMessage = _stringHelper.Format("ConflictsSelectedNotice", resolvedCount, document.Hunks.Count);
+            SetLocalizedStatusMessage(new LocalizedText("ConflictsSelectedNotice", resolvedCount, document.Hunks.Count));
         }
 
         private void PreviousHunk()
@@ -694,7 +778,7 @@ namespace Bough.App.ViewModels
             ConflictHunk hunk = _document.Hunks[_currentHunkIndex];
             OursText = hunk.OursText;
             TheirsText = hunk.TheirsText;
-            CurrentChoiceText = _stringHelper.GetString("NoChoiceYet");
+            SetLocalizedCurrentChoiceText(new LocalizedText("NoChoiceYet"));
             if (_choices.TryGetValue(hunk.Id, out ResolutionChoiceType choice) == true)
             {
                 CurrentChoiceText = GetChoiceName(choice);
@@ -762,7 +846,7 @@ namespace Bough.App.ViewModels
             {
                 if (request == _requestVersion)
                 {
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                    SetLocalizedStatusMessage(new LocalizedText(exception));
                 }
             }
             finally
@@ -826,7 +910,7 @@ namespace Bough.App.ViewModels
             NotifyChangeLabels();
             _choices.Clear();
             HasDocument = false;
-            CurrentFilePath = _stringHelper.GetString("SelectConflictFile");
+            SetLocalizedCurrentFilePath(new LocalizedText("SelectConflictFile"));
             OursSource = _stringHelper.GetString("CurrentChange");
             TheirsSource = _stringHelper.GetString("IncomingChange");
             OursText = string.Empty;
@@ -836,7 +920,7 @@ namespace Bough.App.ViewModels
             _loadedResultText = string.Empty;
             _renderedResultText = string.Empty;
             OnPropertyChanged(nameof(HasUnsavedConflictEdits));
-            CurrentChoiceText = _stringHelper.GetString("NoChoiceYet");
+            SetLocalizedCurrentChoiceText(new LocalizedText("NoChoiceYet"));
             OnPropertyChanged(nameof(CurrentHunkText));
             NotifyBatchState();
         }
@@ -895,6 +979,24 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(UseCurrentChangeLabel));
             OnPropertyChanged(nameof(UseIncomingChangeLabel));
             OnPropertyChanged(nameof(UseBothTooltip));
+        }
+
+        public override void RefreshLocalization()
+        {
+            if (_document != null)
+            {
+                ConflictHunk hunk = _document.Hunks[_currentHunkIndex];
+                if (_choices.TryGetValue(hunk.Id, out ResolutionChoiceType choice))
+                {
+                    CurrentChoiceText = GetChoiceName(choice);
+                }
+            }
+            if (HasDocument == false)
+            {
+                _oursSourceLocalization = new LocalizedText("CurrentChange");
+                _theirsSourceLocalization = new LocalizedText("IncomingChange");
+            }
+            base.RefreshLocalization();
         }
 
         private string GetChoiceName(ResolutionChoiceType choice)

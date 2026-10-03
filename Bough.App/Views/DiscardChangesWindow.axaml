@@ -25,7 +25,7 @@
   </Window.Styles>
   <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="12" RowSpacing="16">
     <TextBlock x:Name="Heading" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" TextWrapping="Wrap" />
-    <TextBlock x:Name="PathLabel" Grid.Row="1" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" />
+    <TextBlock x:Name="PathLabel" Grid.Row="1" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" />
     <ListBox x:Name="FilesList" Grid.Row="2" Background="{DynamicResource BoughBrushInset}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1">
       <ListBox.ItemTemplate>
         <DataTemplate>

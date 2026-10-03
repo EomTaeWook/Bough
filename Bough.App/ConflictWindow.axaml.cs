@@ -25,6 +25,7 @@ namespace Bough.App
         public ConflictWindow()
         {
             InitializeComponent();
+            LanguageChangeBinding.Bind(this, () => _strings, UpdateStageStatus);
             Closing += async (sender, eventArgs) =>
             {
                 if (_viewModel == null)

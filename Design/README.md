@@ -10,7 +10,7 @@
 | [커밋·브랜치 우클릭 동작](CommitActions.md) | 체크아웃, 브랜치 생성, 현재 브랜치 초기화의 메뉴와 확인 흐름 |
 | [태그 삭제](TagDeletion.md) | 로컬·원격 태그 삭제의 확인, 작업 큐, 변경된 대상 보호 |
 | [브랜치·태그 이름 변경](ReferenceRename.md) | 로컬 참조 이름 변경, 주석·서명 보존과 작업 큐 |
-| [커밋 상세와 파일 탐색](CommitInspection.md) | Commit·Changes·File Tree 탭, diff와 파일 메뉴 |
+| [커밋 상세와 파일 탐색](CommitInspection.md) | Commit·Changes 탭, 메뉴로 여는 File Tree, diff와 파일 메뉴 |
 | [충돌 해결 창 진입](ConflictEntry.md) | 실제 충돌 시 해결 창 자동 열기와 Local Changes에서 다시 열기 |
 | [원격 작업과 Stash](RemoteAndStash.md) | Fetch, Pull, Push, Stash의 화면·실행·갱신 흐름 |
 | [GitHub 인증 계정 전환](GitHubAccountSwitching.md) | 저장소별 GitHub HTTPS 인증 계정 선택과 GCM 로그인 |

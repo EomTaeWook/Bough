@@ -13,11 +13,11 @@
     </StackPanel>
     <StackPanel Grid.Row="1" Spacing="5">
       <TextBlock x:Name="OutcomeText" Text="{Binding OperationOutcomeText}" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushAccent}" />
-      <TextBlock x:Name="QueueStatusText" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" TextTrimming="CharacterEllipsis" />
+      <TextBlock x:Name="QueueStatusText" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" TextTrimming="CharacterEllipsis" />
       <TextBlock Text="{Binding OperationStageText}" Foreground="{DynamicResource BoughBrushText}" />
-      <TextBlock x:Name="TransferStatusBlock" Text="{Binding TransferStatusText}" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" />
+      <TextBlock x:Name="TransferStatusBlock" Text="{Binding TransferStatusText}" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" />
       <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="4" />
-      <TextBlock x:Name="ElapsedText" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="11" />
+      <TextBlock x:Name="ElapsedText" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" />
     </StackPanel>
     <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
       <StackPanel Spacing="12">

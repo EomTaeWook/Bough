@@ -22,7 +22,7 @@ namespace Bough.App.Views
         private const double _splitterWidth = 6;
         private const double _localHeaderHeight = 64;
         private const double _minimumWorkAreaHeight = 180;
-        private const double _fileSectionHeaderHeight = 42;
+        private const double _fileSectionHeaderHeight = 48;
         private const double _minimumPopulatedSectionHeight = 84;
         private const double _fileSectionsSplitterHeight = 6;
         private const double _collapsedCommitHeight = 48;
@@ -72,6 +72,7 @@ namespace Bough.App.Views
             UnstagedList.AddHandler(InputElement.ContextRequestedEvent, UnstagedContextRequested, RoutingStrategies.Tunnel, true);
             SizeChanged += LocalChangesSizeChanged;
             DataContextChanged += delegate { BindConfirmations(); BindFileSections(); BindContextMenuLabels(); };
+            Bough.App.Localization.LanguageChangeBinding.Bind(this, () => (DataContext as LocalChangesViewModel)?.Strings, RefreshLocalizedMenuLabels);
             AttachedToVisualTree += delegate { BindConfirmations(); BindFileSections(); BindContextMenuLabels(); };
             DetachedFromVisualTree += delegate { UnbindConfirmations(); UnbindFileSections(); };
         }
@@ -85,6 +86,25 @@ namespace Bough.App.Views
 
             bool extendSelection = (eventArgs.KeyModifiers & KeyModifiers.Shift) == KeyModifiers.Shift;
             PreviewCode.SelectLineAt(eventArgs.GetPosition(PreviewNumberGutter).Y, extendSelection);
+        }
+
+        private void RefreshLocalizedMenuLabels()
+        {
+            if (DataContext is not LocalChangesViewModel viewModel)
+            {
+                return;
+            }
+            StagedUnstageItem.Header = viewModel.UnstageSelectedText;
+            ToolTip.SetTip(StagedUnstageItem, viewModel.UnstageSelectedText);
+            string discardLabel = viewModel.GetDiscardContextMenuText(viewModel.UnstagedFiles.Where(file => _contextDiscardPaths.Contains(file.Path)).ToList());
+            DiscardContextItem.Header = discardLabel;
+            ToolTip.SetTip(DiscardContextItem, discardLabel);
+            StopTrackingContextItem.Header = viewModel.StopTrackingContextMenuText;
+            IgnoreContextItem.Header = viewModel.IgnoreMenuText;
+            IgnoreRepositoryItem.Header = viewModel.IgnoreRepositoryText;
+            IgnoreLocalItem.Header = viewModel.IgnoreLocalText;
+            ToolTip.SetTip(IgnoreRepositoryItem, viewModel.IgnoreRepositoryText);
+            ToolTip.SetTip(IgnoreLocalItem, viewModel.IgnoreLocalText);
         }
 
         private void BindContextMenuLabels()

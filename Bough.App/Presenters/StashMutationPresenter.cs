@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Internals;
+using Bough.App.Threading;
 using Bough.App.ViewModels;
 using Bough.App.ViewModels.Models;
 using Bough.Core.Git;

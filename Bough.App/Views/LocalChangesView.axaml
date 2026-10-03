@@ -2,10 +2,42 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Bough.App.ViewModels"
              xmlns:git="using:Bough.Core.Git.Models"
+             xmlns:converters="using:Bough.App.Converters"
              xmlns:views="using:Bough.App.Views"
              x:Class="Bough.App.Views.LocalChangesView"
              x:DataType="vm:LocalChangesViewModel"
              Background="{DynamicResource BoughBrushCanvas}">
+  <UserControl.Resources>
+    <converters:WorktreeStatusIconConverter x:Key="WorktreeStatusIconConverter" />
+    <converters:WorktreeStatusTextConverter x:Key="WorktreeStatusTextConverter" />
+    <DataTemplate x:Key="WorktreeFileRowTemplate" x:DataType="git:GitWorktreeFile">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="12,6" MinHeight="24"
+            x:CompileBindings="False" AutomationProperties.Name="{Binding DisplayPath}"
+            AutomationProperties.HelpText="{Binding Tag, RelativeSource={RelativeSource Self}}">
+        <Grid.Tag>
+          <MultiBinding Converter="{StaticResource WorktreeStatusTextConverter}">
+            <Binding />
+            <Binding Path="DataContext.Strings" RelativeSource="{RelativeSource AncestorType=views:LocalChangesView}" />
+            <Binding Path="DataContext.Language" RelativeSource="{RelativeSource AncestorType=views:LocalChangesView}" />
+          </MultiBinding>
+        </Grid.Tag>
+        <Border Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center"
+                Background="Transparent" ToolTip.Tip="{Binding $parent[Grid].Tag}">
+          <PathIcon Classes="boughIcon"
+                    Data="{Binding ., Converter={StaticResource WorktreeStatusIconConverter}}"
+                    Classes.fileStatusModified="{Binding ., Converter={StaticResource WorktreeStatusIconConverter}, ConverterParameter=WorktreeStatusModified}"
+                    Classes.fileStatusAdded="{Binding ., Converter={StaticResource WorktreeStatusIconConverter}, ConverterParameter=WorktreeStatusAdded}"
+                    Classes.fileStatusDeleted="{Binding ., Converter={StaticResource WorktreeStatusIconConverter}, ConverterParameter=WorktreeStatusDeleted}" />
+        </Border>
+        <TextBlock Grid.Column="1" Text="{Binding DisplayPath}" Foreground="{DynamicResource BoughBrushText}"
+                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayPath}" />
+        <TextBlock Grid.Column="2" Text="{Binding $parent[Grid].Tag}" FontSize="12" MaxWidth="140"
+                   IsVisible="{Binding ., Converter={StaticResource WorktreeStatusIconConverter}, ConverterParameter=ShowLabel}"
+                   Foreground="{DynamicResource BoughBrushTextSubtle}" VerticalAlignment="Center"
+                   TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding $parent[Grid].Tag}" />
+      </Grid>
+    </DataTemplate>
+  </UserControl.Resources>
   <UserControl.Styles>
     <Style Selector="Button">
       <Setter Property="MinHeight" Value="32" />
@@ -20,6 +52,20 @@
     <Style Selector="Button.danger:disabled">
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
     </Style>
+    <Style Selector="Button.fileSectionAction">
+      <Setter Property="Width" Value="32" />
+      <Setter Property="Height" Value="32" />
+      <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="PathIcon.fileStatusModified">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="PathIcon.fileStatusAdded">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffAdded}" />
+    </Style>
+    <Style Selector="PathIcon.fileStatusDeleted">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffRemoved}" />
+    </Style>
   </UserControl.Styles>
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
   <Grid x:Name="LayoutGrid" Height="440">
@@ -33,7 +79,7 @@
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="12,0">
         <StackPanel VerticalAlignment="Center" Spacing="8">
           <TextBlock Text="{Binding HeadingText}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
-          <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+          <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
           <Button Content="{Binding Stashes.SaveHeadingText}" Click="OpenStashClicked" IsEnabled="{Binding HasRepository}" />
@@ -50,43 +96,40 @@
       </Grid.ColumnDefinitions>
       <Grid x:Name="FileSectionsGrid" Grid.Column="0" Background="{DynamicResource BoughBrushSidebar}">
         <Grid.RowDefinitions>
-          <RowDefinition Height="*" MinHeight="42" />
+          <RowDefinition Height="*" MinHeight="48" />
           <RowDefinition Height="6" />
-          <RowDefinition Height="*" MinHeight="42" />
+          <RowDefinition Height="*" MinHeight="48" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" RowDefinitions="42,*">
-          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="10,4">
-            <Grid ColumnSpacing="4">
+        <Grid Grid.Row="0" RowDefinitions="48,*">
+          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="12,6">
+            <Grid ColumnSpacing="8">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MinWidth="0" />
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
               <TextBlock Text="{Binding StagedHeadingText}" Foreground="{DynamicResource BoughBrushTextMuted}" FontWeight="Bold" VerticalAlignment="Center" MinWidth="0"
                          TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StagedHeadingText}" />
-              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                <Button Content="↓" Width="32" Padding="4,3" Command="{Binding UnstageSelectedCommand}"
-                        ToolTip.Tip="{Binding UnstageSelectedText}" AutomationProperties.Name="{Binding UnstageSelectedText}" />
-                <Button Content="↓↓" Width="32" Padding="4,3" Command="{Binding UnstageAllCommand}"
-                        ToolTip.Tip="{Binding UnstageAllText}" AutomationProperties.Name="{Binding UnstageAllText}" />
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Classes="fileSectionAction" Command="{Binding UnstageSelectedCommand}"
+                        ToolTip.Tip="{Binding UnstageSelectedText}" AutomationProperties.Name="{Binding UnstageSelectedText}">
+                  <PathIcon Data="{StaticResource BoughIconArrowDown}" Classes="boughIcon" />
+                </Button>
+                <Button Classes="fileSectionAction" Command="{Binding UnstageAllCommand}"
+                        ToolTip.Tip="{Binding UnstageAllText}" AutomationProperties.Name="{Binding UnstageAllText}">
+                  <PathIcon Data="{StaticResource BoughIconArrowDownAll}" Classes="boughIcon" />
+                </Button>
               </StackPanel>
             </Grid>
           </Border>
           <ListBox x:Name="StagedList" Grid.Row="1" ItemsSource="{Binding StagedFiles}" SelectedItem="{Binding SelectedStagedFile, Mode=TwoWay}"
+                   ItemTemplate="{StaticResource WorktreeFileRowTemplate}"
                    IsVisible="{Binding HasStagedFiles}" Background="Transparent" BorderThickness="0">
             <ListBox.ContextMenu>
               <ContextMenu Opened="StagedContextOpened" Background="{DynamicResource BoughBrushSurface}">
                 <MenuItem x:Name="StagedUnstageItem" Click="UnstageContextClicked" />
               </ContextMenu>
             </ListBox.ContextMenu>
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="git:GitWorktreeFile">
-                <StackPanel Margin="12,7" Spacing="2">
-                  <TextBlock Text="{Binding DisplayPath}" Foreground="{DynamicResource BoughBrushText}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayPath}" />
-                  <TextBlock Text="{Binding DisplayStatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="10" />
-                </StackPanel>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
           </ListBox>
         </Grid>
 
@@ -95,26 +138,33 @@
                       DragCompleted="FileSectionsSplitterDragCompleted" KeyUp="FileSectionsSplitterKeyUp" />
 
         <Border Grid.Row="2" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
-        <Grid RowDefinitions="42,*">
-          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="10,4">
-            <Grid ColumnSpacing="4">
+        <Grid RowDefinitions="48,*">
+          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="12,6">
+            <Grid ColumnSpacing="8">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MinWidth="0" />
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
               <TextBlock Text="{Binding UnstagedHeadingText}" Foreground="{DynamicResource BoughBrushTextMuted}" FontWeight="Bold" VerticalAlignment="Center" MinWidth="0"
                          TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding UnstagedHeadingText}" />
-              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                <Button Content="↑" Width="32" Padding="4,3" Command="{Binding StageSelectedCommand}"
-                        ToolTip.Tip="{Binding StageSelectedText}" AutomationProperties.Name="{Binding StageSelectedText}" />
-                <Button Content="↑↑" Width="32" Padding="4,3" Command="{Binding StageAllCommand}"
-                        ToolTip.Tip="{Binding StageAllText}" AutomationProperties.Name="{Binding StageAllText}" />
-                <Button Content="X" Width="32" Padding="4,3" Command="{Binding DiscardSelectedCommand}" Classes="danger"
-                        ToolTip.Tip="{Binding DiscardSelectionText}" AutomationProperties.Name="{Binding DiscardSelectionText}" />
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Classes="fileSectionAction" Command="{Binding StageSelectedCommand}"
+                        ToolTip.Tip="{Binding StageSelectedText}" AutomationProperties.Name="{Binding StageSelectedText}">
+                  <PathIcon Data="{StaticResource BoughIconArrowUp}" Classes="boughIcon" />
+                </Button>
+                <Button Classes="fileSectionAction" Command="{Binding StageAllCommand}"
+                        ToolTip.Tip="{Binding StageAllText}" AutomationProperties.Name="{Binding StageAllText}">
+                  <PathIcon Data="{StaticResource BoughIconArrowUpAll}" Classes="boughIcon" />
+                </Button>
+                <Button Classes="fileSectionAction danger" Margin="4,0,0,0" Command="{Binding DiscardSelectedCommand}"
+                        ToolTip.Tip="{Binding DiscardSelectionText}" AutomationProperties.Name="{Binding DiscardSelectionText}">
+                  <PathIcon Data="{StaticResource BoughIconClose}" Classes="boughIcon" />
+                </Button>
               </StackPanel>
             </Grid>
           </Border>
           <ListBox x:Name="UnstagedList" Grid.Row="1" ItemsSource="{Binding UnstagedFiles}" SelectedItem="{Binding SelectedUnstagedFile, Mode=TwoWay}"
+                   ItemTemplate="{StaticResource WorktreeFileRowTemplate}"
                    SelectionMode="Multiple" SelectionChanged="UnstagedSelectionChanged" KeyDown="UnstagedKeyDown"
                    IsVisible="{Binding HasUnstagedFiles}" Background="Transparent" BorderThickness="0">
             <ListBox.ContextMenu>
@@ -128,14 +178,6 @@
                 <MenuItem x:Name="StopTrackingContextItem" Click="StopTrackingContextClicked" />
               </ContextMenu>
             </ListBox.ContextMenu>
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="git:GitWorktreeFile">
-                <StackPanel Margin="12,7" Spacing="2">
-                  <TextBlock Text="{Binding DisplayPath}" Foreground="{DynamicResource BoughBrushText}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayPath}" />
-                  <TextBlock Text="{Binding DisplayStatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="10" />
-                </StackPanel>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
           </ListBox>
         </Grid>
         </Border>
@@ -171,17 +213,17 @@
               <Grid x:Name="PreviewNumberGutter" ColumnDefinitions="Auto,Auto" PointerPressed="PreviewNumberGutterPressed">
                 <TextBlock Grid.Column="0" Text="{Binding PreviousLineNumbersText, ElementName=PreviewCode, x:CompileBindings=False}"
                            IsVisible="{Binding PreviewIsUnifiedDiff}" MinWidth="34" Padding="5,0" TextAlignment="Right"
-                           FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" LineHeight="18" TextWrapping="NoWrap"
+                           FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14" LineHeight="22" TextWrapping="NoWrap"
                            Foreground="{DynamicResource BoughBrushTextSubtle}" />
                 <TextBlock Grid.Column="1" Text="{Binding CurrentLineNumbersText, ElementName=PreviewCode, x:CompileBindings=False}"
                            MinWidth="34" Padding="5,0" TextAlignment="Right"
-                           FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" LineHeight="18" TextWrapping="NoWrap"
+                           FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14" LineHeight="22" TextWrapping="NoWrap"
                            Foreground="{DynamicResource BoughBrushTextSubtle}" />
               </Grid>
             </Border>
             <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
               <views:DiffPreviewTextBlock x:Name="PreviewCode" DiffText="{Binding PreviewText}" IsUnifiedDiff="{Binding PreviewIsUnifiedDiff}"
-                                          FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" LineHeight="18" TextWrapping="NoWrap"
+                                          FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14" LineHeight="22" TextWrapping="NoWrap"
                                           Foreground="{DynamicResource BoughBrushText}" SelectionBrush="{DynamicResource BoughBrushSelection}"
                                           SelectionForegroundBrush="{DynamicResource BoughBrushSelectionText}" Padding="10,0,14,0" />
             </ScrollViewer>

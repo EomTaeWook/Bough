@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Bough.App.Commands;
 using Bough.App.Localization;
 using Bough.App.Presenters;
 using Bough.Core.Git;
@@ -14,6 +15,27 @@ namespace Bough.App.ViewModels
 {
     public class LocalChangesViewModel : ViewModelBase
     {
+        private LocalizedText _previewDescriptionLocalization;
+        private LocalizedText _statusTextLocalization;
+        private LocalizedText _errorTextLocalization;
+        private void SetLocalizedPreviewDescription(LocalizedText text)
+        {
+            PreviewDescription = text.GetText(_stringHelper);
+            _previewDescriptionLocalization = text;
+        }
+
+        private void SetLocalizedStatusText(LocalizedText text)
+        {
+            StatusText = text.GetText(_stringHelper);
+            _statusTextLocalization = text;
+        }
+
+        private void SetLocalizedErrorText(LocalizedText text)
+        {
+            ErrorText = text.GetText(_stringHelper);
+            _errorTextLocalization = text;
+        }
+
         private readonly GitWorkingTreeService _workingTreeService;
         private readonly LocalChangesMutationPresenter _mutationPresenter;
         private readonly StringHelper _stringHelper;
@@ -85,7 +107,7 @@ namespace Bough.App.ViewModels
             StagedFiles = new ReadOnlyObservableCollection<GitWorktreeFile>(_stagedFiles);
             ConflictFiles = new ReadOnlyObservableCollection<GitWorktreeFile>(_conflictFiles);
             _previewText = string.Empty;
-            _previewDescription = _stringHelper.GetString("LocalPreviewPrompt");
+            SetLocalizedPreviewDescription(new LocalizedText("LocalPreviewPrompt"));
             _errorText = string.Empty;
             _statusText = string.Empty;
             _commitMessage = string.Empty;
@@ -117,6 +139,26 @@ namespace Bough.App.ViewModels
         internal Func<GitIgnorePlan, CancellationToken, Task<bool>> IgnoreConfirmation { get { return ConfirmIgnoreRequested; } }
 
         public StashViewModel Stashes { get; }
+
+        public override void RefreshLocalization()
+        {
+            Stashes.RefreshLocalization();
+            if (_workingStatus != null)
+            {
+                foreach (GitWorktreeFile file in _workingStatus.Files)
+                {
+                    string status = _stringHelper.GetString(file.StatusCode);
+                    if (file.IsPartiallyStaged)
+                    {
+                        status = _stringHelper.Format("WorktreeStatusPartiallyStaged", status);
+                    }
+                    file.DisplayStatusText = status;
+                }
+            }
+            OnPropertyChanged(nameof(StatusText));
+            OnPropertyChanged(nameof(ErrorText));
+            base.RefreshLocalization();
+        }
 
         public ReadOnlyObservableCollection<GitWorktreeFile> UnstagedFiles { get; }
 
@@ -160,6 +202,8 @@ namespace Bough.App.ViewModels
 
         public string ConflictsHeadingText { get { return $"{_stringHelper.GetString("ConflictsHeading")} ({_conflictFiles.Count})"; } }
 
+        public StringHelper Strings { get { return _stringHelper; } }
+        public Bough.App.Internals.StringLanguage Language { get { return _stringHelper.Language; } }
         public string StageSelectedText { get { return _stringHelper.GetString("StageSelected"); } }
 
         public string StageAllText { get { return _stringHelper.GetString("StageAll"); } }
@@ -320,15 +364,30 @@ namespace Bough.App.ViewModels
 
         public string PreviewDescription
         {
-            get { return _previewDescription; }
-            private set { SetProperty(ref _previewDescription, value); }
+            get
+            {
+                if (_previewDescriptionLocalization != null)
+                {
+                    return _previewDescriptionLocalization.GetText(_stringHelper);
+                }
+                return _previewDescription;
+            }
+            private set { _previewDescriptionLocalization = null; SetProperty(ref _previewDescription, value); }
         }
 
         public string ErrorText
         {
-            get { return _errorText; }
+            get
+            {
+                if (_errorTextLocalization != null)
+                {
+                    return _errorTextLocalization.GetText(_stringHelper);
+                }
+                return _errorText;
+            }
             private set
             {
+                _errorTextLocalization = null;
                 if (SetProperty(ref _errorText, value) == true)
                 {
                     OnPropertyChanged(nameof(HasError));
@@ -340,8 +399,15 @@ namespace Bough.App.ViewModels
 
         public string StatusText
         {
-            get { return _statusText; }
-            private set { SetProperty(ref _statusText, value); }
+            get
+            {
+                if (_statusTextLocalization != null)
+                {
+                    return _statusTextLocalization.GetText(_stringHelper);
+                }
+                return _statusText;
+            }
+            private set { _statusTextLocalization = null; SetProperty(ref _statusText, value); }
         }
 
         public string CommitMessage
@@ -571,7 +637,7 @@ namespace Bough.App.ViewModels
             _conflictFiles.Clear();
             PreviewText = string.Empty;
             PreviewIsUnifiedDiff = false;
-            PreviewDescription = _stringHelper.GetString("LocalPreviewPrompt");
+            SetLocalizedPreviewDescription(new LocalizedText("LocalPreviewPrompt"));
             ErrorText = string.Empty;
             StatusText = string.Empty;
             IsBusy = false;
@@ -762,7 +828,7 @@ namespace Bough.App.ViewModels
             {
                 if (requestVersion == _requestVersion)
                 {
-                    ErrorText = _errorLocalizer.GetDisplayMessage(exception);
+                    SetLocalizedErrorText(new LocalizedText(exception));
                 }
             }
             finally
@@ -787,7 +853,7 @@ namespace Bough.App.ViewModels
             int requestVersion = _requestVersion;
             PreviewText = string.Empty;
             PreviewIsUnifiedDiff = false;
-            PreviewDescription = _stringHelper.GetString("LocalPreviewLoading");
+            SetLocalizedPreviewDescription(new LocalizedText("LocalPreviewLoading"));
             try
             {
                 GitFilePreview preview = await _workingTreeService.GetPreviewAsync(repository, file, staged);
@@ -802,7 +868,7 @@ namespace Bough.App.ViewModels
 
                 PreviewIsUnifiedDiff = file.IsUntracked == false;
                 PreviewText = preview.Text;
-                PreviewDescription = _stringHelper.Format(preview.DescriptionCode, preview.DescriptionArguments.ToArray());
+                SetLocalizedPreviewDescription(new LocalizedText(preview.DescriptionCode, preview.DescriptionArguments.ToArray()));
             }
             catch (Exception exception)
             {
@@ -810,8 +876,8 @@ namespace Bough.App.ViewModels
                 {
                     if (requestVersion == _requestVersion)
                     {
-                        ErrorText = _errorLocalizer.GetDisplayMessage(exception);
-                        PreviewDescription = _stringHelper.GetString("LocalPreviewFailed");
+                        SetLocalizedErrorText(new LocalizedText(exception));
+                        SetLocalizedPreviewDescription(new LocalizedText("LocalPreviewFailed"));
                     }
                 }
             }
@@ -881,13 +947,13 @@ namespace Bough.App.ViewModels
                 GitWorktreeFile file = _unstagedFiles.FirstOrDefault(candidate => candidate.Path == path);
                 if (file == null)
                 {
-                    ErrorText = _stringHelper.Format("LocalSelectedFileUnavailable", path);
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", path));
                     return Task.CompletedTask;
                 }
 
                 if (file.IsConflict == true)
                 {
-                    ErrorText = _stringHelper.Format("LocalResolveBeforeDiscard", path);
+                    SetLocalizedErrorText(new LocalizedText("LocalResolveBeforeDiscard", path));
                     return Task.CompletedTask;
                 }
 
@@ -999,22 +1065,22 @@ namespace Bough.App.ViewModels
                 GitWorktreeFile file = _unstagedFiles.FirstOrDefault(candidate => candidate.Path == path);
                 if (file == null)
                 {
-                    ErrorText = _stringHelper.Format("LocalSelectedFileUnavailable", path);
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", path));
                     return Task.CompletedTask;
                 }
                 if (file.IsUntracked == true)
                 {
-                    ErrorText = _stringHelper.Format("LocalSelectedFileUnavailable", path);
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", path));
                     return Task.CompletedTask;
                 }
                 if (file.IsConflict == true)
                 {
-                    ErrorText = _stringHelper.Format("LocalSelectedFileUnavailable", path);
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", path));
                     return Task.CompletedTask;
                 }
                 if (string.IsNullOrEmpty(file.OriginalPath) == false)
                 {
-                    ErrorText = _stringHelper.Format("LocalSelectedFileUnavailable", path);
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", path));
                     return Task.CompletedTask;
                 }
 
@@ -1043,7 +1109,7 @@ namespace Bough.App.ViewModels
                 GitWorktreeFile file = _unstagedFiles.FirstOrDefault(candidate => candidate.Path == path);
                 if (file == null)
                 {
-                    ErrorText = _stringHelper.Format("LocalSelectedFileUnavailable", path);
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", path));
                     return Task.CompletedTask;
                 }
 
@@ -1133,7 +1199,7 @@ namespace Bough.App.ViewModels
                 return;
             }
 
-            StatusText = _stringHelper.Format("LocalCommittedNotice", hash);
+            SetLocalizedStatusText(new LocalizedText("LocalCommittedNotice", hash));
             Committed?.Invoke(hash);
         }
 
@@ -1204,7 +1270,7 @@ namespace Bough.App.ViewModels
 
         private void ShowMutationCommandError(Exception exception)
         {
-            ErrorText = _errorLocalizer.GetDisplayMessage(exception);
+            SetLocalizedErrorText(new LocalizedText(exception));
         }
 
         private bool IsCurrentRepository(GitRepository repository)
@@ -1286,7 +1352,7 @@ namespace Bough.App.ViewModels
                 }
 
                 Amend = false;
-                ErrorText = _errorLocalizer.GetDisplayMessage(exception);
+                SetLocalizedErrorText(new LocalizedText(exception));
             }
         }
 
@@ -1456,10 +1522,10 @@ namespace Bough.App.ViewModels
             {
                 PreviewText = string.Empty;
                 PreviewIsUnifiedDiff = false;
-                PreviewDescription = _stringHelper.GetString("LocalPreviewPrompt");
+                SetLocalizedPreviewDescription(new LocalizedText("LocalPreviewPrompt"));
             }
 
-            StatusText = _stringHelper.Format("LocalChangesStatusCount", _unstagedFiles.Count, _stagedFiles.Count, _conflictFiles.Count);
+            SetLocalizedStatusText(new LocalizedText("LocalChangesStatusCount", _unstagedFiles.Count, _stagedFiles.Count, _conflictFiles.Count));
         }
 
         private bool CanUnstageSelected()

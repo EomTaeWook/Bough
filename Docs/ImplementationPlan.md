@@ -19,7 +19,7 @@
 
 - Local Changes: 변경 목록, diff·줄 번호·선택·복사, Stage/Unstage, 커밋·Amend, 변경 버리기·미추적 파일 삭제·추적 중지·무시, 큰 파일 확인, 목록·미리보기·커밋 영역 크기 저장.
 - Stash: 보관 입력 창과 대상 고정, 목록·미리보기, Apply/Pop/Drop, 부분 실패와 작업 트리 변경 여부에 따른 갱신 계약. 취소·Drop에서 작업 트리를 불필요하게 다시 읽지 않는다.
-- Git Settings: Git 실행 파일·작성자·인증 계정·테마·Bough 기본 Pull 방식. GitHub 계정 인증과 커밋 작성자를 구분하며 `credential.helper` 출처·값 목록은 노출하지 않는다.
+- Git Settings: Git 실행 파일·작성자·인증 계정·테마·Bough 기본 Pull 방식과 앱 언어의 즉시 적용·저장. GitHub 계정 인증과 커밋 작성자를 구분하며 `credential.helper` 출처·값 목록은 노출하지 않는다.
 - 표시 계약은 [화면과 동작](../Design/GitClientWorkflow.md), [원격과 Stash](../Design/RemoteAndStash.md), [GitHub 계정](../Design/GitHubAccountSwitching.md), [테마](../Design/AppearanceTheme.md)를 따른다.
 - MainWindow와 원격 실행 파일은 수정하지 않고 갱신·상태·설정 변경 이벤트 계약을 총괄에게 전달한다.
 
@@ -27,7 +27,7 @@
 
 소유 범위는 History·Reference View·ViewModel·Presenter, 그래프·상세 화면 항목, GitActionDialogs와 해당 Core 서비스다.
 
-- History: 커밋 그래프·참조 배지, 전체/현재 브랜치 범위, 페이지 추가 조회, 상세·비교 부모·변경 파일·파일 트리·파일 내용, 파일 내보내기와 커밋 명령.
+- History: 커밋 그래프·참조 배지, 전체/현재 브랜치 범위, 페이지 추가 조회, 상세·비교 부모·변경 파일·파일 내용, 파일 내보내기와 커밋 명령. 파일 트리의 내부 조회 구현과 현재 제공하지 않는 UI 진입을 구분한다.
 - 참조: 조회·현재 브랜치 표시, 브랜치 생성·추적·전환·삭제, 태그 생성·단일 삭제 대화상자, 로컬 브랜치·태그 이름 변경. 메뉴를 연 시점의 저장소·참조·객체 OID를 고정하며 원격 변경은 서버 영향을 구분한다.
 - [커밋 상세](../Design/CommitInspection.md), [커밋 명령](../Design/CommitActions.md), [태그 삭제](../Design/TagDeletion.md), [참조 이름 변경](../Design/ReferenceRename.md)을 따른다.
 - MainWindow는 수정하지 않는다. 참조 변경의 `RepositoryChanged`와 History 갱신 의존을 총괄에게 전달한다. 숨긴 History의 참조 변경은 작업자 3이 복귀 시 반영한다.
@@ -37,11 +37,11 @@
 
 소유 범위는 MainWindow·MainWindowViewModel, 원격 View·ViewModel·Presenter·진행 창과 서비스, 충돌 해결 화면·Presenter·Core 계약, 복제 화면·Presenter·Core, App 시작·DI·배포 설정이다.
 
-- 저장소 목록·열기·복제 진입, 화면 전환·영역별 조회·공통 사이드바 상태, 작업 완료 후 갱신 순서와 숨긴 History의 참조 변경 반영.
+- 상단 저장소 선택·추가 메뉴·시작 화면의 열기·복제 진입, 화면 전환·영역별 조회·공통 사이드바 상태, 작업 완료 후 갱신 순서와 숨긴 History의 참조 변경 반영.
 - Fetch/Pull/Push의 FIFO·실행 직전 검증·진행·취소·완료 연결. 기본 Pull 실행은 작업자 1의 GitSettingsService 설정을 읽으며 일회성 메뉴는 저장값을 바꾸지 않는다.
 - [충돌 창](../Design/ConflictEntry.md)의 진입·파일 선택·개별/일괄 선택·직접 편집·저장·스테이징·리베이스 계속. 화면에서 Git 도메인 검증을 재구현하지 않는다.
 - [복제](../Design/RepositoryClone.md)의 단일 목적지, 시작 신호, 고정 오류 분류와 현재 목적지 상태 안내. 실패 이유와 폴더 상태를 구분하고 원문 stderr를 노출하지 않는다.
-- [단일 파일 배포 정책](ReusableArchitecture/ReleasePolicy.md)에 따른 필수 리소스 포함과 로더·시작 연결. 릴리스 파일 생성·게시와 README 편집은 총괄이 맡는다.
+- [단일 파일 배포 정책](ReleasePolicy.md)에 따른 필수 리소스 포함과 로더·시작 연결. 릴리스 파일 생성·게시와 README 편집은 총괄이 맡는다.
 
 ## 인계와 완료
 

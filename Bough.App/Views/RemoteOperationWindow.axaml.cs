@@ -30,6 +30,7 @@ namespace Bough.App.Views
         public RemoteOperationWindow()
         {
             InitializeComponent();
+            LanguageChangeBinding.Bind(this, () => _strings, RefreshLocalizedLabels);
             _elapsedTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _elapsedTimer.Tick += ElapsedTick;
             Opened += OperationOpened;
@@ -52,15 +53,24 @@ namespace Bough.App.Views
             Title = operationName;
             OperationNameText.Text = operationName;
             TargetText.Text = target;
-            ToolTip.SetTip(TransferStatusBlock, strings.GetString("RemoteTransferStatusTip"));
-            AutomationProperties.SetName(ResultText, strings.GetString("RemoteResultAutomation"));
-            PullSummaryHeading.Text = strings.GetString("RemotePullSummaryHeading");
-            AutomationProperties.SetName(PullSummaryBlock, strings.GetString("RemotePullSummaryAutomation"));
-            StopButton.Content = strings.GetString("RemoteStopAction");
-            ToolTip.SetTip(StopButton, strings.GetString("RemoteStopTip"));
-            AutomationProperties.SetName(StopButton, strings.GetString("RemoteStopAutomation"));
-            CloseButton.Content = strings.GetString("RemoteCloseAction");
-            AutomationProperties.SetName(CloseButton, strings.GetString("RemoteCloseAutomation"));
+            RefreshLocalizedLabels();
+        }
+
+        private void RefreshLocalizedLabels()
+        {
+            ToolTip.SetTip(TransferStatusBlock, _strings.GetString("RemoteTransferStatusTip"));
+            AutomationProperties.SetName(ResultText, _strings.GetString("RemoteResultAutomation"));
+            PullSummaryHeading.Text = _strings.GetString("RemotePullSummaryHeading");
+            AutomationProperties.SetName(PullSummaryBlock, _strings.GetString("RemotePullSummaryAutomation"));
+            StopButton.Content = _strings.GetString("RemoteStopAction");
+            ToolTip.SetTip(StopButton, _strings.GetString("RemoteStopTip"));
+            AutomationProperties.SetName(StopButton, _strings.GetString("RemoteStopAutomation"));
+            CloseButton.Content = _strings.GetString("RemoteCloseAction");
+            AutomationProperties.SetName(CloseButton, _strings.GetString("RemoteCloseAutomation"));
+            if (_started)
+            {
+                UpdateElapsed();
+            }
         }
 
         protected override void OnClosing(WindowClosingEventArgs eventArgs)

@@ -2,7 +2,7 @@ using Bough.App.Localization;
 
 namespace Bough.App.ViewModels.Models
 {
-    public class HistoryLabels
+    public class HistoryLabels : ViewModelBase
     {
         private readonly StringHelper _strings;
 
@@ -41,7 +41,6 @@ namespace Bough.App.ViewModels.Models
         public string Open { get { return _strings.GetString("HistoryOpen"); } }
         public string ShowExplorer { get { return _strings.GetString("HistoryShowExplorer"); } }
         public string FileHistory { get { return _strings.GetString("HistoryFileHistory"); } }
-        public string ShowTree { get { return _strings.GetString("HistoryShowTree"); } }
         public string SaveAs { get { return _strings.GetString("HistorySaveAs"); } }
         public string CopyPath { get { return _strings.GetString("HistoryCopyPath"); } }
         public string LoadingDiff { get { return _strings.GetString("HistoryLoadingDiff"); } }

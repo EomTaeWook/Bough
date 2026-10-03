@@ -8,6 +8,11 @@ namespace Bough.App.ViewModels
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public virtual void RefreshLocalization()
+        {
+            OnPropertyChanged(string.Empty);
+        }
+
         protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
             if (EqualityComparer<T>.Default.Equals(field, value) == true)

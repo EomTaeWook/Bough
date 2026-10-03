@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Bough.App.Appearance;
+using Bough.App.Localization;
 using Bough.App.ViewModels.Models;
 using Bough.App.ViewModels;
 using Bough.App.Internals;
@@ -18,6 +19,10 @@ namespace Bough.App.Views
     {
         private static readonly (string PropertyName, string Key)[] _labelKeys =
         {
+            (nameof(GitSettingsViewModel.LanguageHeading), "AppLanguageHeading"),
+            (nameof(GitSettingsViewModel.LanguageDescription), "AppLanguageDescription"),
+            (nameof(GitSettingsViewModel.KoreanLanguageLabel), "AppLanguageKorean"),
+            (nameof(GitSettingsViewModel.EnglishLanguageLabel), "AppLanguageEnglish"),
             (nameof(GitSettingsViewModel.AppearanceHeading), "AppearanceHeading"),
             (nameof(GitSettingsViewModel.AppearanceDescription), "AppearanceDescription"),
             (nameof(GitSettingsViewModel.AppearanceLightLabel), "AppearanceLight"),
@@ -61,6 +66,42 @@ namespace Bough.App.Views
             DataContextChanged += GitSettingsDataContextChanged;
             AttachedToVisualTree += GitSettingsAttached;
             DetachedFromVisualTree += GitSettingsDetached;
+            LanguageChangeBinding.Bind(this, () => (DataContext as GitSettingsViewModel)?.Strings, RefreshLocalizedLabels);
+        }
+
+        private void RefreshLocalizedLabels()
+        {
+            if (DataContext is not GitSettingsViewModel viewModel)
+            {
+                return;
+            }
+            ShowFixedLabels(viewModel);
+            ShowAccountRepository(viewModel);
+            foreach (GitHubRemoteAccountItem item in viewModel.GitHubRemotes)
+            {
+                ShowAccountItem(viewModel, item);
+            }
+            ShowGitPathResult(viewModel);
+            ShowDisplayResult(viewModel);
+            ShowAuthorStatus(viewModel);
+        }
+
+        private async void KoreanLanguageClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not GitSettingsViewModel viewModel)
+            {
+                return;
+            }
+            await viewModel.SelectLanguageAsync(StringLanguage.Korean);
+        }
+
+        private async void EnglishLanguageClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not GitSettingsViewModel viewModel)
+            {
+                return;
+            }
+            await viewModel.SelectLanguageAsync(StringLanguage.English);
         }
 
         private void GitSettingsDataContextChanged(object sender, EventArgs eventArgs)

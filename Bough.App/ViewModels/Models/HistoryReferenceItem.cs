@@ -4,7 +4,7 @@ using Bough.App.Internals;
 
 namespace Bough.App.ViewModels.Models
 {
-    public class HistoryReferenceItem
+    public class HistoryReferenceItem : ViewModelBase
     {
         private readonly StringHelper _stringHelper;
         private readonly HistoryReferenceKind _kind;

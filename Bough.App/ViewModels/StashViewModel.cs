@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Bough.App.Commands;
 using Bough.App.Localization;
 using Bough.Core.Git;
 using Bough.App.ViewModels.Models;
@@ -14,6 +15,20 @@ namespace Bough.App.ViewModels
 {
     public class StashViewModel : ViewModelBase
     {
+        private LocalizedText _statusTextLocalization;
+        private LocalizedText _errorTextLocalization;
+        private void SetLocalizedStatusText(LocalizedText text)
+        {
+            StatusText = text.GetText(_stringHelper);
+            _statusTextLocalization = text;
+        }
+
+        private void SetLocalizedErrorText(LocalizedText text)
+        {
+            ErrorText = text.GetText(_stringHelper);
+            _errorTextLocalization = text;
+        }
+
         private readonly GitStashService _stashService;
         private readonly GitWorkingTreeService _workingTreeService;
         private readonly StashMutationPresenter _mutationPresenter;
@@ -101,6 +116,13 @@ namespace Bough.App.ViewModels
 
         public RelayCommand OpenResolveCommand { get; }
 
+        internal StringHelper Strings { get { return _stringHelper; } }
+        public override void RefreshLocalization()
+        {
+            OnPropertyChanged(nameof(StatusText));
+            OnPropertyChanged(nameof(ErrorText));
+            base.RefreshLocalization();
+        }
         public string HeadingText { get { return _stringHelper.GetString("StashesHeading"); } }
 
         public string SaveHeadingText { get { return _stringHelper.GetString("CreateStashHeading"); } }
@@ -216,9 +238,17 @@ namespace Bough.App.ViewModels
 
         public string ErrorText
         {
-            get { return _errorText; }
+            get
+            {
+                if (_errorTextLocalization != null)
+                {
+                    return _errorTextLocalization.GetText(_stringHelper);
+                }
+                return _errorText;
+            }
             private set
             {
+                _errorTextLocalization = null;
                 if (SetProperty(ref _errorText, value) == true)
                 {
                     OnPropertyChanged(nameof(HasError));
@@ -228,8 +258,15 @@ namespace Bough.App.ViewModels
 
         public string StatusText
         {
-            get { return _statusText; }
-            private set { SetProperty(ref _statusText, value); }
+            get
+            {
+                if (_statusTextLocalization != null)
+                {
+                    return _statusTextLocalization.GetText(_stringHelper);
+                }
+                return _statusText;
+            }
+            private set { _statusTextLocalization = null; SetProperty(ref _statusText, value); }
         }
 
         public bool IsBusy
@@ -374,7 +411,7 @@ namespace Bough.App.ViewModels
             {
                 if (requestVersion == _requestVersion)
                 {
-                    ErrorText = _errorLocalizer.GetDisplayMessage(exception);
+                    SetLocalizedErrorText(new LocalizedText(exception));
                 }
             }
             finally
@@ -423,7 +460,7 @@ namespace Bough.App.ViewModels
                 {
                     if (requestVersion == _requestVersion)
                     {
-                        ErrorText = _errorLocalizer.GetDisplayMessage(exception);
+                        SetLocalizedErrorText(new LocalizedText(exception));
                     }
                 }
             }
@@ -578,7 +615,7 @@ namespace Bough.App.ViewModels
 
             if (kind == StashMutationKind.Save)
             {
-                StatusText = _stringHelper.Format("StashSavedNotice", entryName);
+                SetLocalizedStatusText(new LocalizedText("StashSavedNotice", entryName));
                 if (StashMessage == message)
                 {
                     StashMessage = string.Empty;
@@ -587,16 +624,16 @@ namespace Bough.App.ViewModels
             }
             if (kind == StashMutationKind.Apply)
             {
-                StatusText = _stringHelper.Format("StashAppliedNotice", entryName);
+                SetLocalizedStatusText(new LocalizedText("StashAppliedNotice", entryName));
                 return;
             }
             if (kind == StashMutationKind.Pop)
             {
-                StatusText = _stringHelper.Format("StashPoppedNotice", entryName);
+                SetLocalizedStatusText(new LocalizedText("StashPoppedNotice", entryName));
                 return;
             }
 
-            StatusText = _stringHelper.Format("StashDroppedNotice", entryName);
+            SetLocalizedStatusText(new LocalizedText("StashDroppedNotice", entryName));
         }
 
         internal void ApplyMutationEntries(GitRepository repository, int requestVersion, IReadOnlyList<GitStashEntry> entries)

@@ -15,6 +15,34 @@ namespace Bough.App.ViewModels
 {
     public class RemoteOperationsViewModel : ViewModelBase
     {
+        private LocalizedText _statusTextLocalization;
+        private LocalizedText _operationOutcomeTextLocalization;
+        private LocalizedText _operationStageTextLocalization;
+        private LocalizedText _transferStatusTextLocalization;
+        private void SetLocalizedStatusText(LocalizedText text)
+        {
+            StatusText = text.GetText(_strings);
+            _statusTextLocalization = text;
+        }
+
+        private void SetLocalizedOperationOutcomeText(LocalizedText text)
+        {
+            OperationOutcomeText = text.GetText(_strings);
+            _operationOutcomeTextLocalization = text;
+        }
+
+        private void SetLocalizedOperationStageText(LocalizedText text)
+        {
+            OperationStageText = text.GetText(_strings);
+            _operationStageTextLocalization = text;
+        }
+
+        private void SetLocalizedTransferStatusText(LocalizedText text)
+        {
+            TransferStatusText = text.GetText(_strings);
+            _transferStatusTextLocalization = text;
+        }
+
         private readonly GitRemoteOperationService _service;
         private readonly GitRepositoryService _repositoryService;
         private readonly StringHelper _strings;
@@ -53,7 +81,7 @@ namespace Bough.App.ViewModels
             _selectedRemotesByRepository = new Dictionary<string, string>(repositoryComparer);
             Remotes = new ReadOnlyObservableCollection<string>(_remotes);
             _selectedRemote = string.Empty;
-            _statusText = _strings.GetString("RemoteSelectRepository");
+            SetLocalizedStatusText(new LocalizedText("RemoteSelectRepository"));
             _operationOutcomeText = string.Empty;
             _operationStageText = string.Empty;
             _transferStatusText = string.Empty;
@@ -129,8 +157,36 @@ namespace Bough.App.ViewModels
                 return $"↑{_state.Ahead} ↓{_state.Behind}";
             }
         }
-        public string StatusText { get { return _statusText; } private set { SetProperty(ref _statusText, value); } }
-        public string OperationOutcomeText { get { return _operationOutcomeText; } private set { SetProperty(ref _operationOutcomeText, value); } }
+        public string StatusText
+        {
+            get
+            {
+                if (_statusTextLocalization != null)
+                {
+                    return _statusTextLocalization.GetText(_strings);
+                }
+                return _statusText;
+            }
+            private set
+            {
+                _statusTextLocalization = null; SetProperty(ref _statusText, value);
+            }
+        }
+        public string OperationOutcomeText
+        {
+            get
+            {
+                if (_operationOutcomeTextLocalization != null)
+                {
+                    return _operationOutcomeTextLocalization.GetText(_strings);
+                }
+                return _operationOutcomeText;
+            }
+            private set
+            {
+                _operationOutcomeTextLocalization = null; SetProperty(ref _operationOutcomeText, value);
+            }
+        }
         public RemoteOperationOutcome LastOperationOutcome
         {
             get { return _lastOperationOutcome; }
@@ -142,19 +198,47 @@ namespace Bough.App.ViewModels
                 }
                 switch (value)
                 {
-                    case RemoteOperationOutcome.Running: OperationOutcomeText = _strings.GetString("RemoteOutcomeRunning"); break;
-                    case RemoteOperationOutcome.Succeeded: OperationOutcomeText = _strings.GetString("RemoteOutcomeSucceeded"); break;
-                    case RemoteOperationOutcome.Failed: OperationOutcomeText = _strings.GetString("RemoteOutcomeFailed"); break;
-                    case RemoteOperationOutcome.Canceled: OperationOutcomeText = _strings.GetString("RemoteOutcomeCanceled"); break;
-                    case RemoteOperationOutcome.PartiallySucceeded: OperationOutcomeText = _strings.GetString("RemoteOutcomePartiallySucceeded"); break;
-                    case RemoteOperationOutcome.RefreshFailed: OperationOutcomeText = _strings.GetString("RemoteOutcomeRefreshFailed"); break;
-                    case RemoteOperationOutcome.NoNewCommits: OperationOutcomeText = _strings.GetString("RemotePushNoNewCommits"); break;
+                    case RemoteOperationOutcome.Running: SetLocalizedOperationOutcomeText(new LocalizedText("RemoteOutcomeRunning")); break;
+                    case RemoteOperationOutcome.Succeeded: SetLocalizedOperationOutcomeText(new LocalizedText("RemoteOutcomeSucceeded")); break;
+                    case RemoteOperationOutcome.Failed: SetLocalizedOperationOutcomeText(new LocalizedText("RemoteOutcomeFailed")); break;
+                    case RemoteOperationOutcome.Canceled: SetLocalizedOperationOutcomeText(new LocalizedText("RemoteOutcomeCanceled")); break;
+                    case RemoteOperationOutcome.PartiallySucceeded: SetLocalizedOperationOutcomeText(new LocalizedText("RemoteOutcomePartiallySucceeded")); break;
+                    case RemoteOperationOutcome.RefreshFailed: SetLocalizedOperationOutcomeText(new LocalizedText("RemoteOutcomeRefreshFailed")); break;
+                    case RemoteOperationOutcome.NoNewCommits: SetLocalizedOperationOutcomeText(new LocalizedText("RemotePushNoNewCommits")); break;
                     default: OperationOutcomeText = string.Empty; break;
                 }
             }
         }
-        public string OperationStageText { get { return _operationStageText; } private set { SetProperty(ref _operationStageText, value); } }
-        public string TransferStatusText { get { return _transferStatusText; } private set { SetProperty(ref _transferStatusText, value); } }
+        public string OperationStageText
+        {
+            get
+            {
+                if (_operationStageTextLocalization != null)
+                {
+                    return _operationStageTextLocalization.GetText(_strings);
+                }
+                return _operationStageText;
+            }
+            private set
+            {
+                _operationStageTextLocalization = null; SetProperty(ref _operationStageText, value);
+            }
+        }
+        public string TransferStatusText
+        {
+            get
+            {
+                if (_transferStatusTextLocalization != null)
+                {
+                    return _transferStatusTextLocalization.GetText(_strings);
+                }
+                return _transferStatusText;
+            }
+            private set
+            {
+                _transferStatusTextLocalization = null; SetProperty(ref _transferStatusText, value);
+            }
+        }
         public string PullSummaryText
         {
             get { return _pullSummaryText; }
@@ -226,10 +310,10 @@ namespace Bough.App.ViewModels
             NotifyState();
             if (repository == null)
             {
-                StatusText = _strings.GetString("RemoteSelectRepository");
+                SetLocalizedStatusText(new LocalizedText("RemoteSelectRepository"));
                 return;
             }
-            StatusText = _strings.GetString("RemoteLoadingState");
+            SetLocalizedStatusText(new LocalizedText("RemoteLoadingState"));
         }
 
         public async Task<bool> ExecuteRequestAsync(RemoteOperationRequest request)
@@ -246,7 +330,7 @@ namespace Bough.App.ViewModels
             {
                 if (_state.BranchName != request.LocalBranch)
                 {
-                    StatusText = _strings.Format("RemoteRequestedBranchChanged", request.LocalBranch, _state.BranchName);
+                    SetLocalizedStatusText(new LocalizedText("RemoteRequestedBranchChanged", request.LocalBranch, _state.BranchName));
                     LastOperationOutcome = RemoteOperationOutcome.Failed;
                     return false;
                 }
@@ -338,7 +422,7 @@ namespace Bough.App.ViewModels
             _loadCancellation = cancellation;
             int request = ++_requestVersion;
             IsLoading = true;
-            StatusText = _strings.GetString("RemoteLoadingState");
+            SetLocalizedStatusText(new LocalizedText("RemoteLoadingState"));
             try
             {
                 GitRemoteState state = await _service.GetStateAsync(repository, cancellation.Token);
@@ -351,10 +435,10 @@ namespace Bough.App.ViewModels
                     return;
                 }
                 ApplyState(state);
-                if (state.Remotes.Count == 0) { StatusText = _strings.GetString("RemoteNoRemotesConfigured"); }
-                else if (state.IsDetached == true) { StatusText = _strings.GetString("RemoteDetachedHint"); }
-                else if (state.HasUpstream == false) { StatusText = _strings.GetString("RemoteNoUpstreamHint"); }
-                else { StatusText = _strings.GetString("RemoteStateRefreshed"); }
+                if (state.Remotes.Count == 0) { SetLocalizedStatusText(new LocalizedText("RemoteNoRemotesConfigured")); }
+                else if (state.IsDetached == true) { SetLocalizedStatusText(new LocalizedText("RemoteDetachedHint")); }
+                else if (state.HasUpstream == false) { SetLocalizedStatusText(new LocalizedText("RemoteNoUpstreamHint")); }
+                else { SetLocalizedStatusText(new LocalizedText("RemoteStateRefreshed")); }
             }
             catch (OperationCanceledException)
             {
@@ -363,7 +447,7 @@ namespace Bough.App.ViewModels
             {
                 if (request == _requestVersion)
                 {
-                    StatusText = _errors.GetDisplayMessage(exception);
+                    SetLocalizedStatusText(new LocalizedText(exception));
                 }
             }
             finally
@@ -494,19 +578,19 @@ namespace Bough.App.ViewModels
             }
             if (progress.Stage == GitPullStage.Fetching)
             {
-                OperationStageText = _strings.GetString("RemoteStageFetching");
+                SetLocalizedOperationStageText(new LocalizedText("RemoteStageFetching"));
             }
             if (progress.Stage == GitPullStage.Inspecting)
             {
-                OperationStageText = _strings.GetString("RemoteStageInspecting");
+                SetLocalizedOperationStageText(new LocalizedText("RemoteStageInspecting"));
             }
             if (progress.Stage == GitPullStage.Applying)
             {
-                OperationStageText = _strings.GetString("RemoteStageApplying");
+                SetLocalizedOperationStageText(new LocalizedText("RemoteStageApplying"));
             }
             if (progress.TransferStatus != null)
             {
-                TransferStatusText = _strings.Format(progress.TransferStatus.Key, progress.TransferStatus.Arguments.ToArray());
+                SetLocalizedTransferStatusText(new LocalizedText(progress.TransferStatus.Key, progress.TransferStatus.Arguments.ToArray()));
             }
         }
 
@@ -557,7 +641,7 @@ namespace Bough.App.ViewModels
             _loadCancellation = cancellation;
             int request = ++_requestVersion;
             IsLoading = true;
-            StatusText = _strings.GetString("RemoteCheckingPushState");
+            SetLocalizedStatusText(new LocalizedText("RemoteCheckingPushState"));
             LastOperationOutcome = RemoteOperationOutcome.None;
             try
             {
@@ -574,17 +658,17 @@ namespace Bough.App.ViewModels
                 ApplyState(latest);
                 if (latest.BranchName != previous.BranchName)
                 {
-                    StatusText = _strings.GetString("RemotePushBranchChanged");
+                    SetLocalizedStatusText(new LocalizedText("RemotePushBranchChanged"));
                     return false;
                 }
                 if (latest.UpstreamRemote != remote)
                 {
-                    StatusText = _strings.GetString("RemotePushUpstreamChanged");
+                    SetLocalizedStatusText(new LocalizedText("RemotePushUpstreamChanged"));
                     return false;
                 }
                 if (latest.UpstreamBranch != branch)
                 {
-                    StatusText = _strings.GetString("RemotePushUpstreamChanged");
+                    SetLocalizedStatusText(new LocalizedText("RemotePushUpstreamChanged"));
                     return false;
                 }
                 if (HasNoOutgoingPushCommits)
@@ -593,7 +677,7 @@ namespace Bough.App.ViewModels
                     LastOperationOutcome = RemoteOperationOutcome.NoNewCommits;
                     return false;
                 }
-                StatusText = _strings.GetString("RemotePushCommitsConfirmed");
+                SetLocalizedStatusText(new LocalizedText("RemotePushCommitsConfirmed"));
                 return true;
             }
             catch (OperationCanceledException)
@@ -604,7 +688,7 @@ namespace Bough.App.ViewModels
             {
                 if (request == _requestVersion)
                 {
-                    StatusText = _errors.GetDisplayMessage(exception);
+                    SetLocalizedStatusText(new LocalizedText(exception));
                 }
                 return false;
             }
@@ -635,7 +719,7 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
-            StatusText = _strings.GetString("RemoteCancelRequested");
+            SetLocalizedStatusText(new LocalizedText("RemoteCancelRequested"));
             _cancellation.Cancel();
             OnPropertyChanged(nameof(CanCancel));
         }
@@ -682,7 +766,7 @@ namespace Bough.App.ViewModels
                 }
                 if (OperationStageText.Length > 0)
                 {
-                    OperationStageText = _strings.GetString("RemoteStageCheckingState");
+                    SetLocalizedOperationStageText(new LocalizedText("RemoteStageCheckingState"));
                 }
                 GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellation.Token);
                 GitRemoteState updatedState = await _service.GetStateAsync(updated, cancellation.Token);
@@ -706,7 +790,7 @@ namespace Bough.App.ViewModels
                 }
                 if (OperationStageText.Length > 0)
                 {
-                    OperationStageText = _strings.GetString("RemoteStageComplete");
+                    SetLocalizedOperationStageText(new LocalizedText("RemoteStageComplete"));
                 }
                 if (completedResult.Outcome == RemoteOperationOutcome.Succeeded || completedResult.Outcome == RemoteOperationOutcome.PartiallySucceeded)
                 {
@@ -726,12 +810,12 @@ namespace Bough.App.ViewModels
                     string refreshError = await RefreshAfterOutcomeAsync(repository, request);
                     if (completedResult == null)
                     {
-                        StatusText = _strings.GetString("RemoteOperationCanceled");
+                        SetLocalizedStatusText(new LocalizedText("RemoteOperationCanceled"));
                         LastOperationOutcome = RemoteOperationOutcome.Canceled;
                     }
                     else
                     {
-                        StatusText = _strings.Format("RemoteStateCheckCanceled", completedResult.Message);
+                        SetLocalizedStatusText(new LocalizedText("RemoteStateCheckCanceled", completedResult.Message));
                         LastOperationOutcome = RemoteOperationOutcome.RefreshFailed;
                     }
                     if (refreshError.Length > 0)
@@ -746,14 +830,14 @@ namespace Bough.App.ViewModels
                 if (request == _requestVersion)
                 {
                     string refreshError = await RefreshAfterOutcomeAsync(repository, request);
-                    StatusText = _errors.GetDisplayMessage(exception);
+                    SetLocalizedStatusText(new LocalizedText(exception));
                     if (completedResult == null)
                     {
                         LastOperationOutcome = RemoteOperationOutcome.Failed;
                     }
                     else
                     {
-                        StatusText = _strings.Format("RemoteStateRefreshFailed", completedResult.Message, _errors.GetDisplayMessage(exception));
+                        SetLocalizedStatusText(new LocalizedText("RemoteStateRefreshFailed", completedResult.Message, _errors.GetDisplayMessage(exception)));
                         LastOperationOutcome = RemoteOperationOutcome.RefreshFailed;
                     }
                     if (refreshError.Length > 0)

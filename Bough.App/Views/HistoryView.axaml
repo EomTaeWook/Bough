@@ -179,7 +179,7 @@
                        AutomationProperties.Name="{Binding Labels.ScopeCurrentAccessible}" />
         </StackPanel>
         <Border Grid.Column="1" Grid.RowSpan="2" Background="{DynamicResource BoughBrushRaised}" CornerRadius="12" Padding="10,5" VerticalAlignment="Center">
-          <TextBlock Text="{Binding CountText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" />
+          <TextBlock Text="{Binding CountText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
         </Border>
       </Grid>
     </Border>
@@ -195,7 +195,7 @@
                  Background="{DynamicResource BoughBrushInset}" Foreground="{DynamicResource BoughBrushText}" BorderThickness="0"
                  ScrollViewer.VerticalScrollBarVisibility="Auto">
           <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:HistoryCommitItem">
+            <DataTemplate x:DataType="models:HistoryCommitItem">
               <Border MinHeight="30" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" ToolTip.Tip="{Binding ToolTipText}">
                 <Border.ContextMenu>
                   <ContextMenu Opened="CommitContextOpened">
@@ -225,10 +225,10 @@
                               <Grid ColumnDefinitions="Auto,*" ColumnSpacing="3">
                                 <TextBlock Classes="referenceText" Classes.refCurrent="{Binding IsCurrent}" Classes.refLocal="{Binding IsLocal}"
                                            Classes.refRemote="{Binding IsRemote}" Classes.refTag="{Binding IsTag}"
-                                           Text="{Binding Symbol}" FontSize="10" />
+                                           Text="{Binding Symbol}" FontSize="12" />
                                 <TextBlock Grid.Column="1" Classes="referenceText" Classes.refCurrent="{Binding IsCurrent}" Classes.refLocal="{Binding IsLocal}"
                                            Classes.refRemote="{Binding IsRemote}" Classes.refTag="{Binding IsTag}"
-                                           Text="{Binding Name}" FontSize="10"
+                                           Text="{Binding Name}" FontSize="12"
                                            FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                               </Grid>
                             </Border>
@@ -236,13 +236,13 @@
                         </ItemsControl.ItemTemplate>
                       </ItemsControl>
                       <Button Grid.Column="1" Content="{Binding MoreReferencesText}" IsVisible="{Binding HasMoreReferences}"
-                              Padding="5,1" Margin="0,0,6,0" FontSize="10" VerticalAlignment="Center"
+                              Padding="5,1" Margin="0,0,6,0" FontSize="12" VerticalAlignment="Center"
                               ToolTip.Tip="{Binding DataContext.Labels.MoreReferencesTooltip, ElementName=HistoryRoot, x:CompileBindings=False}">
                         <Button.Flyout>
                           <Flyout Placement="Bottom">
                             <Border Background="{DynamicResource BoughBrushRaised}" Padding="12" CornerRadius="6" MinWidth="180">
                               <StackPanel Spacing="8">
-                                <TextBlock Text="{Binding DataContext.Labels.AllReferencesHeading, ElementName=HistoryRoot, x:CompileBindings=False}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="10" FontWeight="Bold" />
+                                <TextBlock Text="{Binding DataContext.Labels.AllReferencesHeading, ElementName=HistoryRoot, x:CompileBindings=False}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" FontWeight="Bold" />
                                 <ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
                                   <ItemsControl ItemsSource="{Binding References}">
                                     <ItemsControl.ItemTemplate>
@@ -254,11 +254,11 @@
                                                   CornerRadius="4" Padding="5,2" VerticalAlignment="Center">
                                             <TextBlock Classes="referenceText" Classes.refCurrent="{Binding IsCurrent}" Classes.refLocal="{Binding IsLocal}"
                                                        Classes.refRemote="{Binding IsRemote}" Classes.refTag="{Binding IsTag}"
-                                                       Text="{Binding Symbol}" FontSize="11" />
+                                                       Text="{Binding Symbol}" FontSize="12" />
                                           </Border>
                                           <StackPanel Spacing="1">
-                                            <TextBlock Text="{Binding Kind}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="9" />
-                                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource BoughBrushText}" FontSize="11"
+                                            <TextBlock Text="{Binding Kind}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" />
+                                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource BoughBrushText}" FontSize="12"
                                                        TextWrapping="Wrap" MaxWidth="360" />
                                           </StackPanel>
                                         </StackPanel>
@@ -271,7 +271,7 @@
                           </Flyout>
                         </Button.Flyout>
                       </Button>
-                      <TextBlock Grid.Column="2" Text="{Binding MessageFirstLine}" FontSize="12" Foreground="{DynamicResource BoughBrushText}"
+                      <TextBlock Grid.Column="2" Text="{Binding MessageFirstLine}" FontSize="14" Foreground="{DynamicResource BoughBrushText}"
                                  FontWeight="Medium" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                   </Grid>
                 </Grid>
@@ -290,12 +290,12 @@
                 IsVisible="{Binding ShowPageStatus}">
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
             <TextBlock Text="{Binding Labels.LoadingCommits}" IsVisible="{Binding IsLoadingMore}"
-                       Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" VerticalAlignment="Center" />
+                       Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" VerticalAlignment="Center" />
             <TextBlock Text="{Binding PageErrorText}" IsVisible="{Binding HasPageError}"
-                       Foreground="{DynamicResource BoughBrushError}" FontSize="11" VerticalAlignment="Center"
+                       Foreground="{DynamicResource BoughBrushError}" FontSize="12" VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis" MaxWidth="500" ToolTip.Tip="{Binding PageErrorText}" />
             <Button Content="{Binding Labels.Retry}" Command="{Binding RetryLoadMoreCommand}"
-                    IsVisible="{Binding HasPageError}" Padding="7,2" FontSize="11" />
+                    IsVisible="{Binding HasPageError}" Padding="7,2" FontSize="12" />
           </StackPanel>
         </Border>
       </Grid>
@@ -311,7 +311,7 @@
         <Grid>
           <TextBlock Text="{Binding Labels.SelectCommit}" IsVisible="{Binding HasNoSelection}"
                      Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
-          <TabControl IsVisible="{Binding HasSelection}" SelectedIndex="{Binding SelectedTab, Mode=TwoWay}"
+          <TabControl IsVisible="{Binding IsCommitDetailView}" SelectedIndex="{Binding SelectedTab, Mode=TwoWay}"
                       Background="{DynamicResource BoughBrushCanvas}" Foreground="{DynamicResource BoughBrushText}" BorderThickness="0"
                       HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
             <TabItem Header="{Binding Labels.TabCommit}">
@@ -321,45 +321,45 @@
                     <StackPanel Spacing="5">
                       <SelectableTextBlock Text="{Binding SelectedMessage}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
                       <SelectableTextBlock Text="{Binding AuthorDescription}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
-                      <SelectableTextBlock Text="{Binding AuthoredAtText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" />
+                      <SelectableTextBlock Text="{Binding AuthoredAtText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
                     </StackPanel>
                   </Grid>
-                  <SelectableTextBlock Text="{Binding ReferencesText}" FontSize="11" Foreground="{DynamicResource BoughBrushSuccess}" TextWrapping="Wrap" />
+                  <SelectableTextBlock Text="{Binding ReferencesText}" FontSize="12" Foreground="{DynamicResource BoughBrushSuccess}" TextWrapping="Wrap" />
                   <Grid ColumnDefinitions="*,Auto">
                     <SelectableTextBlock Text="{Binding Inspection.Hash}" FontFamily="Cascadia Mono, Menlo, monospace"
-                                         FontSize="11" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Inspection.Hash}" />
-                    <Button Grid.Column="1" Content="{Binding Labels.CopySha}" Click="CopyHashClicked" Padding="7,3" FontSize="10" />
+                                         FontSize="14" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Inspection.Hash}" />
+                    <Button Grid.Column="1" Content="{Binding Labels.CopySha}" Click="CopyHashClicked" Padding="7,3" FontSize="12" />
                   </Grid>
                   <ItemsControl ItemsSource="{Binding Inspection.Parents}" IsVisible="{Binding HasParents}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="x:String">
                         <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,0,3">
-                          <Button Content="{Binding}" Click="ParentClicked" Padding="5,2" FontSize="10"
+                          <Button Content="{Binding}" Click="ParentClicked" Padding="5,2" FontSize="14"
                                   FontFamily="Cascadia Mono, Menlo, monospace" ToolTip.Tip="{Binding DataContext.Labels.ParentTooltip, ElementName=HistoryRoot, x:CompileBindings=False}" />
-                          <Button Content="{Binding DataContext.Labels.Copy, ElementName=HistoryRoot, x:CompileBindings=False}" Click="CopyParentClicked" Padding="5,2" FontSize="10" />
+                          <Button Content="{Binding DataContext.Labels.Copy, ElementName=HistoryRoot, x:CompileBindings=False}" Click="CopyParentClicked" Padding="5,2" FontSize="12" />
                         </StackPanel>
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
                   <ComboBox ItemsSource="{Binding Inspection.Parents}" SelectedItem="{Binding SelectedParent, Mode=TwoWay}"
                             IsVisible="{Binding HasMultipleParents}" />
-                  <TextBlock Text="{Binding ComparisonText}" FontSize="11" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+                  <TextBlock Text="{Binding ComparisonText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
                   <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="{Binding Labels.ExpandAll}" Click="ExpandAllClicked" Padding="7,4" FontSize="11" />
-                    <Button Content="{Binding Labels.CollapseAll}" Click="CollapseAllClicked" Padding="7,4" FontSize="11" />
+                    <Button Content="{Binding Labels.ExpandAll}" Click="ExpandAllClicked" Padding="7,4" FontSize="12" />
+                    <Button Content="{Binding Labels.CollapseAll}" Click="CollapseAllClicked" Padding="7,4" FontSize="12" />
                   </StackPanel>
                   <TextBlock Text="{Binding Labels.NoChanges}" IsVisible="{Binding HasNoChangedFiles}"
-                             Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="11" />
+                             Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" />
                   <ItemsControl ItemsSource="{Binding ChangedFiles}">
                     <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="vm:HistoryInspectionFileItem">
+                      <DataTemplate x:DataType="models:HistoryInspectionFileItem">
                         <Expander Classes="commitFile" MinHeight="34" MinWidth="0" HorizontalAlignment="Stretch"
                                   IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
                                   Expanded="DiffExpanded" Margin="0,0,0,3">
                           <Expander.Header>
                             <TextBlock Text="{Binding PathDescription}" TextTrimming="CharacterEllipsis"
                                        Foreground="{DynamicResource BoughBrushText}"
-                                       TextWrapping="NoWrap" FontSize="11" VerticalAlignment="Center"
+                                       TextWrapping="NoWrap" FontSize="12" VerticalAlignment="Center"
                                        ToolTip.Tip="{Binding PathDescription}" />
                           </Expander.Header>
                           <Expander.ContextMenu>
@@ -368,7 +368,6 @@
                               <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" Click="ExplorerFileClicked" />
                               <Separator />
                               <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" Click="FileHistoryClicked" />
-                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowTree}" Click="ShowInTreeClicked" />
                               <Separator />
                               <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" Click="SaveFileClicked" />
                               <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" Click="CopyPathClicked" />
@@ -377,9 +376,9 @@
                           <StackPanel Spacing="5">
                             <TextBlock Classes="fileStatus" Classes.statusAdded="{Binding IsAdded}" Classes.statusDeleted="{Binding IsDeleted}"
                                        Classes.statusRenamed="{Binding IsRenamed}" Classes.statusCopied="{Binding IsCopied}"
-                                       Text="{Binding StatusText}" FontSize="10" />
-                            <TextBlock Text="{Binding DiffReason}" FontSize="11" Foreground="{DynamicResource BoughBrushWarning}" TextWrapping="Wrap" />
-                            <TextBlock Text="{Binding DataContext.Labels.LoadingDiff, ElementName=HistoryRoot, x:CompileBindings=False}" IsVisible="{Binding IsLoading}" FontSize="11" />
+                                       Text="{Binding StatusText}" FontSize="12" />
+                            <TextBlock Text="{Binding DiffReason}" FontSize="12" Foreground="{DynamicResource BoughBrushWarning}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding DataContext.Labels.LoadingDiff, ElementName=HistoryRoot, x:CompileBindings=False}" IsVisible="{Binding IsLoading}" FontSize="12" />
                             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                               <StackPanel>
                               <ItemsControl ItemsSource="{Binding DiffLines}">
@@ -388,21 +387,21 @@
                                     <Border Classes="diffLine" Classes.diffAdded="{Binding IsAdded}" Classes.diffRemoved="{Binding IsRemoved}"
                                             Classes.diffHunk="{Binding IsHunk}" Padding="3,1">
                                       <Grid ColumnDefinitions="38,38,*">
-                                        <TextBlock Text="{Binding OldNumber}" FontSize="10" Foreground="{DynamicResource BoughBrushTextSubtle}"
+                                        <TextBlock Text="{Binding OldNumber}" FontSize="14" Foreground="{DynamicResource BoughBrushTextSubtle}"
                                                    FontFamily="Cascadia Mono, Menlo, monospace" />
-                                        <TextBlock Grid.Column="1" Text="{Binding NewNumber}" FontSize="10" Foreground="{DynamicResource BoughBrushTextSubtle}"
+                                        <TextBlock Grid.Column="1" Text="{Binding NewNumber}" FontSize="14" Foreground="{DynamicResource BoughBrushTextSubtle}"
                                                    FontFamily="Cascadia Mono, Menlo, monospace" />
                                         <SelectableTextBlock Grid.Column="2" Classes="diffText" Classes.diffAdded="{Binding IsAdded}"
                                                              Classes.diffRemoved="{Binding IsRemoved}" Classes.diffHunk="{Binding IsHunk}"
                                                              Text="{Binding Text}"
-                                                             FontSize="10" FontFamily="Cascadia Mono, Menlo, monospace" TextWrapping="NoWrap" />
+                                                             FontSize="14" FontFamily="Cascadia Mono, Menlo, monospace" TextWrapping="NoWrap" />
                                       </Grid>
                                     </Border>
                                   </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                               </ItemsControl>
                               <SelectableTextBlock Text="{Binding DiffText}" IsVisible="{Binding HasRawDiff}"
-                                                   FontFamily="Cascadia Mono, Menlo, monospace" FontSize="10"
+                                                   FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14"
                                                    TextWrapping="NoWrap" />
                               </StackPanel>
                             </ScrollViewer>
@@ -411,7 +410,7 @@
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
-                  <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource BoughBrushError}" FontSize="11" TextWrapping="Wrap" />
+                  <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource BoughBrushError}" FontSize="12" TextWrapping="Wrap" />
                 </StackPanel>
               </ScrollViewer>
             </TabItem>
@@ -426,7 +425,7 @@
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0" Spacing="3" Margin="0,0,0,9">
                   <TextBlock Text="{Binding MessageFirstLine}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                  <TextBlock Text="{Binding ChangesSummary}" FontSize="11" Foreground="{DynamicResource BoughBrushTextMuted}" />
+                  <TextBlock Text="{Binding ChangesSummary}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
                 </StackPanel>
                 <TextBox Grid.Row="1" PlaceholderText="{Binding Labels.SearchChangedPaths}" Text="{Binding FileSearch, Mode=TwoWay}"
                          Margin="0,0,0,8" />
@@ -436,7 +435,7 @@
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                   <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:HistoryInspectionFileItem">
+                    <DataTemplate x:DataType="models:HistoryInspectionFileItem">
                       <Border Padding="8,6" ToolTip.Tip="{Binding PathDescription}">
                         <Border.ContextMenu>
                           <ContextMenu Opened="FileContextOpened">
@@ -444,7 +443,6 @@
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" Click="ExplorerFileClicked" />
                             <Separator />
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" Click="FileHistoryClicked" />
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowTree}" Click="ShowInTreeClicked" />
                             <Separator />
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" Click="SaveFileClicked" />
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" Click="CopyPathClicked" />
@@ -453,8 +451,8 @@
                         <Grid ColumnDefinitions="75,*">
                           <TextBlock Classes="fileStatus" Classes.statusAdded="{Binding IsAdded}" Classes.statusDeleted="{Binding IsDeleted}"
                                      Classes.statusRenamed="{Binding IsRenamed}" Classes.statusCopied="{Binding IsCopied}"
-                                     Text="{Binding StatusText}" FontSize="10" />
-                          <TextBlock Grid.Column="1" Text="{Binding PathDescription}" TextTrimming="CharacterEllipsis" FontSize="11" />
+                                     Text="{Binding StatusText}" FontSize="12" />
+                          <TextBlock Grid.Column="1" Text="{Binding PathDescription}" TextTrimming="CharacterEllipsis" FontSize="14" />
                         </Grid>
                       </Border>
                     </DataTemplate>
@@ -465,19 +463,35 @@
                               Focusable="True" ToolTip.Tip="{Binding Labels.ResizeChanges}"
                               AutomationProperties.Name="{Binding Labels.ResizeChanges}" />
                 <Grid Grid.Row="4" RowDefinitions="Auto,Auto,*" RowSpacing="4" Margin="0,4,0,0">
-                  <TextBlock Grid.Row="0" Text="{Binding PreviewPath}" FontWeight="SemiBold" FontSize="11"
+                  <TextBlock Grid.Row="0" Text="{Binding PreviewPath}" FontWeight="SemiBold" FontSize="12"
                              TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding PreviewPath}" />
-                  <TextBlock Grid.Row="1" Text="{Binding PreviewReason}" Foreground="{DynamicResource BoughBrushWarning}" FontSize="11"
+                  <TextBlock Grid.Row="1" Text="{Binding PreviewReason}" Foreground="{DynamicResource BoughBrushWarning}" FontSize="12"
                              TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding PreviewReason}" />
                   <TextBox Grid.Row="2" Text="{Binding PreviewText}" IsReadOnly="True" AcceptsReturn="True"
-                           TextWrapping="NoWrap" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="11"
+                           TextWrapping="NoWrap" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14"
                            ScrollViewer.VerticalScrollBarVisibility="Auto"
                            ScrollViewer.HorizontalScrollBarVisibility="Auto" />
                 </Grid>
               </Grid>
             </TabItem>
-            <TabItem Header="{Binding Labels.TabFileTree}">
-              <Grid Margin="12">
+          </TabControl>
+          <Grid IsVisible="{Binding IsFileTreeView}" RowDefinitions="Auto,*">
+            <Border Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}"
+                    BorderThickness="0,0,0,1" Padding="12,8">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                  <PathIcon Classes="boughIcon" Data="{StaticResource BoughIconFolder}" />
+                  <TextBlock Text="{Binding Labels.TabFileTree}" FontSize="16" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding SelectedCommit.ShortHash}" FontSize="12" VerticalAlignment="Center"
+                             Foreground="{DynamicResource BoughBrushTextMuted}" />
+                </StackPanel>
+                <Button Grid.Column="1" Click="CloseFileTreeClicked" Width="32" Height="32" Padding="0"
+                        AutomationProperties.Name="{Binding Labels.CloseAuxiliary}" ToolTip.Tip="{Binding Labels.CloseAuxiliary}">
+                  <PathIcon Classes="boughIcon" Data="{StaticResource BoughIconClose}" />
+                </Button>
+              </Grid>
+            </Border>
+              <Grid Grid.Row="1" Margin="12">
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
                   <RowDefinition Height="*" MinHeight="60" />
@@ -496,7 +510,7 @@
                     </Style>
                   </TreeView.Styles>
                   <TreeView.ItemTemplate>
-                    <TreeDataTemplate x:DataType="vm:HistoryTreeItem" ItemsSource="{Binding Children}">
+                    <TreeDataTemplate x:DataType="models:HistoryTreeItem" ItemsSource="{Binding Children}">
                       <Border Padding="3" ToolTip.Tip="{Binding ToolTipPath}">
                         <Border.ContextMenu>
                           <ContextMenu Opened="FileContextOpened">
@@ -504,15 +518,14 @@
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" Click="ExplorerFileClicked" />
                             <Separator />
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" Click="FileHistoryClicked" />
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowTree}" Click="ShowInTreeClicked" />
                             <Separator />
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" Click="SaveFileClicked" />
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" Click="CopyPathClicked" />
                           </ContextMenu>
                         </Border.ContextMenu>
                         <StackPanel Orientation="Horizontal" Spacing="7">
-                          <TextBlock Text="{Binding Kind}" Foreground="{DynamicResource BoughBrushSuccess}" FontSize="10" />
-                          <TextBlock Text="{Binding Name}" FontSize="11" />
+                          <TextBlock Text="{Binding Kind}" Foreground="{DynamicResource BoughBrushSuccess}" FontSize="12" />
+                          <TextBlock Text="{Binding Name}" FontSize="14" />
                         </StackPanel>
                       </Border>
                     </TreeDataTemplate>
@@ -523,28 +536,27 @@
                               Focusable="True" ToolTip.Tip="{Binding Labels.ResizeTree}"
                               AutomationProperties.Name="{Binding Labels.ResizeTree}" />
                 <Grid Grid.Row="3" RowDefinitions="Auto,Auto,*" RowSpacing="4" Margin="0,4,0,0">
-                  <TextBlock Grid.Row="0" Text="{Binding PreviewPath}" FontWeight="SemiBold" FontSize="11"
+                  <TextBlock Grid.Row="0" Text="{Binding PreviewPath}" FontWeight="SemiBold" FontSize="12"
                              TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding PreviewPath}" />
-                  <TextBlock Grid.Row="1" Text="{Binding PreviewReason}" Foreground="{DynamicResource BoughBrushWarning}" FontSize="11"
-                             TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding PreviewReason}" />
+                  <TextBlock Grid.Row="1" Text="{Binding PreviewReason}" Foreground="{DynamicResource BoughBrushWarning}" FontSize="12"
+                             TextWrapping="Wrap" ToolTip.Tip="{Binding PreviewReason}" />
                   <TextBox Grid.Row="2" Text="{Binding PreviewText}" IsReadOnly="True" AcceptsReturn="True"
-                           TextWrapping="NoWrap" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="11"
+                           TextWrapping="NoWrap" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14"
                            ScrollViewer.VerticalScrollBarVisibility="Auto"
                            ScrollViewer.HorizontalScrollBarVisibility="Auto" />
                 </Grid>
               </Grid>
-            </TabItem>
-          </TabControl>
+          </Grid>
           <Border Background="{DynamicResource BoughBrushRaised}" Padding="12" Margin="15" VerticalAlignment="Bottom"
                   IsVisible="{Binding HasAuxiliary}" MaxHeight="340">
             <Grid RowDefinitions="Auto,*">
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="{Binding AuxiliaryTitle}" FontWeight="SemiBold" FontSize="11" />
+                <TextBlock Text="{Binding AuxiliaryTitle}" FontWeight="SemiBold" FontSize="12" />
                 <Button Grid.Column="1" Content="×" Click="CloseAuxiliaryClicked" Padding="4,1"
                         AutomationProperties.Name="{Binding Labels.CloseAuxiliary}" ToolTip.Tip="{Binding Labels.CloseAuxiliary}" />
               </Grid>
               <TextBox Grid.Row="1" Text="{Binding AuxiliaryText}" IsReadOnly="True" AcceptsReturn="True"
-                       TextWrapping="NoWrap" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="10" />
+                       TextWrapping="NoWrap" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14" />
             </Grid>
           </Border>
         </Grid>

@@ -1,23 +1,24 @@
 using System;
-using System.Globalization;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Bough.App.Appearance;
 using Bough.App.Localization;
 using Bough.App.Presenters;
+using Bough.App.Persistence;
 using Bough.App.ViewModels;
 using Bough.Core.Conflicts;
 using Bough.Core.Git;
 using Dignus.DependencyInjection;
 using Dignus.DependencyInjection.Extensions;
-using Bough.App.Internals;
 
 namespace Bough.App
 {
     public partial class App : Application
     {
         private ServiceContainer _serviceContainer;
+
+        internal StringHelper Strings { get; private set; }
 
         public override void Initialize()
         {
@@ -29,14 +30,10 @@ namespace Bough.App
             IClassicDesktopStyleApplicationLifetime desktop = ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
             if (desktop != null)
             {
-                StringLanguage language = StringLanguage.English;
-                if (CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ko")
-                {
-                    language = StringLanguage.Korean;
-                }
-
+                LanguageSettingsStore languageSettings = new();
                 _serviceContainer = new ServiceContainer();
-                _serviceContainer.RegisterType(new StringLanguageSelection(language));
+                _serviceContainer.RegisterType(languageSettings);
+                _serviceContainer.RegisterType(new StringLanguageSelection(languageSettings.SelectedLanguage));
                 AppearanceThemeService appearanceTheme = new(this);
                 _serviceContainer.RegisterType(appearanceTheme);
                 _serviceContainer.RegisterType(GitExecutableSettings.Default);
@@ -69,6 +66,7 @@ namespace Bough.App
                 IServiceProvider serviceProvider = _serviceContainer.Build();
 
                 StringHelper stringHelper = serviceProvider.GetService<StringHelper>();
+                Strings = stringHelper;
                 GitErrorLocalizer errorLocalizer = serviceProvider.GetService<GitErrorLocalizer>();
                 GitOperationQueue operationQueue = serviceProvider.GetService<GitOperationQueue>();
                 CloneRepositoryPresenter clonePresenter = serviceProvider.GetService<CloneRepositoryPresenter>();

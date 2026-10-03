@@ -26,8 +26,8 @@
             <DataTemplate x:DataType="git:GitStashEntry">
               <StackPanel Margin="12,9" Spacing="3">
                 <TextBlock Text="{Binding DisplayText}" Foreground="{DynamicResource BoughBrushText}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold" />
-                <TextBlock Text="{Binding Branch}" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="11" />
-                <TextBlock Text="{Binding CreatedAtText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="10" />
+                <TextBlock Text="{Binding Branch}" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" />
+                <TextBlock Text="{Binding CreatedAtText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" />
               </StackPanel>
             </DataTemplate>
           </ListBox.ItemTemplate>
@@ -45,7 +45,7 @@
           <TextBlock Text="{Binding PreviewDiffHeadingText}" Foreground="{DynamicResource BoughBrushTextMuted}" FontWeight="SemiBold" />
         </Border>
         <TextBox Grid.Row="3" Text="{Binding PreviewDiff}" IsReadOnly="True" AcceptsReturn="True"
-                 FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" TextWrapping="NoWrap"
+                 FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14" TextWrapping="NoWrap"
                  Background="{DynamicResource BoughBrushInset}" Foreground="{DynamicResource BoughBrushText}" BorderThickness="0" Padding="12"
                  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" />
       </Grid>

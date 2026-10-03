@@ -5,7 +5,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Bough.App.Commands;
 using Bough.App.Localization;
+using Bough.App.ViewModels.Models;
 using Bough.App.Presenters;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
@@ -1350,6 +1352,54 @@ namespace Bough.App.ViewModels
                         break;
                     }
                 }
+            }
+        }
+
+        public override void RefreshLocalization()
+        {
+            foreach (ReferenceTreeNode root in _treeRoots)
+            {
+                RefreshTreeLocalization(root);
+            }
+            base.RefreshLocalization();
+        }
+
+        private void RefreshTreeLocalization(ReferenceTreeNode node)
+        {
+            string labelKey = string.Empty;
+            string actionText = node.ActionText;
+            switch (node.Key)
+            {
+                case "branches": labelKey = "ReferenceBranchesHeading"; actionText = ReferenceText("ReferenceCreateBranch"); break;
+                case "tags": labelKey = "ReferenceTagsHeading"; actionText = ReferenceText("ReferenceCreateTag"); break;
+                case "remotes": labelKey = "ReferenceRemotesHeading"; break;
+                case "stashes": labelKey = "StashesHeading"; break;
+                case "submodules": labelKey = "ReferenceSubmodulesHeading"; break;
+                case "branches:empty": labelKey = "ReferenceNoBranches"; break;
+                case "tags:empty": labelKey = "ReferenceNoTags"; break;
+                case "remotes:empty": labelKey = "ReferenceNoRemotes"; break;
+                case "stashes:empty": labelKey = "NoStashes"; break;
+            }
+            string label = node.Label;
+            string toolTipText = node.ToolTipText;
+            if (labelKey.Length > 0)
+            {
+                label = ReferenceText(labelKey);
+                toolTipText = label;
+            }
+            if (node.Key.StartsWith("remote:empty:", StringComparison.Ordinal))
+            {
+                label = ReferenceText("ReferenceNoTrackingBranches");
+            }
+            if (node.Target is GitSubmodule submodule)
+            {
+                string state = _stringHelper.GetString(submodule.State);
+                toolTipText = _stringHelper.Format("ReferenceSubmoduleTooltip", submodule.Path, state, submodule.Url, submodule.ExpectedCommit, submodule.CheckedOutCommit);
+            }
+            node.UpdateLocalization(label, toolTipText, actionText, ReferenceText("ReferenceCurrentBranch"));
+            foreach (ReferenceTreeNode child in node.Children)
+            {
+                RefreshTreeLocalization(child);
             }
         }
 

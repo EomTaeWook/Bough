@@ -35,7 +35,7 @@
 
 ## 릴리스 배포
 
-- [공통 릴리스 정책](Docs/ReusableArchitecture/ReleasePolicy.md)에 따라 Bough의 Windows x64 릴리스는 자체 포함 단일 `Bough.exe`로 제공한다. 필수 JSON·로그 기본 설정·네이티브 라이브러리를 포함해 별도 `Datas`·DLL·설정 파일 복사를 요구하지 않는다.
+- [릴리스 정책](Docs/ReleasePolicy.md)에 따라 Bough의 Windows x64 릴리스는 자체 포함 단일 `Bough.exe`로 제공한다. 필수 JSON·로그 기본 설정·네이티브 라이브러리를 포함해 별도 `Datas`·DLL·설정 파일 복사를 요구하지 않는다.
 - 일반 개발 실행과 기존 사용자 설정·저장소 목록·로그 저장 정책은 유지한다. 배포 설정과 로더 변경은 작업자 3에게 배분하고 게시·README·릴리스 기록은 총괄이 처리한다.
 - 배포 파일 생성과 업로드는 요청된 릴리스 작업으로 수행하며 별도 검증은 자동 재개하지 않는다.
 

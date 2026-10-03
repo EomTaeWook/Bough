@@ -25,7 +25,7 @@
         <DataTemplate x:DataType="git:GitLargeFileCandidate">
           <StackPanel Margin="10,6" Spacing="3">
             <TextBlock Text="{Binding Path}" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushText}" ToolTip.Tip="{Binding Path}" />
-            <TextBlock Text="{Binding DisplaySize}" Foreground="{DynamicResource BoughBrushWarning}" FontSize="11" />
+            <TextBlock Text="{Binding DisplaySize}" Foreground="{DynamicResource BoughBrushWarning}" FontSize="12" />
           </StackPanel>
         </DataTemplate>
       </ListBox.ItemTemplate>

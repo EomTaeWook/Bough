@@ -40,43 +40,6 @@
       <Setter Property="Background" Value="{DynamicResource BoughBrushDiffHunkSurface}" />
       <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushDiffHunk}" />
     </Style>
-    <Style Selector="Button.repository">
-      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Padding" Value="12,6" />
-    </Style>
-    <Style Selector="Button.repository.active">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
-      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
-    </Style>
-    <Style Selector="Border.repositoryRow">
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="CornerRadius" Value="5" />
-    </Style>
-    <Style Selector="Border.repositoryRow.active">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
-    </Style>
-    <Style Selector="Button.repositoryRemove">
-      <Setter Property="Opacity" Value="0" />
-      <Setter Property="Width" Value="26" />
-      <Setter Property="Height" Value="26" />
-      <Setter Property="Padding" Value="0" />
-      <Setter Property="FontSize" Value="16" />
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextSubtle}" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
-    <Style Selector="Border.repositoryRow:pointerover Button.repositoryRemove">
-      <Setter Property="Opacity" Value="1" />
-    </Style>
-    <Style Selector="Border.repositoryRow:focus-within Button.repositoryRemove">
-      <Setter Property="Opacity" Value="1" />
-    </Style>
-    <Style Selector="Button.repositoryRemove:focus">
-      <Setter Property="Opacity" Value="1" />
-    </Style>
     <Style Selector="Button.navigation">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
@@ -84,8 +47,10 @@
       <Setter Property="Padding" Value="12,7" />
     </Style>
     <Style Selector="Button.navigation.active">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="Background" Value="Transparent" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="BorderThickness" Value="0,0,0,2" />
     </Style>
     <Style Selector="Button.toolbar">
       <Setter Property="Height" Value="32" />
@@ -93,7 +58,7 @@
     </Style>
     <Style Selector="TextBox.code">
       <Setter Property="FontFamily" Value="Cascadia Mono, Menlo, monospace" />
-      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontSize" Value="14" />
       <Setter Property="Background" Value="{DynamicResource BoughBrushInset}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
       <Setter Property="BorderThickness" Value="0" />
@@ -112,40 +77,181 @@
   <Grid RowDefinitions="Auto,*">
     <Border Grid.Row="0" Background="{DynamicResource BoughBrushHeader}" BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="0,0,0,1">
       <Grid RowDefinitions="72,Auto">
-      <Grid Grid.Row="0" ColumnDefinitions="280,*,Auto" Margin="20,0">
+      <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="20,0">
         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
           <Image Width="34" Height="34" Source="/Assets/AppIcon.png" />
           <TextBlock Text="Bough" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
         </StackPanel>
 
-        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="18,0">
-          <TextBlock Text="{Binding RepositoryName}" FontSize="15" FontWeight="SemiBold"
-                     TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding RepositoryName}" />
-          <TextBlock Text="{Binding RepositoryMeta}" Foreground="{DynamicResource BoughBrushText}" FontSize="12"
-                     TextTrimming="CharacterEllipsis" />
-        </StackPanel>
+        <Grid Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalAlignment="Center" Margin="18,0">
+          <Button x:Name="RepositoryPickerButton" Grid.Column="0" Classes="navigation"
+                  Height="48" MinWidth="140" Padding="12,4" HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Stretch" Focusable="True"
+                  AutomationProperties.Name="{Binding RepositoryName}"
+                  ToolTip.Tip="{Binding RepositoryList.RepositoriesHeadingText}">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+              <PathIcon Grid.Column="0" Data="{StaticResource BoughIconFolder}" Classes="boughIcon" />
+              <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                <TextBlock Text="{Binding RepositoryName}" FontSize="16" FontWeight="SemiBold"
+                           TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="{Binding RepositoryMeta}" IsVisible="{Binding HasRepository}"
+                           Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12"
+                           TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding RepositoryMeta}" />
+              </StackPanel>
+              <PathIcon Grid.Column="2" Data="{StaticResource BoughIconChevronDown}" Classes="boughIcon boughChevronIcon" />
+            </Grid>
+            <Button.Flyout>
+              <Flyout Placement="BottomEdgeAlignedLeft">
+                <StackPanel x:Name="RepositoryPickerPanel" Width="360" Spacing="8">
+                  <StackPanel.Styles>
+                    <Style Selector="TextBlock">
+                      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+                    </Style>
+                    <Style Selector="Button.repository">
+                      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                      <Setter Property="Background" Value="Transparent" />
+                      <Setter Property="BorderThickness" Value="0" />
+                      <Setter Property="CornerRadius" Value="5" />
+                      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+                      <Setter Property="Padding" Value="12,6" />
+                    </Style>
+                    <Style Selector="Button.repository:pointerover /template/ ContentPresenter">
+                      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+                    </Style>
+                    <Style Selector="Button.repository.active">
+                      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+                      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+                    </Style>
+                    <Style Selector="Border.repositoryRow">
+                      <Setter Property="Background" Value="Transparent" />
+                      <Setter Property="CornerRadius" Value="5" />
+                    </Style>
+                    <Style Selector="Border.repositoryRow.active">
+                      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+                    </Style>
+                    <Style Selector="Button.repositoryRemove">
+                      <Setter Property="Opacity" Value="0" />
+                      <Setter Property="Width" Value="26" />
+                      <Setter Property="Height" Value="26" />
+                      <Setter Property="Padding" Value="0" />
+                      <Setter Property="FontSize" Value="16" />
+                      <Setter Property="Background" Value="Transparent" />
+                      <Setter Property="BorderThickness" Value="0" />
+                      <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextSubtle}" />
+                      <Setter Property="VerticalAlignment" Value="Center" />
+                    </Style>
+                    <Style Selector="Border.repositoryRow:pointerover Button.repositoryRemove">
+                      <Setter Property="Opacity" Value="1" />
+                    </Style>
+                    <Style Selector="Border.repositoryRow:focus-within Button.repositoryRemove">
+                      <Setter Property="Opacity" Value="1" />
+                    </Style>
+                    <Style Selector="Button.repositoryRemove:focus">
+                      <Setter Property="Opacity" Value="1" />
+                    </Style>
+                  </StackPanel.Styles>
+                  <TextBlock Text="{Binding RepositoryList.RepositoriesHeadingText}" FontSize="16"
+                             FontWeight="SemiBold" Margin="12,4,0,0" />
+                  <ScrollViewer x:Name="RepositoryListScrollViewer" MaxHeight="400"
+                                VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding RepositoryList.RepositoryGroups}" Margin="0,0,36,0">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:RepositoryGroup">
+                            <ItemsControl ItemsSource="{Binding Repositories}">
+                              <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:RepositoryItem">
+                                  <Border Classes="repositoryRow" Classes.active="{Binding IsActive}">
+                                    <Grid ColumnDefinitions="*,26" MinHeight="32">
+                                      <Button Grid.Column="0" Classes="repository" Classes.active="{Binding IsActive}"
+                                              HorizontalAlignment="Stretch" Click="RepositoryClicked"
+                                              ToolTip.Tip="{Binding RootPath}" ToolTip.Placement="TopEdgeAlignedRight"
+                                              ToolTip.ShowDelay="1000" ToolTip.BetweenShowDelay="-1"
+                                              AutomationProperties.Name="{Binding Name}" AutomationProperties.HelpText="{Binding RootPath}">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                          <PathIcon Grid.Column="0" Data="{StaticResource BoughIconFolder}" Classes="boughIcon" />
+                                          <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis"
+                                                     Foreground="{ReflectionBinding $parent[Button].Foreground}" />
+                                        </Grid>
+                                      </Button>
+                                      <Button Grid.Column="1" Classes="repositoryRemove" Click="RemoveRepositoryClicked"
+                                              ToolTip.Tip="{ReflectionBinding $parent[ScrollViewer].DataContext.RepositoryList.RemoveFromListTooltipText}"
+                                              AutomationProperties.Name="{ReflectionBinding $parent[ScrollViewer].DataContext.RepositoryList.RemoveFromListTooltipText}">
+                                        <PathIcon Data="{StaticResource BoughIconClose}" Classes="boughIcon" Width="12" Height="12" />
+                                      </Button>
+                                    </Grid>
+                                  </Border>
+                                </DataTemplate>
+                              </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </ScrollViewer>
+                </StackPanel>
+              </Flyout>
+            </Button.Flyout>
+          </Button>
+          <Button x:Name="RepositoryActionsButton" Grid.Column="1" Classes="navigation toolbar"
+                  Width="32" Padding="0" Focusable="True" Click="RepositoryActionsClicked">
+            <PathIcon Data="{StaticResource BoughIconAdd}" Classes="boughIcon" />
+            <Button.ContextMenu>
+              <ContextMenu MinWidth="240" Placement="BottomEdgeAlignedLeft">
+                <MenuItem x:Name="OpenRepositoryMenuItem" Click="OpenRepositoryClicked">
+                  <MenuItem.Icon>
+                    <PathIcon Data="{StaticResource BoughIconOpenFolder}" Classes="boughIcon" />
+                  </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem x:Name="CloneRepositoryMenuItem" Click="CloneRepositoryClicked">
+                  <MenuItem.Icon>
+                    <PathIcon Data="{StaticResource BoughIconClone}" Classes="boughIcon" />
+                  </MenuItem.Icon>
+                </MenuItem>
+              </ContextMenu>
+            </Button.ContextMenu>
+          </Button>
+        </Grid>
 
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-          <Button Content="{Binding LocalChangesNavigationText}" Command="{Binding ShowLocalChangesCommand}" Classes="navigation toolbar"
-                  Classes.active="{Binding IsLocalChangesView}" />
-          <Button Content="{Binding HistoryNavigationText}" Command="{Binding ShowHistoryCommand}" Classes="navigation toolbar"
-                  Classes.active="{Binding IsHistoryView}" />
-          <Button Content="{Binding GitSettings.SettingsTitle}" Command="{Binding ShowGitSettingsCommand}" Classes="navigation toolbar"
-                  Classes.active="{Binding IsGitSettingsView}" />
+          <Button Command="{Binding ShowLocalChangesCommand}" Classes="navigation toolbar"
+                  AutomationProperties.Name="{Binding LocalChangesNavigationText}" Classes.active="{Binding IsLocalChangesView}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource BoughIconChanges}" Classes="boughIcon" />
+              <TextBlock Text="{Binding LocalChangesNavigationText}" FontSize="14" VerticalAlignment="Center"
+                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
+            </StackPanel>
+          </Button>
+          <Button Command="{Binding ShowHistoryCommand}" Classes="navigation toolbar"
+                  AutomationProperties.Name="{Binding HistoryNavigationText}" Classes.active="{Binding IsHistoryView}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource BoughIconHistory}" Classes="boughIcon" />
+              <TextBlock Text="{Binding HistoryNavigationText}" FontSize="14" VerticalAlignment="Center"
+                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
+            </StackPanel>
+          </Button>
+          <Button Command="{Binding ShowGitSettingsCommand}" Classes="navigation toolbar"
+                  AutomationProperties.Name="{Binding SettingsNavigationText}" Classes.active="{Binding IsGitSettingsView}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource BoughIconSettings}" Classes="boughIcon" />
+              <TextBlock Text="{Binding SettingsNavigationText}" FontSize="14" VerticalAlignment="Center"
+                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
+            </StackPanel>
+          </Button>
           <Border Width="1" Background="{DynamicResource BoughBrushBorder}" Margin="5,9" />
           <Button IsEnabled="{Binding HasRepository}" Focusable="True" ToolTip.Tip="{Binding OpenFolderToolTipText}"
-                  AutomationProperties.Name="{Binding OpenFolderAutomationName}" Classes="toolbar" Click="OpenFolderClicked">
+                  AutomationProperties.Name="{Binding OpenFolderAutomationName}" Classes="navigation toolbar" Click="OpenFolderClicked">
             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-              <TextBlock Text="↗" FontSize="16" VerticalAlignment="Center" />
-              <TextBlock Text="{Binding OpenInText}" FontSize="12" VerticalAlignment="Center" />
+              <PathIcon Data="{StaticResource BoughIconOpenExternal}" Classes="boughIcon" />
+              <TextBlock Text="{Binding OpenInText}" FontSize="14" VerticalAlignment="Center"
+                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
             </StackPanel>
           </Button>
           <Button Command="{Binding References.OpenTerminalCommand}" Focusable="True"
                   ToolTip.Tip="{Binding ConsoleToolTipText}"
-                  AutomationProperties.Name="{Binding ConsoleAutomationName}" Classes="toolbar">
+                  AutomationProperties.Name="{Binding ConsoleAutomationName}" Classes="navigation toolbar">
             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-              <TextBlock Text="&gt;_" FontSize="16" VerticalAlignment="Center" />
-              <TextBlock Text="{Binding ConsoleText}" FontSize="12" VerticalAlignment="Center" />
+              <PathIcon Data="{StaticResource BoughIconTerminal}" Classes="boughIcon" />
+              <TextBlock Text="{Binding ConsoleText}" FontSize="14" VerticalAlignment="Center"
+                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
             </StackPanel>
           </Button>
         </StackPanel>
@@ -162,73 +268,21 @@
 
     <Grid Grid.Row="1" ColumnDefinitions="280,*">
       <Border Grid.Column="0" Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,1,0">
-        <Grid RowDefinitions="Auto,*,Auto" Margin="12">
-          <Grid Grid.Row="0" RowDefinitions="Auto,*,Auto" MaxHeight="280" VerticalAlignment="Top" Margin="0,0,0,16">
-            <TextBlock Grid.Row="0" Text="{Binding RepositoryList.RepositoriesHeadingText}" FontSize="14" FontWeight="SemiBold"
-                       Margin="12,0,0,8"
-                       VerticalAlignment="Center" />
-
-          <ScrollViewer x:Name="RepositoryListScrollViewer" Grid.Row="1" MaxHeight="220" VerticalScrollBarVisibility="Auto"
-                        HorizontalScrollBarVisibility="Disabled"
-                        Margin="0,0,0,8">
-            <ItemsControl ItemsSource="{Binding RepositoryList.RepositoryGroups}" Margin="0,0,36,0">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="models:RepositoryGroup">
-                  <StackPanel Margin="0,4,0,8" Spacing="3">
-                    <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold"
-                               Foreground="{DynamicResource BoughBrushTextSubtle}" Margin="12,0,0,2"
-                               TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding ParentPath}"
-                               ToolTip.Placement="Top" ToolTip.ShowDelay="1000" />
-                    <ItemsControl ItemsSource="{Binding Repositories}">
-                      <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:RepositoryItem">
-                          <Border Classes="repositoryRow" Classes.active="{Binding IsActive}">
-                            <Grid ColumnDefinitions="*,26" MinHeight="32">
-                              <Button Grid.Column="0" Classes="repository" Classes.active="{Binding IsActive}"
-                                      HorizontalAlignment="Stretch" Click="RepositoryClicked"
-                                      ToolTip.Tip="{Binding RootPath}" ToolTip.Placement="TopEdgeAlignedRight"
-                                      ToolTip.ShowDelay="1000" ToolTip.BetweenShowDelay="-1"
-                                      AutomationProperties.Name="{Binding Name}" AutomationProperties.HelpText="{Binding RootPath}">
-                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                              </Button>
-                              <Button Grid.Column="1" Content="×" Classes="repositoryRemove" Click="RemoveRepositoryClicked"
-                                      ToolTip.Tip="{ReflectionBinding $parent[Window].DataContext.RepositoryList.RemoveFromListTooltipText}"
-                                      AutomationProperties.Name="{ReflectionBinding $parent[Window].DataContext.RepositoryList.RemoveFromListTooltipText}" />
-                            </Grid>
-                          </Border>
-                        </DataTemplate>
-                      </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                  </StackPanel>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </ScrollViewer>
-
-            <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="8">
-              <Button x:Name="OpenRepositoryButton" Grid.Column="0" Click="OpenRepositoryClicked"
-                      MinHeight="32" Padding="8,4" HorizontalAlignment="Stretch"
-                      HorizontalContentAlignment="Center" Focusable="True" />
-              <Button x:Name="CloneRepositoryButton" Grid.Column="1" Click="CloneRepositoryClicked"
-                      MinHeight="32" Padding="8,4" HorizontalAlignment="Stretch"
-                      HorizontalContentAlignment="Center" Focusable="True" />
-            </Grid>
-          </Grid>
-
-          <Border Grid.Row="1" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
+        <Grid RowDefinitions="*,Auto" Margin="12">
+          <Border Grid.Row="0" IsVisible="{Binding HasRepository}">
             <Grid>
               <views:ReferenceExplorerView DataContext="{Binding References}" />
               <ProgressBar IsVisible="{Binding IsReferencesLoading}" IsIndeterminate="True"
                            Height="3" VerticalAlignment="Top" />
             </Grid>
           </Border>
-          <Border Grid.Row="2" IsVisible="{Binding HasSidebarStatus}"
+          <Border Grid.Row="1" IsVisible="{Binding HasSidebarStatus}"
                   Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}"
                   BorderThickness="0,1,0,0" Padding="12,8">
             <StackPanel Spacing="8">
               <ScrollViewer IsVisible="{Binding HasSidebarStatusText}" MaxHeight="112"
                             VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <TextBlock Text="{Binding SidebarStatusText}" TextWrapping="Wrap" FontSize="11"
+                <TextBlock Text="{Binding SidebarStatusText}" TextWrapping="Wrap" FontSize="12"
                            Foreground="{DynamicResource BoughBrushTextMuted}"
                            ToolTip.Tip="{Binding SidebarStatusText}" />
               </ScrollViewer>
@@ -267,6 +321,32 @@
         </Border>
         <Border Grid.Row="1" IsVisible="{Binding IsGitSettingsView}">
           <views:GitSettingsView x:Name="GitSettingsPanel" DataContext="{Binding GitSettings}" />
+        </Border>
+        <Border Grid.Row="1" IsVisible="{Binding IsRepositoryStartView}"
+                Background="{DynamicResource BoughBrushCanvas}" Padding="32">
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="24" MaxWidth="480">
+            <Image Source="/Assets/AppIcon.png" Width="72" Height="72" HorizontalAlignment="Center" />
+            <TextBlock Text="{Binding RepositoryName}" FontSize="24" FontWeight="SemiBold"
+                       TextAlignment="Center" TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+              <Button x:Name="OpenRepositoryButton" Click="OpenRepositoryClicked" Classes="primary"
+                      MinHeight="32" Padding="16,8" Focusable="True">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource BoughIconOpenFolder}" Classes="boughIcon" />
+                  <TextBlock x:Name="OpenRepositoryActionLabel" VerticalAlignment="Center"
+                             Foreground="{ReflectionBinding $parent[Button].Foreground}" />
+                </StackPanel>
+              </Button>
+              <Button x:Name="CloneRepositoryButton" Click="CloneRepositoryClicked"
+                      MinHeight="32" Padding="16,8" Focusable="True">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource BoughIconClone}" Classes="boughIcon" />
+                  <TextBlock x:Name="CloneRepositoryActionLabel" VerticalAlignment="Center"
+                             Foreground="{ReflectionBinding $parent[Button].Foreground}" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </StackPanel>
         </Border>
       </Grid>
     </Grid>
