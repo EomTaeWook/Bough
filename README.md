@@ -2,7 +2,7 @@
 
 **한국어** | [English](README.en.md)
 
-**Bough는 병합 충돌을 더 명확하게 이해하고 해결하기 위한 macOS·Windows용 Git GUI입니다.**
+**Bough는 병합 충돌을 더 명확하게 이해하고 해결하기 위한 Git GUI입니다.**
 
 일상적인 Git 작업은 가볍고 빠르게 처리하고, 병합 충돌에서는 변경의 맥락과 선택 결과를 쉽게 파악할 수 있는 경험을 지향합니다.
 
@@ -10,7 +10,7 @@
 
 [Bough v0.1.0-beta.4 Windows x64 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.4/Bough-v0.1.0-beta.4-win-x64.exe) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.4)
 
-다운로드한 단일 `.exe` 파일을 실행하세요. 압축 해제나 .NET 설치는 필요 없지만 Git은 설치돼 있어야 합니다. 이번 베타에는 Windows x64 실행파일만 제공하며 macOS는 아래 소스 실행 방법을 사용해야 합니다.
+다운로드한 단일 `.exe` 파일을 실행하세요. 압축 해제나 .NET 설치는 필요 없지만 Git은 설치돼 있어야 합니다. 현재 배포 대상은 Windows x64입니다. macOS 실행은 아직 확인하지 않았습니다.
 
 ## 화면 미리보기
 
@@ -68,18 +68,20 @@ Bough는 충돌한 변경의 출처를 분명히 표시하고, 사용자가 선�
 ## 기술 방향
 
 - **언어**: C# / .NET
-- **플랫폼**: macOS, Windows
+- **현재 배포 플랫폼**: Windows x64
 - **UI**: Avalonia
 
 프로젝트는 개발 중입니다. 현재 기능과 확인되지 않은 동작은 [구현 현황](Docs/CurrentStatus.md)에 구분해 기록합니다. 개발 문서와 기획 문서는 각각 [Docs](Docs/README.md), [Design](Design/README.md)에서 볼 수 있습니다.
 
-## 실행
+## 소스에서 실행
 
 .NET 10 SDK와 Git이 필요합니다.
 
 ```powershell
 dotnet run --project Bough.App/Bough.App.csproj
 ```
+
+## 사용 흐름
 
 왼쪽 저장소 목록 아래 **저장소 열기**를 누르면 폴더 선택으로 바로 연결되고, **복제**를 누르면 복제 창이 열립니다. 복제할 폴더 경로를 직접 입력하거나 찾아보기에서 빈 폴더를 고르면, 완료 후 최근 목록에 등록하고 엽니다. 기존 목록에서 저장소를 전환할 수 있으며, 제거 버튼은 마우스를 올리거나 키보드 포커스를 둘 때 표시됩니다. 저장소에 해결되지 않은 충돌이 있으면 충돌 구간별로 변경을 선택하고 최종 파일을 확인하거나 직접 편집한 뒤 **저장하고 스테이징**을 누릅니다. 현재 텍스트 충돌은 UTF-8 파일을 대상으로 합니다.
 
@@ -93,18 +95,9 @@ dotnet run --project Bough.App/Bough.App.csproj
 
 ## 데이터 생성
 
-`Excel/String.xlsx`는 문자열 원본으로 관리할 파일이고 앱은 `Datas/String.json`을 읽습니다. 현재 두 파일의 기존 항목이 완전히 동기화돼 있지 않으므로, 전체 변환기를 다시 실행하기 전에 [데이터 변환 도구 사용법](<Docs/데이터 변환 도구 사용법.md>)의 동기화 주의를 확인하세요.
+문자열 원본은 `Excel/String.xlsx`이며 런타임 데이터는 `Datas/String.json`입니다. Debug 실행은 출력 폴더의 JSON을 읽고, Release 배포는 실행 파일에 포함한 JSON을 읽습니다. 화면 문구는 운영체제 UI 언어가 한국어면 한국어, 그 외에는 영어로 표시합니다.
 
-`JsonToCSharp.exe`는 Git LFS로 관리합니다. 처음 저장소를 받은 뒤 실행 파일이 내려오지 않았다면 Git LFS를 설치하고 저장소 루트에서 `git lfs pull`을 실행하세요.
-
-```powershell
-cd ExportTools/ExcelToJson
-./ExcelToJson.exe --no-pause
-cd ../JsonToCSharp
-./JsonToCSharp.exe --no-pause
-```
-
-현재 포함된 변환기 버전은 파일을 생성한 뒤에도 `Console.ReadKey` 예외와 함께 종료될 수 있습니다. 이 경우 완료 문구와 산출물 차이를 함께 확인해야 합니다. 화면 문구는 `StringTemplate`에서 읽으며, 운영체제 UI 언어가 한국어면 한국어, 그 외에는 영어를 사용합니다.
+기존 Excel·JSON 항목은 완전히 동기화돼 있지 않아 전체 변환을 바로 실행하면 기존 키가 사라질 수 있습니다. 원본 편집과 변환 절차, Git LFS 및 변환기 주의 사항은 [데이터 변환 도구 사용법](<Docs/데이터 변환 도구 사용법.md>)을 따르세요.
 
 ## 라이선스
 

@@ -1,9 +1,24 @@
 # Git 실행 오류 문구의 다국어 처리
 
-전체 사용자 표시 문구와 Core 오류의 다국어 처리 규칙은 [코딩 컨벤션](CodingConvention.md)을 따른다. 이 문서는 Git 실행 오류 두 유형의 처리 방식과 배경을 설명한다.
+전체 사용자 표시 문구와 Core 오류의 다국어 처리 규칙은 [코딩 컨벤션](CodingConvention.md)을 따른다. 이 문서는 Git 실행 오류와 복제 실패의 코드·표시 경계를 설명한다.
 
 `GitCommandRunner`가 만드는 오류 문구를 C# 코드에 한국어로 고정하지 않는다. 실행 파일을 시작하지 못한 경우와 Git이 오류 문구 없이 종료한 경우에는 각각 안정적인 오류 식별자와 경로·종료 코드 같은 인수를 `GitException`에 담는다. 원래 예외는 `InnerException`으로 보존한다.
 
-`Bough.Core`는 `Bough.App.Localization.StringHelper`나 UI 프로젝트를 참조하지 않는다. 앱의 표시 경계에서 오류 식별자를 `Datas/String.json`의 한국어·영어 템플릿으로 변환한다. 현재 언어 선택은 기존 `StringHelper`를 따른다. `GitException.Message`를 그대로 표시하는 Git 실행 오류 경로도 이 변환기를 사용해 실제 화면에서 선택 언어로 보이게 한다. 식별자가 없는 기존 예외와 Git 자체가 출력한 stderr는 원문을 진단 정보로 유지한다.
+`Bough.Core`는 `Bough.App.Localization.StringHelper`나 UI 프로젝트를 참조하지 않는다. 앱의 표시 경계에서 오류 식별자를 `Datas/String.json`의 한국어·영어 템플릿으로 변환한다. 현재 언어 선택은 기존 `StringHelper`를 따른다. `GitException.Message`를 그대로 표시하는 Git 실행 오류 경로도 이 변환기를 사용해 실제 화면에서 선택 언어로 보이게 한다. Git 원문 진단의 보존·전달 범위는 명령별로 정하며, 민감 정보가 포함될 수 있는 출력을 무조건 화면이나 로그로 전달하지 않는다.
 
-Git 실행, 저장소 상태, 충돌·원격·History·참조 작업의 사용자 오류는 가능한 한 안정적인 코드와 인수로 전달한다. 번역 키가 누락되면 식별자나 빈 문자열 대신 읽을 수 있는 영어 기본 문구를 보여 준다. Git stderr는 원문 진단 정보이므로 사용자 표시 경계에서 비밀 정보 노출 여부를 확인한다. 예를 들어 저장소 복제는 자격 증명이 들어 있을 수 있는 Git stderr를 그대로 표시하지 않고 안전한 종료 코드와 생성 위치 상태를 보여 준다. 이 규칙은 Git 명령 성공 여부나 실행 파일 설정을 바꾸지 않는다.
+Git 실행, 저장소 상태, 충돌·원격·History·참조 작업의 사용자 오류는 가능한 한 안정적인 코드와 인수로 전달한다. 번역 키가 누락되면 식별자나 빈 문자열 대신 읽을 수 있는 영어 기본 문구를 보여 준다. 이 규칙은 Git 명령 성공 여부나 실행 파일 설정을 바꾸지 않는다.
+
+## 저장소 복제의 실패와 목적지 상태
+
+Core는 Git stderr의 고정 진단 패턴으로 인증, 원격 권한, 저장소 주소·경로 또는 권한, 연결, 저장 공간, 로컬 쓰기, 목적지 충돌을 분류한다. 근거가 없으면 원인을 추정하지 않고 `CloneFailureUnknown`과 종료 코드를 전달한다. 예상하지 못한 실패는 인수 없는 `CloneFailureUnexpected`를 사용한다. 원문 stderr·원격 주소·헤더는 화면·로그·예외 인수로 전달하지 않는다. 실패 분류 8종의 `{0}`은 종료 코드이며 진행 표시는 숫자만 전달한다.
+
+실제 `process.Start()` 성공 신호 이후에는 목적지의 현재 상태를 읽기 전용으로 조회한다. 실패 이유와 별도로 다음 네 키를 표시하며, 각각 `{0}`은 목적지 경로다.
+
+| 현재 상태 | 문자열 키 |
+| --- | --- |
+| 목적지 없음 | `CloneDestinationMissingAfterAttempt` |
+| 빈 폴더 | `CloneDestinationEmptyAfterAttempt` |
+| 내용 있음 | `CloneDestinationContentsAfterAttempt` |
+| 조회 실패 | `CloneDestinationInspectionFailed` |
+
+폴더가 비어 있으면 원인을 해결한 뒤 같은 위치에서 재시도할 수 있다. 종료 코드 128만으로 폴더 상태나 실패 이유를 단정하지 않으며 파일·폴더를 자동 삭제하지 않는다. 사용자 흐름은 [저장소 복제](../Design/RepositoryClone.md)를 따른다.

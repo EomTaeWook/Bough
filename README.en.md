@@ -2,7 +2,7 @@
 
 [한국어](README.md) | **English**
 
-**Bough is a Git GUI for macOS and Windows that makes merge conflicts easier to understand and resolve.**
+**Bough is a Git GUI that makes merge conflicts easier to understand and resolve.**
 
 It aims to keep everyday Git work light and fast while making the context and outcome of conflict resolution clear.
 
@@ -10,7 +10,7 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 [Download Bough v0.1.0-beta.4 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.4/Bough-v0.1.0-beta.4-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.4)
 
-Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. This beta provides a Windows x64 executable. On macOS, use the source build instructions below.
+Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. Windows x64 is the current release platform. Running on macOS has not yet been verified.
 
 ## Preview
 
@@ -68,18 +68,20 @@ Additional screens and workflows are described in the [design notes](Design/READ
 ## Technology
 
 - **Language:** C# / .NET
-- **Platforms:** macOS and Windows
+- **Current release platform:** Windows x64
 - **UI:** Avalonia
 
 The project is under active development. [Implementation status](Docs/CurrentStatus.md) (Korean) separates available features from checks still pending. See [development docs](Docs/README.md) and [design notes](Design/README.md) for more detail.
 
-## Run
+## Run from source
 
 You need the .NET 10 SDK and Git.
 
 ```powershell
 dotnet run --project Bough.App/Bough.App.csproj
 ```
+
+## Workflow
 
 Select **Open repository** below the repository list in the left sidebar to choose a local folder, or select **Clone** to open the clone dialog directly. Enter the destination folder path, or choose an empty folder with Browse; Bough adds and opens the repository when cloning finishes. Use the list to switch repositories; the remove button appears on hover or keyboard focus. If the repository has unresolved conflicts, choose a change for each section, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
 
@@ -93,18 +95,9 @@ For tags, **Delete tag** opens one dialog to choose local or remote deletion, wi
 
 ## Data generation
 
-`Excel/String.xlsx` is intended as the source of UI strings, and the app reads `Datas/String.json`. Existing entries in the two files are not fully synchronized. Before regenerating all data, review the synchronization note in the [data conversion guide](<Docs/데이터 변환 도구 사용법.md>) (Korean).
+UI strings originate in `Excel/String.xlsx`, with runtime data in `Datas/String.json`. Debug runs read JSON from the output directory; Release builds read JSON embedded in the executable. Korean is used when the operating system UI language is Korean, and English is used otherwise.
 
-`JsonToCSharp.exe` is managed with Git LFS. If the executable is missing after cloning the repository, install Git LFS and run `git lfs pull` from the repository root.
-
-```powershell
-cd ExportTools/ExcelToJson
-./ExcelToJson.exe --no-pause
-cd ../JsonToCSharp
-./JsonToCSharp.exe --no-pause
-```
-
-The bundled converter may exit with a `Console.ReadKey` exception after generating the files. If that happens, check both the completion message and changes to the generated output. UI text is read from `StringTemplate`: Korean is used when the operating system UI language is Korean, and English is used otherwise.
+Existing Excel and JSON entries are not fully synchronized, so regenerating all data immediately can remove existing keys. Follow the [data conversion guide](<Docs/데이터 변환 도구 사용법.md>) (Korean) for source editing, conversion steps, Git LFS, and converter limitations.
 
 ## License
 

@@ -33,11 +33,11 @@
 
 충돌 저장·스테이징은 `GitRepositoryService`의 Git 검증·파싱·쓰기와 `ConflictStagePresenter`의 큐·요청 버전·stale 재조회로 분리했다. `ConflictResolutionViewModel`은 원본 결과 상태를 보관하고 `ConflictWindow`가 표시 언어로 변환한다. 실패나 늦은 결과가 사용자 편집 내용을 덮지 않게 하는 기존 계약을 유지한다.
 
-Local Changes·Stash의 변경 명령과 Git Settings의 Git 경로 확인·저장, History 목록·상세·명령, Git 참조 조회·변경, 원격 작업 실행과 MainWindow 원격 완료 갱신에도 기능별 Presenter를 연결했다. 저장소 복제의 목적지별 큐 진입과 Core 실행은 `CloneRepositoryPresenter`로 연결했다. 기존 ViewModel은 바인딩 상태와 일부 레거시 조정을 계속 소유한다. 남은 이행 범위와 실제 검증 상태는 [구현 현황](CurrentStatus.md)에서 관리한다. 작업자 소유권은 [구현 작업 지시](ImplementationPlan.md)를 따른다.
+Local Changes·Stash의 변경 명령과 Git Settings의 Git 경로 확인·저장, History 목록·상세·명령, Git 참조 조회·변경, 원격 작업 실행과 MainWindow 원격 완료 갱신에도 기능별 Presenter를 연결했다. 저장소 복제의 목적지별 큐 진입과 Core 실행은 `CloneRepositoryPresenter`로 연결했다. 기존 ViewModel은 바인딩 상태와 일부 레거시 조정을 계속 소유한다. 남은 이행 범위와 실제 검증 상태는 [구현 현황](CurrentStatus.md)에서 관리한다. 작업자 소유권은 [AGENTS.md](../AGENTS.md)를 따른다.
 
 ## 완료 기준
 
 - 변경한 흐름에서 View가 Git 서비스나 파일 저장을 직접 실행하지 않고, Core가 Avalonia·화면 문자열에 의존하지 않는다.
 - Presenter의 사용자 요청과 서비스 결과 적용 경로, 화면 상태의 소유자가 코드에서 구분된다.
 - 기존 큐 순서, 저장소 전환 중 늦은 응답 폐기, 충돌 편집 내용 보존, 오류 표시 위치와 다국어 표시가 유지된다.
-- 변경한 프로젝트를 빌드하고 `git diff --check`와 문서 링크를 확인한다. 사용자 동작에 영향이 있는 기능은 가능한 환경에서 대표 시나리오를 확인하고, 확인하지 못한 UI 동작은 [구현 현황](CurrentStatus.md)에 구분해 적는다.
+- 검증 실행은 [현재 검증 방침](../AGENTS.md#현재-검증-방침)을 우선한다. 사용자가 요청한 범위에서만 빌드·변경 검사·대표 시나리오를 수행한다. 구현 완료와 검증 완료를 구분하고 미실시 항목은 [구현 현황](CurrentStatus.md)에 적는다.
