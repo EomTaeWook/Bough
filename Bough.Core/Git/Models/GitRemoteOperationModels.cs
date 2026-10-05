@@ -6,16 +6,14 @@ namespace Bough.Core.Git.Models
 {
     public class GitPullProgress
     {
-        public GitPullProgress(GitPullStage stage, GitRemoteMessage transferStatus, IReadOnlyList<GitRemoteMessage> incomingSummary)
+        public GitPullProgress(GitPullStage stage, GitRemoteMessage transferStatus)
         {
             Stage = stage;
             TransferStatus = transferStatus;
-            IncomingSummary = incomingSummary;
         }
 
         public GitPullStage Stage { get; }
         public GitRemoteMessage TransferStatus { get; }
-        public IReadOnlyList<GitRemoteMessage> IncomingSummary { get; }
     }
 
     public class GitRemoteMessage

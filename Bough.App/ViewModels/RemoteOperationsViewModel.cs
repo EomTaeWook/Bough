@@ -59,7 +59,6 @@ namespace Bough.App.ViewModels
         private RemoteOperationOutcome _lastOperationOutcome;
         private string _operationStageText;
         private string _transferStatusText;
-        private string _pullSummaryText;
         private string _operationDetailsText = string.Empty;
         private bool _isBusy;
         private bool _isLoading;
@@ -86,7 +85,6 @@ namespace Bough.App.ViewModels
             _operationOutcomeText = string.Empty;
             _operationStageText = string.Empty;
             _transferStatusText = string.Empty;
-            _pullSummaryText = string.Empty;
         }
 
         public event Action<GitRepository> OperationCompleted;
@@ -240,19 +238,6 @@ namespace Bough.App.ViewModels
                 _transferStatusTextLocalization = null; SetProperty(ref _transferStatusText, value);
             }
         }
-        public string PullSummaryText
-        {
-            get { return _pullSummaryText; }
-            private set
-            {
-                if (SetProperty(ref _pullSummaryText, value) == true)
-                {
-                    OnPropertyChanged(nameof(HasPullSummary));
-                    OnPropertyChanged(nameof(HasOperationDetails));
-                }
-            }
-        }
-        public bool HasPullSummary { get { return PullSummaryText.Length > 0; } }
         public string OperationDetailsText
         {
             get { return _operationDetailsText; }
@@ -261,12 +246,10 @@ namespace Bough.App.ViewModels
                 if (SetProperty(ref _operationDetailsText, value))
                 {
                     OnPropertyChanged(nameof(HasOperationDiagnostic));
-                    OnPropertyChanged(nameof(HasOperationDetails));
                 }
             }
         }
         public bool HasOperationDiagnostic { get { return OperationDetailsText.Length > 0; } }
-        public bool HasOperationDetails { get { return HasOperationDiagnostic || HasPullSummary; } }
         public string SelectedRemote
         {
             get { return _selectedRemote; }
@@ -320,7 +303,6 @@ namespace Bough.App.ViewModels
             LastOperationOutcome = RemoteOperationOutcome.None;
             OperationStageText = string.Empty;
             TransferStatusText = string.Empty;
-            PullSummaryText = string.Empty;
             OperationDetailsText = string.Empty;
             IsBusy = false;
             IsLoading = false;
@@ -564,17 +546,8 @@ namespace Bough.App.ViewModels
             IProgress<GitPullProgress> progress = new Progress<GitPullProgress>(update => ApplyPullProgress(request, update));
             return await RunAsync(_strings.Format("RemotePullingFrom", remote, branch), async (repository, state, token) =>
             {
-                IReadOnlyList<GitRemoteMessage> summary = await _service.PullWithProgressAsync(repository, state, remote, branch, strategy, progress, token);
+                await _service.PullWithProgressAsync(repository, state, remote, branch, strategy, progress, token);
                 string resultText = _strings.Format("RemotePullCompleted", FormatStrategy(strategy), remote, branch);
-                if (request != _requestVersion)
-                {
-                    return new OperationExecutionResult(resultText, RemoteOperationOutcome.Succeeded);
-                }
-                if (_repository != repository)
-                {
-                    return new OperationExecutionResult(resultText, RemoteOperationOutcome.Succeeded);
-                }
-                PullSummaryText = FormatSummary(summary);
                 return new OperationExecutionResult(resultText, RemoteOperationOutcome.Succeeded);
             });
         }
@@ -584,10 +557,6 @@ namespace Bough.App.ViewModels
             if (request != _requestVersion)
             {
                 return;
-            }
-            if (progress.IncomingSummary != null)
-            {
-                PullSummaryText = FormatSummary(progress.IncomingSummary);
             }
             if (IsBusy == false)
             {
@@ -768,7 +737,6 @@ namespace Bough.App.ViewModels
             LastOperationOutcome = RemoteOperationOutcome.Running;
             OperationStageText = string.Empty;
             TransferStatusText = string.Empty;
-            PullSummaryText = string.Empty;
             OperationDetailsText = string.Empty;
             OperationExecutionResult completedResult = null;
             try
@@ -925,21 +893,6 @@ namespace Bough.App.ViewModels
                 return _strings.GetString("RemoteStrategyRebase");
             }
             return _strings.GetString("RemoteStrategyFastForward");
-        }
-
-        private string FormatSummary(IReadOnlyList<GitRemoteMessage> messages)
-        {
-            List<string> lines = [];
-            foreach (GitRemoteMessage message in messages)
-            {
-                if (message.Key == null)
-                {
-                    lines.Add(message.Arguments[0]?.ToString() ?? string.Empty);
-                    continue;
-                }
-                lines.Add(_strings.Format(message.Key, message.Arguments.ToArray()));
-            }
-            return string.Join(Environment.NewLine, lines);
         }
 
         private static bool IsPullDivergence(Exception exception)

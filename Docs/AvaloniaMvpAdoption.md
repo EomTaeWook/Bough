@@ -47,7 +47,7 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 - 병합 커밋 기본 메시지는 `GitWorkingTreeService`가 `rev-parse --git-path MERGE_MSG`로 실제 메타데이터 위치를 구하고 `MERGE_HEAD`가 남아 있을 때 읽는다. 일반 저장소·연결된 worktree의 `.git` 경로를 화면에서 추측하지 않는다. `GitWorktreeStatus.MergeCommitMessage`가 Git 원문을 상태 스냅샷에 담고 `LocalChangesViewModel`은 자동 입력의 출처를 보관해 사용자 초안·Amend·편집한 메시지를 보호한다. 파일 조회는 Core, 입력 상태는 ViewModel, 실제 커밋은 기존 Mutation Presenter와 저장소 큐의 책임이다. 기존 `--cleanup=verbatim` 정책을 유지한다.
 - `ConflictResolutionViewModel`이 충돌 파일과 편집 상태를 소유하고 `ConflictStagePresenter`가 저장·스테이징을 조정한다. `MainWindowRemoteCompletionPresenter`는 원격 작업 완료의 스냅샷 적용과 영향 영역 갱신을 맡는다. 미저장 충돌 편집 확인과 외부 활성화 뒤 갱신은 메인 창의 연결 책임이다.
 - 충돌 일괄 선택은 현재 파일의 미선택 구간만 변경한다. ViewModel이 선택 개수와 처음 반영된 구간을 표시 상태에 적용하고, View는 파일 상단의 일괄 선택과 비교 아래의 현재 구간 선택, 최종 결과의 저장·스테이징을 구분해 배치한다. 파일 저장과 큐 실행은 기존 Presenter 경계를 유지한다.
-- 원격 실패의 `GitRemoteOperationException`은 Core의 오류 식별자·인수와 기존 민감 정보 제거를 거친 Git 진단을 분리한다. `RemoteOperationsViewModel`은 짧은 지역화 상태와 상세 진단·Pull 요약을 별도 바인딩 상태로 보관하고, View는 상세를 기본으로 접힌 영역에 표시한다. 진행 단계·경과 시간은 실행 중에만 보이며 완료 뒤의 Pull 전략을 자동 변경하지 않는다.
+- 원격 실패의 `GitRemoteOperationException`은 Core의 오류 식별자·인수와 기존 민감 정보 제거를 거친 Git 진단을 분리한다. `RemoteOperationsViewModel`은 짧은 지역화 상태와 상세 진단을 별도 바인딩 상태로 보관하고, View는 진단이 있을 때만 기본으로 접힌 영역을 표시한다. `PullWithProgressAsync`는 완료 결과 목록 없이 작업을 끝내며 `GitPullProgress`는 단계와 전송 상태만 전달한다. 진행 창용 커밋·변경 파일 요약 조회는 수행하지 않는다. 진행 단계·경과 시간은 실행 중에만 보이며 완료 뒤의 Pull 전략을 자동 변경하지 않는다.
 - History의 기본 상세 탭은 Commit·Changes다. 사용자 요청으로 커밋 우클릭의 File Tree와 파일 우클릭의 파일 트리에서 보기 항목을 제거했다. 기존 `IsFileTreeView` 보조 화면과 `HistoryFileTreePresenter` 조회 구현은 내부에 남아 있으며 현재 UI 진입 메뉴는 제공하지 않는다. `Services/HistoryGraphBuilder`가 커밋 그래프 행을 계산하고 `ViewModels/Models`의 항목이 표시 상태를 보관한다.
 
 ## 터미널 연결

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -250,7 +249,7 @@ namespace Bough.Core.Git
             await PullWithProgressAsync(repository, expected, remoteName, branchName, strategy, null, cancellationToken);
         }
 
-        public async Task<IReadOnlyList<GitRemoteMessage>> PullWithProgressAsync(GitRepository repository, GitRemoteState expected, string remoteName, string branchName, GitPullStrategy strategy, IProgress<GitPullProgress> progress, CancellationToken cancellationToken = default)
+        public async Task PullWithProgressAsync(GitRepository repository, GitRemoteState expected, string remoteName, string branchName, GitPullStrategy strategy, IProgress<GitPullProgress> progress, CancellationToken cancellationToken = default)
         {
             GitRemoteState current = await VerifyStateAsync(repository, expected, cancellationToken);
             if (current.IsDetached == true)
@@ -265,13 +264,13 @@ namespace Bough.Core.Git
             string remote = ResolveRemote(current, remoteName);
             string branch = ResolveBranch(current, remote, branchName);
             await VerifyBranchNameAsync(repository, branch, cancellationToken);
-            progress?.Report(new GitPullProgress(GitPullStage.Fetching, null, null));
+            progress?.Report(new GitPullProgress(GitPullStage.Fetching, null));
             IProgress<string> transferProgress = new Progress<string>(line =>
             {
                 GitRemoteMessage transferStatus = ParseTransferProgress(line);
                 if (transferStatus != null)
                 {
-                    progress?.Report(new GitPullProgress(GitPullStage.Fetching, transferStatus, null));
+                    progress?.Report(new GitPullProgress(GitPullStage.Fetching, transferStatus));
                 }
             });
             GitCommandResult fetch = await _runner.RunWithProgressAsync(repository.RootPath, new string[] { "fetch", "--progress", remote, branch }, transferProgress, true, cancellationToken);
@@ -280,11 +279,9 @@ namespace Bough.Core.Git
                 throw await CreateCommandFailureAsync("RemotePullFetchFailed", repository, remote, branch, fetch, cancellationToken);
             }
 
-            progress?.Report(new GitPullProgress(GitPullStage.Inspecting, null, null));
+            progress?.Report(new GitPullProgress(GitPullStage.Inspecting, null));
             GitCommandResult incoming = await _runner.RunAsync(repository.RootPath, _fetchHeadArguments, false, cancellationToken);
             string incomingHash = incoming.Output.Trim();
-            IReadOnlyList<GitRemoteMessage> summary = await ReadIncomingSummaryAsync(repository, current.HeadHash, incomingHash, cancellationToken);
-            progress?.Report(new GitPullProgress(GitPullStage.Inspecting, null, summary));
             await VerifyStateAsync(repository, current, cancellationToken);
 
             string[] arguments = new string[] { "merge", "--ff-only", incomingHash };
@@ -296,7 +293,7 @@ namespace Bough.Core.Git
             {
                 arguments = new string[] { "rebase", incomingHash };
             }
-            progress?.Report(new GitPullProgress(GitPullStage.Applying, null, summary));
+            progress?.Report(new GitPullProgress(GitPullStage.Applying, null));
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, arguments, true, cancellationToken);
             if (result.ExitCode != 0)
             {
@@ -311,7 +308,6 @@ namespace Bough.Core.Git
 
                 throw await CreateCommandFailureAsync("RemotePullApplyFailed", repository, remote, branch, result, cancellationToken);
             }
-            return summary;
         }
 
         private static GitRemoteMessage ParseTransferProgress(string line)
@@ -342,62 +338,6 @@ namespace Bough.Core.Git
                 return null;
             }
             return new GitRemoteMessage(key, match.Groups["value"].Value);
-        }
-
-        private async Task<IReadOnlyList<GitRemoteMessage>> ReadIncomingSummaryAsync(GitRepository repository, string localHash, string incomingHash, CancellationToken cancellationToken)
-        {
-            GitCommandResult countResult = await _runner.RunAsync(repository.RootPath, new string[] { "rev-list", "--count", $"{localHash}..{incomingHash}" }, true, cancellationToken);
-            if (countResult.ExitCode != 0)
-            {
-                return new GitRemoteMessage[] { new("RemoteIncomingSummaryUnavailable") };
-            }
-            if (long.TryParse(countResult.Output.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out long count) == false)
-            {
-                return new GitRemoteMessage[] { new("RemoteIncomingCountInvalid") };
-            }
-
-            List<GitRemoteMessage> summary = [new("RemoteIncomingCommitCount", count)];
-            if (count > 0)
-            {
-                GitCommandResult log = await _runner.RunAsync(repository.RootPath, new string[] { "log", "-z", "--max-count=8", "--format=%h%x09%s", $"{localHash}..{incomingHash}" }, true, cancellationToken);
-                if (log.ExitCode == 0)
-                {
-                    foreach (string entry in log.Output.Split('\0', StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        summary.Add(new GitRemoteMessage(null, entry.TrimEnd('\r', '\n')));
-                    }
-                    if (count > 8)
-                    {
-                        summary.Add(new GitRemoteMessage("RemoteSummaryMore", count - 8));
-                    }
-                }
-            }
-
-            GitCommandResult baseResult = await _runner.RunAsync(repository.RootPath, new string[] { "merge-base", localHash, incomingHash }, true, cancellationToken);
-            if (baseResult.ExitCode != 0)
-            {
-                summary.Add(new GitRemoteMessage("RemoteChangedFilesNoCommonAncestor"));
-                return summary;
-            }
-            GitCommandResult files = await _runner.RunAsync(repository.RootPath, new string[] { "diff", "--name-only", "-z", baseResult.Output.Trim(), incomingHash }, true, cancellationToken);
-            if (files.ExitCode != 0)
-            {
-                summary.Add(new GitRemoteMessage("RemoteChangedFilesUnavailable"));
-                return summary;
-            }
-            string[] paths = files.Output.Split('\0', StringSplitOptions.RemoveEmptyEntries);
-            summary.Add(new GitRemoteMessage("RemoteChangedFileCount", paths.Length));
-            int shown = Math.Min(paths.Length, 8);
-            for (int index = 0; index < shown; index++)
-            {
-                string path = paths[index].Replace("\r", "\\r", StringComparison.Ordinal).Replace("\n", "\\n", StringComparison.Ordinal);
-                summary.Add(new GitRemoteMessage(null, path));
-            }
-            if (paths.Length > shown)
-            {
-                summary.Add(new GitRemoteMessage("RemoteSummaryMore", paths.Length - shown));
-            }
-            return summary;
         }
 
         public async Task<bool> PushAsync(GitRepository repository, GitRemoteState expected, string remoteName, string targetBranch, bool firstPushConfirmed, CancellationToken cancellationToken = default)

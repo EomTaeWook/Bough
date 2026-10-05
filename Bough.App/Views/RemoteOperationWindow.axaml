@@ -25,21 +25,12 @@
       <StackPanel Spacing="12">
         <TextBlock x:Name="ResultText" Text="{Binding StatusText}" TextWrapping="Wrap"
                    Foreground="{DynamicResource BoughBrushText}" />
-        <Expander x:Name="DetailsExpander" IsExpanded="False" IsVisible="{Binding HasOperationDetails}" HorizontalAlignment="Stretch">
-          <StackPanel Spacing="12">
-            <TextBox Text="{Binding OperationDetailsText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
-                     IsVisible="{Binding HasOperationDiagnostic}"
-                     FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12"
-                     TextWrapping="Wrap" MaxHeight="140" Background="{DynamicResource BoughBrushCanvas}"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     Foreground="{DynamicResource BoughBrushText}" />
-            <Border IsVisible="{Binding HasPullSummary}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" Padding="12">
-              <StackPanel Spacing="8">
-                <TextBlock x:Name="PullSummaryHeading" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushAccent}" />
-                <TextBlock x:Name="PullSummaryBlock" Text="{Binding PullSummaryText}" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushText}" />
-              </StackPanel>
-            </Border>
-          </StackPanel>
+        <Expander x:Name="DetailsExpander" IsExpanded="False" IsVisible="{Binding HasOperationDiagnostic}" HorizontalAlignment="Stretch">
+          <TextBox Text="{Binding OperationDetailsText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
+                   FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12"
+                   TextWrapping="Wrap" MaxHeight="140" Background="{DynamicResource BoughBrushCanvas}"
+                   ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                   Foreground="{DynamicResource BoughBrushText}" />
         </Expander>
       </StackPanel>
     </ScrollViewer>
