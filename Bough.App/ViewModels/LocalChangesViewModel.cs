@@ -58,6 +58,7 @@ namespace Bough.App.ViewModels
         private string _statusText;
         private string _commitMessage;
         private string _draftCommitMessage;
+        private string _automaticMergeCommitMessage = string.Empty;
         private bool _amend;
         private bool _isLoadingAmend;
         private bool _isBusy;
@@ -446,6 +447,10 @@ namespace Bough.App.ViewModels
                     SetAmendLoading(false);
                     CommitMessage = _draftCommitMessage ?? string.Empty;
                     _draftCommitMessage = null;
+                    if (_workingStatus != null)
+                    {
+                        ApplyMergeCommitMessage(_workingStatus.MergeCommitMessage);
+                    }
                 }
 
                 CommitCommand.NotifyCanExecuteChanged();
@@ -624,6 +629,7 @@ namespace Bough.App.ViewModels
             _worktreeLoadTask = Task.CompletedTask;
             OnPropertyChanged(nameof(HasRepository));
             _draftCommitMessage = null;
+            _automaticMergeCommitMessage = string.Empty;
             SetProperty(ref _amend, false, nameof(Amend));
             SetAmendLoading(false);
             CommitMessage = string.Empty;
@@ -1190,6 +1196,7 @@ namespace Bough.App.ViewModels
 
             Amend = false;
             CommitMessage = string.Empty;
+            _automaticMergeCommitMessage = string.Empty;
         }
 
         internal void ApplyCommitResult(GitRepository repository, string hash)
@@ -1440,6 +1447,7 @@ namespace Bough.App.ViewModels
         private void ApplyWorktreeStatus(GitWorktreeStatus status, string preferredPath = null, bool preferStaged = false)
         {
             _workingStatus = status;
+            ApplyMergeCommitMessage(status.MergeCommitMessage);
             Stashes.SetWorktreeStatus(_repository, status);
             string selectedPath = SelectedUnstagedFile?.Path ?? SelectedStagedFile?.Path ?? SelectedConflictFile?.Path;
             bool selectedStaged = SelectedStagedFile != null;
@@ -1526,6 +1534,47 @@ namespace Bough.App.ViewModels
             }
 
             SetLocalizedStatusText(new LocalizedText("LocalChangesStatusCount", _unstagedFiles.Count, _stagedFiles.Count, _conflictFiles.Count));
+        }
+
+        private void ApplyMergeCommitMessage(string message)
+        {
+            if (Amend)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                if (_automaticMergeCommitMessage.Length == 0)
+                {
+                    return;
+                }
+                if (CommitMessage == _automaticMergeCommitMessage)
+                {
+                    CommitMessage = string.Empty;
+                }
+
+                _automaticMergeCommitMessage = string.Empty;
+                return;
+            }
+
+            if (_automaticMergeCommitMessage.Length > 0)
+            {
+                if (CommitMessage != _automaticMergeCommitMessage)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(CommitMessage) == false)
+                {
+                    return;
+                }
+            }
+
+            CommitMessage = message;
+            _automaticMergeCommitMessage = message;
         }
 
         private bool CanUnstageSelected()

@@ -205,6 +205,23 @@ namespace Bough.App.ViewModels
         public string ConflictBatchReplaceEditsTitle { get { return _stringHelper.GetString("ConflictBatchReplaceEditsTitle"); } }
         public string ConflictBatchReplaceEditsMessage { get { return _stringHelper.GetString("ConflictBatchReplaceEditsMessage"); } }
         public string ConflictBatchApplyButtonText { get { return _stringHelper.GetString("ConflictBatchApplyButton"); } }
+        public string ConflictSelectionSummaryText
+        {
+            get
+            {
+                if (_document == null)
+                {
+                    return string.Empty;
+                }
+                if (_document.Hunks.Count == 0)
+                {
+                    return string.Empty;
+                }
+
+                int selectedCount = _document.Hunks.Count - RemainingHunkCount;
+                return _stringHelper.Format("ConflictSelectionSummary", selectedCount, _document.Hunks.Count);
+            }
+        }
         public string ConflictCountText { get { return _stringHelper.Format("ConflictFileCount", ConflictFiles.Count); } }
         public bool CanApplyRemaining
         {
@@ -733,15 +750,25 @@ namespace Bough.App.ViewModels
                 }
             }
 
-            foreach (ConflictHunk hunk in document.Hunks)
+            int firstAppliedIndex = -1;
+            for (int index = 0; index < document.Hunks.Count; index++)
             {
+                ConflictHunk hunk = document.Hunks[index];
                 if (_choices.ContainsKey(hunk.Id))
                 {
                     continue;
                 }
                 _choices.Add(hunk.Id, choice);
+                if (firstAppliedIndex < 0)
+                {
+                    firstAppliedIndex = index;
+                }
             }
 
+            if (firstAppliedIndex >= 0)
+            {
+                _currentHunkIndex = firstAppliedIndex;
+            }
             _renderedResultText = document.Render(_choices);
             ResultText = _renderedResultText;
             ShowCurrentHunk();
@@ -968,6 +995,7 @@ namespace Bough.App.ViewModels
         private void NotifyBatchState()
         {
             OnPropertyChanged(nameof(ConflictBatchCurrentFileText));
+            OnPropertyChanged(nameof(ConflictSelectionSummaryText));
             OnPropertyChanged(nameof(CanApplyRemaining));
         }
 

@@ -1,6 +1,7 @@
 using Bough.App.Localization;
 using Bough.App.ViewModels;
 using Bough.Core.Git;
+using Bough.Core.Interfaces;
 using Dignus.DependencyInjection.Attributes;
 
 namespace Bough.App.Composition
@@ -8,7 +9,7 @@ namespace Bough.App.Composition
     [Injectable(Dignus.DependencyInjection.LifeScope.Singleton)]
     public class MainWindowChildren
     {
-        public MainWindowChildren(GitHistoryService historyService, GitReferenceService referenceService, GitCommitActionService actionService, GitRemoteOperationService remoteOperationService, GitCommitInspectionService inspectionService, GitCommitMessageService commitMessageService, GitCommitFileActionService fileActionService, GitWorkingTreeService workingTreeService, GitStashService stashService, GitSettingsViewModel gitSettings, TerminalLauncher terminalLauncher, RepositoryFolderLauncher folderLauncher, PullRequestLauncher pullRequestLauncher, GitRepositoryService repositoryService, GitOperationQueue operationQueue, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
+        public MainWindowChildren(GitHistoryService historyService, GitReferenceService referenceService, GitCommitActionService actionService, GitRemoteOperationService remoteOperationService, GitCommitInspectionService inspectionService, GitCommitMessageService commitMessageService, GitCommitFileActionService fileActionService, GitWorkingTreeService workingTreeService, GitStashService stashService, GitSettingsViewModel gitSettings, ITerminalLauncher terminalLauncher, RepositoryFolderLauncher folderLauncher, PullRequestLauncher pullRequestLauncher, GitRepositoryService repositoryService, GitOperationQueue operationQueue, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
         {
             History = new HistoryViewModel(historyService, actionService, inspectionService, commitMessageService, fileActionService, operationQueue, stringHelper);
             LocalChanges = new LocalChangesViewModel(workingTreeService, stashService, operationQueue, stringHelper, errorLocalizer);

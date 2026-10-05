@@ -88,15 +88,47 @@ namespace Bough.Core.Git
                 entries.Add(new GitIgnoreEntry(file.Path, CreateRule(file.Path)));
             }
 
+            return await PrepareRulePlanAsync(location, targetPath, entries, false, cancellationToken);
+        }
+
+        internal async Task<GitIgnorePlan> PrepareStopTrackingAsync(GitRepository repository, IReadOnlyList<GitDiscardPlan> files, CancellationToken cancellationToken)
+        {
+            string targetPath = await GetTargetPathAsync(repository, GitIgnoreLocation.Repository, cancellationToken);
+            List<GitIgnoreEntry> entries = new();
+            foreach (GitDiscardPlan file in files)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                string fullPath = ResolveFilePath(repository, file.Path);
+                if (fullPath.Equals(targetPath, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    throw new GitException("IgnoreSelf", null, file.Path);
+                }
+
+                entries.Add(new GitIgnoreEntry(file.Path, CreateRule(file.Path)));
+            }
+
+            return await PrepareRulePlanAsync(GitIgnoreLocation.Repository, targetPath, entries, true, cancellationToken);
+        }
+
+        private static async Task<GitIgnorePlan> PrepareRulePlanAsync(GitIgnoreLocation location, string targetPath, IReadOnlyList<GitIgnoreEntry> entries, bool allowExistingRules, CancellationToken cancellationToken)
+        {
             byte[] originalBytes = await ReadTargetAsync(targetPath, cancellationToken);
             string content = DecodeIgnoreFile(originalBytes);
             HashSet<string> existingRules = new(content.Split('\n').Select(line => line.TrimEnd('\r')), StringComparer.Ordinal);
+            List<GitIgnoreEntry> additions = new();
             foreach (GitIgnoreEntry entry in entries)
             {
                 if (existingRules.Contains(entry.Rule) == true)
                 {
-                    throw new GitException("IgnoreExistingRuleUntracked", null, entry.Path);
+                    if (allowExistingRules == false)
+                    {
+                        throw new GitException("IgnoreExistingRuleUntracked", null, entry.Path);
+                    }
+
+                    continue;
                 }
+
+                additions.Add(entry);
             }
 
             string newLine = "\n";
@@ -109,7 +141,7 @@ namespace Bough.Core.Git
                 }
             }
 
-            return new GitIgnorePlan(location, targetPath, entries, originalBytes, newLine);
+            return new GitIgnorePlan(location, targetPath, additions, originalBytes, newLine);
         }
 
         public async Task ApplyAsync(GitRepository repository, GitIgnorePlan plan, CancellationToken cancellationToken = default)
@@ -118,6 +150,12 @@ namespace Bough.Core.Git
             ArgumentNullException.ThrowIfNull(plan);
             List<GitWorktreeFile> files = plan.Entries.Select(entry => new GitWorktreeFile(entry.Path, null, '?', '?')).ToList();
             GitIgnorePlan current = await PrepareAsync(repository, files, plan.Location, cancellationToken);
+            ValidatePlan(plan, current);
+            await ApplyRulesAsync(current, cancellationToken);
+        }
+
+        internal static void ValidatePlan(GitIgnorePlan plan, GitIgnorePlan current)
+        {
             if (current.TargetPath != plan.TargetPath)
             {
                 throw new GitException("IgnoreLocationChanged", null, Array.Empty<object>());
@@ -139,9 +177,22 @@ namespace Bough.Core.Git
                 {
                     throw new GitException("IgnoreSelectedFileChanged", null, plan.Entries[index].Path);
                 }
+
+                if (current.Entries[index].Rule != plan.Entries[index].Rule)
+                {
+                    throw new GitException("IgnoreSelectedFileChanged", null, plan.Entries[index].Path);
+                }
+            }
+        }
+
+        internal static Task ApplyRulesAsync(GitIgnorePlan plan, CancellationToken cancellationToken)
+        {
+            if (plan.Entries.Count == 0)
+            {
+                return Task.CompletedTask;
             }
 
-            await Task.Run(() => AppendRules(current, cancellationToken), cancellationToken);
+            return Task.Run(() => AppendRules(plan, cancellationToken), cancellationToken);
         }
 
         private async Task<string> GetTargetPathAsync(GitRepository repository, GitIgnoreLocation location, CancellationToken cancellationToken)

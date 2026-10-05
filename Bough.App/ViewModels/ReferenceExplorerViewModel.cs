@@ -10,6 +10,7 @@ using Bough.App.Localization;
 using Bough.App.ViewModels.Models;
 using Bough.App.Presenters;
 using Bough.Core.Git;
+using Bough.Core.Interfaces;
 using Bough.Core.Git.Models;
 using Bough.App.Internals;
 
@@ -21,7 +22,7 @@ namespace Bough.App.ViewModels
         private readonly ReferenceSnapshotPresenter _snapshotPresenter;
         private readonly ReferenceBranchPresenter _branchPresenter;
         private readonly ReferenceMutationPresenter _mutationPresenter;
-        private readonly TerminalLauncher _terminalLauncher;
+        private readonly ITerminalLauncher _terminalLauncher;
         private readonly RepositoryFolderLauncher _folderLauncher;
         private readonly PullRequestLauncher _pullRequestLauncher;
         private readonly StringHelper _stringHelper;
@@ -44,7 +45,7 @@ namespace Bough.App.ViewModels
         private bool _branchChangeInProgress;
         private string _branchChangeTarget;
 
-        public ReferenceExplorerViewModel(GitReferenceService referenceService, GitCommitActionService actionService, TerminalLauncher terminalLauncher, RepositoryFolderLauncher folderLauncher, PullRequestLauncher pullRequestLauncher, StashViewModel stashViewModel, StringHelper stringHelper, GitOperationQueue operationQueue)
+        public ReferenceExplorerViewModel(GitReferenceService referenceService, GitCommitActionService actionService, ITerminalLauncher terminalLauncher, RepositoryFolderLauncher folderLauncher, PullRequestLauncher pullRequestLauncher, StashViewModel stashViewModel, StringHelper stringHelper, GitOperationQueue operationQueue)
         {
             _referenceService = referenceService;
             _snapshotPresenter = new ReferenceSnapshotPresenter(referenceService);

@@ -68,10 +68,12 @@ if (requestVersion != _requestVersion)
 
 - 폴더와 네임스페이스는 실제 역할에 맞춘다. ViewModel에서 사용한다는 이유만으로 보조 클래스나 인터페이스를 `ViewModels`에 넣지 않는다. `ViewModels`의 직접 파일에는 화면 ViewModel과 공통 바인딩 기반인 `ViewModelBase`를 둔다.
 - 앱의 인터페이스는 `Interfaces`와 `Bough.App.Interfaces`에 둔다. `IStashMutationCompletion`, `IConflictStageCompletion`은 화면 간 완료·갱신 계약이며, 인터페이스에 실행 로직이나 상태를 추가하지 않는다. Core의 계약을 앱으로 옮기지는 않는다.
+- Core 실행 계약은 `Bough.Core/Interfaces`와 `Bough.Core.Interfaces`에 둔다. `ITerminalLauncher`의 OS 선택은 앱 시작의 DI 등록에서 처리하고 호출부·공통 기반 클래스에 반복하지 않는다. OS별 실행 인수와 셸 초기화는 각 구현이 맡으며 구성 객체와 소비자는 같은 공통 계약을 주입받는다.
 - `RelayCommand`, `AsyncRelayCommand`, `QueuedAsyncRelayCommand` 같은 `ICommand` 구현은 `Commands`와 `Bough.App.Commands`에 둔다. 명령 어댑터의 실행·활성화 알림과 Presenter의 기능 조정, Core의 FIFO 큐를 구분한다.
 - 목록·트리 항목과 화면 결과 모델은 `ViewModels/Models`에 둔다. `ViewModelBase`를 상속해 속성 변경을 알리더라도 항목 상태만 담는 타입은 화면 ViewModel로 분류하지 않는다. AXAML의 `vm`은 화면 ViewModel, `models`는 항목·결과 모델에 사용한다.
 - UI 스레드 연결은 `Threading`, 자식 화면 생성·DI 구성 보조는 `Composition`, 앱 사용자 데이터 저장과 저장 형식은 `Persistence`, 앱의 표시 계산 서비스는 `Services`에 둔다. 각각 `UiQueuedOperation`, `MainWindowChildren`, `RepositoryListStore`·`RepositoryListState`, `HistoryGraphBuilder`가 해당한다. `Services`에 Git 실행이나 도메인 규칙을 새로 넣지 않는다.
 - Git 프로세스·파일 변경·충돌 파싱·실행 전 조건 검사는 Core 서비스에 둔다. `Bough.Core`에는 Avalonia 타입·`StringHelper`·앱의 아이콘·화면 상태를 넣지 않는다.
+- 원격 오류의 짧은 식별자·인수와 긴 Git 진단은 분리한다. 상세 진단은 기존 민감 정보 제거를 거쳐 전달하고 View가 기본으로 접힌 상세 영역에 표시한다. Git이 준비한 병합 메시지는 원문 데이터로 상태 모델에 담으며 사용자 초안·편집·Amend 보존 여부는 화면 상태에서 관리한다.
 - 기능별 비동기 실행·큐 진입·결과 적용은 Presenter로 분리한다. 기존 ViewModel의 바인딩·명령 연결은 유지하고, 실제 책임을 옮기지 않은 래퍼나 이름 변경을 추가하지 않는다. 아직 남은 ViewModel 조정을 순수 MVP 완료로 기록하지 않는다.
 - `MainWindow`는 입력·대화상자·창 수명 연결을, `MainWindowViewModel`은 저장소·화면 전환과 자식 조회 순서를 맡는다. 복제 창이나 자식 화면이 다른 화면의 현재 저장소를 직접 바꾸지 않는다.
 - 공통 DI 구성은 `App.axaml.cs`에서 관리한다. 현재 `[Injectable]` 등록과 명시 등록·팩토리의 수명을 보존하며 View 안에 별도 컨테이너나 작업 큐를 만들지 않는다. 원격 실행 창은 주입된 팩토리로 작업 세션을 받는다.
@@ -94,8 +96,8 @@ if (requestVersion != _requestVersion)
 
 ## 작업 배분과 문서
 
-- 기존 작업자 배분과 세션 전달은 [AGENTS.md](../AGENTS.md) 및 사용자가 제공한 현재 작업 지침을 따른다. 담당 ID가 없거나 무효이면 현재 PC의 세션 ID를 사용자에게 받고 새 하위 에이전트로 대체하지 않는다.
-- 현재 구현의 책임·사용자 흐름이 바뀌면 관련 아키텍처·기획·구현 현황 문서를 함께 갱신한다. 기존 작업 지시의 명령형 표현을 현재 미완료 목록으로 해석하지 않는다.
+- 기존 작업자 배분과 세션 전달은 [AGENTS.md](../AGENTS.md) 및 사용자가 제공한 현재 작업 지침을 따른다. `AGENTS.local.md`가 없거나 담당 ID가 누락·무효이면 현재 세션에서 직접 진행한다. 세션 ID를 다시 요청하거나 새 하위 에이전트로 대체하지 않는다.
+- 현재 구현의 책임·사용자 흐름이 바뀌면 관련 아키텍처·기획·구현 현황 문서를 함께 갱신한다. 기능별 담당·실행 계약은 구현 작업 지시를, 반영된 범위와 미실시 검증은 구현 현황을 기준으로 기록한다.
 - 생성 결과·기존에 확인한 범위·이번 검증 미실시를 구분한다. 소스 변경만으로 UI 배치나 동작을 실제 실행에서 확인했다고 기록하지 않는다.
 
 ## 변경과 검증

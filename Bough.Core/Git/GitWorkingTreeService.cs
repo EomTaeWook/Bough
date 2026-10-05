@@ -23,6 +23,8 @@ namespace Bough.Core.Git
         private static readonly string[] _userEmailArguments = new string[] { "config", "--get", "user.email" };
         private static readonly string[] _headArguments = new string[] { "rev-parse", "HEAD" };
         private static readonly string[] _verifyHeadArguments = new string[] { "rev-parse", "--verify", "HEAD" };
+        private static readonly string[] _mergeMessagePathArguments = new string[] { "rev-parse", "--git-path", "MERGE_MSG" };
+        private static readonly Encoding _mergeMessageEncoding = new UTF8Encoding(false, true);
         private readonly GitCommandRunner _runner;
 
         public GitWorkingTreeService(GitCommandRunner runner)
@@ -109,7 +111,50 @@ namespace Bough.Core.Git
                 files.Add(new GitWorktreeFile(path, originalPath, indexStatus, worktreeStatus));
             }
 
-            return new GitWorktreeStatus(files);
+            string mergeCommitMessage = await ReadMergeCommitMessageAsync(repository, cancellationToken);
+            return new GitWorktreeStatus(files, mergeCommitMessage);
+        }
+
+        private async Task<string> ReadMergeCommitMessageAsync(GitRepository repository, CancellationToken cancellationToken)
+        {
+            GitCommandResult pathResult = await _runner.RunAsync(repository.RootPath, _mergeMessagePathArguments, false, cancellationToken);
+            string messagePath = Path.GetFullPath(pathResult.Output.TrimEnd('\r', '\n'), repository.RootPath);
+            string mergeHeadPath = Path.Combine(Path.GetDirectoryName(messagePath), "MERGE_HEAD");
+            if (File.Exists(mergeHeadPath) == false)
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                string message = await File.ReadAllTextAsync(messagePath, _mergeMessageEncoding, cancellationToken);
+                if (File.Exists(mergeHeadPath) == false)
+                {
+                    return string.Empty;
+                }
+
+                return message;
+            }
+            catch (FileNotFoundException)
+            {
+                return string.Empty;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return string.Empty;
+            }
+            catch (IOException exception)
+            {
+                throw new GitException("WorkingMergeMessageReadFailed", exception, messagePath, exception.Message);
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                throw new GitException("WorkingMergeMessageReadFailed", exception, messagePath, exception.Message);
+            }
+            catch (DecoderFallbackException exception)
+            {
+                throw new GitException("WorkingMergeMessageReadFailed", exception, messagePath, exception.Message);
+            }
         }
 
         public async Task<GitFilePreview> GetPreviewAsync(GitRepository repository, GitWorktreeFile file, bool staged, CancellationToken cancellationToken = default)
@@ -438,7 +483,7 @@ namespace Bough.Core.Git
             }
         }
 
-        public async Task<IReadOnlyList<GitDiscardPlan>> PrepareStopTrackingAsync(GitRepository repository, IEnumerable<GitWorktreeFile> files, CancellationToken cancellationToken = default)
+        public async Task<GitStopTrackingPlan> PrepareStopTrackingAsync(GitRepository repository, IEnumerable<GitWorktreeFile> files, CancellationToken cancellationToken = default)
         {
             IReadOnlyList<GitDiscardPlan> plans = await PrepareDiscardsAsync(repository, files, cancellationToken);
             foreach (GitDiscardPlan plan in plans)
@@ -446,19 +491,22 @@ namespace Bough.Core.Git
                 ValidateStopTrackingPlan(plan);
             }
 
-            return plans;
+            GitIgnorePlan ignore = await Ignore.PrepareStopTrackingAsync(repository, plans, cancellationToken);
+            return new GitStopTrackingPlan(plans, ignore);
         }
 
-        public async Task StopTrackingAsync(GitRepository repository, IReadOnlyList<GitDiscardPlan> plans, CancellationToken cancellationToken = default)
+        public async Task StopTrackingAsync(GitRepository repository, GitStopTrackingPlan plan, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(repository);
-            ArgumentNullException.ThrowIfNull(plans);
+            ArgumentNullException.ThrowIfNull(plan);
+            IReadOnlyList<GitDiscardPlan> plans = plan.Files;
             if (plans.Count == 0)
             {
                 throw new GitException("WorkingSelectDiscardFile", null, Array.Empty<object>());
             }
 
-            IReadOnlyList<GitDiscardPlan> current = await PrepareStopTrackingAsync(repository, plans.Select(plan => plan.File), cancellationToken);
+            GitStopTrackingPlan currentPlan = await PrepareStopTrackingAsync(repository, plans.Select(file => file.File), cancellationToken);
+            IReadOnlyList<GitDiscardPlan> current = currentPlan.Files;
             for (int index = 0; index < plans.Count; index++)
             {
                 if (DiscardFileMatches(plans[index], current[index]) == false)
@@ -472,14 +520,32 @@ namespace Bough.Core.Git
                 }
             }
 
+            GitIgnoreService.ValidatePlan(plan.Ignore, currentPlan.Ignore);
             List<string> arguments = ["rm", "--cached", "--"];
-            foreach (GitDiscardPlan plan in current)
+            foreach (GitDiscardPlan file in current)
             {
-                arguments.Add(LiteralPath(plan.Path));
+                arguments.Add(LiteralPath(file.Path));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            await _runner.RunAsync(repository.RootPath, arguments, false, cancellationToken);
+            List<string> previewArguments = new(arguments);
+            previewArguments.Insert(1, "--dry-run");
+            await _runner.RunAsync(repository.RootPath, previewArguments, false, cancellationToken);
+            await GitIgnoreService.ApplyRulesAsync(currentPlan.Ignore, cancellationToken);
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await _runner.RunAsync(repository.RootPath, arguments, false, cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                if (currentPlan.Ignore.Entries.Count > 0)
+                {
+                    throw new GitException("WorkingStopTrackingPartialFailure", exception, Array.Empty<object>());
+                }
+
+                throw;
+            }
         }
 
         public async Task StageAllAsync(GitRepository repository, CancellationToken cancellationToken = default)

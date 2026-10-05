@@ -300,6 +300,15 @@ namespace Bough.Core.Git
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, arguments, true, cancellationToken);
             if (result.ExitCode != 0)
             {
+                if (strategy == GitPullStrategy.FastForwardOnly)
+                {
+                    if (result.Error.Contains("Not possible to fast-forward", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string details = await SanitizeErrorAsync(repository, remote, result, cancellationToken);
+                        throw new GitRemoteOperationException("RemotePullFastForwardUnavailable", details);
+                    }
+                }
+
                 throw await CreateCommandFailureAsync("RemotePullApplyFailed", repository, remote, branch, result, cancellationToken);
             }
             return summary;
@@ -539,7 +548,7 @@ namespace Bough.Core.Git
             {
                 return new GitException($"{code}WithoutOutput", null, remote, branch, result.ExitCode);
             }
-            return new GitException(code, null, remote, branch, error);
+            return new GitRemoteOperationException(code + "Summary", error, remote, branch);
         }
     }
 }

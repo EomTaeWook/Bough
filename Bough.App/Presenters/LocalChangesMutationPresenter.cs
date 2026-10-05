@@ -139,22 +139,35 @@ namespace Bough.App.Presenters
             bool active = screen.BeginMutation(repository);
             try
             {
-                IReadOnlyList<GitDiscardPlan> plans = await _workingTreeService.PrepareStopTrackingAsync(repository, files, cancellationToken);
+                GitStopTrackingPlan plan = await _workingTreeService.PrepareStopTrackingAsync(repository, files, cancellationToken);
                 Func<IReadOnlyList<GitDiscardPlan>, CancellationToken, Task<bool>> confirm = screen.StopTrackingConfirmation;
                 if (confirm == null)
                 {
                     throw new GitException("LocalStopTrackingRequiresConfirmation", null, Array.Empty<object>());
                 }
 
-                bool accepted = await confirm(plans, cancellationToken);
+                bool accepted = await confirm(plan.Files, cancellationToken);
                 if (accepted == false)
                 {
                     return;
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
-                await _workingTreeService.StopTrackingAsync(repository, plans, cancellationToken);
+                await _workingTreeService.StopTrackingAsync(repository, plan, cancellationToken);
                 await screen.RefreshAfterMutationAsync(repository, null, false);
+            }
+            catch (Exception exception)
+            {
+                await screen.RefreshAfterMutationAsync(repository, null, false);
+                if (exception is GitException gitException)
+                {
+                    if (gitException.ErrorCode == "WorkingStopTrackingPartialFailure")
+                    {
+                        throw new GitException(gitException.ErrorCode, gitException.InnerException, screen.GetMutationErrorText(gitException.InnerException));
+                    }
+                }
+
+                throw;
             }
             finally
             {

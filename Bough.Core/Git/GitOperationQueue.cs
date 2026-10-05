@@ -12,7 +12,7 @@ namespace Bough.Core.Git
     public class GitOperationQueue
     {
         private readonly object _sync = new();
-        private readonly Dictionary<string, RepositoryLane> _lanes;
+        private readonly Dictionary<string, RepositoryOperationQueue> _repositoryQueues;
         private readonly AsyncLocal<ExecutionFrame> _execution = new();
 
         public GitOperationQueue()
@@ -22,10 +22,10 @@ namespace Bough.Core.Git
             {
                 comparer = StringComparer.OrdinalIgnoreCase;
             }
-            _lanes = new Dictionary<string, RepositoryLane>(comparer);
+            _repositoryQueues = new Dictionary<string, RepositoryOperationQueue>(comparer);
         }
 
-        // Notifications can arrive out of order after the lane lock is released.
+        // Notifications can arrive out of order after the queue lock is released.
         // Subscribers must marshal to their UI context and call GetState for the root just before applying it.
         public event Action<GitOperationQueueState> StateChanged;
 
@@ -56,45 +56,45 @@ namespace Bough.Core.Git
             {
                 if (frame.IsActive == true)
                 {
-                    if (_lanes.Comparer.Equals(frame.RepositoryRoot, root))
+                    if (_repositoryQueues.Comparer.Equals(frame.RepositoryRoot, root))
                     {
                         throw new GitException("GitOperationQueueReentry", null, Array.Empty<object>());
                     }
                 }
             }
 
-            RepositoryLane lane;
+            RepositoryOperationQueue repositoryQueue;
             QueuedOperation<T> request;
             GitOperationQueueState state;
             bool startConsumer = false;
             lock (_sync)
             {
-                if (_lanes.TryGetValue(root, out lane) == false)
+                if (_repositoryQueues.TryGetValue(root, out repositoryQueue) == false)
                 {
-                    lane = new RepositoryLane(root);
-                    _lanes.Add(root, lane);
+                    repositoryQueue = new RepositoryOperationQueue(root);
+                    _repositoryQueues.Add(root, repositoryQueue);
                 }
 
                 request = new QueuedOperation<T>(operationName, action, cancellationToken);
-                lane.Pending.Add(request);
-                lane.PendingCount++;
-                if (lane.ConsumerRunning == false)
+                repositoryQueue.Pending.Add(request);
+                repositoryQueue.PendingCount++;
+                if (repositoryQueue.ConsumerRunning == false)
                 {
-                    lane.ConsumerRunning = true;
+                    repositoryQueue.ConsumerRunning = true;
                     startConsumer = true;
                 }
-                state = CreateState(lane);
+                state = CreateState(repositoryQueue);
             }
 
             PublishState(state);
             if (cancellationToken.CanBeCanceled)
             {
-                CancellationTokenRegistration registration = cancellationToken.Register(() => CancelPendingRequest(lane, request));
+                CancellationTokenRegistration registration = cancellationToken.Register(() => CancelPendingRequest(repositoryQueue, request));
                 bool keepRegistration;
                 lock (_sync)
                 {
                     keepRegistration = request.IsPending;
-                    if (ReferenceEquals(lane.Running, request))
+                    if (ReferenceEquals(repositoryQueue.Running, request))
                     {
                         keepRegistration = true;
                     }
@@ -110,7 +110,7 @@ namespace Bough.Core.Git
             }
             if (startConsumer)
             {
-                _ = ConsumeAsync(lane);
+                _ = ConsumeAsync(repositoryQueue);
             }
             return request.Task;
         }
@@ -121,9 +121,9 @@ namespace Bough.Core.Git
             string root = NormalizeRoot(repositoryRoot);
             lock (_sync)
             {
-                if (_lanes.TryGetValue(root, out RepositoryLane lane))
+                if (_repositoryQueues.TryGetValue(root, out RepositoryOperationQueue repositoryQueue))
                 {
-                    return CreateState(lane);
+                    return CreateState(repositoryQueue);
                 }
             }
             return new GitOperationQueueState(root, string.Empty, 0);
@@ -138,25 +138,25 @@ namespace Bough.Core.Git
             GitOperationQueueState state;
             lock (_sync)
             {
-                if (_lanes.TryGetValue(root, out RepositoryLane lane) == false)
+                if (_repositoryQueues.TryGetValue(root, out RepositoryOperationQueue repositoryQueue) == false)
                 {
                     return;
                 }
-                if (lane.PendingCount == 0)
+                if (repositoryQueue.PendingCount == 0)
                 {
                     return;
                 }
-                while (lane.Pending.Count > 0)
+                while (repositoryQueue.Pending.Count > 0)
                 {
-                    QueuedOperation request = lane.Pending.Read();
+                    QueuedOperation request = repositoryQueue.Pending.Read();
                     if (request.IsPending == false)
                     {
                         registrations.Add(TakeRegistrationUnderLock(request));
                         continue;
                     }
-                    registrations.Add(CancelPendingUnderLock(lane, request, default));
+                    registrations.Add(CancelPendingUnderLock(repositoryQueue, request, default));
                 }
-                state = CreateState(lane);
+                state = CreateState(repositoryQueue);
             }
             foreach (CancellationTokenRegistration registration in registrations)
             {
@@ -165,7 +165,7 @@ namespace Bough.Core.Git
             PublishState(state);
         }
 
-        private void CancelPendingRequest(RepositoryLane lane, QueuedOperation request)
+        private void CancelPendingRequest(RepositoryOperationQueue repositoryQueue, QueuedOperation request)
         {
             GitOperationQueueState state;
             CancellationTokenRegistration registration;
@@ -175,22 +175,22 @@ namespace Bough.Core.Git
                 {
                     return;
                 }
-                registration = CancelPendingUnderLock(lane, request, request.CancellationToken);
-                RemoveCanceledRequestUnderLock(lane, request);
-                state = CreateState(lane);
+                registration = CancelPendingUnderLock(repositoryQueue, request, request.CancellationToken);
+                RemoveCanceledRequestUnderLock(repositoryQueue, request);
+                state = CreateState(repositoryQueue);
             }
             registration.Dispose();
             PublishState(state);
         }
 
-        private static CancellationTokenRegistration CancelPendingUnderLock(RepositoryLane lane, QueuedOperation request, CancellationToken cancellationToken)
+        private static CancellationTokenRegistration CancelPendingUnderLock(RepositoryOperationQueue repositoryQueue, QueuedOperation request, CancellationToken cancellationToken)
         {
             if (request.IsPending == false)
             {
                 return default;
             }
             request.IsPending = false;
-            lane.PendingCount--;
+            repositoryQueue.PendingCount--;
             request.Cancel(cancellationToken);
             return TakeRegistrationUnderLock(request);
         }
@@ -202,22 +202,22 @@ namespace Bough.Core.Git
             return registration;
         }
 
-        private static void RemoveCanceledRequestUnderLock(RepositoryLane lane, QueuedOperation canceledRequest)
+        private static void RemoveCanceledRequestUnderLock(RepositoryOperationQueue repositoryQueue, QueuedOperation canceledRequest)
         {
             ArrayQueue<QueuedOperation> remaining = new();
-            while (lane.Pending.Count > 0)
+            while (repositoryQueue.Pending.Count > 0)
             {
-                QueuedOperation request = lane.Pending.Read();
+                QueuedOperation request = repositoryQueue.Pending.Read();
                 if (ReferenceEquals(request, canceledRequest))
                 {
                     continue;
                 }
                 remaining.Add(request);
             }
-            lane.Pending = remaining;
+            repositoryQueue.Pending = remaining;
         }
 
-        private async Task ConsumeAsync(RepositoryLane lane)
+        private async Task ConsumeAsync(RepositoryOperationQueue repositoryQueue)
         {
             await Task.Yield();
             while (true)
@@ -227,9 +227,9 @@ namespace Bough.Core.Git
                 GitOperationQueueState state;
                 lock (_sync)
                 {
-                    while (lane.Pending.Count > 0)
+                    while (repositoryQueue.Pending.Count > 0)
                     {
-                        QueuedOperation next = lane.Pending.Read();
+                        QueuedOperation next = repositoryQueue.Pending.Read();
                         if (next.IsPending == false)
                         {
                             skippedRegistrations.Add(TakeRegistrationUnderLock(next));
@@ -237,22 +237,22 @@ namespace Bough.Core.Git
                         }
                         request = next;
                         request.IsPending = false;
-                        lane.PendingCount--;
-                        lane.Running = request;
+                        repositoryQueue.PendingCount--;
+                        repositoryQueue.Running = request;
                         break;
                     }
                     if (request == null)
                     {
-                        lane.ConsumerRunning = false;
-                        if (_lanes.TryGetValue(lane.RepositoryRoot, out RepositoryLane currentLane))
+                        repositoryQueue.ConsumerRunning = false;
+                        if (_repositoryQueues.TryGetValue(repositoryQueue.RepositoryRoot, out RepositoryOperationQueue currentQueue))
                         {
-                            if (ReferenceEquals(currentLane, lane))
+                            if (ReferenceEquals(currentQueue, repositoryQueue))
                             {
-                                _lanes.Remove(lane.RepositoryRoot);
+                                _repositoryQueues.Remove(repositoryQueue.RepositoryRoot);
                             }
                         }
                     }
-                    state = CreateState(lane);
+                    state = CreateState(repositoryQueue);
                 }
                 foreach (CancellationTokenRegistration registration in skippedRegistrations)
                 {
@@ -265,7 +265,7 @@ namespace Bough.Core.Git
                 }
 
                 ExecutionFrame previousFrame = _execution.Value;
-                ExecutionFrame currentFrame = new(lane.RepositoryRoot);
+                ExecutionFrame currentFrame = new(repositoryQueue.RepositoryRoot);
                 _execution.Value = currentFrame;
                 try
                 {
@@ -278,8 +278,8 @@ namespace Bough.Core.Git
                     request.Registration.Dispose();
                     lock (_sync)
                     {
-                        lane.Running = null;
-                        state = CreateState(lane);
+                        repositoryQueue.Running = null;
+                        state = CreateState(repositoryQueue);
                     }
                     PublishState(state);
                 }
@@ -291,10 +291,10 @@ namespace Bough.Core.Git
             return Path.TrimEndingDirectorySeparator(Path.GetFullPath(repositoryRoot));
         }
 
-        private static GitOperationQueueState CreateState(RepositoryLane lane)
+        private static GitOperationQueueState CreateState(RepositoryOperationQueue repositoryQueue)
         {
-            string running = lane.Running?.OperationName ?? string.Empty;
-            return new GitOperationQueueState(lane.RepositoryRoot, running, lane.PendingCount);
+            string running = repositoryQueue.Running?.OperationName ?? string.Empty;
+            return new GitOperationQueueState(repositoryQueue.RepositoryRoot, running, repositoryQueue.PendingCount);
         }
 
         private void PublishState(GitOperationQueueState state)
@@ -309,9 +309,9 @@ namespace Bough.Core.Git
             }
         }
 
-        private class RepositoryLane
+        private class RepositoryOperationQueue
         {
-            public RepositoryLane(string repositoryRoot)
+            public RepositoryOperationQueue(string repositoryRoot)
             {
                 RepositoryRoot = repositoryRoot;
             }

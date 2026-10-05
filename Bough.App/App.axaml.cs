@@ -9,6 +9,7 @@ using Bough.App.Persistence;
 using Bough.App.ViewModels;
 using Bough.Core.Conflicts;
 using Bough.Core.Git;
+using Bough.Core.Interfaces;
 using Dignus.DependencyInjection;
 using Dignus.DependencyInjection.Extensions;
 
@@ -55,7 +56,7 @@ namespace Bough.App
                 _serviceContainer.RegisterType<GitCommitInspectionService, GitCommitInspectionService>(LifeScope.Singleton);
                 _serviceContainer.RegisterType<GitCommitMessageService, GitCommitMessageService>(LifeScope.Singleton);
                 _serviceContainer.RegisterType<GitCommitFileActionService, GitCommitFileActionService>(LifeScope.Singleton);
-                _serviceContainer.RegisterType<TerminalLauncher, TerminalLauncher>(LifeScope.Singleton);
+                RegisterTerminalLauncher();
                 _serviceContainer.RegisterType<RepositoryFolderLauncher, RepositoryFolderLauncher>(LifeScope.Singleton);
                 _serviceContainer.RegisterType<PullRequestLauncher, PullRequestLauncher>(LifeScope.Singleton);
                 _serviceContainer.RegisterType<ConflictParser, ConflictParser>(LifeScope.Singleton);
@@ -78,6 +79,27 @@ namespace Bough.App
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        private void RegisterTerminalLauncher()
+        {
+            if (OperatingSystem.IsWindows() == true)
+            {
+                _serviceContainer.RegisterType<ITerminalLauncher, WindowsTerminalLauncher>(LifeScope.Singleton);
+                return;
+            }
+            if (OperatingSystem.IsMacOS() == true)
+            {
+                _serviceContainer.RegisterType<ITerminalLauncher, MacOsTerminalLauncher>(LifeScope.Singleton);
+                return;
+            }
+            if (OperatingSystem.IsLinux() == true)
+            {
+                _serviceContainer.RegisterType<ITerminalLauncher, LinuxTerminalLauncher>(LifeScope.Singleton);
+                return;
+            }
+
+            _serviceContainer.RegisterType<ITerminalLauncher, UnsupportedTerminalLauncher>(LifeScope.Singleton);
         }
     }
 }

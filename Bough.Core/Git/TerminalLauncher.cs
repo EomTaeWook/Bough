@@ -3,36 +3,26 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using Bough.Core.Git.Models;
+using Bough.Core.Interfaces;
 
 namespace Bough.Core.Git
 {
-    public class TerminalLauncher
+    public abstract class TerminalLauncher : ITerminalLauncher
     {
-        private static readonly string[] _powershellArguments = new string[] { "-NoExit" };
+        private readonly GitExecutableSettings _executableSettings;
+
+        protected TerminalLauncher(GitExecutableSettings executableSettings)
+        {
+            if (executableSettings == null)
+            {
+                throw new ArgumentNullException(nameof(executableSettings));
+            }
+
+            _executableSettings = executableSettings;
+        }
 
         public void Open(GitRepository repository)
         {
-            if (OperatingSystem.IsWindows() == true)
-            {
-                try
-                {
-                    Start(CreateStartInfo(repository));
-                    return;
-                }
-                catch (Win32Exception)
-                {
-                    try
-                    {
-                        Start(CreateProcessInfo("powershell.exe", repository.RootPath, _powershellArguments));
-                    }
-                    catch (Win32Exception exception)
-                    {
-                        throw new GitException("TerminalStartFailed", exception, "powershell.exe");
-                    }
-                    return;
-                }
-            }
-
             ProcessStartInfo startInfo = CreateStartInfo(repository);
             try
             {
@@ -40,7 +30,20 @@ namespace Bough.Core.Git
             }
             catch (Win32Exception exception)
             {
-                throw new GitException("TerminalStartFailed", exception, startInfo.FileName);
+                ProcessStartInfo fallback = CreateFallbackStartInfo(repository);
+                if (fallback == null)
+                {
+                    throw new GitException("TerminalStartFailed", exception, startInfo.FileName);
+                }
+
+                try
+                {
+                    Start(fallback);
+                }
+                catch (Win32Exception fallbackException)
+                {
+                    throw new GitException("TerminalStartFailed", fallbackException, fallback.FileName);
+                }
             }
         }
 
@@ -52,34 +55,34 @@ namespace Bough.Core.Git
                 throw new GitException("RepositoryFolderMissing", null, repository.RootPath);
             }
 
-            if (OperatingSystem.IsWindows() == true)
-            {
-                return CreateProcessInfo("wt.exe", repository.RootPath, new string[] { "-d", repository.RootPath });
-            }
-
-            if (OperatingSystem.IsMacOS() == true)
-            {
-                return CreateProcessInfo("osascript", repository.RootPath, new string[]
-                {
-                    "-e", "on run argv",
-                    "-e", "tell application \"Terminal\"",
-                    "-e", "activate",
-                    "-e", "do script \"cd \" & quoted form of (item 1 of argv)",
-                    "-e", "end tell",
-                    "-e", "end run",
-                    repository.RootPath
-                });
-            }
-
-            if (OperatingSystem.IsLinux() == true)
-            {
-                return CreateProcessInfo("x-terminal-emulator", repository.RootPath, Array.Empty<string>());
-            }
-
-            throw new GitException("TerminalPlatformUnsupported", null, Array.Empty<object>());
+            return CreatePlatformStartInfo(repository);
         }
 
-        private static ProcessStartInfo CreateProcessInfo(string executable, string workingDirectory, string[] arguments)
+        protected abstract ProcessStartInfo CreatePlatformStartInfo(GitRepository repository);
+
+        protected virtual ProcessStartInfo CreateFallbackStartInfo(GitRepository repository)
+        {
+            return null;
+        }
+
+        protected string GetGitDirectory()
+        {
+            string configuredPath = _executableSettings.ConfiguredPath;
+            if (string.IsNullOrWhiteSpace(configuredPath) == true)
+            {
+                return string.Empty;
+            }
+
+            string gitDirectory = Path.GetDirectoryName(configuredPath);
+            if (string.IsNullOrEmpty(gitDirectory) == true)
+            {
+                return string.Empty;
+            }
+
+            return gitDirectory;
+        }
+
+        protected ProcessStartInfo CreateProcessInfo(string executable, string workingDirectory, string[] arguments)
         {
             ProcessStartInfo info = new()
             {
@@ -90,6 +93,13 @@ namespace Bough.Core.Git
             foreach (string argument in arguments)
             {
                 info.ArgumentList.Add(argument);
+            }
+
+            string gitDirectory = GetGitDirectory();
+            if (gitDirectory.Length > 0)
+            {
+                string inheritedPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+                info.Environment["PATH"] = gitDirectory + Path.PathSeparator + inheritedPath;
             }
 
             return info;

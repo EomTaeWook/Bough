@@ -11,6 +11,7 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 | 프로젝트·영역 | 현재 책임 |
 | --- | --- |
 | `Bough.Core` | Git 프로세스 실행, 저장소·작업 트리·참조·원격·복제 서비스, 저장소별 작업 큐와 충돌 파싱. Avalonia와 표시 언어에 의존하지 않는다. |
+| `Bough.Core/Interfaces` | `ITerminalLauncher`의 공통 실행 계약. OS 구현이나 앱의 화면 계약을 넣지 않는다. |
 | `Bough.App/Presenters` | 기능별 요청 조정, 큐 진입, 실행 시점의 조건 검사와 결과 전달. |
 | `Bough.App/ViewModels` | 화면의 바인딩 상태·선택·로딩·명령 연결과 남아 있는 화면 조정, 공통 `ViewModelBase`. 기존 일부 표시 문구 생성도 여기 남아 있다. |
 | `Bough.App/ViewModels/Models` | 커밋·파일·참조·저장소·계정 목록 항목과 화면 결과 모델. 항목의 속성 변경 알림도 여기 둔다. |
@@ -41,8 +42,27 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 - 왼쪽은 현재 저장소의 참조 탐색과 하단 공통 상태 영역이다. Local Changes·History·Git Settings는 상단에서 전환하며 충돌 해결은 별도 `ConflictWindow`에서 진행한다.
 - 저장소 선택 시 요청 버전을 갱신하고 이전 열기를 취소한다. Local Changes 화면과 선택 경로를 먼저 표시하고, History·설정 상세는 필요한 시점에 조회한다. 늦은 결과는 요청 버전과 저장소를 각각 검사한다.
 - 변경 명령은 공통 `GitOperationQueue`의 저장소별 FIFO 경계를 사용한다. 복제는 목적지 절대 경로를 큐 키로 사용하며 성공 후 등록·열기는 메인 전환 경로에 연결한다.
+- `GitOperationQueue`의 내부 `RepositoryOperationQueue`가 각 저장소의 대기·실행 상태를 소유한다. 그래프 레인을 뜻하는 이름과 구분하며 저장소별 순차 실행과 서로 다른 저장소의 독립 실행을 유지한다.
+- 추적 중지·무시는 `LocalChangesMutationPresenter`가 확인과 큐 실행을 조정한다. Core의 `GitStopTrackingPlan`은 파일·인덱스 스냅샷과 `.gitignore` 변경 계획을 함께 보관하며 `GitWorkingTreeService`·`GitIgnoreService`가 확인 후 재검사, 규칙 추가와 인덱스 제거를 맡는다. 작업 파일을 보존하고 `.gitignore`는 자동 스테이징하지 않는다. 규칙 추가 후 추적 중지 중 오류가 나면 부분 변경을 알리고 화면을 갱신한다.
+- 병합 커밋 기본 메시지는 `GitWorkingTreeService`가 `rev-parse --git-path MERGE_MSG`로 실제 메타데이터 위치를 구하고 `MERGE_HEAD`가 남아 있을 때 읽는다. 일반 저장소·연결된 worktree의 `.git` 경로를 화면에서 추측하지 않는다. `GitWorktreeStatus.MergeCommitMessage`가 Git 원문을 상태 스냅샷에 담고 `LocalChangesViewModel`은 자동 입력의 출처를 보관해 사용자 초안·Amend·편집한 메시지를 보호한다. 파일 조회는 Core, 입력 상태는 ViewModel, 실제 커밋은 기존 Mutation Presenter와 저장소 큐의 책임이다. 기존 `--cleanup=verbatim` 정책을 유지한다.
 - `ConflictResolutionViewModel`이 충돌 파일과 편집 상태를 소유하고 `ConflictStagePresenter`가 저장·스테이징을 조정한다. `MainWindowRemoteCompletionPresenter`는 원격 작업 완료의 스냅샷 적용과 영향 영역 갱신을 맡는다. 미저장 충돌 편집 확인과 외부 활성화 뒤 갱신은 메인 창의 연결 책임이다.
+- 충돌 일괄 선택은 현재 파일의 미선택 구간만 변경한다. ViewModel이 선택 개수와 처음 반영된 구간을 표시 상태에 적용하고, View는 파일 상단의 일괄 선택과 비교 아래의 현재 구간 선택, 최종 결과의 저장·스테이징을 구분해 배치한다. 파일 저장과 큐 실행은 기존 Presenter 경계를 유지한다.
+- 원격 실패의 `GitRemoteOperationException`은 Core의 오류 식별자·인수와 기존 민감 정보 제거를 거친 Git 진단을 분리한다. `RemoteOperationsViewModel`은 짧은 지역화 상태와 상세 진단·Pull 요약을 별도 바인딩 상태로 보관하고, View는 상세를 기본으로 접힌 영역에 표시한다. 진행 단계·경과 시간은 실행 중에만 보이며 완료 뒤의 Pull 전략을 자동 변경하지 않는다.
 - History의 기본 상세 탭은 Commit·Changes다. 사용자 요청으로 커밋 우클릭의 File Tree와 파일 우클릭의 파일 트리에서 보기 항목을 제거했다. 기존 `IsFileTreeView` 보조 화면과 `HistoryFileTreePresenter` 조회 구현은 내부에 남아 있으며 현재 UI 진입 메뉴는 제공하지 않는다. `Services/HistoryGraphBuilder`가 커밋 그래프 행을 계산하고 `ViewModels/Models`의 항목이 표시 상태를 보관한다.
+
+## 터미널 연결
+
+`Composition/MainWindowChildren`과 Console 호출부는 `Core/Interfaces/ITerminalLauncher`를 생성자 주입받는다. `App.axaml.cs`가 시작 시 OS를 판별해 `WindowsTerminalLauncher`·`MacOsTerminalLauncher`·`LinuxTerminalLauncher` 중 하나를 Singleton으로 등록하며, 지원하지 않는 OS에는 오류를 반환하는 구현을 등록한다. 공통 추상 `TerminalLauncher`는 저장소 확인·프로세스 실행·Git 경로 연결만 맡고 OS 분기를 갖지 않는다.
+
+각 구현은 공유 `GitExecutableSettings`의 현재 경로를 읽어 저장소 루트에서 연다. 설정한 Git 실행 파일의 폴더만 해당 콘솔의 `PATH` 앞에 연결한다. 경로를 지정하지 않았으면 기존 콘솔 환경을 사용하며 배포본 내부 경로를 추측하거나 시스템 환경·사용자 셸 프로필을 저장하지 않는다.
+
+| 구현 | 실행과 초기화 |
+| --- | --- |
+| Windows | Windows Terminal의 PowerShell, 실행 실패 시 독립 PowerShell. 시작 명령에서 Git 경로·저장소 이동·Git 버전 표시를 처리한다. |
+| macOS | Terminal에 저장소 이동과 Git 경로를 포함한 셸 시작 명령을 전달한다. |
+| Linux | 기존 `x-terminal-emulator`에 저장소 작업 디렉터리와 자식 프로세스 환경을 전달한다. |
+
+터미널 실행은 Core가 맡고 View는 기존 Console 명령 연결을 유지한다. OS별 실제 실행 검증 상태는 [구현 현황](CurrentStatus.md)에 기록한다.
 
 ## 표현·데이터·배포
 

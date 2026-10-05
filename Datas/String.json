@@ -2,97 +2,97 @@
   {
     "Id": 1000,
     "Name": "1000",
-    "Kor": "\uC5F0\uACB0\uB41C \uD504\uB85C\uC138\uC2A4",
+    "Kor": "연결된 프로세스",
     "Eng": "Select Process"
   },
   {
     "Id": 1001,
     "Name": "1001",
-    "Kor": "\uBE44\uAD50\uD560 \uC774\uBBF8\uC9C0",
+    "Kor": "비교할 이미지",
     "Eng": "Compare Image"
   },
   {
     "Id": 1002,
     "Name": "1002",
-    "Kor": "\uC774\uBBF8\uC9C0 \uCEA1\uCCD0",
+    "Kor": "이미지 캡쳐",
     "Eng": "Image Capture"
   },
   {
     "Id": 1003,
     "Name": "1003",
-    "Kor": "\uC800\uC7A5",
+    "Kor": "저장",
     "Eng": "Save"
   },
   {
     "Id": 1004,
     "Name": "1004",
-    "Kor": "\uAD6C\uC131",
+    "Kor": "구성",
     "Eng": "Config"
   },
   {
     "Id": 1005,
     "Name": "1005",
-    "Kor": "\uD658\uACBD \uC124\uC815",
+    "Kor": "환경 설정",
     "Eng": "Preferences"
   },
   {
     "Id": 1006,
     "Name": "1006",
-    "Kor": "\uC774\uBCA4\uD2B8 \uD0C0\uC785",
+    "Kor": "이벤트 타입",
     "Eng": "EventType"
   },
   {
     "Id": 1007,
     "Name": "1007",
-    "Kor": "\uC774\uBCA4\uD2B8 \uB370\uC774\uD130",
+    "Kor": "이벤트 데이터",
     "Eng": "EventDataSet"
   },
   {
     "Id": 1008,
     "Name": "1008",
-    "Kor": "\uD2B8\uB9AC\uAC70 \uB9AC\uC2A4\uD2B8",
+    "Kor": "트리거 리스트",
     "Eng": "TriggerList"
   },
   {
     "Id": 1009,
     "Name": "1009",
-    "Kor": "\uB9C8\uC6B0\uC2A4 \uC88C\uD45C \uC9C0\uC815",
+    "Kor": "마우스 좌표 지정",
     "Eng": "MouseCoordinates"
   },
   {
     "Id": 1010,
     "Name": "1010",
-    "Kor": "\uB9C8\uC6B0\uC2A4 \uD720",
+    "Kor": "마우스 휠",
     "Eng": "MouseWheel"
   },
   {
     "Id": 1011,
     "Name": "1011",
-    "Kor": "\uD720 \uC2A4\uD06C\uB864",
+    "Kor": "휠 스크롤",
     "Eng": "MouseWheelScroll"
   },
   {
     "Id": 1012,
     "Name": "1012",
-    "Kor": "\uB2EB\uAE30",
+    "Kor": "닫기",
     "Eng": "Close"
   },
   {
     "Id": 1013,
     "Name": "1013",
-    "Kor": "\uC0AD\uC81C",
+    "Kor": "삭제",
     "Eng": "Delete"
   },
   {
     "Id": 1014,
     "Name": "1014",
-    "Kor": "\uC2DC\uC791",
+    "Kor": "시작",
     "Eng": "Start"
   },
   {
     "Id": 1015,
     "Name": "1015",
-    "Kor": "\uC911\uC9C0",
+    "Kor": "중지",
     "Eng": "Stop"
   },
   {
@@ -104,241 +104,241 @@
   {
     "Id": 1017,
     "Name": "1017",
-    "Kor": "Diadem \uB9E4\uD06C\uB85C",
+    "Kor": "Diadem 매크로",
     "Eng": "Diadem Macro"
   },
   {
     "Id": 1018,
     "Name": "1018",
-    "Kor": "\uC5B8\uC5B4",
+    "Kor": "언어",
     "Eng": "Language"
   },
   {
     "Id": 1019,
     "Name": "1019",
-    "Kor": "\uC800\uC7A5 \uACBD\uB85C",
+    "Kor": "저장 경로",
     "Eng": "SavePath"
   },
   {
     "Id": 1020,
     "Name": "1020",
-    "Kor": "\uC804\uCCB4 \uD504\uB85C\uC138\uC2F1 \uC8FC\uAE30(ms)",
+    "Kor": "전체 프로세싱 주기(ms)",
     "Eng": "Period(ms)"
   },
   {
     "Id": 1021,
     "Name": "1021",
-    "Kor": "\uC544\uC774\uD15C \uB51C\uB808\uC774(ms)",
+    "Kor": "아이템 딜레이(ms)",
     "Eng": "ItemDelay(ms)"
   },
   {
     "Id": 1022,
     "Name": "1022",
-    "Kor": "\uC720\uC0AC\uB3C4",
+    "Kor": "유사도",
     "Eng": "Similarity"
   },
   {
     "Id": 1023,
     "Name": "1023",
-    "Kor": "\uD6C4(\u5F8C) \uC791\uC5C5 \uB51C\uB808\uC774(ms)",
+    "Kor": "후(後) 작업 딜레이(ms)",
     "Eng": "AfterDelay(ms)"
   },
   {
     "Id": 1024,
     "Name": "1024",
-    "Kor": "\uC774\uBBF8\uC9C0 \uAC80\uC0C9 \uACB0\uACFC \uD45C\uC2DC",
+    "Kor": "이미지 검색 결과 표시",
     "Eng": "Display Search Result"
   },
   {
     "Id": 1025,
     "Name": "1025",
-    "Kor": "\uBC84\uC804 \uC815\uBCF4 \uD655\uC778",
+    "Kor": "버전 정보 확인",
     "Eng": "VersionCheck"
   },
   {
     "Id": 1026,
     "Name": "1026",
-    "Kor": "\uACE0\uC815",
+    "Kor": "고정",
     "Eng": "Fix"
   },
   {
     "Id": 1027,
     "Name": "1027",
-    "Kor": "\uC544\uC774\uD15C \uBC18\uBCF5",
+    "Kor": "아이템 반복",
     "Eng": "Repeat Items"
   },
   {
     "Id": 1028,
     "Name": "Once",
-    "Kor": "\uD55C\uBC88",
+    "Kor": "한번",
     "Eng": "Once"
   },
   {
     "Id": 1029,
     "Name": "Count",
-    "Kor": "\uD69F\uC218",
+    "Kor": "횟수",
     "Eng": "Count"
   },
   {
     "Id": 1030,
     "Name": "RepeatOnChildEvent",
-    "Kor": "\uC790\uC2DD \uC774\uBCA4\uD2B8 \uC2E4\uD589 \uC2DC \uBC18\uBCF5",
+    "Kor": "자식 이벤트 실행 시 반복",
     "Eng": "Repeat when child event runs"
   },
   {
     "Id": 1031,
     "Name": "StopOnParentImage",
-    "Kor": "\uBD80\uBAA8 \uC774\uBBF8\uC9C0 \uAC80\uC0C9 \uC2DC \uC885\uB8CC",
+    "Kor": "부모 이미지 검색 시 종료",
     "Eng": "End when parent image is found"
   },
   {
     "Id": 1032,
     "Name": "1032",
-    "Kor": "\uCDE8\uC18C",
+    "Kor": "취소",
     "Eng": "Cancel"
   },
   {
     "Id": 1033,
     "Name": "1033",
-    "Kor": "\uBC31\uC5C5 \uC911",
+    "Kor": "백업 중",
     "Eng": "Backup"
   },
   {
     "Id": 1034,
     "Name": "1034",
-    "Kor": "\uBCC0\uACBD\uC744 \uB418\uB3CC\uB9AC\uB294 \uC911\uC785\uB2C8\uB2E4.",
+    "Kor": "변경을 되돌리는 중입니다.",
     "Eng": "Rollback is in progress."
   },
   {
     "Id": 1035,
     "Name": "1035",
-    "Kor": "\uB2E4\uC6B4\uB85C\uB4DC",
+    "Kor": "다운로드",
     "Eng": "Download"
   },
   {
     "Id": 1036,
     "Name": "1036",
-    "Kor": "\uD328\uCE58 \uBAA9\uB85D \uAC80\uC0C9",
+    "Kor": "패치 목록 검색",
     "Eng": "SearchPatchList"
   },
   {
     "Id": 1037,
     "Name": "1037",
-    "Kor": "\uD328\uCE58 \uC9C4\uD589",
+    "Kor": "패치 진행",
     "Eng": "Patch in progress"
   },
   {
     "Id": 1038,
     "Name": "1038",
-    "Kor": "\uB3D9\uC77C\uD55C \uB0B4\uC6A9 \uCD94\uAC00",
+    "Kor": "동일한 내용 추가",
     "Eng": "Add the same content"
   },
   {
     "Id": 1039,
     "Name": "1039",
-    "Kor": "\uBC14\uB85C \uC774\uB3D9",
+    "Kor": "바로 이동",
     "Eng": "ToNext"
   },
   {
     "Id": 1040,
     "Name": "1040",
-    "Kor": "\uD328\uCE58 \uC2E4\uD328",
+    "Kor": "패치 실패",
     "Eng": "FailedPatch"
   },
   {
     "Id": 1041,
     "Name": "1041",
-    "Kor": "\uC774\uC0C1",
+    "Kor": "이상",
     "Eng": "Above"
   },
   {
     "Id": 1042,
     "Name": "1042",
-    "Kor": "\uC774\uD558",
+    "Kor": "이하",
     "Eng": "Below"
   },
   {
     "Id": 1043,
     "Name": "1043",
-    "Kor": "\uC774\uBBF8\uC9C0 \uAC80\uC0C9 \uD544\uC218",
+    "Kor": "이미지 검색 필수",
     "Eng": "Image Search Required"
   },
   {
     "Id": 1044,
     "Name": "1044",
-    "Kor": "\uCD08\uAE30 \uD0ED",
+    "Kor": "초기 탭",
     "Eng": "Initial Tab"
   },
   {
     "Id": 1045,
     "Name": "1045",
-    "Kor": "\uAC19\uC740 \uC774\uBBF8\uC9C0 \uB4DC\uB798\uADF8",
+    "Kor": "같은 이미지 드래그",
     "Eng": "Drag the same image"
   },
   {
     "Id": 1046,
     "Name": "1046",
-    "Kor": "\uAC19\uC740 \uC774\uBBF8\uC9C0 \uCC3E\uAE30 \uBC18\uBCF5",
+    "Kor": "같은 이미지 찾기 반복",
     "Eng": "Repeat finding the same image"
   },
   {
     "Id": 1047,
     "Name": "1047",
-    "Kor": "\uB4DC\uB798\uADF8 \uB51C\uB808\uC774",
+    "Kor": "드래그 딜레이",
     "Eng": "Drag Delay"
   },
   {
     "Id": 1048,
     "Name": "1048",
-    "Kor": "\uBB3C\uB9AC \uD074\uB9AD",
+    "Kor": "물리 클릭",
     "Eng": "Hard Click"
   },
   {
     "Id": 1049,
     "Name": "1049",
-    "Kor": "\uAD00\uC2EC\uC601\uC5ED \uC124\uC815",
+    "Kor": "관심영역 설정",
     "Eng": "Set ROI"
   },
   {
     "Id": 1050,
     "Name": "1050",
-    "Kor": "\uAD00\uC2EC\uC601\uC5ED \uC81C\uAC70",
+    "Kor": "관심영역 제거",
     "Eng": "Remove ROI"
   },
   {
     "Id": 1051,
     "Name": "1051",
-    "Kor": "\uC5F0\uACB0\uB41C \uD504\uB85C\uC138\uC2A4 \uC704\uCE58 \uC124\uC815",
+    "Kor": "연결된 프로세스 위치 설정",
     "Eng": "Setting Process Location"
   },
   {
     "Id": 1052,
     "Name": "1052",
-    "Kor": "\uD504\uB85C\uC138\uC2A4 \uC704\uCE58 \uC774\uB3D9",
+    "Kor": "프로세스 위치 이동",
     "Eng": "Process Location Movement"
   },
   {
     "Id": 1053,
     "Name": "1053",
-    "Kor": "\uD504\uB85C\uC138\uC2A4 \uC704\uCE58 \uBCF5\uAD6C",
+    "Kor": "프로세스 위치 복구",
     "Eng": "Process Location Restoration"
   },
   {
     "Id": 1054,
     "Name": "1054",
-    "Kor": "\uC0C8\uB85C\uACE0\uCE68",
+    "Kor": "새로고침",
     "Eng": "Refresh"
   },
   {
     "Id": 1055,
     "Name": "1055",
-    "Kor": "\uB3D9\uC77C\uD55C \uB0B4\uC6A9 \uCD94\uAC00",
+    "Kor": "동일한 내용 추가",
     "Eng": "Add the same content"
   },
   {
     "Id": 1056,
     "Name": "1056",
-    "Kor": "\uC77C\uBC18",
+    "Kor": "일반",
     "Eng": "Common"
   },
   {
@@ -350,673 +350,673 @@
   {
     "Id": 1058,
     "Name": "1058",
-    "Kor": "\uD0A4\uBCF4\uB4DC \uB51C\uB808\uC774(ms)",
+    "Kor": "키보드 딜레이(ms)",
     "Eng": "KeyboardDelay(ms)"
   },
   {
     "Id": 1059,
     "Name": "1059",
-    "Kor": "\uCD94\uAC00",
+    "Kor": "추가",
     "Eng": "Addition"
   },
   {
     "Id": 1060,
     "Name": "1060",
-    "Kor": "\uC81C\uAC70",
+    "Kor": "제거",
     "Eng": "Removal"
   },
   {
     "Id": 1061,
     "Name": "1061",
-    "Kor": "\uBCF5\uC0AC",
+    "Kor": "복사",
     "Eng": "Copy"
   },
   {
     "Id": 1062,
     "Name": "1062",
-    "Kor": "\uC54C\uB9BC",
+    "Kor": "알림",
     "Eng": "Alert"
   },
   {
     "Id": 1063,
     "Name": "1063",
-    "Kor": "\uC635\uC158",
+    "Kor": "옵션",
     "Eng": "Option"
   },
   {
     "Id": 1064,
     "Name": "1064",
-    "Kor": "\uAD00\uC2EC\uC601\uC5ED",
+    "Kor": "관심영역",
     "Eng": "Roi"
   },
   {
     "Id": 1065,
     "Name": "1065",
-    "Kor": "\uC774\uBBF8\uC9C0 \uBDF0\uC5B4 \uBCF4\uAE30",
+    "Kor": "이미지 뷰어 보기",
     "Eng": "Show Image Viewer"
   },
   {
     "Id": 1066,
     "Name": "1066",
-    "Kor": "\uD56D\uBAA9\uBCC4 \uC720\uC0AC\uB3C4",
+    "Kor": "항목별 유사도",
     "Eng": "Item Similarity"
   },
   {
     "Id": 1067,
     "Name": "RepositoryRoot",
-    "Kor": "\uC800\uC7A5\uC18C \uB8E8\uD2B8",
+    "Kor": "저장소 루트",
     "Eng": "Repository root"
   },
   {
     "Id": 1068,
     "Name": "OpenRepositoryPrompt",
-    "Kor": "\uC800\uC7A5\uC18C\uB97C \uC5F4\uC5B4 \uC8FC\uC138\uC694",
+    "Kor": "저장소를 열어 주세요",
     "Eng": "Open a repository"
   },
   {
     "Id": 1069,
     "Name": "RepositorySidebarHint",
-    "Kor": "\uC67C\uCABD \uBAA9\uB85D\uC5D0\uC11C \uC800\uC7A5\uC18C\uB97C \uC120\uD0DD\uD558\uAC70\uB098 \uCD94\uAC00\uD558\uC138\uC694.",
+    "Kor": "왼쪽 목록에서 저장소를 선택하거나 추가하세요.",
     "Eng": "Select or add a repository on the left."
   },
   {
     "Id": 1070,
     "Name": "SelectConflictFile",
-    "Kor": "\uCDA9\uB3CC \uD30C\uC77C\uC744 \uC120\uD0DD\uD558\uC138\uC694",
+    "Kor": "충돌 파일을 선택하세요",
     "Eng": "Select a conflicted file"
   },
   {
     "Id": 1071,
     "Name": "CurrentChange",
-    "Kor": "\uD604\uC7AC \uBCC0\uACBD",
+    "Kor": "현재 변경",
     "Eng": "Current change"
   },
   {
     "Id": 1072,
     "Name": "IncomingChange",
-    "Kor": "\uB4E4\uC5B4\uC624\uB294 \uBCC0\uACBD",
+    "Kor": "들어오는 변경",
     "Eng": "Incoming change"
   },
   {
     "Id": 1073,
     "Name": "OpenRepositoryToFindConflicts",
-    "Kor": "\uC800\uC7A5\uC18C\uB97C \uC5F4\uBA74 \uCDA9\uB3CC \uD30C\uC77C\uC744 \uC790\uB3D9\uC73C\uB85C \uCC3E\uC2B5\uB2C8\uB2E4.",
+    "Kor": "저장소를 열면 충돌 파일을 자동으로 찾습니다.",
     "Eng": "Open a repository to find conflicted files."
   },
   {
     "Id": 1074,
     "Name": "NoChoiceYet",
-    "Kor": "\uC544\uC9C1 \uC120\uD0DD\uD558\uC9C0 \uC54A\uC74C",
+    "Kor": "아직 선택하지 않음",
     "Eng": "No choice yet"
   },
   {
     "Id": 1075,
     "Name": "UseCurrentChange",
-    "Kor": "\uD604\uC7AC \uBCC0\uACBD \uC0AC\uC6A9",
+    "Kor": "현재 변경 사용",
     "Eng": "Use current change"
   },
   {
     "Id": 1076,
     "Name": "UseIncomingChange",
-    "Kor": "\uB4E4\uC5B4\uC624\uB294 \uBCC0\uACBD \uC0AC\uC6A9",
+    "Kor": "들어오는 변경 사용",
     "Eng": "Use incoming change"
   },
   {
     "Id": 1077,
     "Name": "UseBoth",
-    "Kor": "\uB458 \uB2E4 \uC0AC\uC6A9",
+    "Kor": "둘 다 사용",
     "Eng": "Use both"
   },
   {
     "Id": 1078,
     "Name": "RemoveBoth",
-    "Kor": "\uB458 \uB2E4 \uC81C\uAC70",
+    "Kor": "둘 다 제거",
     "Eng": "Remove both"
   },
   {
     "Id": 1079,
     "Name": "RefreshButton",
-    "Kor": "\uC0C8\uB85C\uACE0\uCE68",
+    "Kor": "새로고침",
     "Eng": "Refresh"
   },
   {
     "Id": 1080,
     "Name": "RepositoriesHeading",
-    "Kor": "\uC800\uC7A5\uC18C",
+    "Kor": "저장소",
     "Eng": "Repositories"
   },
   {
     "Id": 1081,
     "Name": "AddButton",
-    "Kor": "\u002B \uCD94\uAC00",
-    "Eng": "\u002B Add"
+    "Kor": "+ 추가",
+    "Eng": "+ Add"
   },
   {
     "Id": 1082,
     "Name": "AddRepositoryTooltip",
-    "Kor": "Git \uC800\uC7A5\uC18C \uCD94\uAC00",
+    "Kor": "Git 저장소 추가",
     "Eng": "Add Git repository"
   },
   {
     "Id": 1083,
     "Name": "RemoveFromListTooltip",
-    "Kor": "\uBAA9\uB85D\uC5D0\uC11C\uB9CC \uC81C\uAC70",
+    "Kor": "목록에서만 제거",
     "Eng": "Remove from list only"
   },
   {
     "Id": 1084,
     "Name": "FilesToResolve",
-    "Kor": "\uD574\uACB0\uD560 \uD30C\uC77C",
+    "Kor": "해결할 파일",
     "Eng": "Files to resolve"
   },
   {
     "Id": 1085,
     "Name": "PreviousButton",
-    "Kor": "\uC774\uC804",
+    "Kor": "이전",
     "Eng": "Previous"
   },
   {
     "Id": 1086,
     "Name": "NextButton",
-    "Kor": "\uB2E4\uC74C",
+    "Kor": "다음",
     "Eng": "Next"
   },
   {
     "Id": 1087,
     "Name": "FinalFile",
-    "Kor": "\uCD5C\uC885 \uD30C\uC77C",
+    "Kor": "최종 파일",
     "Eng": "Final file"
   },
   {
     "Id": 1088,
     "Name": "FinalFileHint",
-    "Kor": "\uC120\uD0DD \uACB0\uACFC\uAC00 \uC989\uC2DC \uBC18\uC601\uB418\uBA70 \uC9C1\uC811 \uD3B8\uC9D1\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
-    "Eng": "Choices update the final file instantly. You can edit it directly."
+    "Kor": "선택 결과를 확인·편집한 뒤 저장 및 스테이징을 눌러 완료하세요.",
+    "Eng": "Review or edit the result, then save and stage to finish."
   },
   {
     "Id": 1089,
     "Name": "SaveAndStage",
-    "Kor": "\uC800\uC7A5\uD558\uACE0 \uC2A4\uD14C\uC774\uC9D5",
+    "Kor": "저장하고 스테이징",
     "Eng": "Save and stage"
   },
   {
     "Id": 1090,
     "Name": "OpenGitRepository",
-    "Kor": "Git \uC800\uC7A5\uC18C \uC5F4\uAE30",
+    "Kor": "Git 저장소 열기",
     "Eng": "Open Git repository"
   },
   {
     "Id": 1091,
     "Name": "ConflictFileCount",
-    "Kor": "\uCDA9\uB3CC \uD30C\uC77C {0}\uAC1C",
+    "Kor": "충돌 파일 {0}개",
     "Eng": "{0} conflicted files"
   },
   {
     "Id": 1092,
     "Name": "NoConflictHunks",
-    "Kor": "\uCDA9\uB3CC \uAD6C\uAC04 \uC5C6\uC74C",
+    "Kor": "충돌 구간 없음",
     "Eng": "No conflict hunks"
   },
   {
     "Id": 1093,
     "Name": "ConflictHunkPosition",
-    "Kor": "\uCDA9\uB3CC {0} / {1} \u00B7 {2}\uD589",
-    "Eng": "Conflict {0} / {1} \u00B7 line {2}"
+    "Kor": "충돌 {0} / {1} · {2}행",
+    "Eng": "Conflict {0} / {1} · line {2}"
   },
   {
     "Id": 1094,
     "Name": "RepositoryListSaveFailed",
-    "Kor": "\uC800\uC7A5\uC18C \uBAA9\uB85D\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4: {0}",
+    "Kor": "저장소 목록을 저장하지 못했습니다: {0}",
     "Eng": "Could not save repository list: {0}"
   },
   {
     "Id": 1095,
     "Name": "RepositoryRemoved",
-    "Kor": "\uC800\uC7A5\uC18C \uBAA9\uB85D\uC5D0\uC11C \uC81C\uAC70\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "저장소 목록에서 제거했습니다.",
     "Eng": "Removed from repository list."
   },
   {
     "Id": 1096,
     "Name": "NoUnresolvedConflicts",
-    "Kor": "\uD574\uACB0\uB418\uC9C0 \uC54A\uC740 \uCDA9\uB3CC\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "해결되지 않은 충돌이 없습니다.",
     "Eng": "No unresolved conflicts."
   },
   {
     "Id": 1097,
     "Name": "ResolveConflictsPrompt",
-    "Kor": "{0}\uAC1C\uC758 \uCDA9\uB3CC \uAD6C\uAC04\uC744 \uC21C\uC11C\uB300\uB85C \uD574\uACB0\uD558\uC138\uC694.",
+    "Kor": "{0}개의 충돌 구간을 순서대로 해결하세요.",
     "Eng": "Resolve {0} conflict hunks in order."
   },
   {
     "Id": 1098,
     "Name": "ConflictsSelectedNotice",
-    "Kor": "{0}/{1}\uAC1C \uCDA9\uB3CC\uC744 \uC120\uD0DD\uD588\uC2B5\uB2C8\uB2E4. \uC120\uD0DD\uC744 \uBC14\uAFB8\uBA74 \uCD5C\uC885 \uD30C\uC77C\uC774 \uB2E4\uC2DC \uC0DD\uC131\uB429\uB2C8\uB2E4.",
+    "Kor": "{0}/{1}개 충돌을 선택했습니다. 선택을 바꾸면 최종 파일이 다시 생성됩니다.",
     "Eng": "{0}/{1} conflicts selected. Changing a choice rebuilds the final file."
   },
   {
     "Id": 1099,
     "Name": "IncompleteConflictMarkers",
-    "Kor": "\uCD5C\uC885 \uD30C\uC77C\uC5D0 \uC644\uC804\uD558\uC9C0 \uC54A\uC740 \uCDA9\uB3CC \uB9C8\uCEE4\uAC00 \uB0A8\uC544 \uC788\uC2B5\uB2C8\uB2E4.",
+    "Kor": "최종 파일에 완전하지 않은 충돌 마커가 남아 있습니다.",
     "Eng": "The final file still contains incomplete conflict markers."
   },
   {
     "Id": 1100,
     "Name": "UnresolvedConflictMarkers",
-    "Kor": "\uCD5C\uC885 \uD30C\uC77C\uC5D0 \uD574\uACB0\uB418\uC9C0 \uC54A\uC740 \uCDA9\uB3CC\uC774 \uB0A8\uC544 \uC788\uC2B5\uB2C8\uB2E4.",
+    "Kor": "최종 파일에 해결되지 않은 충돌이 남아 있습니다.",
     "Eng": "The final file still contains unresolved conflicts."
   },
   {
     "Id": 1101,
     "Name": "FileStaged",
-    "Kor": "{0}\uC744 \uC800\uC7A5\uD558\uACE0 \uC2A4\uD14C\uC774\uC9D5\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0}을 저장하고 스테이징했습니다.",
     "Eng": "Saved and staged {0}."
   },
   {
     "Id": 1102,
     "Name": "LocalChangesHeading",
-    "Kor": "\uB85C\uCEEC \uBCC0\uACBD",
+    "Kor": "로컬 변경",
     "Eng": "Local Changes"
   },
   {
     "Id": 1103,
     "Name": "UnstagedHeading",
-    "Kor": "\uC2A4\uD14C\uC774\uC9D5\uB418\uC9C0 \uC54A\uC74C",
+    "Kor": "스테이징되지 않음",
     "Eng": "UNSTAGED"
   },
   {
     "Id": 1104,
     "Name": "StagedHeading",
-    "Kor": "\uC2A4\uD14C\uC774\uC9D5\uB428",
+    "Kor": "스테이징됨",
     "Eng": "STAGED"
   },
   {
     "Id": 1105,
     "Name": "ConflictsHeading",
-    "Kor": "\uCDA9\uB3CC",
+    "Kor": "충돌",
     "Eng": "CONFLICTS"
   },
   {
     "Id": 1106,
     "Name": "StageSelected",
-    "Kor": "\uC120\uD0DD \uD30C\uC77C \uC2A4\uD14C\uC774\uC9D5",
+    "Kor": "선택 파일 스테이징",
     "Eng": "Stage selected"
   },
   {
     "Id": 1107,
     "Name": "StageAll",
-    "Kor": "\uBAA8\uB450 \uC2A4\uD14C\uC774\uC9D5",
+    "Kor": "모두 스테이징",
     "Eng": "Stage all"
   },
   {
     "Id": 1108,
     "Name": "UnstageSelected",
-    "Kor": "\uC120\uD0DD \uD30C\uC77C \uC2A4\uD14C\uC774\uC9D5 \uD574\uC81C",
+    "Kor": "선택 파일 스테이징 해제",
     "Eng": "Unstage selected"
   },
   {
     "Id": 1109,
     "Name": "UnstageAll",
-    "Kor": "\uBAA8\uB450 \uC2A4\uD14C\uC774\uC9D5 \uD574\uC81C",
+    "Kor": "모두 스테이징 해제",
     "Eng": "Unstage all"
   },
   {
     "Id": 1110,
     "Name": "OpenResolve",
-    "Kor": "\uCDA9\uB3CC \uD574\uACB0 \uC5F4\uAE30",
+    "Kor": "충돌 해결 열기",
     "Eng": "Open Resolve"
   },
   {
     "Id": 1111,
     "Name": "LocalPreviewPrompt",
-    "Kor": "\uD30C\uC77C\uC744 \uC120\uD0DD\uD558\uBA74 \uBCC0\uACBD \uB0B4\uC6A9\uC744 \uBCFC \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+    "Kor": "파일을 선택하면 변경 내용을 볼 수 있습니다.",
     "Eng": "Select a file to inspect its changes."
   },
   {
     "Id": 1112,
     "Name": "LocalPreviewLoading",
-    "Kor": "\uBCC0\uACBD \uB0B4\uC6A9 \uBD88\uB7EC\uC624\uB294 \uC911\u2026",
-    "Eng": "Loading preview\u2026"
+    "Kor": "변경 내용 불러오는 중…",
+    "Eng": "Loading preview…"
   },
   {
     "Id": 1113,
     "Name": "LocalPreviewFailed",
-    "Kor": "\uBCC0\uACBD \uB0B4\uC6A9\uC744 \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "변경 내용을 불러오지 못했습니다.",
     "Eng": "Preview could not be loaded."
   },
   {
     "Id": 1114,
     "Name": "CommitHeading",
-    "Kor": "\uCEE4\uBC0B",
+    "Kor": "커밋",
     "Eng": "COMMIT"
   },
   {
     "Id": 1115,
     "Name": "CommitMessageLabel",
-    "Kor": "\uCEE4\uBC0B \uBA54\uC2DC\uC9C0",
+    "Kor": "커밋 메시지",
     "Eng": "Commit message"
   },
   {
     "Id": 1116,
     "Name": "CommitMessagePlaceholder",
-    "Kor": "\uCCAB \uC904\uC5D0 \uC694\uC57D\uC744 \uC4F0\uACE0 \uBE48 \uC904 \uB4A4\uC5D0 \uC124\uBA85\uC744 \uC785\uB825\uD558\uC138\uC694.",
+    "Kor": "첫 줄에 요약을 쓰고 빈 줄 뒤에 설명을 입력하세요.",
     "Eng": "Summary on the first line; details after a blank line."
   },
   {
     "Id": 1117,
     "Name": "LoadingAmendMessage",
-    "Kor": "\uC774\uC804 \uCEE4\uBC0B \uBA54\uC2DC\uC9C0\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4.",
+    "Kor": "이전 커밋 메시지를 불러오는 중입니다.",
     "Eng": "Loading the previous commit message."
   },
   {
     "Id": 1118,
     "Name": "AmendPreviousCommit",
-    "Kor": "\uC774\uC804 \uCEE4\uBC0B \uC218\uC815",
+    "Kor": "이전 커밋 수정",
     "Eng": "Amend previous commit"
   },
   {
     "Id": 1119,
     "Name": "CommitButton",
-    "Kor": "\uCEE4\uBC0B",
+    "Kor": "커밋",
     "Eng": "COMMIT"
   },
   {
     "Id": 1120,
     "Name": "EnterCommitMessage",
-    "Kor": "\uCEE4\uBC0B \uBA54\uC2DC\uC9C0\uC758 \uCCAB \uC904\uC744 \uC785\uB825\uD558\uC138\uC694.",
+    "Kor": "커밋 메시지의 첫 줄을 입력하세요.",
     "Eng": "Enter the first line of the commit message."
   },
   {
     "Id": 1121,
     "Name": "StageBeforeCommit",
-    "Kor": "\uCEE4\uBC0B \uC804\uC5D0 \uD30C\uC77C\uC744 \uC2A4\uD14C\uC774\uC9D5\uD558\uC138\uC694.",
+    "Kor": "커밋 전에 파일을 스테이징하세요.",
     "Eng": "Stage at least one file before committing."
   },
   {
     "Id": 1122,
     "Name": "ResolveBeforeCommit",
-    "Kor": "\uCEE4\uBC0B \uC804\uC5D0 \uCDA9\uB3CC\uC744 \uD574\uACB0\uD558\uC138\uC694.",
+    "Kor": "커밋 전에 충돌을 해결하세요.",
     "Eng": "Resolve conflicts before committing."
   },
   {
     "Id": 1123,
     "Name": "LocalChangesStatusCount",
-    "Kor": "\uBBF8\uC2A4\uD14C\uC774\uC9D5 {0}\uAC1C \u00B7 \uC2A4\uD14C\uC774\uC9D5 {1}\uAC1C \u00B7 \uCDA9\uB3CC {2}\uAC1C",
-    "Eng": "{0} unstaged \u00B7 {1} staged \u00B7 {2} conflicts"
+    "Kor": "미스테이징 {0}개 · 스테이징 {1}개 · 충돌 {2}개",
+    "Eng": "{0} unstaged · {1} staged · {2} conflicts"
   },
   {
     "Id": 1124,
     "Name": "LocalCommittedNotice",
-    "Kor": "{0} \uCEE4\uBC0B\uC744 \uB9CC\uB4E4\uC5C8\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0} 커밋을 만들었습니다.",
     "Eng": "Committed {0}."
   },
   {
     "Id": 1125,
     "Name": "StashesHeading",
-    "Kor": "Stash \uBAA9\uB85D",
+    "Kor": "Stash 목록",
     "Eng": "Stashes"
   },
   {
     "Id": 1126,
     "Name": "CreateStashHeading",
-    "Kor": "\uBCC0\uACBD \uBCF4\uAD00",
+    "Kor": "변경 보관",
     "Eng": "Save changes to stash"
   },
   {
     "Id": 1127,
     "Name": "StashMessageLabel",
-    "Kor": "\uBA54\uC2DC\uC9C0",
+    "Kor": "메시지",
     "Eng": "Message"
   },
   {
     "Id": 1128,
     "Name": "StashIncludeUntracked",
-    "Kor": "\uBBF8\uCD94\uC801 \uD30C\uC77C \uD3EC\uD568",
+    "Kor": "미추적 파일 포함",
     "Eng": "Include untracked files"
   },
   {
     "Id": 1129,
     "Name": "CreateStashButton",
-    "Kor": "\uBCC0\uACBD \uBCF4\uAD00",
+    "Kor": "변경 보관",
     "Eng": "Save stash"
   },
   {
     "Id": 1130,
     "Name": "ApplyStashButton",
-    "Kor": "\uC801\uC6A9 (\uD56D\uBAA9 \uC720\uC9C0)",
+    "Kor": "적용 (항목 유지)",
     "Eng": "Apply (keep stash)"
   },
   {
     "Id": 1131,
     "Name": "PopStashButton",
-    "Kor": "\uC801\uC6A9 \uD6C4 \uD56D\uBAA9 \uC81C\uAC70",
+    "Kor": "적용 후 항목 제거",
     "Eng": "Pop (apply and remove)"
   },
   {
     "Id": 1132,
     "Name": "RequestDropStashButton",
-    "Kor": "\uD56D\uBAA9 \uC0AD\uC81C\u2026",
-    "Eng": "Drop stash\u2026"
+    "Kor": "항목 삭제…",
+    "Eng": "Drop stash…"
   },
   {
     "Id": 1133,
     "Name": "ConfirmDropStashButton",
-    "Kor": "\uC0AD\uC81C \uD655\uC778",
+    "Kor": "삭제 확인",
     "Eng": "Confirm drop"
   },
   {
     "Id": 1134,
     "Name": "CancelDropStashButton",
-    "Kor": "\uCDE8\uC18C",
+    "Kor": "취소",
     "Eng": "Cancel"
   },
   {
     "Id": 1135,
     "Name": "NoStashes",
-    "Kor": "\uBCF4\uAD00\uB41C \uBCC0\uACBD\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "보관된 변경이 없습니다.",
     "Eng": "No stashes yet"
   },
   {
     "Id": 1136,
     "Name": "StashChangedFiles",
-    "Kor": "\uBCC0\uACBD \uD30C\uC77C",
+    "Kor": "변경 파일",
     "Eng": "Changed files"
   },
   {
     "Id": 1137,
     "Name": "StashDiffHeading",
-    "Kor": "\uBCC0\uACBD \uB0B4\uC6A9",
+    "Kor": "변경 내용",
     "Eng": "Diff"
   },
   {
     "Id": 1138,
     "Name": "StashTargetSummary",
-    "Kor": "{0}\uAC1C \uBCC0\uACBD\uC774 \uBCF4\uAD00 \uD6C4 \uC791\uC5C5 \uD2B8\uB9AC\uC5D0\uC11C \uC0AC\uB77C\uC9D1\uB2C8\uB2E4.",
+    "Kor": "{0}개 변경이 보관 후 작업 트리에서 사라집니다.",
     "Eng": "{0} changes will leave the working tree after saving."
   },
   {
     "Id": 1139,
     "Name": "StashDropConfirmation",
-    "Kor": "{0} ({1}) \uD56D\uBAA9\uC744 \uC601\uAD6C \uC0AD\uC81C\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?",
+    "Kor": "{0} ({1}) 항목을 영구 삭제하시겠습니까?",
     "Eng": "Permanently drop {0} ({1})?"
   },
   {
     "Id": 1140,
     "Name": "StashSavedNotice",
-    "Kor": "{0}\uC5D0 \uBCC0\uACBD\uC744 \uBCF4\uAD00\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0}에 변경을 보관했습니다.",
     "Eng": "Saved changes as {0}."
   },
   {
     "Id": 1141,
     "Name": "StashAppliedNotice",
-    "Kor": "{0}\uC744 \uC801\uC6A9\uD588\uC2B5\uB2C8\uB2E4. \uD56D\uBAA9\uC740 \uC720\uC9C0\uB429\uB2C8\uB2E4.",
+    "Kor": "{0}을 적용했습니다. 항목은 유지됩니다.",
     "Eng": "Applied {0}; the stash remains."
   },
   {
     "Id": 1142,
     "Name": "StashPoppedNotice",
-    "Kor": "{0}\uC744 \uC801\uC6A9\uD558\uACE0 \uC81C\uAC70\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0}을 적용하고 제거했습니다.",
     "Eng": "Applied and removed {0}."
   },
   {
     "Id": 1143,
     "Name": "StashDroppedNotice",
-    "Kor": "{0}\uC744 \uC0AD\uC81C\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0}을 삭제했습니다.",
     "Eng": "Dropped {0}."
   },
   {
     "Id": 1144,
     "Name": "ReferenceBranchesHeading",
-    "Kor": "\uBE0C\uB79C\uCE58",
+    "Kor": "브랜치",
     "Eng": "Branches"
   },
   {
     "Id": 1145,
     "Name": "ReferenceTagsHeading",
-    "Kor": "\uD0DC\uADF8",
+    "Kor": "태그",
     "Eng": "Tags"
   },
   {
     "Id": 1146,
     "Name": "ReferenceRemotesHeading",
-    "Kor": "\uC6D0\uACA9",
+    "Kor": "원격",
     "Eng": "Remotes"
   },
   {
     "Id": 1147,
     "Name": "ReferenceSubmodulesHeading",
-    "Kor": "\uC11C\uBE0C\uBAA8\uB4C8",
+    "Kor": "서브모듈",
     "Eng": "Submodules"
   },
   {
     "Id": 1148,
     "Name": "ReferenceNoBranches",
-    "Kor": "\uB85C\uCEEC \uBE0C\uB79C\uCE58 \uC5C6\uC74C",
+    "Kor": "로컬 브랜치 없음",
     "Eng": "No local branches"
   },
   {
     "Id": 1149,
     "Name": "ReferenceNoTags",
-    "Kor": "\uD0DC\uADF8 \uC5C6\uC74C",
+    "Kor": "태그 없음",
     "Eng": "No tags"
   },
   {
     "Id": 1150,
     "Name": "ReferenceNoRemotes",
-    "Kor": "\uC6D0\uACA9 \uC5C6\uC74C",
+    "Kor": "원격 없음",
     "Eng": "No remotes"
   },
   {
     "Id": 1151,
     "Name": "ReferenceNoTrackingBranches",
-    "Kor": "\uCD94\uC801 \uBE0C\uB79C\uCE58 \uC5C6\uC74C",
+    "Kor": "추적 브랜치 없음",
     "Eng": "No tracking branches"
   },
   {
     "Id": 1152,
     "Name": "ReferenceCreateBranch",
-    "Kor": "\uBE0C\uB79C\uCE58 \uB9CC\uB4E4\uAE30...",
+    "Kor": "브랜치 만들기...",
     "Eng": "Create branch..."
   },
   {
     "Id": 1153,
     "Name": "ReferenceOpenStashes",
-    "Kor": "\uC2A4\uD0DC\uC2DC \uC5F4\uAE30",
+    "Kor": "스태시 열기",
     "Eng": "Open stashes"
   },
   {
     "Id": 1154,
     "Name": "ReferenceSwitchBranch",
-    "Kor": "\uC774 \uBE0C\uB79C\uCE58\uB85C \uC804\uD658",
+    "Kor": "이 브랜치로 전환",
     "Eng": "Switch to this branch"
   },
   {
     "Id": 1155,
     "Name": "ReferenceCreateFromBranch",
-    "Kor": "\uC5EC\uAE30\uC11C \uBE0C\uB79C\uCE58 \uB9CC\uB4E4\uAE30...",
+    "Kor": "여기서 브랜치 만들기...",
     "Eng": "Create branch from here..."
   },
   {
     "Id": 1156,
     "Name": "ReferenceCheckoutRemoteBranch",
-    "Kor": "\uC6D0\uACA9 \uBE0C\uB79C\uCE58 \uCCB4\uD06C\uC544\uC6C3...",
+    "Kor": "원격 브랜치 체크아웃...",
     "Eng": "Check out remote branch..."
   },
   {
     "Id": 1157,
     "Name": "ReferenceCopyName",
-    "Kor": "\uC774\uB984 \uBCF5\uC0AC",
+    "Kor": "이름 복사",
     "Eng": "Copy name"
   },
   {
     "Id": 1158,
     "Name": "ReferenceCurrentBranch",
-    "Kor": "\uD604\uC7AC \uBE0C\uB79C\uCE58",
+    "Kor": "현재 브랜치",
     "Eng": "Current branch"
   },
   {
     "Id": 1159,
     "Name": "ReferenceCreateAndSwitch",
-    "Kor": "\uB9CC\uB4E4\uACE0 \uC804\uD658",
+    "Kor": "만들고 전환",
     "Eng": "Create and switch"
   },
   {
     "Id": 1160,
     "Name": "ReferenceBranchName",
-    "Kor": "\uBE0C\uB79C\uCE58 \uC774\uB984",
+    "Kor": "브랜치 이름",
     "Eng": "Branch name"
   },
   {
     "Id": 1161,
     "Name": "ReferenceStartPoint",
-    "Kor": "\uC2DC\uC791\uC810 (HEAD \uB610\uB294 \uCEE4\uBC0B)",
+    "Kor": "시작점 (HEAD 또는 커밋)",
     "Eng": "Start point (HEAD or commit)"
   },
   {
     "Id": 1162,
     "Name": "ReferenceNewBranchDescription",
-    "Kor": "\uB85C\uCEEC \uBE0C\uB79C\uCE58\uB97C \uB9CC\uB4E4\uACE0 \uC804\uD658\uD569\uB2C8\uB2E4.",
+    "Kor": "로컬 브랜치를 만들고 전환합니다.",
     "Eng": "Create and switch to a local branch."
   },
   {
     "Id": 1163,
     "Name": "ReferenceCancel",
-    "Kor": "\uCDE8\uC18C",
+    "Kor": "취소",
     "Eng": "Cancel"
   },
   {
     "Id": 1164,
     "Name": "LargeStageTitle",
-    "Kor": "\uD070 \uD30C\uC77C \uC2A4\uD14C\uC774\uC9D5 \uD655\uC778",
+    "Kor": "큰 파일 스테이징 확인",
     "Eng": "Stage large files"
   },
   {
     "Id": 1165,
     "Name": "LargeStageDescription",
-    "Kor": "\uB2E4\uC74C \uC0C8 \uD30C\uC77C {0}\uAC1C\uB294 10 MiB \uC774\uC0C1\uC785\uB2C8\uB2E4. \uACC4\uC18D \uC2A4\uD14C\uC774\uC9D5\uD560\uAE4C\uC694?",
+    "Kor": "다음 새 파일 {0}개는 10 MiB 이상입니다. 계속 스테이징할까요?",
     "Eng": "These {0} new files are at least 10 MiB. Continue staging?"
   },
   {
     "Id": 1166,
     "Name": "LargeStageContinue",
-    "Kor": "\uACC4\uC18D \uC2A4\uD14C\uC774\uC9D5",
+    "Kor": "계속 스테이징",
     "Eng": "Continue staging"
   },
   {
     "Id": 1167,
     "Name": "DiscardSelected",
-    "Kor": "\uBCC0\uACBD \uD3D0\uAE30\u2026",
-    "Eng": "Discard changes\u2026"
+    "Kor": "변경 폐기…",
+    "Eng": "Discard changes…"
   },
   {
     "Id": 1168,
     "Name": "DiscardTitle",
-    "Kor": "\uC120\uD0DD \uD30C\uC77C \uBCC0\uACBD \uD3D0\uAE30",
+    "Kor": "선택 파일 변경 폐기",
     "Eng": "Discard selected changes"
   },
   {
     "Id": 1169,
     "Name": "DiscardPathLabel",
-    "Kor": "\uC800\uC7A5\uC18C \uC0C1\uB300 \uACBD\uB85C",
+    "Kor": "저장소 상대 경로",
     "Eng": "Repository-relative path"
   },
   {
@@ -1028,853 +1028,853 @@
   {
     "Id": 1171,
     "Name": "DiscardUntrackedImpact",
-    "Kor": "\uBBF8\uCD94\uC801 \uD30C\uC77C\uC744 \uC601\uAD6C \uC0AD\uC81C\uD569\uB2C8\uB2E4. Git\uC5D0\uC11C \uBCF5\uC6D0\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "미추적 파일을 영구 삭제합니다. Git에서 복원할 수 없습니다.",
     "Eng": "Permanently delete this untracked file. Git cannot restore it."
   },
   {
     "Id": 1172,
     "Name": "DiscardRenamedImpact",
-    "Kor": "\uC791\uC5C5 \uD2B8\uB9AC\uC758 \uC774\uB984 \uBCC0\uACBD\uC744 \uB418\uB3CC\uB9BD\uB2C8\uB2E4. \uC0C8 \uACBD\uB85C\uC758 \uD30C\uC77C\uC744 \uC0AD\uC81C\uD558\uACE0 \uC6D0\uB798 \uACBD\uB85C {0}\uC744(\uB97C) \uC778\uB371\uC2A4 \uC0C1\uD0DC\uB85C \uBCF5\uC6D0\uD569\uB2C8\uB2E4.",
+    "Kor": "작업 트리의 이름 변경을 되돌립니다. 새 경로의 파일을 삭제하고 원래 경로 {0}을(를) 인덱스 상태로 복원합니다.",
     "Eng": "Undo the working-tree rename. Delete the new-path file and restore the original path {0} from the index."
   },
   {
     "Id": 1173,
     "Name": "DiscardConfirmTracked",
-    "Kor": "\uBCC0\uACBD \uD3D0\uAE30",
+    "Kor": "변경 폐기",
     "Eng": "Discard changes"
   },
   {
     "Id": 1174,
     "Name": "DiscardConfirmUntracked",
-    "Kor": "\uD30C\uC77C \uC0AD\uC81C",
+    "Kor": "파일 삭제",
     "Eng": "Delete file"
   },
   {
     "Id": 1175,
     "Name": "RemoteCheckoutSourceLabel",
-    "Kor": "\uC6D0\uACA9 \uBE0C\uB79C\uCE58",
+    "Kor": "원격 브랜치",
     "Eng": "Remote branch"
   },
   {
     "Id": 1176,
     "Name": "RemoteCheckoutLocalName",
-    "Kor": "\uC0C8 \uB85C\uCEEC \uBE0C\uB79C\uCE58 \uC774\uB984",
+    "Kor": "새 로컬 브랜치 이름",
     "Eng": "New local branch name"
   },
   {
     "Id": 1177,
     "Name": "RemoteCheckoutAction",
-    "Kor": "\uCCB4\uD06C\uC544\uC6C3",
+    "Kor": "체크아웃",
     "Eng": "Checkout"
   },
   {
     "Id": 1178,
     "Name": "RemoteCheckoutDescription",
-    "Kor": "\uC6D0\uACA9 \uBE0C\uB79C\uCE58\uB97C \uCD94\uC801\uD560 \uC0C8 \uB85C\uCEEC \uBE0C\uB79C\uCE58\uB97C \uB9CC\uB4ED\uB2C8\uB2E4.",
+    "Kor": "원격 브랜치를 추적할 새 로컬 브랜치를 만듭니다.",
     "Eng": "Create a new local branch to track the remote branch."
   },
   {
     "Id": 1179,
     "Name": "RemoteCheckoutExistingLocal",
-    "Kor": "\uB85C\uCEEC \uBE0C\uB79C\uCE58 \u0027{0}\u0027\uC774(\uAC00) \uC774\uBBF8 \uC788\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C \uB9CC\uB4E4\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. Branches\uC5D0\uC11C \uAE30\uC874 \uBE0C\uB79C\uCE58\uB97C \uBA85\uC2DC\uC801\uC73C\uB85C \uC120\uD0DD\uD574 \uC804\uD658\uD558\uAC70\uB098 \uB2E4\uB978 \uC774\uB984\uC744 \uC785\uB825\uD558\uC138\uC694.",
-    "Eng": "Local branch \u0027{0}\u0027 already exists. It will not be recreated. Select it in Branches to switch, or enter another name."
+    "Kor": "로컬 브랜치 '{0}'이(가) 이미 있습니다. 새로 만들지 않습니다. Branches에서 기존 브랜치를 명시적으로 선택해 전환하거나 다른 이름을 입력하세요.",
+    "Eng": "Local branch '{0}' already exists. It will not be recreated. Select it in Branches to switch, or enter another name."
   },
   {
     "Id": 1180,
     "Name": "RemoteCheckoutMultipleTracking",
-    "Kor": "{0}\uC744(\uB97C) \uCD94\uC801\uD558\uB294 \uB85C\uCEEC \uBE0C\uB79C\uCE58\uAC00 \uC5EC\uB7EC \uAC1C \uC788\uC2B5\uB2C8\uB2E4: {1}. Branches\uC5D0\uC11C \uC804\uD658\uD560 \uBE0C\uB79C\uCE58\uB97C \uC120\uD0DD\uD558\uC138\uC694.",
+    "Kor": "{0}을(를) 추적하는 로컬 브랜치가 여러 개 있습니다: {1}. Branches에서 전환할 브랜치를 선택하세요.",
     "Eng": "Multiple local branches track {0}: {1}. Select the branch to switch to in Branches."
   },
   {
     "Id": 1181,
     "Name": "RemoteCheckoutAlreadyCurrent",
-    "Kor": "\uB85C\uCEEC \uBE0C\uB79C\uCE58 \u0027{0}\u0027\uC774(\uAC00) \uC774\uBBF8 \uD604\uC7AC \uBE0C\uB79C\uCE58\uC785\uB2C8\uB2E4.",
-    "Eng": "Local branch \u0027{0}\u0027 is already the current branch."
+    "Kor": "로컬 브랜치 '{0}'이(가) 이미 현재 브랜치입니다.",
+    "Eng": "Local branch '{0}' is already the current branch."
   },
   {
     "Id": 1184,
     "Name": "GitHubPhotoUserName",
-    "Kor": "GitHub \uC0AC\uC6A9\uC790\uBA85",
+    "Kor": "GitHub 사용자명",
     "Eng": "GitHub username"
   },
   {
     "Id": 1190,
     "Name": "AppearanceHeading",
-    "Kor": "\uD654\uBA74 \uBAA8\uC591",
+    "Kor": "화면 모양",
     "Eng": "APPEARANCE"
   },
   {
     "Id": 1191,
     "Name": "AppearanceDescription",
-    "Kor": "\uC571 \uD654\uBA74\uC5D0 \uC801\uC6A9\uD560 \uD14C\uB9C8\uB97C \uC120\uD0DD\uD569\uB2C8\uB2E4. Git \uC124\uC815\uC740 \uBC14\uB00C\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "Kor": "앱 화면에 적용할 테마를 선택합니다. Git 설정은 바뀌지 않습니다.",
     "Eng": "Choose the app theme. Git settings are unchanged."
   },
   {
     "Id": 1192,
     "Name": "AppearanceLight",
-    "Kor": "\uBC1D\uC74C",
+    "Kor": "밝음",
     "Eng": "Light"
   },
   {
     "Id": 1193,
     "Name": "AppearanceDark",
-    "Kor": "\uC5B4\uB450\uC6C0",
+    "Kor": "어두움",
     "Eng": "Dark"
   },
   {
     "Id": 1194,
     "Name": "AppearanceSystem",
-    "Kor": "\uC2DC\uC2A4\uD15C \uC124\uC815",
+    "Kor": "시스템 설정",
     "Eng": "System setting"
   },
   {
     "Id": 1195,
     "Name": "ReferenceCreateTag",
-    "Kor": "\uD0DC\uADF8 \uB9CC\uB4E4\uAE30\u2026",
+    "Kor": "태그 만들기…",
     "Eng": "Create tag..."
   },
   {
     "Id": 1196,
     "Name": "ReferenceTagName",
-    "Kor": "\uD0DC\uADF8 \uC774\uB984",
+    "Kor": "태그 이름",
     "Eng": "Tag name"
   },
   {
     "Id": 1197,
     "Name": "ReferenceTagTarget",
-    "Kor": "\uB300\uC0C1 \uCEE4\uBC0B",
+    "Kor": "대상 커밋",
     "Eng": "Target commit"
   },
   {
     "Id": 1198,
     "Name": "ReferenceTagAction",
-    "Kor": "\uD0DC\uADF8 \uB9CC\uB4E4\uAE30",
+    "Kor": "태그 만들기",
     "Eng": "Create tag"
   },
   {
     "Id": 1199,
     "Name": "ReferenceLocalTagCreated",
-    "Kor": "\uB85C\uCEEC \uD0DC\uADF8 \u0027{0}\u0027 \uC0DD\uC131 \uC644\uB8CC. \uC6D0\uACA9\uC73C\uB85C \uBCF4\uB0B4\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.",
-    "Eng": "Created local tag \u0027{0}\u0027. It was not pushed."
+    "Kor": "로컬 태그 '{0}' 생성 완료. 원격으로 보내지 않았습니다.",
+    "Eng": "Created local tag '{0}'. It was not pushed."
   },
   {
     "Id": 1200,
     "Name": "HistoryCreateTagHere",
-    "Kor": "\uC5EC\uAE30\uC5D0 \uD0DC\uADF8 \uB9CC\uB4E4\uAE30\u2026",
+    "Kor": "여기에 태그 만들기…",
     "Eng": "Create tag here..."
   },
   {
     "Id": 1201,
     "Name": "ReferenceBranchQueueProgress",
-    "Kor": "\uBE0C\uB79C\uCE58 \u0027{0}\u0027 \uC0DD\uC131 \uC911 \u00B7 \uB300\uAE30 {1}\uAC74",
-    "Eng": "Creating branch \u0027{0}\u0027 \u00B7 {1} queued"
+    "Kor": "브랜치 '{0}' 생성 중 · 대기 {1}건",
+    "Eng": "Creating branch '{0}' · {1} queued"
   },
   {
     "Id": 1202,
     "Name": "ReferenceBranchQueueClosing",
-    "Kor": "\u0027{0}\u0027 \uC0DD\uC131 \uACB0\uACFC\uB97C \uAE30\uB2E4\uB9B0 \uB4A4 \uB2EB\uC2B5\uB2C8\uB2E4.",
-    "Eng": "Waiting for \u0027{0}\u0027 to finish before closing."
+    "Kor": "'{0}' 생성 결과를 기다린 뒤 닫습니다.",
+    "Eng": "Waiting for '{0}' to finish before closing."
   },
   {
     "Id": 1203,
     "Name": "ReferenceSwitchRepositoryRequired",
-    "Kor": "\uC800\uC7A5\uC18C\uB97C \uC120\uD0DD\uD558\uC138\uC694.",
+    "Kor": "저장소를 선택하세요.",
     "Eng": "Select a repository."
   },
   {
     "Id": 1204,
     "Name": "ReferenceSwitchBranchRequired",
-    "Kor": "\uC804\uD658\uD560 \uBE0C\uB79C\uCE58\uAC00 \uC120\uD0DD\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.",
+    "Kor": "전환할 브랜치가 선택되지 않았습니다.",
     "Eng": "Select a branch to switch to."
   },
   {
     "Id": 1205,
     "Name": "ReferenceSwitchMenuRepositoryChanged",
-    "Kor": "\uBA54\uB274\uB97C \uC5F0 \uC800\uC7A5\uC18C\uAC00 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
+    "Kor": "메뉴를 연 저장소가 변경되었습니다.",
     "Eng": "The repository has changed since the menu opened."
   },
   {
     "Id": 1206,
     "Name": "ReferenceSwitchInProgress",
-    "Kor": "{0} \uBE0C\uB79C\uCE58\uB85C \uC804\uD658 \uC911\uC785\uB2C8\uB2E4.",
+    "Kor": "{0} 브랜치로 전환 중입니다.",
     "Eng": "Switching to branch {0}..."
   },
   {
     "Id": 1207,
     "Name": "ReferenceSwitchPending",
-    "Kor": "\uB2E4\uC74C \uC804\uD658: {0} (\uD604\uC7AC {1} \uC791\uC5C5 \uC644\uB8CC \uD6C4)",
+    "Kor": "다음 전환: {0} (현재 {1} 작업 완료 후)",
     "Eng": "Next switch: {0} (after {1} finishes)."
   },
   {
     "Id": 1208,
     "Name": "ReferenceSwitchAlreadyCurrent",
-    "Kor": "\uC774\uBBF8 {0} \uBE0C\uB79C\uCE58\uC785\uB2C8\uB2E4.",
+    "Kor": "이미 {0} 브랜치입니다.",
     "Eng": "Already on branch {0}."
   },
   {
     "Id": 1209,
     "Name": "ReferenceSwitchSucceeded",
-    "Kor": "{0} \uBE0C\uB79C\uCE58\uB85C \uC804\uD658\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0} 브랜치로 전환했습니다.",
     "Eng": "Switched to branch {0}."
   },
   {
     "Id": 1210,
     "Name": "ReferenceSwitchOperationBusy",
-    "Kor": "{0} \uBE0C\uB79C\uCE58 \uC791\uC5C5\uC744 \uC2DC\uC791\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uD604\uC7AC \uBE0C\uB79C\uCE58: {1}. \uB2E4\uB978 \uBE0C\uB79C\uCE58 \uC791\uC5C5\uC774 \uC9C4\uD589 \uC911\uC785\uB2C8\uB2E4.",
+    "Kor": "{0} 브랜치 작업을 시작할 수 없습니다. 현재 브랜치: {1}. 다른 브랜치 작업이 진행 중입니다.",
     "Eng": "Cannot start the branch operation for {0}. Current branch: {1}. Another branch operation is in progress."
   },
   {
     "Id": 1211,
     "Name": "ReferenceSwitchOperationRunning",
-    "Kor": "{0} \uBE0C\uB79C\uCE58 \uC791\uC5C5\uC744 \uC2E4\uD589 \uC911\uC785\uB2C8\uB2E4.",
+    "Kor": "{0} 브랜치 작업을 실행 중입니다.",
     "Eng": "Running the branch operation for {0}..."
   },
   {
     "Id": 1212,
     "Name": "ReferenceSwitchUnexpectedCurrent",
-    "Kor": "\uBE0C\uB79C\uCE58 \uC791\uC5C5 \uB4A4 \uD604\uC7AC \uBE0C\uB79C\uCE58\uAC00 \uC608\uC0C1\uACFC \uB2E4\uB985\uB2C8\uB2E4: \uC694\uCCAD {0}, \uD604\uC7AC {1}",
+    "Kor": "브랜치 작업 뒤 현재 브랜치가 예상과 다릅니다: 요청 {0}, 현재 {1}",
     "Eng": "Current branch after the operation differs from the requested branch: requested {0}, current {1}."
   },
   {
     "Id": 1213,
     "Name": "ReferenceSwitchRefreshFailed",
-    "Kor": "{0} \uBE0C\uB79C\uCE58\uB85C \uC804\uD658\uD588\uC9C0\uB9CC \uCC38\uC870 \uBAA9\uB85D\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. {1}",
+    "Kor": "{0} 브랜치로 전환했지만 참조 목록을 확인하지 못했습니다. {1}",
     "Eng": "Switched to branch {0}, but could not refresh references. {1}"
   },
   {
     "Id": 1214,
     "Name": "ReferenceSwitchFailed",
-    "Kor": "{0} \uBE0C\uB79C\uCE58\uB85C \uC804\uD658\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uD604\uC7AC \uBE0C\uB79C\uCE58: {1}. \uC774\uC720: {2}",
+    "Kor": "{0} 브랜치로 전환하지 못했습니다. 현재 브랜치: {1}. 이유: {2}",
     "Eng": "Could not switch to branch {0}. Current branch: {1}. Reason: {2}"
   },
   {
     "Id": 1215,
     "Name": "ReferenceSwitchCurrentUnknown",
-    "Kor": "\uD655\uC778\uB418\uC9C0 \uC54A\uC74C",
+    "Kor": "확인되지 않음",
     "Eng": "Unknown"
   },
   {
     "Id": 1400,
     "Name": "LocalSelectedFileUnavailable",
-    "Kor": "\uC120\uD0DD\uD55C \uD30C\uC77C {0}\uC744(\uB97C) \uD604\uC7AC \uC791\uC5C5\uC5D0 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694.",
+    "Kor": "선택한 파일 {0}을(를) 현재 작업에 사용할 수 없습니다. 새로 고친 뒤 다시 시도하세요.",
     "Eng": "The selected file is no longer available for this operation: {0}. Refresh and try again."
   },
   {
     "Id": 1401,
     "Name": "LocalResolveBeforeDiscard",
-    "Kor": "{0}\uC758 \uCDA9\uB3CC\uC744 \uD574\uACB0\uD55C \uB4A4 \uBCC0\uACBD\uC744 \uD3D0\uAE30\uD558\uC138\uC694.",
+    "Kor": "{0}의 충돌을 해결한 뒤 변경을 폐기하세요.",
     "Eng": "Resolve the conflict in {0} before discarding changes."
   },
   {
     "Id": 1402,
     "Name": "LocalDiscardRequiresConfirmation",
-    "Kor": "\uBCC0\uACBD\uC744 \uD3D0\uAE30\uD558\uB824\uBA74 \uD655\uC778\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.",
+    "Kor": "변경을 폐기하려면 확인이 필요합니다.",
     "Eng": "Discarding changes requires confirmation."
   },
   {
     "Id": 1403,
     "Name": "LocalIgnoreRequiresConfirmation",
-    "Kor": "\uD30C\uC77C\uC744 \uBB34\uC2DC\uD558\uB824\uBA74 \uD655\uC778\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.",
+    "Kor": "파일을 무시하려면 확인이 필요합니다.",
     "Eng": "Ignoring files requires confirmation."
   },
   {
     "Id": 1404,
     "Name": "LocalLargeStageRequiresConfirmation",
-    "Kor": "\uC0C8 \uD070 \uD30C\uC77C\uC744 \uC2A4\uD14C\uC774\uC9D5\uD558\uB824\uBA74 \uD655\uC778\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.",
+    "Kor": "새 큰 파일을 스테이징하려면 확인이 필요합니다.",
     "Eng": "Staging large new files requires confirmation."
   },
   {
     "Id": 1405,
     "Name": "LocalSelectionSetChanged",
-    "Kor": "\uC120\uD0DD\uD55C \uD30C\uC77C \uBAA9\uB85D\uC774 \uC791\uC5C5 \uC2DC\uC791 \uC804\uC5D0 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694.",
+    "Kor": "선택한 파일 목록이 작업 시작 전에 변경되었습니다. 새로 고친 뒤 다시 시도하세요.",
     "Eng": "The selected file set changed before the operation started. Refresh and try again."
   },
   {
     "Id": 1406,
     "Name": "LocalSelectedFileChanged",
-    "Kor": "{0} \uD30C\uC77C\uC774 \uC791\uC5C5 \uC2DC\uC791 \uC804\uC5D0 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694.",
+    "Kor": "{0} 파일이 작업 시작 전에 변경되었습니다. 새로 고친 뒤 다시 시도하세요.",
     "Eng": "The selected file changed before the operation started: {0}. Refresh and try again."
   },
   {
     "Id": 1407,
     "Name": "LocalIndexChanged",
-    "Kor": "{0} \uD30C\uC77C\uC758 \uC778\uB371\uC2A4 \uC0C1\uD0DC\uAC00 \uC791\uC5C5 \uC2DC\uC791 \uC804\uC5D0 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694.",
+    "Kor": "{0} 파일의 인덱스 상태가 작업 시작 전에 변경되었습니다. 새로 고친 뒤 다시 시도하세요.",
     "Eng": "The index state changed before the operation started: {0}. Refresh and try again."
   },
   {
     "Id": 1408,
     "Name": "LocalWorkingFileChanged",
-    "Kor": "{0} \uD30C\uC77C\uC758 \uC791\uC5C5 \uD2B8\uB9AC \uC0C1\uD0DC\uAC00 \uC791\uC5C5 \uC2DC\uC791 \uC804\uC5D0 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694.",
+    "Kor": "{0} 파일의 작업 트리 상태가 작업 시작 전에 변경되었습니다. 새로 고친 뒤 다시 시도하세요.",
     "Eng": "The working-tree state changed before the operation started: {0}. Refresh and try again."
   },
   {
     "Id": 1409,
     "Name": "StashTargetsUnavailable",
-    "Kor": "Stash\uC5D0 \uBCF4\uAD00\uD560 \uBCC0\uACBD \uBAA9\uB85D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694.",
+    "Kor": "Stash에 보관할 변경 목록이 없습니다. 새로 고친 뒤 다시 시도하세요.",
     "Eng": "The stash targets are no longer available. Refresh and try again."
   },
   {
     "Id": 1410,
     "Name": "StashTargetsChanged",
-    "Kor": "Stash \uBCF4\uAD00 \uB300\uC0C1\uC774 \uC791\uC5C5 \uC2DC\uC791 \uC804\uC5D0 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694.",
+    "Kor": "Stash 보관 대상이 작업 시작 전에 변경되었습니다. 새로 고친 뒤 다시 시도하세요.",
     "Eng": "The stash targets changed before the operation started. Refresh and try again."
   },
   {
     "Id": 1411,
     "Name": "StashTargetChanged",
-    "Kor": "Stash \uBCF4\uAD00 \uB300\uC0C1 {0}\uC774(\uAC00) \uC791\uC5C5 \uC2DC\uC791 \uC804\uC5D0 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694.",
+    "Kor": "Stash 보관 대상 {0}이(가) 작업 시작 전에 변경되었습니다. 새로 고친 뒤 다시 시도하세요.",
     "Eng": "The stash target changed before the operation started: {0}. Refresh and try again."
   },
   {
     "Id": 1412,
     "Name": "StashTargetIndexChanged",
-    "Kor": "Stash \uBCF4\uAD00 \uB300\uC0C1 {0}\uC758 \uC778\uB371\uC2A4 \uC0C1\uD0DC\uAC00 \uC791\uC5C5 \uC2DC\uC791 \uC804\uC5D0 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694.",
+    "Kor": "Stash 보관 대상 {0}의 인덱스 상태가 작업 시작 전에 변경되었습니다. 새로 고친 뒤 다시 시도하세요.",
     "Eng": "The stash target index changed before the operation started: {0}. Refresh and try again."
   },
   {
     "Id": 1300,
     "Name": "ConflictStageUnavailable",
-    "Kor": "\uCDA9\uB3CC \uD30C\uC77C \uC800\uC7A5\uC744 \uC644\uB8CC\uD560 \uD654\uBA74 \uC5F0\uACB0\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "충돌 파일 저장을 완료할 화면 연결이 없습니다.",
     "Eng": "The conflict save cannot be completed because its screen connection is unavailable."
   },
   {
     "Id": 1301,
     "Name": "ConflictStageCanceled",
-    "Kor": "\uB300\uAE30 \uC911\uC778 \uCDA9\uB3CC \uD30C\uC77C \uC800\uC7A5\uC774 \uCDE8\uC18C\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
+    "Kor": "대기 중인 충돌 파일 저장이 취소되었습니다.",
     "Eng": "The pending conflict save was canceled."
   },
   {
     "Id": 1302,
     "Name": "ConflictStageNoLongerConflicted",
-    "Kor": "{0} \uD30C\uC77C\uC740 \uB354 \uC774\uC0C1 \uCDA9\uB3CC \uC0C1\uD0DC\uAC00 \uC544\uB2D9\uB2C8\uB2E4. \uC0C1\uD0DC\uB97C \uC0C8\uB85C \uACE0\uCE58\uC138\uC694.",
+    "Kor": "{0} 파일은 더 이상 충돌 상태가 아닙니다. 상태를 새로 고치세요.",
     "Eng": "{0} is no longer conflicted. Refresh the repository state."
   },
   {
     "Id": 1303,
     "Name": "ConflictStageFileChanged",
-    "Kor": "{0} \uD30C\uC77C\uC774 \uC5F4\uB9B0 \uB4A4 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC \uBD88\uB7EC\uC628 \uD6C4 \uC800\uC7A5\uD558\uC138\uC694.",
+    "Kor": "{0} 파일이 열린 뒤 변경되었습니다. 다시 불러온 후 저장하세요.",
     "Eng": "{0} changed after it was opened. Reload it before saving."
   },
   {
     "Id": 1304,
     "Name": "ConflictStageRefreshFailed",
-    "Kor": "{0} \uD30C\uC77C\uC740 \uC800\uC7A5\uD558\uACE0 \uC2A4\uD14C\uC774\uC9D5\uD588\uC9C0\uB9CC \uD654\uBA74\uC744 \uC0C8\uB85C \uACE0\uCE58\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. {1}",
+    "Kor": "{0} 파일은 저장하고 스테이징했지만 화면을 새로 고치지 못했습니다. {1}",
     "Eng": "Saved and staged {0}, but could not refresh the screen. {1}"
   },
   {
     "Id": 1500,
     "Name": "RemoteQueueRepositoryUnavailable",
-    "Kor": "\uC6D0\uACA9 \uC791\uC5C5\uC744 \uC2E4\uD589\uD560 \uC800\uC7A5\uC18C\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "원격 작업을 실행할 저장소를 불러오지 못했습니다.",
     "Eng": "The requested repository could not be loaded for the remote operation."
   },
   {
     "Id": 1501,
     "Name": "RemoteQueueRepositoryChanged",
-    "Kor": "\uC6D0\uACA9 \uC791\uC5C5\uC744 \uC2DC\uC791\uD558\uAE30 \uC804\uC5D0 \uC800\uC7A5\uC18C\uAC00 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
+    "Kor": "원격 작업을 시작하기 전에 저장소가 변경되었습니다.",
     "Eng": "The requested repository changed before the remote operation started."
   },
   {
     "Id": 1502,
     "Name": "RemoteQueueFetchRemoteChanged",
-    "Kor": "\uC6D0\uACA9 \uC791\uC5C5\uC744 \uC2DC\uC791\uD558\uAE30 \uC804\uC5D0 \uC120\uD0DD\uD55C Fetch \uC6D0\uACA9\uC774 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
+    "Kor": "원격 작업을 시작하기 전에 선택한 Fetch 원격이 변경되었습니다.",
     "Eng": "The selected Fetch remote changed before the operation started."
   },
   {
     "Id": 1503,
     "Name": "RemoteQueueFetchRemoteUnavailable",
-    "Kor": "\uC120\uD0DD\uD55C Fetch \uC6D0\uACA9\uC744 \uB354 \uC774\uC0C1 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "선택한 Fetch 원격을 더 이상 사용할 수 없습니다.",
     "Eng": "The selected Fetch remote is no longer available."
   },
   {
     "Id": 1504,
     "Name": "RemoteQueueFetchAllUnavailable",
-    "Kor": "\uBAA8\uB4E0 \uC6D0\uACA9 \uAC00\uC838\uC624\uAE30\uC5D0 \uC0AC\uC6A9\uD560 \uC6D0\uACA9\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "모든 원격 가져오기에 사용할 원격이 없습니다.",
     "Eng": "No remote is available for Fetch all."
   },
   {
     "Id": 1505,
     "Name": "RemoteQueueBranchChanged",
-    "Kor": "\uC6D0\uACA9 \uC791\uC5C5\uC744 \uC2DC\uC791\uD558\uAE30 \uC804\uC5D0 \uD604\uC7AC \uBE0C\uB79C\uCE58\uAC00 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
+    "Kor": "원격 작업을 시작하기 전에 현재 브랜치가 변경되었습니다.",
     "Eng": "The current branch changed before the remote operation started."
   },
   {
     "Id": 1600,
     "Name": "CurrentRepositoryDetails",
-    "Kor": "\uD604\uC7AC \uC800\uC7A5\uC18C: {0} ({1})",
+    "Kor": "현재 저장소: {0} ({1})",
     "Eng": "Current repository: {0} ({1})"
   },
   {
     "Id": 1601,
     "Name": "GcmLoginCompleted",
-    "Kor": "GitHub \uB85C\uADF8\uC778 \uC808\uCC28\uB97C \uB9C8\uCCE4\uC2B5\uB2C8\uB2E4. \uACC4\uC815 \uBAA9\uB85D\uC744 \uD655\uC778\uD558\uC138\uC694.",
+    "Kor": "GitHub 로그인 절차를 마쳤습니다. 계정 목록을 확인하세요.",
     "Eng": "The GitHub sign-in flow finished. Check the account list."
   },
   {
     "Id": 1602,
     "Name": "GcmOperationInProgress",
-    "Kor": "\uACC4\uC815 \uC791\uC5C5\uC744 \uC9C4\uD589 \uC911\uC785\uB2C8\uB2E4\u2026",
-    "Eng": "Working on the account\u2026"
+    "Kor": "계정 작업을 진행 중입니다…",
+    "Eng": "Working on the account…"
   },
   {
     "Id": 1603,
     "Name": "GitAuthorEmailMissing",
-    "Kor": "Git \uC791\uC131\uC790 \uC774\uBA54\uC77C\uC774 \uC124\uC815\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.",
+    "Kor": "Git 작성자 이메일이 설정되지 않았습니다.",
     "Eng": "Git author email is not configured."
   },
   {
     "Id": 1604,
     "Name": "GitAuthorNameMissing",
-    "Kor": "Git \uC791\uC131\uC790 \uC774\uB984\uC774 \uC124\uC815\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.",
+    "Kor": "Git 작성자 이름이 설정되지 않았습니다.",
     "Eng": "Git author name is not configured."
   },
   {
     "Id": 1605,
     "Name": "GitAuthorSummary",
-    "Kor": "\uCEE4\uBC0B \uC791\uC131\uC790: {0} \u003C{1}\u003E",
-    "Eng": "Commit author: {0} \u003C{1}\u003E"
+    "Kor": "커밋 작성자: {0} <{1}>",
+    "Eng": "Commit author: {0} <{1}>"
   },
   {
     "Id": 1606,
     "Name": "GitExecutablePickerTitle",
-    "Kor": "Git \uC2E4\uD589 \uD30C\uC77C \uC120\uD0DD",
+    "Kor": "Git 실행 파일 선택",
     "Eng": "Select Git executable"
   },
   {
     "Id": 1607,
     "Name": "GitHubAccountActionCanceled",
-    "Kor": "\uACC4\uC815 \uC791\uC5C5\uC774 \uCDE8\uC18C\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
+    "Kor": "계정 작업이 취소되었습니다.",
     "Eng": "Account operation canceled."
   },
   {
     "Id": 1608,
     "Name": "GitHubAccountLookupCanceled",
-    "Kor": "\uACC4\uC815 \uC870\uD68C\uAC00 \uCDE8\uC18C\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
+    "Kor": "계정 조회가 취소되었습니다.",
     "Eng": "Account lookup canceled."
   },
   {
     "Id": 1609,
     "Name": "GitHubAccountScopeHint",
-    "Kor": "\uACC4\uC815 \uC120\uD0DD\uC740 \uD604\uC7AC \uC800\uC7A5\uC18C\uC758 \uD574\uB2F9 GitHub HTTPS \uC6D0\uACA9\uC5D0\uB9CC \uC801\uC6A9\uB429\uB2C8\uB2E4.",
+    "Kor": "계정 선택은 현재 저장소의 해당 GitHub HTTPS 원격에만 적용됩니다.",
     "Eng": "Account selection applies only to the chosen GitHub HTTPS remote in this repository."
   },
   {
     "Id": 1610,
     "Name": "GitHubAccountSelected",
-    "Kor": "{0} \uC6D0\uACA9\uC5D0 {1} \uACC4\uC815\uC744 \uC120\uD0DD\uD588\uC2B5\uB2C8\uB2E4. \uC778\uC99D\uC740 \uB2E4\uC74C \uC6D0\uACA9 \uC791\uC5C5\uC5D0\uC11C \uD655\uC778\uB429\uB2C8\uB2E4.",
+    "Kor": "{0} 원격에 {1} 계정을 선택했습니다. 인증은 다음 원격 작업에서 확인됩니다.",
     "Eng": "Selected {1} for remote {0}. Authentication will be checked on the next remote operation."
   },
   {
     "Id": 1611,
     "Name": "GitHubAccountSelectionPreview",
-    "Kor": "\uC774 \uC800\uC7A5\uC18C\uC758 {0} \uC6D0\uACA9\uC5D0 {1} \uACC4\uC815\uC744 \uC0AC\uC6A9\uD569\uB2C8\uB2E4.",
+    "Kor": "이 저장소의 {0} 원격에 {1} 계정을 사용합니다.",
     "Eng": "Use {1} for remote {0} in this repository."
   },
   {
     "Id": 1612,
     "Name": "GitHubAccountsLoading",
-    "Kor": "GitHub \uACC4\uC815\uACFC \uC6D0\uACA9 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\u2026",
-    "Eng": "Loading GitHub accounts and remotes\u2026"
+    "Kor": "GitHub 계정과 원격 정보를 불러오는 중…",
+    "Eng": "Loading GitHub accounts and remotes…"
   },
   {
     "Id": 1613,
     "Name": "GitHubInheritedAccount",
-    "Kor": "\uC804\uC5ED \uC124\uC815\uC5D0\uC11C \uC0C1\uC18D\uD55C \uACC4\uC815: {0}",
+    "Kor": "전역 설정에서 상속한 계정: {0}",
     "Eng": "Account inherited from global settings: {0}"
   },
   {
     "Id": 1614,
     "Name": "GitHubNoRemotes",
-    "Kor": "\uB4F1\uB85D\uB41C \uC6D0\uACA9\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "등록된 원격이 없습니다.",
     "Eng": "No remotes are configured."
   },
   {
     "Id": 1615,
     "Name": "GitHubNoSelectedAccount",
-    "Kor": "\uC120\uD0DD\uB41C \uC778\uC99D \uACC4\uC815 \uC5C6\uC74C",
+    "Kor": "선택된 인증 계정 없음",
     "Eng": "No authentication account selected"
   },
   {
     "Id": 1616,
     "Name": "GitHubSelectedAccount",
-    "Kor": "\uC774 \uC800\uC7A5\uC18C\uC5D0\uC11C \uC120\uD0DD\uD55C \uACC4\uC815: {0}",
+    "Kor": "이 저장소에서 선택한 계정: {0}",
     "Eng": "Account selected for this repository: {0}"
   },
   {
     "Id": 1617,
     "Name": "GitHubSharedRemoteUrlUnsupported",
-    "Kor": "\uC5EC\uB7EC \uC6D0\uACA9\uC774 \uAC19\uC740 URL\uC744 \uC0AC\uC6A9\uD574 \uACC4\uC815\uC744 \uB530\uB85C \uC9C0\uC815\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "여러 원격이 같은 URL을 사용해 계정을 따로 지정할 수 없습니다.",
     "Eng": "Multiple remotes share this URL, so their accounts cannot be selected separately."
   },
   {
     "Id": 1618,
     "Name": "GitHubUserNameRequired",
-    "Kor": "GitHub \uC0AC\uC6A9\uC790\uBA85\uC744 \uC785\uB825\uD558\uC138\uC694.",
+    "Kor": "GitHub 사용자명을 입력하세요.",
     "Eng": "Enter a GitHub username."
   },
   {
     "Id": 1619,
     "Name": "GitPathSaved",
-    "Kor": "Git \uACBD\uB85C\uB97C \uC800\uC7A5\uD588\uC2B5\uB2C8\uB2E4. \uBC84\uC804: {0}",
+    "Kor": "Git 경로를 저장했습니다. 버전: {0}",
     "Eng": "Git path saved. Version: {0}."
   },
   {
     "Id": 1620,
     "Name": "GitPathVerified",
-    "Kor": "Git \uC2E4\uD589\uC744 \uD655\uC778\uD588\uC2B5\uB2C8\uB2E4. \uBC84\uC804: {0}",
+    "Kor": "Git 실행을 확인했습니다. 버전: {0}",
     "Eng": "Git verified. Version: {0}."
   },
   {
     "Id": 1621,
     "Name": "GitSettingsHint",
-    "Kor": "Git \uC2E4\uD589 \uD30C\uC77C\uACFC \uC791\uC131\uC790 \uC124\uC815\uC744 \uD655\uC778\uD558\uC138\uC694.",
+    "Kor": "Git 실행 파일과 작성자 설정을 확인하세요.",
     "Eng": "Review the Git executable and author settings."
   },
   {
     "Id": 1622,
     "Name": "GitSettingsRefreshed",
-    "Kor": "Git \uC124\uC815\uC744 \uC0C8\uB85C \uACE0\uCCE4\uC2B5\uB2C8\uB2E4.",
+    "Kor": "Git 설정을 새로 고쳤습니다.",
     "Eng": "Git settings refreshed."
   },
   {
     "Id": 1623,
     "Name": "NotConfigured",
-    "Kor": "\uC124\uC815\uB418\uC9C0 \uC54A\uC74C",
+    "Kor": "설정되지 않음",
     "Eng": "Not configured"
   },
   {
     "Id": 1624,
     "Name": "SelectRepositoryPrompt",
-    "Kor": "\uC800\uC7A5\uC18C\uB97C \uC120\uD0DD\uD558\uC138\uC694.",
+    "Kor": "저장소를 선택하세요.",
     "Eng": "Select a repository."
   },
   {
     "Id": 1625,
     "Name": "GlobalAuthorSaved",
-    "Kor": "\uC804\uC5ED \uCEE4\uBC0B \uC791\uC131\uC790 \uC124\uC815\uC744 \uC800\uC7A5\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "전역 커밋 작성자 설정을 저장했습니다.",
     "Eng": "Saved global commit author settings."
   },
   {
     "Id": 1626,
     "Name": "LocalAuthorSaved",
-    "Kor": "\uC774 \uC800\uC7A5\uC18C\uC758 \uCEE4\uBC0B \uC791\uC131\uC790 \uC124\uC815\uC744 \uC800\uC7A5\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "이 저장소의 커밋 작성자 설정을 저장했습니다.",
     "Eng": "Saved commit author settings for this repository."
   },
   {
     "Id": 1700,
     "Name": "DiscardSelectionCount",
-    "Kor": "\uC120\uD0DD\uD55C {0}\uAC1C \uD30C\uC77C \uBCC0\uACBD \uD3D0\uAE30\u2026",
-    "Eng": "Discard changes in {0} selected files\u2026"
+    "Kor": "선택한 {0}개 파일 변경 폐기…",
+    "Eng": "Discard changes in {0} selected files…"
   },
   {
     "Id": 1701,
     "Name": "IgnoreMenu",
-    "Kor": "\uBB34\uC2DC",
+    "Kor": "무시",
     "Eng": "Ignore"
   },
   {
     "Id": 1702,
     "Name": "IgnoreRepository",
-    "Kor": "\uC800\uC7A5\uC18C\uC5D0\uC11C \uBB34\uC2DC (.gitignore)",
+    "Kor": "저장소에서 무시 (.gitignore)",
     "Eng": "Ignore in repository (.gitignore)"
   },
   {
     "Id": 1703,
     "Name": "IgnoreLocal",
-    "Kor": "\uC774 \uCEF4\uD4E8\uD130\uC5D0\uC11C\uB9CC \uBB34\uC2DC (.git/info/exclude)",
+    "Kor": "이 컴퓨터에서만 무시 (.git/info/exclude)",
     "Eng": "Ignore on this computer only (.git/info/exclude)"
   },
   {
     "Id": 1704,
     "Name": "IgnoreConfirmTitle",
-    "Kor": "\uC120\uD0DD \uD30C\uC77C \uBB34\uC2DC",
+    "Kor": "선택 파일 무시",
     "Eng": "Ignore selected files"
   },
   {
     "Id": 1705,
     "Name": "IgnoreConfirmButton",
-    "Kor": "\uBB34\uC2DC \uADDC\uCE59 \uCD94\uAC00",
+    "Kor": "무시 규칙 추가",
     "Eng": "Add ignore rules"
   },
   {
     "Id": 1706,
     "Name": "IgnoreConfirmDescription",
-    "Kor": "\uB300\uC0C1: {1}. \uC120\uD0DD\uD55C \uD30C\uC77C {0}\uAC1C\uC758 \uC815\uD655\uD55C \uACBD\uB85C\uB97C \uBB34\uC2DC \uADDC\uCE59\uC5D0 \uCD94\uAC00\uD569\uB2C8\uB2E4. \uD30C\uC77C\uC740 \uC0AD\uC81C\uD558\uAC70\uB098 \uC2A4\uD14C\uC774\uC9D5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "Kor": "대상: {1}. 선택한 파일 {0}개의 정확한 경로를 무시 규칙에 추가합니다. 파일은 삭제하거나 스테이징하지 않습니다.",
     "Eng": "Destination: {1}. Add exact-path ignore rules for {0} selected files. Files will not be deleted or staged."
   },
   {
     "Id": 1707,
     "Name": "DiscardBatchImpact",
-    "Kor": "\uCD94\uC801 \uD30C\uC77C {0}\uAC1C\uC758 \uC2A4\uD14C\uC774\uC9D5\uB418\uC9C0 \uC54A\uC740 \uBCC0\uACBD\uC744 \uBCF5\uC6D0\uD558\uACE0 \uBBF8\uCD94\uC801 \uD30C\uC77C {1}\uAC1C\uB97C \uC0AD\uC81C\uD569\uB2C8\uB2E4. \uC774\uB984 \uBCC0\uACBD {2}\uAC1C\uB294 \uC6D0\uB798 \uACBD\uB85C\uB85C \uBCF5\uC6D0\uD569\uB2C8\uB2E4. \uC774\uBBF8 \uC2A4\uD14C\uC774\uC9D5\uD55C \uBCC0\uACBD\uC740 \uC720\uC9C0\uB429\uB2C8\uB2E4.",
+    "Kor": "추적 파일 {0}개의 스테이징되지 않은 변경을 복원하고 미추적 파일 {1}개를 삭제합니다. 이름 변경 {2}개는 원래 경로로 복원합니다. 이미 스테이징한 변경은 유지됩니다.",
     "Eng": "Restore unstaged changes in {0} tracked files and delete {1} untracked files. Restore {2} renames to their original paths. Staged changes remain intact."
   },
   {
     "Id": 1708,
     "Name": "DiscardBatchPartialFailure",
-    "Kor": "\uC77C\uBD80 \uD30C\uC77C\uC758 \uBCC0\uACBD\uB9CC \uD3D0\uAE30\uD588\uC2B5\uB2C8\uB2E4. \uC644\uB8CC {0}\uAC1C:\n{1}\n\uBBF8\uC644\uB8CC {2}\uAC1C:\n{3}\n\uC624\uB958: {4}",
+    "Kor": "일부 파일의 변경만 폐기했습니다. 완료 {0}개:\n{1}\n미완료 {2}개:\n{3}\n오류: {4}",
     "Eng": "Only some changes were discarded. Completed ({0}):\n{1}\nNot completed ({2}):\n{3}\nError: {4}"
   },
   {
     "Id": 1800,
     "Name": "GitHubGcmUnavailable",
-    "Kor": "Git Credential Manager\uB97C \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "Git Credential Manager를 사용할 수 없습니다.",
     "Eng": "Git Credential Manager is unavailable."
   },
   {
     "Id": 1801,
     "Name": "GitHubAccountListUnavailable",
-    "Kor": "GCM \uACC4\uC815 \uBAA9\uB85D\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uC0AC\uC6A9\uC790\uBA85\uC744 \uC9C1\uC811 \uC785\uB825\uD558\uAC70\uB098 \uB85C\uADF8\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+    "Kor": "GCM 계정 목록을 읽지 못했습니다. 사용자명을 직접 입력하거나 로그인할 수 있습니다.",
     "Eng": "Could not read the GCM account list. You can enter a username or sign in."
   },
   {
     "Id": 1802,
     "Name": "GitHubLoginFailed",
-    "Kor": "GitHub \uB85C\uADF8\uC778\uC774 \uCDE8\uC18C\uB410\uAC70\uB098 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4. GCM \uB85C\uADF8\uC778 \uCC3D\uC5D0\uC11C \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694.",
+    "Kor": "GitHub 로그인이 취소됐거나 실패했습니다. GCM 로그인 창에서 다시 시도하세요.",
     "Eng": "GitHub sign-in was canceled or failed. Try again in the GCM sign-in window."
   },
   {
     "Id": 1803,
     "Name": "GitHubRemoteNameRequired",
-    "Kor": "\uC6D0\uACA9 \uC774\uB984\uC744 \uC120\uD0DD\uD558\uC138\uC694.",
+    "Kor": "원격 이름을 선택하세요.",
     "Eng": "Select a remote name."
   },
   {
     "Id": 1804,
     "Name": "GitHubRemoteNotFound",
-    "Kor": "\uC6D0\uACA9\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4: {0}",
+    "Kor": "원격을 찾을 수 없습니다: {0}",
     "Eng": "Remote not found: {0}"
   },
   {
     "Id": 1805,
     "Name": "GitHubRemoteUrlUnreadable",
-    "Kor": "\uC6D0\uACA9 URL\uC744 \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "원격 URL을 읽을 수 없습니다.",
     "Eng": "Could not read the remote URL."
   },
   {
     "Id": 1806,
     "Name": "GitHubRemoteMultipleUrls",
-    "Kor": "URL\uC774 \uC5EC\uB7EC \uAC1C\uC778 \uC6D0\uACA9\uC740 \uACC4\uC815 \uC120\uD0DD\uC744 \uC9C0\uC6D0\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "Kor": "URL이 여러 개인 원격은 계정 선택을 지원하지 않습니다.",
     "Eng": "Account selection is unavailable for remotes with multiple URLs."
   },
   {
     "Id": 1807,
     "Name": "GitHubRemoteFetchPushMismatch",
-    "Kor": "\uAC00\uC838\uC624\uAE30\uC640 \uD478\uC2DC URL\uC774 \uB2E4\uB978 \uC6D0\uACA9\uC740 \uACC4\uC815 \uC120\uD0DD\uC744 \uC9C0\uC6D0\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "Kor": "가져오기와 푸시 URL이 다른 원격은 계정 선택을 지원하지 않습니다.",
     "Eng": "Account selection is unavailable when fetch and push URLs differ."
   },
   {
     "Id": 1808,
     "Name": "GitHubRemoteGcmHelperRequired",
-    "Kor": "\uC774 \uC6D0\uACA9\uC758 credential.helper\uAC00 GCM manager\uAC00 \uC544\uB2D9\uB2C8\uB2E4.",
+    "Kor": "이 원격의 credential.helper가 GCM manager가 아닙니다.",
     "Eng": "This remote does not use GCM manager as its credential.helper."
   },
   {
     "Id": 1809,
     "Name": "GitHubRemoteDefaultAccountUnreadable",
-    "Kor": "{0} \uC6D0\uACA9\uC758 \uAE30\uBCF8 \uACC4\uC815 \uC124\uC815\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0} 원격의 기본 계정 설정을 읽지 못했습니다.",
     "Eng": "Could not read the default account setting for remote {0}."
   },
   {
     "Id": 1810,
     "Name": "GitHubRemoteLocalAccountUnreadable",
-    "Kor": "{0} \uC6D0\uACA9\uC758 \uC800\uC7A5\uC18C \uACC4\uC815 \uC124\uC815\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0} 원격의 저장소 계정 설정을 읽지 못했습니다.",
     "Eng": "Could not read the repository account setting for remote {0}."
   },
   {
     "Id": 1811,
     "Name": "GitHubRemoteHttpsRequired",
-    "Kor": "GitHub HTTPS \uC6D0\uACA9\uC774 \uC544\uB2D9\uB2C8\uB2E4. SSH \uC6D0\uACA9\uC740 SSH \uD0A4\uB85C \uC778\uC99D\uD569\uB2C8\uB2E4.",
+    "Kor": "GitHub HTTPS 원격이 아닙니다. SSH 원격은 SSH 키로 인증합니다.",
     "Eng": "This is not a GitHub HTTPS remote. SSH remotes use SSH keys for authentication."
   },
   {
     "Id": 1812,
     "Name": "GitHubRemoteHostUnsupported",
-    "Kor": "github.com HTTPS \uC6D0\uACA9\uB9CC \uC9C0\uC6D0\uD569\uB2C8\uB2E4.",
+    "Kor": "github.com HTTPS 원격만 지원합니다.",
     "Eng": "Only github.com HTTPS remotes are supported."
   },
   {
     "Id": 1813,
     "Name": "GitHubRemotePortUnsupported",
-    "Kor": "\uD45C\uC900 HTTPS \uD3EC\uD2B8\uC758 GitHub \uC6D0\uACA9\uB9CC \uC9C0\uC6D0\uD569\uB2C8\uB2E4.",
+    "Kor": "표준 HTTPS 포트의 GitHub 원격만 지원합니다.",
     "Eng": "Only GitHub remotes on the standard HTTPS port are supported."
   },
   {
     "Id": 1814,
     "Name": "GitHubRemoteUserInfoUnsupported",
-    "Kor": "\uC0AC\uC6A9\uC790 \uC815\uBCF4\uAC00 \uD3EC\uD568\uB41C \uC6D0\uACA9 URL\uC740 \uC9C0\uC6D0\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "Kor": "사용자 정보가 포함된 원격 URL은 지원하지 않습니다.",
     "Eng": "Remote URLs containing user information are unsupported."
   },
   {
     "Id": 1815,
     "Name": "GitHubRemoteQueryUnsupported",
-    "Kor": "\uCFFC\uB9AC \uB610\uB294 \uD504\uB798\uADF8\uBA3C\uD2B8\uAC00 \uC788\uB294 \uC6D0\uACA9 URL\uC740 \uC9C0\uC6D0\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "Kor": "쿼리 또는 프래그먼트가 있는 원격 URL은 지원하지 않습니다.",
     "Eng": "Remote URLs containing a query or fragment are unsupported."
   },
   {
     "Id": 1816,
     "Name": "GitHubRemotePathInvalid",
-    "Kor": "GitHub \uC800\uC7A5\uC18C URL \uD615\uC2DD\uC774 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "Kor": "GitHub 저장소 URL 형식이 올바르지 않습니다.",
     "Eng": "The GitHub repository URL has an invalid format."
   },
   {
     "Id": 1817,
     "Name": "GitHubRemoteUrlNeedsReview",
-    "Kor": "\uC6D0\uACA9 URL \uD655\uC778 \uD544\uC694",
+    "Kor": "원격 URL 확인 필요",
     "Eng": "Check remote URL"
   },
   {
     "Id": 1818,
     "Name": "GitHubUserNameInvalid",
-    "Kor": "GitHub \uC0AC\uC6A9\uC790\uBA85\uC740 \uC601\uBB38\uC790\u00B7\uC22B\uC790\u00B7\uD558\uC774\uD508 1~39\uC790\uB85C \uC785\uB825\uD558\uC138\uC694.",
-    "Eng": "Enter a GitHub username of 1\u201339 letters, digits, or hyphens."
+    "Kor": "GitHub 사용자명은 영문자·숫자·하이픈 1~39자로 입력하세요.",
+    "Eng": "Enter a GitHub username of 1–39 letters, digits, or hyphens."
   },
   {
     "Id": 1819,
     "Name": "GitHubFetchUrlLabel",
-    "Kor": "\uAC00\uC838\uC624\uAE30: {0}",
+    "Kor": "가져오기: {0}",
     "Eng": "Fetch: {0}"
   },
   {
     "Id": 1820,
     "Name": "GitHubPushUrlLabel",
-    "Kor": "\uD478\uC2DC: {0}",
+    "Kor": "푸시: {0}",
     "Eng": "Push: {0}"
   },
   {
     "Id": 1821,
     "Name": "GitSettingsHeading",
-    "Kor": "\uC124\uC815",
+    "Kor": "설정",
     "Eng": "Settings"
   },
   {
     "Id": 1822,
     "Name": "GitExecutableHeading",
-    "Kor": "GIT \uC2E4\uD589 \uD30C\uC77C",
+    "Kor": "GIT 실행 파일",
     "Eng": "GIT EXECUTABLE"
   },
   {
     "Id": 1823,
     "Name": "GitPathHint",
-    "Kor": "\uACBD\uB85C\uB97C \uBE44\uC6CC \uB450\uBA74 PATH\uC5D0 \uB4F1\uB85D\uB41C Git\uC744 \uC0AC\uC6A9\uD569\uB2C8\uB2E4.",
+    "Kor": "경로를 비워 두면 PATH에 등록된 Git을 사용합니다.",
     "Eng": "Leave the path empty to use Git from PATH."
   },
   {
     "Id": 1824,
     "Name": "GitPathPlaceholder",
-    "Kor": "PATH\uC758 git \uB610\uB294 \uC808\uB300 \uACBD\uB85C",
+    "Kor": "PATH의 git 또는 절대 경로",
     "Eng": "git from PATH, or an absolute path"
   },
   {
     "Id": 1825,
     "Name": "BrowseGitLabel",
-    "Kor": "\uCC3E\uC544\uBCF4\uAE30",
+    "Kor": "찾아보기",
     "Eng": "Browse"
   },
   {
     "Id": 1826,
     "Name": "TestGitLabel",
-    "Kor": "Git \uD655\uC778",
+    "Kor": "Git 확인",
     "Eng": "Test Git"
   },
   {
     "Id": 1827,
     "Name": "SaveGitPathLabel",
-    "Kor": "Git \uACBD\uB85C \uC800\uC7A5",
+    "Kor": "Git 경로 저장",
     "Eng": "Save Git path"
   },
   {
     "Id": 1828,
     "Name": "CommitAuthorHeading",
-    "Kor": "\uCEE4\uBC0B \uC791\uC131\uC790",
+    "Kor": "커밋 작성자",
     "Eng": "COMMIT AUTHOR"
   },
   {
     "Id": 1829,
     "Name": "LocalAuthorHeading",
-    "Kor": "\uC774 \uC800\uC7A5\uC18C (\uB85C\uCEEC)",
+    "Kor": "이 저장소 (로컬)",
     "Eng": "This repository (local)"
   },
   {
     "Id": 1830,
     "Name": "SaveLocalAuthorLabel",
-    "Kor": "\uC774 \uC800\uC7A5\uC18C\uC5D0 \uC800\uC7A5",
+    "Kor": "이 저장소에 저장",
     "Eng": "Save for this repository"
   },
   {
     "Id": 1831,
     "Name": "GlobalAuthorHeading",
-    "Kor": "\uBAA8\uB4E0 \uC800\uC7A5\uC18C (\uC804\uC5ED)",
+    "Kor": "모든 저장소 (전역)",
     "Eng": "All repositories (global)"
   },
   {
     "Id": 1832,
     "Name": "SaveGlobalAuthorLabel",
-    "Kor": "\uC804\uC5ED \uC124\uC815\uC5D0 \uC800\uC7A5",
+    "Kor": "전역 설정에 저장",
     "Eng": "Save globally"
   },
   {
     "Id": 1833,
     "Name": "GitHubAccountsHeading",
-    "Kor": "\uACC4\uC815 \uBC0F \uC778\uC99D",
+    "Kor": "계정 및 인증",
     "Eng": "ACCOUNTS AND AUTHENTICATION"
   },
   {
     "Id": 1834,
     "Name": "GitHubAccountsDescription",
-    "Kor": "Bough\uB294 HTTPS \uC778\uC99D\uC5D0 Git \uC790\uACA9 \uC99D\uBA85 \uB3C4\uC6B0\uBBF8\uB97C, SSH \uC778\uC99D\uC5D0 \uAE30\uC874 SSH \uC124\uC815\uC744 \uC0AC\uC6A9\uD569\uB2C8\uB2E4. \uBE44\uBC00\uBC88\uD638\uC640 \uD1A0\uD070\uC740 \uC5EC\uAE30\uC5D0 \uC800\uC7A5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "Kor": "Bough는 HTTPS 인증에 Git 자격 증명 도우미를, SSH 인증에 기존 SSH 설정을 사용합니다. 비밀번호와 토큰은 여기에 저장하지 않습니다.",
     "Eng": "Bough uses Git credential helpers for HTTPS and your existing SSH setup. Passwords and tokens are not stored here."
   },
   {
     "Id": 1835,
     "Name": "GitHubAccountsPurpose",
-    "Kor": "Fetch / Pull / Push \uC778\uC99D\uC5D0\uB9CC \uC801\uC6A9\uB429\uB2C8\uB2E4. \uC704\uC758 \uCEE4\uBC0B \uC791\uC131\uC790\uC640 \uC544\uBC14\uD0C0 \uC124\uC815\uC740 \uBCC4\uAC1C\uC785\uB2C8\uB2E4.",
+    "Kor": "Fetch / Pull / Push 인증에만 적용됩니다. 위의 커밋 작성자와 아바타 설정은 별개입니다.",
     "Eng": "Fetch / Pull / Push authentication only. Commit author and avatar settings above are separate."
   },
   {
     "Id": 1836,
     "Name": "GitHubAccountsQueueHint",
-    "Kor": "\uD604\uC7AC \uC6D0\uACA9 \uC791\uC5C5\uC774 \uB05D\uB09C \uB4A4 \uACC4\uC815\uC744 \uC120\uD0DD\uD569\uB2C8\uB2E4.",
+    "Kor": "현재 원격 작업이 끝난 뒤 계정을 선택합니다.",
     "Eng": "Account selection waits until the current remote operation completes."
   },
   {
     "Id": 1837,
     "Name": "GitHubExistingAccountPlaceholder",
-    "Kor": "\uAE30\uC874 GCM \uACC4\uC815",
+    "Kor": "기존 GCM 계정",
     "Eng": "Existing GCM account"
   },
   {
     "Id": 1838,
     "Name": "GitHubRemoteUserNameAutomationName",
-    "Kor": "\uC774 \uC6D0\uACA9\uC758 GitHub \uC0AC\uC6A9\uC790\uBA85",
+    "Kor": "이 원격의 GitHub 사용자명",
     "Eng": "GitHub username for this remote"
   },
   {
     "Id": 1839,
     "Name": "GitHubSelectAccountLabel",
-    "Kor": "\uC774 \uC6D0\uACA9\uC5D0 \uC0AC\uC6A9",
+    "Kor": "이 원격에 사용",
     "Eng": "Use for this remote"
   },
   {
     "Id": 1840,
     "Name": "GitHubAddAccountLabel",
-    "Kor": "\uB2E4\uB978 GitHub \uACC4\uC815 \uCD94\uAC00\u2026",
-    "Eng": "Add another GitHub account\u2026"
+    "Kor": "다른 GitHub 계정 추가…",
+    "Eng": "Add another GitHub account…"
   },
   {
     "Id": 1841,
     "Name": "CredentialHelperHeading",
-    "Kor": "\uC790\uACA9 \uC99D\uBA85 \uB3C4\uC6B0\uBBF8",
+    "Kor": "자격 증명 도우미",
     "Eng": "Credential helper"
   },
   {
     "Id": 1842,
     "Name": "RemoteUrlsHeading",
-    "Kor": "\uC6D0\uACA9 URL",
+    "Kor": "원격 URL",
     "Eng": "Remote URLs"
   },
   {
     "Id": 1843,
     "Name": "SettingsTitle",
-    "Kor": "\uC124\uC815",
+    "Kor": "설정",
     "Eng": "Settings"
   },
   {
@@ -1886,19 +1886,19 @@
   {
     "Id": 2401,
     "Name": "MainOpenFolderToolTip",
-    "Kor": "\uD604\uC7AC \uC800\uC7A5\uC18C \uD3F4\uB354 \uC5F4\uAE30",
+    "Kor": "현재 저장소 폴더 열기",
     "Eng": "Open the current repository folder"
   },
   {
     "Id": 2402,
     "Name": "MainOpenFolderAutomationName",
-    "Kor": "\uD30C\uC77C \uD0D0\uC0C9\uAE30\uC5D0\uC11C \uD604\uC7AC \uC800\uC7A5\uC18C \uC5F4\uAE30",
+    "Kor": "파일 탐색기에서 현재 저장소 열기",
     "Eng": "Open the current repository in the file manager"
   },
   {
     "Id": 2403,
     "Name": "MainOpenFolderAction",
-    "Kor": "\uC800\uC7A5\uC18C \uD3F4\uB354 \uC5F4\uAE30",
+    "Kor": "저장소 폴더 열기",
     "Eng": "Open repository folder"
   },
   {
@@ -1910,139 +1910,139 @@
   {
     "Id": 2405,
     "Name": "MainConsoleToolTip",
-    "Kor": "\uD604\uC7AC \uC800\uC7A5\uC18C \uB8E8\uD2B8\uC5D0\uC11C \uCF58\uC194 \uC5F4\uAE30",
+    "Kor": "현재 저장소 루트에서 콘솔 열기",
     "Eng": "Open a console at the current repository root"
   },
   {
     "Id": 2406,
     "Name": "MainConsoleAutomationName",
-    "Kor": "\uD604\uC7AC \uC800\uC7A5\uC18C \uB8E8\uD2B8\uC5D0\uC11C \uCF58\uC194 \uC5F4\uAE30",
+    "Kor": "현재 저장소 루트에서 콘솔 열기",
     "Eng": "Open a console at the current repository root"
   },
   {
     "Id": 2407,
     "Name": "MainConsole",
-    "Kor": "\uCF58\uC194",
+    "Kor": "콘솔",
     "Eng": "Console"
   },
   {
     "Id": 2408,
     "Name": "ConflictWindowTitle",
-    "Kor": "\uCDA9\uB3CC \uD574\uACB0",
+    "Kor": "충돌 해결",
     "Eng": "Resolve conflicts"
   },
   {
     "Id": 2409,
     "Name": "DiscardResolutionTitle",
-    "Kor": "\uD574\uACB0 \uC911\uC778 \uBCC0\uACBD\uC744 \uD3D0\uAE30\uD560\uAE4C\uC694?",
+    "Kor": "해결 중인 변경을 폐기할까요?",
     "Eng": "Discard resolution edits?"
   },
   {
     "Id": 2410,
     "Name": "DiscardResolutionCloseAppMessage",
-    "Kor": "Bough\uB97C \uB2EB\uC73C\uBA74 \uC800\uC7A5\uD558\uC9C0 \uC54A\uC740 \uCDA9\uB3CC \uD574\uACB0 \uB0B4\uC6A9\uC774 \uD3D0\uAE30\uB429\uB2C8\uB2E4.",
+    "Kor": "Bough를 닫으면 저장하지 않은 충돌 해결 내용이 폐기됩니다.",
     "Eng": "Closing Bough will discard unsaved resolution edits."
   },
   {
     "Id": 2411,
     "Name": "DiscardResolutionChangeRepositoryMessage",
-    "Kor": "\uC800\uC7A5\uC18C\uB97C \uBC14\uAFB8\uBA74 \uC800\uC7A5\uD558\uC9C0 \uC54A\uC740 \uCDA9\uB3CC \uD574\uACB0 \uB0B4\uC6A9\uC774 \uD3D0\uAE30\uB429\uB2C8\uB2E4.",
+    "Kor": "저장소를 바꾸면 저장하지 않은 충돌 해결 내용이 폐기됩니다.",
     "Eng": "Changing repositories will discard unsaved resolution edits."
   },
   {
     "Id": 2412,
     "Name": "DiscardResolutionCloseConflictMessage",
-    "Kor": "\uACB0\uACFC \uD30C\uC77C\uC5D0 \uC800\uC7A5\uD558\uC9C0 \uC54A\uC740 \uBCC0\uACBD\uC774 \uC788\uC2B5\uB2C8\uB2E4. \uCDA9\uB3CC \uCC3D\uC744 \uB2EB\uACE0 \uBCC0\uACBD\uC744 \uD3D0\uAE30\uD560\uAE4C\uC694?",
+    "Kor": "결과 파일에 저장하지 않은 변경이 있습니다. 충돌 창을 닫고 변경을 폐기할까요?",
     "Eng": "The result has unsaved edits. Close the conflict window and discard them?"
   },
   {
     "Id": 2413,
     "Name": "DiscardResolutionConfirm",
-    "Kor": "\uBCC0\uACBD \uD3D0\uAE30",
+    "Kor": "변경 폐기",
     "Eng": "Discard edits"
   },
   {
     "Id": 2414,
     "Name": "MainSelectRepositoryPath",
-    "Kor": "\uC800\uC7A5\uC18C \uACBD\uB85C\uB97C \uC120\uD0DD\uD558\uC138\uC694.",
+    "Kor": "저장소 경로를 선택하세요.",
     "Eng": "Select a repository path."
   },
   {
     "Id": 2415,
     "Name": "MainWorkingFileRestored",
-    "Kor": "\uC791\uC5C5 \uD30C\uC77C {0}\uC744(\uB97C) \uBCF5\uC6D0\uD588\uC2B5\uB2C8\uB2E4.",
+    "Kor": "작업 파일 {0}을(를) 복원했습니다.",
     "Eng": "Restored working file {0}."
   },
   {
     "Id": 2416,
     "Name": "MainCommitCompleted",
-    "Kor": "{0} \uCEE4\uBC0B\uC744 \uB9CC\uB4E4\uC5C8\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0} 커밋을 만들었습니다.",
     "Eng": "Committed {0}."
   },
   {
     "Id": 2417,
     "Name": "ConflictResolvedExternallyWithUnsavedEdits",
-    "Kor": "\uCDA9\uB3CC\uC774 Bough \uBC16\uC5D0\uC11C \uD574\uACB0\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC800\uC7A5\uD558\uC9C0 \uC54A\uC740 \uB0B4\uC6A9\uC744 \uD3D0\uAE30\uD558\uB824\uBA74 \uC774 \uCC3D\uC744 \uB2EB\uC73C\uC138\uC694.",
+    "Kor": "충돌이 Bough 밖에서 해결되었습니다. 저장하지 않은 내용을 폐기하려면 이 창을 닫으세요.",
     "Eng": "The conflict was resolved outside Bough. Close this window to discard unsaved edits."
   },
   {
     "Id": 2418,
     "Name": "ConflictMarkerMissing",
-    "Kor": "{0}\uD589\uC5D0\uC11C \uC2DC\uC791\uD558\uB294 \uCDA9\uB3CC\uC5D0 {1} \uB9C8\uCEE4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0}행에서 시작하는 충돌에 {1} 마커가 없습니다.",
     "Eng": "Conflict beginning at line {0} has no {1} marker."
   },
   {
     "Id": 2419,
     "Name": "ConflictTextMarkersMissing",
-    "Kor": "{0} \uD30C\uC77C\uC5D0 \uD14D\uC2A4\uD2B8 \uCDA9\uB3CC \uB9C8\uCEE4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0} 파일에 텍스트 충돌 마커가 없습니다.",
     "Eng": "{0} does not contain text conflict markers."
   },
   {
     "Id": 2420,
     "Name": "ConflictBinaryFileCannotEdit",
-    "Kor": "{0}\uC740(\uB294) \uBC14\uC774\uB108\uB9AC \uD30C\uC77C\uC774\uB77C \uD14D\uC2A4\uD2B8\uB85C \uD3B8\uC9D1\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "{0}은(는) 바이너리 파일이라 텍스트로 편집할 수 없습니다.",
     "Eng": "{0} is a binary file and cannot be edited as text."
   },
   {
     "Id": 2421,
     "Name": "RepositorySelectedFileNoParent",
-    "Kor": "\uC120\uD0DD\uD55C \uD30C\uC77C {0}\uC758 \uC0C1\uC704 \uD3F4\uB354\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Kor": "선택한 파일 {0}의 상위 폴더가 없습니다.",
     "Eng": "The selected file {0} has no parent directory."
   },
   {
     "Id": 2422,
     "Name": "RepositoryConflictInvalidUtf8",
-    "Kor": "{0}\uC740(\uB294) \uC720\uD6A8\uD55C UTF-8 \uD14D\uC2A4\uD2B8\uAC00 \uC544\uB2D9\uB2C8\uB2E4.",
+    "Kor": "{0}은(는) 유효한 UTF-8 텍스트가 아닙니다.",
     "Eng": "{0} is not valid UTF-8 text."
   },
   {
     "Id": 2423,
     "Name": "RepositoryConflictFileChanged",
-    "Kor": "{0} \uD30C\uC77C\uC774 \uB514\uC2A4\uD06C\uC5D0\uC11C \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC800\uC7A5\uD558\uAE30 \uC804\uC5D0 \uC0C8\uB85C \uACE0\uCE58\uC138\uC694.",
+    "Kor": "{0} 파일이 디스크에서 변경되었습니다. 저장하기 전에 새로 고치세요.",
     "Eng": "{0} changed on disk. Refresh before saving."
   },
   {
     "Id": 2424,
     "Name": "RepositoryRelativePathRequired",
-    "Kor": "\uC800\uC7A5\uC18C \uC0C1\uB300 \uACBD\uB85C\uAC00 \uD544\uC694\uD569\uB2C8\uB2E4: {0}.",
+    "Kor": "저장소 상대 경로가 필요합니다: {0}.",
     "Eng": "A repository-relative path is required: {0}."
   },
   {
     "Id": 2425,
     "Name": "RepositoryPathOutsideRoot",
-    "Kor": "\uACBD\uB85C\uAC00 \uC800\uC7A5\uC18C \uBC16\uC744 \uAC00\uB9AC\uD0B5\uB2C8\uB2E4: {0}.",
+    "Kor": "경로가 저장소 밖을 가리킵니다: {0}.",
     "Eng": "The path is outside the repository: {0}."
   },
   {
     "Id": 2426,
     "Name": "ConflictIncomingIndexStage3",
-    "Kor": "\uBC1B\uB294 \uBCC0\uACBD \u00B7 \uC778\uB371\uC2A4 \uB2E8\uACC4 3",
-    "Eng": "Incoming change \u00B7 index stage 3"
+    "Kor": "받는 변경 · 인덱스 단계 3",
+    "Eng": "Incoming change · index stage 3"
   },
   {
     "Id": 2427,
     "Name": "MainInvalidRepositoryPath",
-    "Kor": "\uC800\uC7A5\uC18C \uACBD\uB85C\uAC00 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4: {0}",
+    "Kor": "저장소 경로가 올바르지 않습니다: {0}",
     "Eng": "Invalid repository path: {0}"
   },
   {
@@ -4982,8 +4982,8 @@
   {
     "Id": 2927,
     "Name": "ConflictBatchCurrentFileLabel",
-    "Kor": "현재 파일의 남은 충돌 구간 {0}개",
-    "Eng": "{0} unresolved sections remaining in this file"
+    "Kor": "이 파일의 미해결 구간 {0}개",
+    "Eng": "{0} unresolved sections in this file"
   },
   {
     "Id": 2928,
@@ -5006,8 +5006,8 @@
   {
     "Id": 2931,
     "Name": "ConflictBatchApplyButton",
-    "Kor": "일괄 적용",
-    "Eng": "Apply to remaining"
+    "Kor": "남은 구간 일괄 선택",
+    "Eng": "Choose remaining sections"
   },
   {
     "Id": 2932,
@@ -5258,26 +5258,26 @@
   {
     "Id": 2973,
     "Name": "StopTrackingSelectionCount",
-    "Kor": "선택한 추적 파일 {0}개 추적 중지",
-    "Eng": "Stop tracking {0} selected files"
+    "Kor": "선택한 추적 파일 {0}개 추적 중지 및 무시",
+    "Eng": "Stop tracking and ignore {0} selected files"
   },
   {
     "Id": 2974,
     "Name": "StopTrackingTitle",
-    "Kor": "파일 추적 중지",
-    "Eng": "Stop tracking files"
+    "Kor": "파일 추적 중지 및 무시",
+    "Eng": "Stop tracking and ignore files"
   },
   {
     "Id": 2975,
     "Name": "StopTrackingDescription",
-    "Kor": "추적 파일 {0}개를 Git 인덱스에서만 제거합니다. 작업 파일은 삭제하지 않으며, 파일 삭제가 스테이징된 변경으로 표시됩니다. 계속 추적하지 않으려면 작업 후 별도로 무시 규칙을 추가하세요.",
-    "Eng": "Remove {0} tracked files from the Git index only. Working files are kept, and their deletion is staged. Add ignore rules separately afterward if they should remain untracked."
+    "Kor": "선택한 추적 파일 {0}개의 경로를 저장소 루트의 .gitignore에 추가하고 Git 인덱스에서 제거합니다. 작업 파일은 남겨두며 삭제가 스테이징됩니다. .gitignore 변경은 자동으로 스테이징하지 않습니다.",
+    "Eng": "Add the paths of {0} selected tracked files to the repository root .gitignore and remove them from the Git index. Working files are kept, and their deletion is staged. The .gitignore change is not staged automatically."
   },
   {
     "Id": 2976,
     "Name": "StopTrackingConfirm",
-    "Kor": "추적 중지",
-    "Eng": "Stop tracking"
+    "Kor": "추적 중지 및 무시",
+    "Eng": "Stop tracking and ignore"
   },
   {
     "Id": 2977,
@@ -5306,8 +5306,8 @@
   {
     "Id": 2981,
     "Name": "StopTrackingContextMenu",
-    "Kor": "추적 중지",
-    "Eng": "Stop tracking"
+    "Kor": "추적 중지 및 무시…",
+    "Eng": "Stop tracking and ignore…"
   },
   {
     "Id": 2982,
@@ -6010,5 +6010,59 @@
     "Name": "AppLanguageSaved",
     "Kor": "언어를 변경했습니다.",
     "Eng": "Language changed."
+  },
+  {
+    "Id": 3099,
+    "Name": "WorkingStopTrackingPartialFailure",
+    "Kor": ".gitignore에 무시 규칙을 추가했지만 추적 중지 중 오류가 발생했습니다. 스테이징 상태를 확인하세요.\n{0}",
+    "Eng": "Ignore rules were added to .gitignore, but stopping tracking encountered an error. Review the staged changes.\n{0}"
+  },
+  {
+    "Id": 3100,
+    "Name": "RemotePullFastForwardUnavailable",
+    "Kor": "빠른 전진으로 통합할 수 없습니다. Pull 메뉴에서 병합 또는 재배치를 선택하세요.",
+    "Eng": "Fast-forward is not possible. Choose merge or rebase from the Pull menu."
+  },
+  {
+    "Id": 3101,
+    "Name": "RemotePullFetchFailedSummary",
+    "Kor": "원격 변경을 가져오지 못했습니다. 자세한 내용을 확인하세요.",
+    "Eng": "Could not fetch remote changes. See details."
+  },
+  {
+    "Id": 3102,
+    "Name": "RemotePullApplyFailedSummary",
+    "Kor": "가져온 변경을 현재 브랜치에 반영하지 못했습니다. 자세한 내용을 확인하세요.",
+    "Eng": "Could not apply incoming changes to the current branch. See details."
+  },
+  {
+    "Id": 3103,
+    "Name": "RemotePushFailedSummary",
+    "Kor": "원격에 변경을 보내지 못했습니다. 자세한 내용을 확인하세요.",
+    "Eng": "Could not push changes. See details."
+  },
+  {
+    "Id": 3104,
+    "Name": "RemoteFetchFailedSummary",
+    "Kor": "{0} 가져오기에 실패했습니다. 자세한 내용을 확인하세요.",
+    "Eng": "Fetch failed for {0}. See details."
+  },
+  {
+    "Id": 3105,
+    "Name": "RemoteOperationDetails",
+    "Kor": "자세히",
+    "Eng": "Details"
+  },
+  {
+    "Id": 3106,
+    "Name": "ConflictSelectionSummary",
+    "Kor": "{0}/{1}개 구간 선택",
+    "Eng": "{0}/{1} sections chosen"
+  },
+  {
+    "Id": 3107,
+    "Name": "WorkingMergeMessageReadFailed",
+    "Kor": "병합 커밋 메시지를 읽지 못했습니다: {0}\n{1}",
+    "Eng": "Could not read the merge commit message: {0}\n{1}"
   }
 ]

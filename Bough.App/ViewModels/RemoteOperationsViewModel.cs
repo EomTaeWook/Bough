@@ -60,6 +60,7 @@ namespace Bough.App.ViewModels
         private string _operationStageText;
         private string _transferStatusText;
         private string _pullSummaryText;
+        private string _operationDetailsText = string.Empty;
         private bool _isBusy;
         private bool _isLoading;
         private bool _prune;
@@ -247,10 +248,25 @@ namespace Bough.App.ViewModels
                 if (SetProperty(ref _pullSummaryText, value) == true)
                 {
                     OnPropertyChanged(nameof(HasPullSummary));
+                    OnPropertyChanged(nameof(HasOperationDetails));
                 }
             }
         }
         public bool HasPullSummary { get { return PullSummaryText.Length > 0; } }
+        public string OperationDetailsText
+        {
+            get { return _operationDetailsText; }
+            private set
+            {
+                if (SetProperty(ref _operationDetailsText, value))
+                {
+                    OnPropertyChanged(nameof(HasOperationDiagnostic));
+                    OnPropertyChanged(nameof(HasOperationDetails));
+                }
+            }
+        }
+        public bool HasOperationDiagnostic { get { return OperationDetailsText.Length > 0; } }
+        public bool HasOperationDetails { get { return HasOperationDiagnostic || HasPullSummary; } }
         public string SelectedRemote
         {
             get { return _selectedRemote; }
@@ -305,6 +321,7 @@ namespace Bough.App.ViewModels
             OperationStageText = string.Empty;
             TransferStatusText = string.Empty;
             PullSummaryText = string.Empty;
+            OperationDetailsText = string.Empty;
             IsBusy = false;
             IsLoading = false;
             NotifyState();
@@ -502,9 +519,9 @@ namespace Bough.App.ViewModels
                     message += _strings.Format("RemoteFetchFailures", string.Join("; ", failures));
                     if (result.SucceededRemotes.Count > 0)
                     {
-                        return new OperationExecutionResult(message, RemoteOperationOutcome.PartiallySucceeded);
+                        return new OperationExecutionResult(_strings.Format("RemoteFetchFailedSummary", string.Join(", ", result.FailedRemotes.Select(failure => failure.Remote))), RemoteOperationOutcome.PartiallySucceeded, message);
                     }
-                    return new OperationExecutionResult(message, RemoteOperationOutcome.Failed);
+                    return new OperationExecutionResult(_strings.Format("RemoteFetchFailedSummary", string.Join(", ", result.FailedRemotes.Select(failure => failure.Remote))), RemoteOperationOutcome.Failed, message);
                 }
                 return new OperationExecutionResult(message, RemoteOperationOutcome.Succeeded);
             });
@@ -752,6 +769,7 @@ namespace Bough.App.ViewModels
             OperationStageText = string.Empty;
             TransferStatusText = string.Empty;
             PullSummaryText = string.Empty;
+            OperationDetailsText = string.Empty;
             OperationExecutionResult completedResult = null;
             try
             {
@@ -764,6 +782,7 @@ namespace Bough.App.ViewModels
                 {
                     return false;
                 }
+                OperationDetailsText = completedResult.Details;
                 if (OperationStageText.Length > 0)
                 {
                     SetLocalizedOperationStageText(new LocalizedText("RemoteStageCheckingState"));
@@ -831,6 +850,10 @@ namespace Bough.App.ViewModels
                 {
                     string refreshError = await RefreshAfterOutcomeAsync(repository, request);
                     SetLocalizedStatusText(new LocalizedText(exception));
+                    if (exception is GitRemoteOperationException remoteException)
+                    {
+                        OperationDetailsText = remoteException.Details;
+                    }
                     if (completedResult == null)
                     {
                         LastOperationOutcome = RemoteOperationOutcome.Failed;
@@ -921,6 +944,14 @@ namespace Bough.App.ViewModels
 
         private static bool IsPullDivergence(Exception exception)
         {
+            if (exception is GitRemoteOperationException remoteException)
+            {
+                if (remoteException.ErrorCode == "RemotePullFastForwardUnavailable")
+                {
+                    return true;
+                }
+            }
+
             string diagnostic = exception.Message;
             if (exception is GitException gitException)
             {
@@ -983,14 +1014,16 @@ namespace Bough.App.ViewModels
 
         private class OperationExecutionResult
         {
-            public OperationExecutionResult(string message, RemoteOperationOutcome outcome)
+            public OperationExecutionResult(string message, RemoteOperationOutcome outcome, string details = "")
             {
                 Message = message;
                 Outcome = outcome;
+                Details = details;
             }
 
             public string Message { get; }
             public RemoteOperationOutcome Outcome { get; }
+            public string Details { get; }
         }
     }
 }
