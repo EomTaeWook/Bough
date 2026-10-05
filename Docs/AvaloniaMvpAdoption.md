@@ -54,11 +54,11 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 
 `Composition/MainWindowChildren`과 Console 호출부는 `Core/Interfaces/ITerminalLauncher`를 생성자 주입받는다. `App.axaml.cs`가 시작 시 OS를 판별해 `WindowsTerminalLauncher`·`MacOsTerminalLauncher`·`LinuxTerminalLauncher` 중 하나를 Singleton으로 등록하며, 지원하지 않는 OS에는 오류를 반환하는 구현을 등록한다. 공통 추상 `TerminalLauncher`는 저장소 확인·프로세스 실행·Git 경로 연결만 맡고 OS 분기를 갖지 않는다.
 
-각 구현은 공유 `GitExecutableSettings`의 현재 경로를 읽어 저장소 루트에서 연다. 설정한 Git 실행 파일의 폴더만 해당 콘솔의 `PATH` 앞에 연결한다. 경로를 지정하지 않았으면 기존 콘솔 환경을 사용하며 배포본 내부 경로를 추측하거나 시스템 환경·사용자 셸 프로필을 저장하지 않는다.
+각 구현은 공유 `GitExecutableSettings`의 현재 경로를 읽어 저장소 루트에서 연다. 설정한 Git 실행 파일의 폴더만 해당 콘솔의 `PATH` 앞에 연결한다. Windows는 해당 Git 배포본의 `bin/bash.exe`를 찾아 Git Bash를 우선 사용한다. 경로를 지정하지 않았으면 PATH의 Git을 기준으로 찾고, PATH에 Git이 없으면 Git for Windows의 기본 설치 위치를 확인한다. Bash의 자체 환경 초기화는 Git for Windows 시작 실행 파일에 맡기며 Bough가 내부 라이브러리 경로를 PATH에 나열하지 않는다. 시스템 환경·사용자 셸 프로필은 저장하거나 수정하지 않는다.
 
 | 구현 | 실행과 초기화 |
 | --- | --- |
-| Windows | Windows Terminal의 PowerShell, 실행 실패 시 독립 PowerShell. 시작 명령에서 Git 경로·저장소 이동·Git 버전 표시를 처리한다. |
+| Windows | Windows Terminal의 새 창에서 Git Bash를 우선 연다. 인코딩된 PowerShell 시작 명령이 저장소·Git 경로와 `CHERE_INVOKING`을 설정한 뒤 `bin/bash.exe --login -i`를 실행하고 Bash 종료 후 함께 끝난다. Bash가 없으면 기존 PowerShell과 Git 버전 표시를 사용한다. Terminal 실행 실패 시 독립 콘솔에 같은 초기화를 적용한다. |
 | macOS | Terminal에 저장소 이동과 Git 경로를 포함한 셸 시작 명령을 전달한다. |
 | Linux | 기존 `x-terminal-emulator`에 저장소 작업 디렉터리와 자식 프로세스 환경을 전달한다. |
 

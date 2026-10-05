@@ -17,6 +17,10 @@
 
 성공 후 자동으로 닫히는 Pull 창에서 커밋·변경 파일 요약을 제거했다. Core의 요약용 `rev-list`·`log`·`merge-base`·`diff` 조회와 ViewModel의 요약 상태도 제거하고, 작업 대상·진행 단계·전송 상태는 유지했다. 실패 시 짧은 이유와 접힌 Git 진단을 표시하며, 성공 후 상태 갱신과 자동 닫기·충돌 연결은 기존 흐름을 따른다. 관련 설계·아키텍처 문서를 갱신했으며 빌드·테스트·UI 검증은 미실시다.
 
+## 2026-10-05 Windows Console 후속 정리
+
+Windows Console은 Windows Terminal의 새 창에서 Git Bash를 우선 열도록 변경했다. 설정한 Git 배포본의 `bin/bash.exe`를 사용하며 Git 미지정 시 PATH와 기본 설치 위치를 기준으로 찾는다. 시작 명령은 저장소 루트·Git 경로와 `CHERE_INVOKING`을 전달하고 실제 Git Bash 프롬프트를 사용한다. Bash가 없으면 기존 PowerShell, Terminal 실행 실패 시 독립 콘솔로 이어진다. Windows 구현에만 탐색과 초기화를 두고 OS별 DI 계약을 유지했다. 빌드·테스트·터미널 실행 검증은 미실시다.
+
 ## 기존 반영된 기능
 
 - Settings는 OS UI 언어와 독립된 한국어·영어 선택을 제공하며 기본값은 한국어다. `LanguageSelectionPresenter`가 사용자별 `language.json`에 저장한 뒤 공유 `StringHelper.LanguageChanged`를 전파해 즉시 적용한다. `LanguageChangeBinding`은 창·컨트롤 수명과 원격 패널의 주입 시점을 처리하고 라벨·메뉴·툴팁·접근성·목록 항목·키 기반 상태를 갱신한다. 입력·선택을 보존하고 Git을 다시 조회하지 않는다. 레거시 조합 작업 로그는 기존 문구를 보존하며 이번 언어 연결 변경은 검증 미실시다.

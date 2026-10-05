@@ -137,9 +137,9 @@ Bough의 상위 화면은 **Local Changes**, **History**로 나눈다. 저장소
 ## Terminal
 
 - 현재 저장소에서 상단 도구막대의 **Console**을 누르면 작업 디렉터리를 저장소 루트로 설정한다. 사용자가 명령을 입력하고 출력·오류·종료 상태를 볼 수 있어야 한다.
-- Bough의 **Git 실행 파일** 설정을 콘솔에도 적용한다. 설정한 실행 파일의 폴더만 해당 콘솔의 `PATH` 앞에 넣고 배포본의 내부 경로를 추측해 추가하지 않는다. 실행 파일을 지정하지 않았으면 콘솔의 기존 환경을 사용한다. Windows Terminal 안의 PowerShell과 Terminal이 없을 때의 PowerShell 대체 실행은 같은 초기화를 사용한다. macOS Terminal은 시작 명령에 경로 초기화를 전달하고 Linux 터미널에는 자식 프로세스 환경으로 전달한다. 시스템 `PATH`나 사용자 셸 프로필을 저장·수정하지 않는다.
-- Windows에서는 Windows Terminal 안의 PowerShell을 열고, Terminal을 실행할 수 없으면 독립 PowerShell로 연다. 시작 시 `git --version`을 표시해 Git 연결 여부를 바로 볼 수 있게 한다. 추가 셸을 자동 탐색하거나 설치하지 않는다.
+- Bough의 **Git 실행 파일** 설정을 콘솔에도 적용한다. 설정한 실행 파일의 폴더만 해당 콘솔의 `PATH` 앞에 넣고 배포본의 내부 라이브러리 경로를 나열해 추가하지 않는다. Windows의 Git Bash는 같은 Git 배포본에 포함된 `bin/bash.exe` 시작 실행 파일을 사용해 셸 환경을 초기화한다. macOS Terminal은 시작 명령에 경로 초기화를 전달하고 Linux 터미널에는 자식 프로세스 환경으로 전달한다. 시스템 `PATH`나 사용자 셸 프로필을 저장·수정하지 않는다. [Git for Windows 시작 실행 파일](https://gitforwindows.org/git-wrapper.html)
+- Windows에서는 Windows Terminal의 새 창에서 Git Bash를 우선 연다. Git 경로가 지정돼 있으면 해당 배포본에서 Bash를 찾고, 미지정이면 PATH의 Git을 기준으로 찾는다. PATH에 Git이 없으면 시스템·사용자 기본 설치 위치를 확인한다. Bash가 없으면 PowerShell을 열고 시작 시 `git --version`을 표시한다. Terminal을 실행할 수 없으면 독립 콘솔에서 같은 셸과 초기화를 사용한다. 추가 프로그램을 설치하거나 Terminal 프로필을 변경하지 않는다. [Windows Terminal 실행 인수](https://learn.microsoft.com/en-us/windows/terminal/command-line-arguments)
 - 앱 시작 시 현재 OS의 터미널 구현 하나를 `ITerminalLauncher`로 DI 등록한다. Windows·macOS·Linux의 실행 인수와 초기화는 각 구현이 맡으며 Console 호출부는 OS를 판별하지 않는다.
 - 최종 목표는 앱 안의 대화형 터미널이다. Windows의 ConPTY, macOS/Linux의 PTY가 필요한 명령도 고려한다. 첫 구현은 운영체제 터미널을 저장소 루트에서 여는 동작으로 시작할 수 있다.
-- 시작 초기화는 Git 경로 연결·저장소 이동과 PowerShell의 버전 표시에 한정한다. Git 변경 작업은 사용자가 입력한 명령으로 실행하며 터미널에서 돌아오면 저장소 상태를 새로 고칠 수 있다.
+- 시작 초기화는 Git 경로 연결·저장소 이동·Bash의 대화형 로그인 환경과 PowerShell의 버전 표시에 한정한다. Git Bash에는 실제 셸의 경로·브랜치 프롬프트를 사용한다. Git 변경 작업은 사용자가 입력한 명령으로 실행하며 터미널에서 돌아오면 저장소 상태를 새로 고칠 수 있다.
 
