@@ -2,6 +2,12 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
+## 2026-10-07 Stash 완료 계약·리소스 준비
+
+Stash 보관 완료의 `Task<StashMutationResult>` 반환 계약과 Save 전용 `Task<GitWorktreeStatus> RefreshStashSaveWorktreeAsync` 조회 계약을 확정해 작업자 1·3에게 전달했다. Git 성공과 입력 오류·갱신 오류를 보존하고, 고정 상태 스냅샷을 공통 완료에 전달하며 현재 조회 실패를 과거 큐 작업 오류와 구분한다. MainWindow는 부분 구현 상태이고 Save 전용 조회 API 인계를 기다린다. 창 수명·읽기 재시도 구현도 진행 중이므로 코드 완료로 기록하지 않는다.
+
+신규 `StashSavedRefreshFailed`, `StashSaveRefreshRetry`, `StashSaveRefreshInProgress`, `StashSaveCompletionResultMissing` 네 키를 ID 3125~3128로 Excel·JSON에 병합했다. 병합 중 이전 워크시트에 저장된 예약 XML 네임스페이스 접두사 표기 문제를 수정했으며 기존 셀 내용은 유지했다. 빌드·테스트·UI 실행·diff check·리소스 대조 등 추가 검증은 수행하지 않았다.
+
 ## 2026-10-07 History 상세 오류 상태 분리
 
 선택 커밋 상세·변경 파일 조회 오류를 원래 예외로 보관하고 `HasDetailError`·`DetailErrorText`로 표시하도록 반영했다. Commit·Changes 탭에서 같은 상세 오류를 현재 언어의 GitErrorLocalizer로 표시한다. 목록·메뉴의 `ErrorText`가 상세 실패나 성공한 빈 결과 판정에 섞이지 않도록 분리했으며, 기존 로딩·응답 guard·성공 후 빈 상태 판정은 유지한다. 새 문자열이나 외부 API·DI 연결은 추가하지 않았다. 이번 변경은 빌드·테스트·UI 실행·diff check·리소스 대조 등 추가 검증을 수행하지 않았다.

@@ -20,6 +20,7 @@
 - Local Changes: 변경 목록, diff·줄 번호·선택·복사, Stage/Unstage, 커밋·Amend, 변경 버리기·미추적 파일 삭제·추적 중지·무시, 큰 파일 확인, 목록·미리보기·커밋 영역 크기 저장.
 - Stash: 보관 입력 창과 대상 고정, 목록·미리보기, Apply/Pop/Drop, 부분 실패와 작업 트리 변경 여부에 따른 갱신 계약. 취소·Drop에서 작업 트리를 불필요하게 다시 읽지 않는다.
 - 보관 창의 완료는 현재 요청 집합과 미해결 오류로 판정한다. `Succeeded`는 Git 변경 성공을 유지하고 `CompleteStashSaveAsync`는 후속 갱신 오류가 포함된 `StashMutationResult`를 반환한다. 보관 성공 뒤 갱신 재시도는 읽기만 수행한다. Unstaged 메뉴는 메뉴 시점 저장소·경로를 고정하고 무효 대상의 이유를 표시한다.
+- Save 완료에 상태가 없으면 `Task<GitWorktreeStatus> RefreshStashSaveWorktreeAsync(GitRepository repository)`로 고정 저장소의 상태를 한 번 조회·적용하고 동일 스냅샷을 반환한다. 저장소·조회 요청 대체로 적용하지 않으면 null을 반환하고, 현재 조회·적용 실패는 예외를 전달한다. 이전 큐 작업 오류를 이번 조회 실패로 사용하지 않는다. Core 조회와 Presenter의 요청·적용 책임을 유지하며 Apply/Pop용 기존 API는 보존한다. 실제 구현·인계 상태는 CurrentStatus를 따른다.
 - Git Settings: Git 실행 파일·작성자·인증 계정·테마·Bough 기본 Pull 방식과 앱 언어의 즉시 적용·저장. GitHub 계정 인증과 커밋 작성자를 구분하며 `credential.helper` 출처·값 목록은 노출하지 않는다.
 - 표시 계약은 [화면과 동작](../Design/GitClientWorkflow.md), [원격과 Stash](../Design/RemoteAndStash.md), [GitHub 계정](../Design/GitHubAccountSwitching.md), [테마](../Design/AppearanceTheme.md)를 따른다.
 - MainWindow와 원격 실행 파일은 수정하지 않고 갱신·상태·설정 변경 이벤트 계약을 총괄에게 전달한다.
