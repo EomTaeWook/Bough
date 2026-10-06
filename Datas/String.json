@@ -6064,5 +6064,101 @@
     "Name": "WorkingMergeMessageReadFailed",
     "Kor": "병합 커밋 메시지를 읽지 못했습니다: {0}\n{1}",
     "Eng": "Could not read the merge commit message: {0}\n{1}"
+  },
+  {
+    "Id": 3108,
+    "Name": "FileHistoryTitle",
+    "Kor": "파일 히스토리",
+    "Eng": "File history"
+  },
+  {
+    "Id": 3109,
+    "Name": "FileHistoryBaseline",
+    "Kor": "{0} · 기준 커밋 {1}",
+    "Eng": "{0} · Base commit {1}"
+  },
+  {
+    "Id": 3110,
+    "Name": "FileHistoryCount",
+    "Kor": "파일 이력 {0}개 · 최대 100개",
+    "Eng": "{0} file commits · up to 100"
+  },
+  {
+    "Id": 3111,
+    "Name": "FileHistoryEmpty",
+    "Kor": "선택한 기준 커밋까지 이 파일의 이력이 없습니다.",
+    "Eng": "No history for this file up to the base commit."
+  },
+  {
+    "Id": 3112,
+    "Name": "FileHistorySelectCommit",
+    "Kor": "왼쪽에서 커밋을 선택하세요.",
+    "Eng": "Select a commit on the left."
+  },
+  {
+    "Id": 3113,
+    "Name": "FileHistorySelectedCommit",
+    "Kor": "{0} · {1} · {2}",
+    "Eng": "{0} · {1} · {2}"
+  },
+  {
+    "Id": 3114,
+    "Name": "FileHistoryMetadataOnly",
+    "Kor": "텍스트 내용 변경이 없습니다. 경로·권한 등의 변경일 수 있습니다.",
+    "Eng": "No text changes. This may be a path or permission change."
+  },
+  {
+    "Id": 3115,
+    "Name": "FileHistoryTimelineTip",
+    "Kor": "날짜 위치를 누르면 가장 가까운 파일 커밋을 선택합니다.",
+    "Eng": "Click a date position to select the nearest file commit."
+  },
+  {
+    "Id": 3116,
+    "Name": "FileHistoryRefreshAction",
+    "Kor": "새로 고침",
+    "Eng": "Refresh"
+  },
+  {
+    "Id": 3117,
+    "Name": "FileHistoryTimelineSelection",
+    "Kor": "선택 {0}/{1} · {2}",
+    "Eng": "Selected {0}/{1} · {2}"
+  },
+  {
+    "Id": 3118,
+    "Name": "FileHistoryCancelAction",
+    "Kor": "조회 중단",
+    "Eng": "Stop loading"
+  },
+  {
+    "Id": 3119,
+    "Name": "FileHistoryCloseAction",
+    "Kor": "닫기",
+    "Eng": "Close"
+  },
+  {
+    "Id": 3120,
+    "Name": "FileHistoryCanceled",
+    "Kor": "조회가 중단되었습니다. 새로 고침하거나 다른 커밋을 선택할 수 있습니다.",
+    "Eng": "Loading stopped. Refresh or select another commit to continue."
+  },
+  {
+    "Id": 3121,
+    "Name": "FileHistoryCommitsAccessible",
+    "Kor": "선택 파일의 커밋 이력",
+    "Eng": "Commits for the selected file"
+  },
+  {
+    "Id": 3122,
+    "Name": "FileHistoryDiffAccessible",
+    "Kor": "선택 커밋의 파일 변경 내용",
+    "Eng": "File changes in the selected commit"
+  },
+  {
+    "Id": 3123,
+    "Name": "FileHistoryResizePanels",
+    "Kor": "파일 커밋 목록과 diff 너비 조절",
+    "Eng": "Resize the file commit list and diff"
   }
 ]

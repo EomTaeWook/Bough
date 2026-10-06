@@ -70,8 +70,6 @@ namespace Bough.App.ViewModels
         private string _previewPath;
         private string _previewText;
         private string _previewReason;
-        private string _auxiliaryText;
-        private string _auxiliaryTitle;
         private int _selectedTab;
         private bool _isFileTreeView;
         private Task _inspectionLoadTask = Task.CompletedTask;
@@ -109,8 +107,6 @@ namespace Bough.App.ViewModels
             _previewPath = string.Empty;
             _previewText = string.Empty;
             _previewReason = string.Empty;
-            _auxiliaryText = string.Empty;
-            _auxiliaryTitle = string.Empty;
             LoadMoreCommand = new AsyncRelayCommand(LoadMoreAsync, CanLoadMore);
             RetryLoadMoreCommand = new AsyncRelayCommand(RetryLoadMoreAsync, CanRetryLoadMore);
         }
@@ -236,9 +232,6 @@ namespace Bough.App.ViewModels
                 _previewReasonLocalization = null; SetProperty(ref _previewReason, value);
             }
         }
-        public string AuxiliaryTitle { get { return _auxiliaryTitle; } private set { SetProperty(ref _auxiliaryTitle, value); } }
-        public string AuxiliaryText { get { return _auxiliaryText; } private set { SetProperty(ref _auxiliaryText, value); } }
-        public bool HasAuxiliary { get { return AuxiliaryTitle.Length > 0; } }
         public int SelectedTab
         {
             get { return _selectedTab; }
@@ -919,9 +912,6 @@ namespace Bough.App.ViewModels
             PreviewPath = string.Empty;
             PreviewText = string.Empty;
             PreviewReason = string.Empty;
-            AuxiliaryTitle = string.Empty;
-            AuxiliaryText = string.Empty;
-            OnPropertyChanged(nameof(HasAuxiliary));
         }
 
         private async Task LoadInspectionAsync(HistoryCommitItem selected)
@@ -1184,7 +1174,6 @@ namespace Bough.App.ViewModels
         private async Task OpenFileTreeAsync()
         {
             IsFileTreeView = true;
-            CloseAuxiliary();
             TreeSearch = string.Empty;
             _previewRequest++;
             PreviewPath = string.Empty;
@@ -1436,39 +1425,11 @@ namespace Bough.App.ViewModels
             }
         }
 
-        public async Task ShowFileHistoryAsync(string path)
+        public FileHistoryPresenter CreateFileHistoryPresenter(string repositoryRoot, string commitHash, string path)
         {
-            GitRepository repository = _repository;
-            GitCommitInspection inspection = _inspection;
-            if (repository == null)
-            {
-                return;
-            }
-            if (inspection == null)
-            {
-                return;
-            }
-            int request = ++_previewRequest;
-            try
-            {
-                GitFileHistoryPage page = await _inspectionService.GetFileHistoryAsync(repository, inspection.Hash, path, 100);
-                if (request != _previewRequest)
-                {
-                    return;
-                }
-                if (_repository != repository)
-                {
-                    return;
-                }
-                if (_inspection != inspection)
-                {
-                    return;
-                }
-                AuxiliaryTitle = _stringHelper.Format("HistoryAuxiliaryFileHistory", path, inspection.Hash.Substring(0, 8));
-                AuxiliaryText = string.Join("\n", page.Entries.Select(entry => $"{entry.CommitHash.Substring(0, 8)}  {entry.AuthoredAt:yyyy-MM-dd}  {entry.Author}  {entry.Title}  {entry.PreviousPath}"));
-                OnPropertyChanged(nameof(HasAuxiliary));
-            }
-            catch (Exception exception) { SetLocalizedErrorText(new LocalizedText(exception)); }
+            GitRepository repository = RequireSelectedRepository(repositoryRoot, commitHash);
+            FileHistoryViewModel model = new(repository, commitHash, path);
+            return new FileHistoryPresenter(_inspectionService, model);
         }
 
         public GitRepository RequireSelectedRepository(string root, string hash)
@@ -1497,13 +1458,6 @@ namespace Bough.App.ViewModels
         }
 
         public event Action<string, string> FileRestored;
-
-        public void CloseAuxiliary()
-        {
-            AuxiliaryTitle = string.Empty;
-            AuxiliaryText = string.Empty;
-            OnPropertyChanged(nameof(HasAuxiliary));
-        }
 
         private string LocalizeFileReason(string reasonCode, IReadOnlyList<object> arguments)
         {

@@ -354,11 +354,11 @@ namespace Bough.Core.Git
                 throw new ArgumentOutOfRangeException(nameof(limit));
             }
 
-            string format = "--format=format:%H%x00%an%x00%aI%x00%s%x00";
+            string format = "--format=format:%x00%H%x00%an%x00%aI%x00%s%x00";
             byte[] bytes;
             try
             {
-                bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "log", "--follow", "--name-status", "-z", format, $"--max-count={limit}", commitHash, "--", LiteralPath(path) }, 2 * _maximumFileBytes, cancellationToken);
+                bytes = await _runner.RunBytesAsync(repository.RootPath, new string[] { "log", "--follow", "--name-status", "-z", "--encoding=UTF-8", format, $"--max-count={limit}", commitHash, "--", LiteralPath(path) }, 2 * _maximumFileBytes, cancellationToken);
             }
             catch (GitOutputLimitException exception)
             {
@@ -401,6 +401,7 @@ namespace Bough.Core.Git
                 }
 
                 string previousPath = string.Empty;
+                string historyStatus = string.Empty;
                 while (index < parts.Length)
                 {
                     string status = parts[index++].TrimStart('\r', '\n');
@@ -426,11 +427,16 @@ namespace Bough.Core.Git
                         if (newPath == currentPath)
                         {
                             previousPath = changedPath;
+                            historyStatus = status;
                         }
+                    }
+                    else if (changedPath == currentPath)
+                    {
+                        historyStatus = status;
                     }
                 }
 
-                entries.Add(new GitFileHistoryEntry(historyHash, author, authoredAt, title, currentPath, previousPath));
+                entries.Add(new GitFileHistoryEntry(historyHash, author, authoredAt, title, currentPath, previousPath, historyStatus));
                 if (previousPath.Length > 0)
                 {
                     currentPath = previousPath;

@@ -27,7 +27,7 @@
 
 소유 범위는 History·Reference View·ViewModel·Presenter, 그래프·상세 화면 항목, GitActionDialogs와 해당 Core 서비스다.
 
-- History: 커밋 그래프·참조 배지, 전체/현재 브랜치 범위, 페이지 추가 조회, 상세·비교 부모·변경 파일·파일 내용, 파일 내보내기와 커밋 명령. 파일 트리의 내부 조회 구현과 현재 제공하지 않는 UI 진입을 구분한다.
+- History: 커밋 그래프·참조 배지, 전체/현재 브랜치 범위, 페이지 추가 조회, 상세·비교 부모·변경 파일·파일 내용, 파일 내보내기와 커밋 명령. [파일 히스토리](../Design/FileHistory.md)는 독립 창에서 파일 커밋 목록·날짜 위치·줄 번호 diff를 제공한다. 파일 트리의 내부 조회 구현과 현재 제공하지 않는 UI 진입을 구분한다.
 - 참조: 조회·현재 브랜치 표시, 브랜치 생성·추적·전환·삭제, 태그 생성·단일 삭제 대화상자, 로컬 브랜치·태그 이름 변경. 메뉴를 연 시점의 저장소·참조·객체 OID를 고정하며 원격 변경은 서버 영향을 구분한다.
 - [커밋 상세](../Design/CommitInspection.md), [커밋 명령](../Design/CommitActions.md), [태그 삭제](../Design/TagDeletion.md), [참조 이름 변경](../Design/ReferenceRename.md)을 따른다.
 - MainWindow는 수정하지 않는다. 참조 변경의 `RepositoryChanged`와 History 갱신 의존을 총괄에게 전달한다. 숨긴 History의 참조 변경은 작업자 3이 복귀 시 반영한다.

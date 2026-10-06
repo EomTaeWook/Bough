@@ -547,18 +547,7 @@
                 </Grid>
               </Grid>
           </Grid>
-          <Border Background="{DynamicResource BoughBrushRaised}" Padding="12" Margin="15" VerticalAlignment="Bottom"
-                  IsVisible="{Binding HasAuxiliary}" MaxHeight="340">
-            <Grid RowDefinitions="Auto,*">
-              <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="{Binding AuxiliaryTitle}" FontWeight="SemiBold" FontSize="12" />
-                <Button Grid.Column="1" Content="×" Click="CloseAuxiliaryClicked" Padding="4,1"
-                        AutomationProperties.Name="{Binding Labels.CloseAuxiliary}" ToolTip.Tip="{Binding Labels.CloseAuxiliary}" />
-              </Grid>
-              <TextBox Grid.Row="1" Text="{Binding AuxiliaryText}" IsReadOnly="True" AcceptsReturn="True"
-                       TextWrapping="NoWrap" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14" />
-            </Grid>
-          </Border>
+
         </Grid>
       </Border>
     </Grid>

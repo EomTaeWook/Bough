@@ -636,6 +636,11 @@ namespace Bough.App.Views
             _menuCommitHash = viewModel.Inspection.Hash;
             MenuItem[] items = menu.Items.OfType<MenuItem>().ToArray();
             if (items.Length < 5) return;
+            HistoryFileActionContext context = new(_menuRepositoryRoot, _menuCommitHash, _menuFilePath);
+            foreach (MenuItem item in items)
+            {
+                item.Tag = context;
+            }
             string workingPath = viewModel.FileActions.GetWorkingPath(viewModel.CurrentRepository, _menuFilePath);
             items[0].IsEnabled = isDirectory == false;
             items[1].IsEnabled = isDirectory == false && isGitlink == false && File.Exists(workingPath);
@@ -717,13 +722,33 @@ namespace Bough.App.Views
             catch (Exception exception) { viewModel.ReportActionError(exception); }
         }
 
-        private async void FileHistoryClicked(object sender, RoutedEventArgs eventArgs)
+        private void FileHistoryClicked(object sender, RoutedEventArgs eventArgs)
         {
-            if (TryGetFileContext(out HistoryViewModel viewModel, out GitRepository repository) == false)
+            if (sender is not MenuItem item)
             {
                 return;
             }
-            await viewModel.ShowFileHistoryAsync(_menuFilePath);
+            if (item.Tag is not HistoryFileActionContext context)
+            {
+                return;
+            }
+            if (DataContext is not HistoryViewModel viewModel)
+            {
+                return;
+            }
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
+            try
+            {
+                FileHistoryWindow window = new(viewModel.CreateFileHistoryPresenter(context.RepositoryRoot, context.CommitHash, context.Path), viewModel.Strings);
+                window.Show(owner);
+            }
+            catch (Exception exception)
+            {
+                viewModel.ReportActionError(exception);
+            }
         }
 
         private async void SaveFileClicked(object sender, RoutedEventArgs eventArgs)
@@ -767,15 +792,6 @@ namespace Bough.App.Views
             if (TryGetFileContext(out HistoryViewModel viewModel, out GitRepository repository) == false) return;
             IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
             if (clipboard != null) await clipboard.SetTextAsync(_menuFilePath);
-        }
-
-        private void CloseAuxiliaryClicked(object sender, RoutedEventArgs eventArgs)
-        {
-            if (DataContext is not HistoryViewModel viewModel)
-            {
-                return;
-            }
-            viewModel.CloseAuxiliary();
         }
 
     }

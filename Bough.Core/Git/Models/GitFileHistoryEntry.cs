@@ -4,7 +4,7 @@ namespace Bough.Core.Git.Models
 {
     public class GitFileHistoryEntry
     {
-        public GitFileHistoryEntry(string commitHash, string author, DateTimeOffset authoredAt, string title, string path, string previousPath)
+        public GitFileHistoryEntry(string commitHash, string author, DateTimeOffset authoredAt, string title, string path, string previousPath, string status = "")
         {
             CommitHash = commitHash;
             Author = author;
@@ -12,6 +12,7 @@ namespace Bough.Core.Git.Models
             Title = title;
             Path = path;
             PreviousPath = previousPath;
+            Status = status;
         }
 
         public string CommitHash { get; }
@@ -25,5 +26,7 @@ namespace Bough.Core.Git.Models
         public string Path { get; }
 
         public string PreviousPath { get; }
+
+        public string Status { get; }
     }
 }

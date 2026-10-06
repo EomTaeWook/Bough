@@ -10,6 +10,7 @@
 | [데이터 변환 도구 사용법](<데이터 변환 도구 사용법.md>) | `Excel/String.xlsx`에서 JSON·C#을 생성하는 순서와 검증 |
 | [현재 아키텍처와 Avalonia MVP 적용](AvaloniaMvpAdoption.md) | 프로젝트·역할별 폴더 구성, DI 수명·화면 조정·표현·배포의 현재 구조와 남은 MVP 이행 |
 | [구현 현황](CurrentStatus.md) | 반영된 기능, 진행 중인 작업과 남은 검증 |
+| [기능 진입과 완료 처리 검토](FeatureConnectionReview.md) | 파일 히스토리 보완과 메뉴 무반응·숨은 오류·완료 연결의 남은 항목 |
 | [릴리스](Releases.md) | 배포 버전, 다운로드와 패키지 생성 기록 |
 | [릴리스 정책](ReleasePolicy.md) | 단일 실행 파일 배포와 필수 데이터·설정 포함 규칙 |
 | [구현 작업 지시](ImplementationPlan.md) | 현재 담당 범위, 최종 계약과 인계·게시 규칙 |

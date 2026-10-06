@@ -1,0 +1,119 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Bough.App.ViewModels" xmlns:models="using:Bough.App.ViewModels.Models"
+        x:Class="Bough.App.Views.FileHistoryWindow" x:DataType="vm:FileHistoryViewModel"
+        Width="1200" Height="760" MinWidth="900" MinHeight="540" CanResize="True" WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BoughBrushCanvas}" Foreground="{DynamicResource BoughBrushText}" FontSize="14">
+  <Window.Styles>
+    <Style Selector="TextBlock"><Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" /></Style>
+    <Style Selector="ListBoxItem:selected"><Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" /></Style>
+    <Style Selector="ListBoxItem:selected TextBlock"><Setter Property="Foreground" Value="{DynamicResource BoughBrushSelectionText}" /></Style>
+    <Style Selector="Border.diffLine"><Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" /></Style>
+    <Style Selector="Border.diffLine.diffAdded"><Setter Property="Background" Value="{DynamicResource BoughBrushDiffAddedSurface}" /></Style>
+    <Style Selector="Border.diffLine.diffRemoved"><Setter Property="Background" Value="{DynamicResource BoughBrushDiffRemovedSurface}" /></Style>
+    <Style Selector="Border.diffLine.diffHunk"><Setter Property="Background" Value="{DynamicResource BoughBrushDiffHunkSurface}" /></Style>
+    <Style Selector="SelectableTextBlock.diffCode"><Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" /></Style>
+    <Style Selector="SelectableTextBlock.diffCode.diffAdded"><Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffAdded}" /></Style>
+    <Style Selector="SelectableTextBlock.diffCode.diffRemoved"><Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffRemoved}" /></Style>
+    <Style Selector="SelectableTextBlock.diffCode.diffHunk"><Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffHunk}" /></Style>
+  </Window.Styles>
+  <Grid Margin="12" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="16">
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+      <StackPanel Spacing="8">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <PathIcon Classes="boughIcon" Data="{StaticResource BoughIconHistory}" />
+          <TextBlock x:Name="HeadingText" FontWeight="SemiBold" FontSize="16" />
+        </StackPanel>
+        <TextBlock Text="{Binding FilePath}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding FilePath}" />
+        <TextBlock x:Name="BaselineText" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextTrimming="CharacterEllipsis" />
+      </StackPanel>
+      <Button x:Name="RefreshButton" Grid.Column="1" MinHeight="32" MinWidth="80" VerticalAlignment="Top" Click="RefreshClicked">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <PathIcon Classes="boughIcon" Data="{StaticResource BoughIconFetch}" />
+          <TextBlock x:Name="RefreshLabel" />
+        </StackPanel>
+      </Button>
+    </Grid>
+    <Grid Grid.Row="1" RowDefinitions="30,Auto">
+      <Canvas x:Name="DateTimeline" Cursor="Hand" Background="Transparent" SizeChanged="TimelineSizeChanged" PointerPressed="TimelinePressed" />
+      <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+        <TextBlock x:Name="FirstDateText" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
+        <TextBlock x:Name="SelectionPositionText" Grid.Column="1" FontSize="12" Foreground="{DynamicResource BoughBrushAccent}" TextAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <TextBlock x:Name="LastDateText" Grid.Column="2" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
+      </Grid>
+    </Grid>
+    <Grid Grid.Row="2">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="320" MinWidth="240" />
+        <ColumnDefinition Width="6" />
+        <ColumnDefinition Width="*" MinWidth="320" />
+      </Grid.ColumnDefinitions>
+      <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" Background="{DynamicResource BoughBrushSurface}">
+        <Grid RowDefinitions="Auto,Auto,*">
+          <TextBlock x:Name="CountText" Margin="12" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+          <TextBlock x:Name="ListMessage" Grid.Row="1" Margin="12,0,12,8" TextWrapping="Wrap" FontSize="12" />
+          <ListBox x:Name="FileCommits" Grid.Row="2" ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
+                   Background="Transparent" Foreground="{DynamicResource BoughBrushText}" BorderThickness="0"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="models:FileHistoryEntryItem">
+                <StackPanel Spacing="4" Margin="8,6" ToolTip.Tip="{Binding PathDescription}">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBlock Text="{Binding Author}" TextTrimming="CharacterEllipsis" FontSize="12" ToolTip.Tip="{Binding Author}" />
+                    <TextBlock Grid.Column="1" Text="{Binding ShortHash}" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" ToolTip.Tip="{Binding Entry.CommitHash}" />
+                  </Grid>
+                  <TextBlock Text="{Binding Date}" FontSize="12" />
+                  <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Title}" />
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <TextBlock Text="{Binding Status}" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" ToolTip.Tip="{Binding StatusText}" />
+                    <TextBlock Grid.Column="1" Text="{Binding PathDescription}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                  </Grid>
+                  <TextBlock Text="{Binding StatusText}" FontSize="12" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </Border>
+      <GridSplitter x:Name="PanelSplitter" Grid.Column="1" Width="6" Background="{DynamicResource BoughBrushBorder}"
+                    ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Focusable="True" KeyboardIncrement="12" />
+      <Border Grid.Column="2" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" Background="{DynamicResource BoughBrushSurface}">
+        <Grid RowDefinitions="Auto,Auto,Auto,*">
+          <Border Padding="12" Background="{DynamicResource BoughBrushRaised}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
+            <TextBlock x:Name="SelectedPathText" TextTrimming="CharacterEllipsis" />
+          </Border>
+          <StackPanel Grid.Row="1" Spacing="8" Margin="12">
+            <TextBlock x:Name="SelectedTitleText" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock x:Name="SelectedMetadataText" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+          </StackPanel>
+          <TextBlock x:Name="DiffMessage" Grid.Row="2" Margin="12,0,12,8" FontSize="12" TextWrapping="Wrap" />
+          <ScrollViewer x:Name="DiffScroller" Grid.Row="3" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding DiffLines}" MinWidth="{Binding Bounds.Width, ElementName=DiffScroller, x:CompileBindings=False}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="models:HistoryDiffLineItem">
+                  <Border Classes="diffLine" Classes.diffAdded="{Binding IsAdded}" Classes.diffRemoved="{Binding IsRemoved}" Classes.diffHunk="{Binding IsHunk}" MinHeight="22">
+                    <Grid ColumnDefinitions="50,50,*" ColumnSpacing="8" Margin="8,0">
+                      <TextBlock Text="{Binding OldNumber}" TextAlignment="Right" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" LineHeight="22" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+                      <TextBlock Grid.Column="1" Text="{Binding NewNumber}" TextAlignment="Right" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" LineHeight="22" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+                      <SelectableTextBlock Grid.Column="2" Classes="diffCode" Classes.diffAdded="{Binding IsAdded}" Classes.diffRemoved="{Binding IsRemoved}" Classes.diffHunk="{Binding IsHunk}"
+                                           Text="{Binding Text}" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14" LineHeight="22" TextWrapping="NoWrap" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+    </Grid>
+    <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+      <ProgressBar x:Name="LoadingProgress" Height="3" IsIndeterminate="True" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <Button x:Name="CancelButton" Grid.Column="1" MinHeight="32" MinWidth="80" Click="CancelClicked" />
+      <Button x:Name="CloseButton" Grid.Column="2" MinHeight="32" MinWidth="80" Click="CloseClicked">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <PathIcon Classes="boughIcon" Data="{StaticResource BoughIconClose}" />
+          <TextBlock x:Name="CloseLabel" />
+        </StackPanel>
+      </Button>
+    </Grid>
+  </Grid>
+</Window>

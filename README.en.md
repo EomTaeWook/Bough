@@ -26,13 +26,19 @@ This screen shows a reproduced text merge conflict. Compare the origins of both 
 
 See the branch graph alongside local branch, remote branch, and tag badges, then inspect the selected merge commit and its changed files.
 
+### File history
+
+![Bough file history showing a date timeline, file commits, and numbered diff](Docs/images/file-history.png)
+
+Right-click a changed file and choose History to see its commits alongside the changes at each revision. Follow renames and select a commit by date position. This screen is available in the latest source; it is not included in the beta.5 download above.
+
 ### Local changes
 
 ![Bough Local Changes showing staged and working files, a diff with previous and current line numbers, and the commit area](Docs/images/local-changes.png)
 
 Browse staged changes and working files separately, and read diffs with previous and current line numbers. Prepare a commit message in the area below the preview.
 
-The screenshots show actual app content from demo repositories using the light theme and English UI. Operating system title bars are omitted.
+The original three screenshots use demo repositories with the light theme and English UI. File history uses the Bough repository with the dark theme and Korean UI. Operating system title bars are omitted.
 
 ## Why Bough?
 
