@@ -2,11 +2,13 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
-## 2026-10-07 원격 버튼의 빈 툴팁
+## 2026-10-07 원격 작업 영역 툴팁 제거
 
 사용자가 Push 아래에 작은 빈 둥근 팝업이 나타나는 화면을 제보했다. 원격 View의 PushAvailabilityText는 안내할 내용이 없을 때 빈 문자열을 반환하고 기존 ToolTip 바인딩이 이 값을 그대로 전달했다. [Avalonia 12.1.3 ToolTipService](https://github.com/AvaloniaUI/Avalonia/blob/12.1.3/src/Avalonia.Controls/ToolTipService.cs)는 null 여부로 표시 대상을 판단하므로 빈 문자열도 팝업 표시 경로에 들어갈 수 있다. 캡처의 팝업이 이 인스턴스인지 실행으로 판정하지는 않았다.
 
-RemoteOperationsView의 Push 버튼·upstream·작업 상태·Push 가용성 안내 툴팁은 내용이 빈 문자열 또는 공백일 때 열린 툴팁을 닫은 뒤 null로 바꾸도록 수정했다. 컨트롤 자신의 속성 변경에서 초기값과 이후 바인딩 변경을 처리하며 SetCurrentValue로 기존 바인딩을 유지한다. 화면 상태 문자열·원격 실행·FIFO·메뉴·접근성·기존 지역화는 변경하지 않고 새로운 변환기나 문자열 키를 추가하지 않았다.
+처음에는 빈 문자열·공백 툴팁만 null로 바꾸도록 수정했다. 이후 사용자가 Pull의 기본 방식 안내도 공통적으로 표시하지 않도록 요청해 RemoteOperationsView의 Fetch·Pull·Push 본 버튼과 화살표, 해당 메뉴 항목, upstream·작업 상태·Push 가용성 안내의 툴팁 설정을 모두 제거했다. 앞선 빈 툴팁 정규화 전용 helper와 속성 변경 구독도 제거했다.
+
+화면 상태 문자열·원격 실행·FIFO·메뉴·접근성·기존 지역화는 유지했다. Pull의 현재 기본 방식은 메뉴 표시와 접근성 이름에서 계속 확인할 수 있다. 다른 화면의 툴팁과 공유 문자열은 변경하지 않았다.
 
 이번 소스 변경의 빌드·테스트·UI 실행·캡처·diff check·리소스 대조는 수행하지 않았다. 새 실행 파일·릴리스 생성 및 푸시는 수행하지 않는다.
 

@@ -24,9 +24,8 @@
   <Grid RowDefinitions="Auto,Auto,Auto" Margin="12,8" RowSpacing="8">
     <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
       <TextBlock x:Name="UpstreamLabel" Foreground="{DynamicResource BoughBrushTextSubtle}" />
-      <TextBlock x:Name="UpstreamValue" Text="{Binding UpstreamText}" Foreground="{DynamicResource BoughBrushTextMuted}"
-                 MaxWidth="220" TextTrimming="CharacterEllipsis"
-                 ToolTip.Tip="{Binding UpstreamText}" />
+      <TextBlock Text="{Binding UpstreamText}" Foreground="{DynamicResource BoughBrushTextMuted}"
+                 MaxWidth="220" TextTrimming="CharacterEllipsis" />
       <TextBlock Text="{Binding AheadBehindText}" IsVisible="{Binding HasUpstream}" Foreground="{DynamicResource BoughBrushTextMuted}" />
     </StackPanel>
     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
@@ -67,8 +66,7 @@
       <Border BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
         <Grid ColumnDefinitions="Auto,1,Auto">
           <Button x:Name="PushButton" Grid.Column="0" Classes="remoteActionSegment" Click="PushClicked"
-                  IsEnabled="{Binding CanPush}" Padding="12,4"
-                  ToolTip.Tip="{Binding PushAvailabilityText}">
+                  IsEnabled="{Binding CanPush}" Padding="12,4">
             <StackPanel Orientation="Horizontal" Spacing="8">
               <PathIcon Data="{StaticResource BoughIconPush}" Classes="boughIcon" />
               <TextBlock x:Name="PushActionLabel" VerticalAlignment="Center"
@@ -84,11 +82,10 @@
       </Border>
     </StackPanel>
     <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
-      <TextBlock x:Name="OperationStatusText" Text="{Binding StatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12"
-                 TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StatusText}" />
-      <TextBlock x:Name="PushAvailabilityNotice" Grid.Column="1" Text="{Binding PushAvailabilityText}" IsVisible="{Binding HasNoOutgoingPushCommits}"
-                 Foreground="{DynamicResource BoughBrushWarning}" FontSize="12" MaxWidth="260" TextTrimming="CharacterEllipsis"
-                 ToolTip.Tip="{Binding PushAvailabilityText}" />
+      <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12"
+                 TextTrimming="CharacterEllipsis" />
+      <TextBlock Grid.Column="1" Text="{Binding PushAvailabilityText}" IsVisible="{Binding HasNoOutgoingPushCommits}"
+                 Foreground="{DynamicResource BoughBrushWarning}" FontSize="12" MaxWidth="260" TextTrimming="CharacterEllipsis" />
     </Grid>
   </Grid>
 </UserControl>

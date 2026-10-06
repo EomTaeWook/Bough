@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -66,44 +65,7 @@ namespace Bough.App.Views
         public RemoteOperationsView()
         {
             InitializeComponent();
-            ConfigureOptionalToolTip(UpstreamValue);
-            ConfigureOptionalToolTip(PushButton);
-            ConfigureOptionalToolTip(OperationStatusText);
-            ConfigureOptionalToolTip(PushAvailabilityNotice);
             _languageBinding = LanguageChangeBinding.Bind(this, () => _stringHelper, RefreshLocalizedLabels);
-        }
-
-        private static void ConfigureOptionalToolTip(Control control)
-        {
-            control.PropertyChanged += OnOptionalToolTipChanged;
-            NormalizeOptionalToolTip(control);
-        }
-
-        private static void OnOptionalToolTipChanged(object sender, AvaloniaPropertyChangedEventArgs eventArgs)
-        {
-            if (eventArgs.Property != ToolTip.TipProperty)
-            {
-                return;
-            }
-            if (sender is not Control control)
-            {
-                return;
-            }
-            NormalizeOptionalToolTip(control);
-        }
-
-        private static void NormalizeOptionalToolTip(Control control)
-        {
-            if (ToolTip.GetTip(control) is not string text)
-            {
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(text) == false)
-            {
-                return;
-            }
-            ToolTip.SetIsOpen(control, false);
-            control.SetCurrentValue(ToolTip.TipProperty, null);
         }
 
         private void RefreshLocalizedLabels()
@@ -120,8 +82,6 @@ namespace Bough.App.Views
             AutomationProperties.SetName(PushButton, _stringHelper.GetString("RemotePushAction"));
             AutomationProperties.SetName(FetchMenuButton, _stringHelper.GetString("RemoteFetchMenuAutomation"));
             AutomationProperties.SetName(PushMenuButton, _stringHelper.GetString("RemotePushMenuAutomation"));
-            ToolTip.SetTip(FetchMenuButton, _stringHelper.GetString("RemoteFetchMenuTip"));
-            ToolTip.SetTip(PushMenuButton, _stringHelper.GetString("RemotePushMenuTip"));
             UpdatePullStrategyPresentation();
         }
 
@@ -145,8 +105,6 @@ namespace Bough.App.Views
             string strategyName = GetPullStrategyName(GetDefaultPullStrategy());
             AutomationProperties.SetName(PullButton, StringHelper.Format("RemotePullConfiguredDefaultAutomation", strategyName));
             AutomationProperties.SetName(PullMenuButton, StringHelper.Format("RemotePullStrategyMenuAutomation", strategyName));
-            ToolTip.SetTip(PullButton, StringHelper.Format("RemotePullConfiguredDefaultTip", strategyName));
-            ToolTip.SetTip(PullMenuButton, StringHelper.Format("RemotePullStrategyMenuTip", strategyName));
         }
 
         private GitPullStrategy GetDefaultPullStrategy()
@@ -211,11 +169,9 @@ namespace Bough.App.Views
 
             ContextMenu menu = new();
             MenuItem remoteGroup = new() { Header = StringHelper.GetString("RemoteSelectFetchRemote") };
-            ToolTip.SetTip(remoteGroup, StringHelper.GetString("RemoteSelectFetchRemoteTip"));
             foreach (string remote in viewModel.Remotes)
             {
                 MenuItem remoteItem = new() { Header = remote, ToggleType = MenuItemToggleType.Radio, IsChecked = remote == viewModel.SelectedRemote, MinWidth = 220 };
-                ToolTip.SetTip(remoteItem, StringHelper.GetString("RemoteFetchRemoteItemTip"));
                 remoteItem.Click += delegate
                 {
                     viewModel.SelectedRemote = remote;
@@ -225,7 +181,6 @@ namespace Bough.App.Views
             menu.Items.Add(remoteGroup);
 
             MenuItem prune = new() { Header = StringHelper.GetString("RemotePruneOption"), ToggleType = MenuItemToggleType.CheckBox, IsChecked = viewModel.Prune };
-            ToolTip.SetTip(prune, StringHelper.GetString("RemotePruneOptionTip"));
             prune.Click += delegate
             {
                 bool enabled = viewModel.Prune == false;
@@ -236,7 +191,6 @@ namespace Bough.App.Views
             menu.Items.Add(new Separator());
 
             MenuItem fetchAll = new() { Header = StringHelper.GetString("RemoteFetchAllAction"), IsEnabled = viewModel.CanFetchAll };
-            ToolTip.SetTip(fetchAll, StringHelper.GetString("RemoteFetchAllTip"));
             fetchAll.Click += FetchAllClicked;
             menu.Items.Add(fetchAll);
             OpenMenu(button, menu);
@@ -251,20 +205,16 @@ namespace Bough.App.Views
 
             ContextMenu menu = new();
             MenuItem pullFrom = new() { Header = StringHelper.GetString("RemotePullChooseBranch") };
-            ToolTip.SetTip(pullFrom, StringHelper.Format("RemotePullChooseBranchDefaultTip", GetPullStrategyName(GetDefaultPullStrategy())));
             pullFrom.Click += PullFromClicked;
             menu.Items.Add(pullFrom);
             menu.Items.Add(new Separator());
             MenuItem fastForward = new() { Header = GetPullStrategyMenuLabel("RemotePullFastForwardAction", "RemotePullFastForwardAutomation", GitPullStrategy.FastForwardOnly) };
-            ToolTip.SetTip(fastForward, StringHelper.GetString("RemotePullFastForwardTip"));
             fastForward.Click += FastForwardClicked;
             menu.Items.Add(fastForward);
             MenuItem merge = new() { Header = GetPullStrategyMenuLabel("RemotePullMergeAction", "RemoteStrategyMerge", GitPullStrategy.Merge) };
-            ToolTip.SetTip(merge, StringHelper.GetString("RemotePullMergeTip"));
             merge.Click += MergeClicked;
             menu.Items.Add(merge);
             MenuItem rebase = new() { Header = GetPullStrategyMenuLabel("RemotePullRebaseAction", "RemoteStrategyRebase", GitPullStrategy.Rebase) };
-            ToolTip.SetTip(rebase, StringHelper.GetString("RemotePullRebaseTip"));
             rebase.Click += RebaseClicked;
             menu.Items.Add(rebase);
             OpenMenu(button, menu);
@@ -283,7 +233,6 @@ namespace Bough.App.Views
 
             ContextMenu menu = new();
             MenuItem pushTo = new() { Header = StringHelper.GetString("RemotePushChooseTarget"), IsEnabled = viewModel.CanPushTo };
-            ToolTip.SetTip(pushTo, StringHelper.GetString("RemotePushChooseTargetTip"));
             pushTo.Click += PushToClicked;
             menu.Items.Add(pushTo);
             OpenMenu(button, menu);
