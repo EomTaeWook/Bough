@@ -5,7 +5,7 @@ namespace Bough.App.Interfaces
 {
     public interface IStashMutationCompletion
     {
-        Task CompleteStashSaveAsync(StashMutationResult result);
+        Task<StashMutationResult> CompleteStashSaveAsync(StashMutationResult result);
 
         Task CompleteStashApplyAsync(StashMutationResult result);
 

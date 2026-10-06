@@ -28,12 +28,17 @@
         <ItemsControl ItemsSource="{Binding StashTargets}" />
       </ScrollViewer>
     </Grid>
-    <ScrollViewer Grid.Row="4" MaxHeight="64" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding HasError}">
-      <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource BoughBrushError}" TextWrapping="Wrap" />
+    <ScrollViewer x:Name="ResultArea" Grid.Row="4" MaxHeight="112" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
+      <StackPanel Spacing="8">
+        <TextBlock x:Name="SavedRefreshNotice" Foreground="{DynamicResource BoughBrushText}" TextWrapping="Wrap" IsVisible="False" />
+        <TextBlock x:Name="RefreshProgress" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" IsVisible="False" />
+        <TextBlock x:Name="SaveError" Foreground="{DynamicResource BoughBrushError}" TextWrapping="Wrap" />
+      </StackPanel>
     </ScrollViewer>
     <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
-      <Button Content="{Binding CancelDropText}" Click="CancelClicked" />
-      <Button Content="{Binding SaveButtonText}" Click="SaveClicked" IsEnabled="{Binding CanSaveStash}" Classes="primary" />
+      <Button x:Name="CancelButton" Content="{Binding CancelDropText}" Click="CancelClicked" />
+      <Button x:Name="RetryRefreshButton" Click="RetryRefreshClicked" IsVisible="False" />
+      <Button x:Name="SaveButton" Content="{Binding SaveButtonText}" Click="SaveClicked" Classes="primary" />
     </StackPanel>
   </Grid>
 </Window>

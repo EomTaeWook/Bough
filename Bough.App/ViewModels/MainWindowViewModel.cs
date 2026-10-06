@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.ViewModels.Models;
 using Bough.Core.Git.Models;
+using Bough.Core.Internals;
 using Bough.App.Internals;
 
 namespace Bough.App.ViewModels
@@ -56,6 +57,7 @@ namespace Bough.App.ViewModels
         private bool _isRebaseInProgress;
         private int _repositoryRequestVersion;
         private int _historyReferenceChangeVersion;
+        private int _tagCommitSelectionRequestVersion;
         private CancellationTokenSource _repositoryOpenCancellation;
 
         public MainWindowViewModel(GitRepositoryService repositoryService, GitOperationQueue operationQueue, MainWindowChildren children, ConflictResolutionViewModel conflicts, RepositoryListViewModel repositoryList, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
@@ -955,41 +957,116 @@ namespace Bough.App.ViewModels
 
         private async void OnTagCommitSelected(string commitHash)
         {
-            if (_repository == null)
+            GitRepository repository = _repository;
+            if (repository == null)
             {
                 return;
             }
+            int request = _repositoryRequestVersion;
+            int tagRequest = ++_tagCommitSelectionRequestVersion;
+            bool hasDirtyReferences = _historyReferenceVersions.TryGetValue(repository.RootPath, out int referenceVersion);
             IsHistoryView = true;
             IsLocalChangesView = false;
             IsStashView = false;
             IsGitSettingsView = false;
-            GitRepository requestRepository = _repository;
-            int request = _repositoryRequestVersion;
             try
             {
-                bool requiresHistoryLoad = _historyReferenceVersions.ContainsKey(requestRepository.RootPath);
-                if (ReferenceEquals(History.CurrentRepository, requestRepository) == false)
+                if (hasDirtyReferences == true)
                 {
-                    requiresHistoryLoad = true;
+                    History.Clear();
                 }
-                if (requiresHistoryLoad == true)
-                {
-                    await LoadHistoryAsync(requestRepository, request);
-                }
-                if (request != _repositoryRequestVersion)
+                HistoryCommitSelectionResult result = await History.SelectCommitAsync(repository, commitHash, GitHistoryScope.All);
+                if (IsCurrentTagCommitSelection(repository, request, tagRequest) == false)
                 {
                     return;
                 }
-                if (ReferenceEquals(_repository, requestRepository) == false)
+                if (_pathComparer.Equals(result.RepositoryRoot, repository.RootPath) == false)
                 {
                     return;
                 }
-                await History.SelectCommitAsync(commitHash);
+                if (result.CommitHash != commitHash)
+                {
+                    return;
+                }
+                if (result.Scope != GitHistoryScope.All)
+                {
+                    return;
+                }
+                if (result.Outcome == HistoryCommitSelectionOutcome.Superseded)
+                {
+                    return;
+                }
+                switch (result.Outcome)
+                {
+                    case HistoryCommitSelectionOutcome.Found:
+                    case HistoryCommitSelectionOutcome.NotFoundInScope:
+                        CompleteTagHistoryReferenceRefresh(repository, referenceVersion, hasDirtyReferences);
+                        break;
+                }
+                History.ReportCommitSelectionResult(result);
             }
             catch (Exception exception)
             {
+                if (IsCurrentTagCommitSelection(repository, request, tagRequest) == false)
+                {
+                    return;
+                }
                 StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
             }
+        }
+
+        private bool IsCurrentTagCommitSelection(GitRepository repository, int request, int tagRequest)
+        {
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return false;
+            }
+            if (request != _repositoryRequestVersion)
+            {
+                return false;
+            }
+            if (tagRequest != _tagCommitSelectionRequestVersion)
+            {
+                return false;
+            }
+            if (IsHistoryView == false)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private void CompleteTagHistoryReferenceRefresh(GitRepository repository, int referenceVersion, bool hasDirtyReferences)
+        {
+            if (hasDirtyReferences == false)
+            {
+                return;
+            }
+            if (ReferenceEquals(History.CurrentRepository, repository) == false)
+            {
+                return;
+            }
+            if (History.SelectedScope != GitHistoryScope.All)
+            {
+                return;
+            }
+            if (History.IsLoading == true)
+            {
+                return;
+            }
+            if (History.HistoryQueryError != null)
+            {
+                return;
+            }
+            if (_historyReferenceVersions.TryGetValue(repository.RootPath, out int currentVersion) == false)
+            {
+                return;
+            }
+            if (currentVersion != referenceVersion)
+            {
+                return;
+            }
+            _historyReferenceVersions.Remove(repository.RootPath);
         }
 
         private async void OnStashesRequested()
@@ -1095,17 +1172,104 @@ namespace Bough.App.ViewModels
             }
         }
 
-        public async Task CompleteStashSaveAsync(StashMutationResult result)
+        public async Task<StashMutationResult> CompleteStashSaveAsync(StashMutationResult result)
         {
             if (result == null)
             {
-                return;
+                return result;
             }
             if (result.Kind != StashMutationKind.Save)
             {
-                return;
+                return result;
             }
-            await RefreshStashWorktreeAfterMutationAsync(result);
+            if (result.WorktreeMayHaveChanged == false)
+            {
+                return result;
+            }
+            if (result.Repository == null)
+            {
+                return result;
+            }
+            GitRepository repository = _repository;
+            if (repository == null)
+            {
+                return result;
+            }
+            if (_pathComparer.Equals(repository.RootPath, result.Repository.RootPath) == false)
+            {
+                return result;
+            }
+
+            int request = _repositoryRequestVersion;
+            GitWorktreeStatus status = result.WorktreeStatus;
+            string refreshError = string.Empty;
+            try
+            {
+                if (status == null)
+                {
+                    status = await LocalChanges.RefreshStashSaveWorktreeAsync(result.Repository);
+                    if (IsCurrentStashSaveCompletion(repository, request) == false)
+                    {
+                        return result;
+                    }
+                    if (status == null)
+                    {
+                        return result;
+                    }
+                }
+                else
+                {
+                    LocalChanges.ApplyStashWorktreeStatus(result.Repository, status);
+                    if (IsCurrentStashSaveCompletion(repository, request) == false)
+                    {
+                        return result;
+                    }
+                }
+                IReadOnlyList<string> paths = status.Files
+                    .Where(file => file.IsConflict).Select(file => file.Path).ToArray();
+                await ApplyConflictPathsAsync(repository, paths);
+            }
+            catch (Exception exception)
+            {
+                refreshError = _errorLocalizer.GetDisplayMessage(exception);
+            }
+            if (IsCurrentStashSaveCompletion(repository, request) == false)
+            {
+                return result;
+            }
+
+            string errorText = result.ErrorText;
+            if (string.IsNullOrWhiteSpace(refreshError) == false)
+            {
+                if (string.IsNullOrWhiteSpace(errorText) == true)
+                {
+                    errorText = refreshError;
+                }
+                else if (errorText != refreshError)
+                {
+                    errorText = string.Concat(errorText, Environment.NewLine, refreshError);
+                }
+            }
+            StashMutationResult completion = new StashMutationResult(result.Repository, result.Kind, result.Succeeded,
+                result.WorktreeMayHaveChanged, result.StashesMayHaveChanged, status, errorText);
+            if (string.IsNullOrWhiteSpace(completion.ErrorText) == false)
+            {
+                StatusMessage = completion.ErrorText;
+            }
+            return completion;
+        }
+
+        private bool IsCurrentStashSaveCompletion(GitRepository repository, int request)
+        {
+            if (request != _repositoryRequestVersion)
+            {
+                return false;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return false;
+            }
+            return true;
         }
 
         public async Task CompleteStashApplyAsync(StashMutationResult result)

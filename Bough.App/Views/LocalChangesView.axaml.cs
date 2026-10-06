@@ -45,6 +45,8 @@ namespace Bough.App.Views
         private LocalChangesViewModel _fileSectionsSource;
         private GitRepository _contextStagedRepository;
         private GitWorktreeFile _contextStagedFile;
+        private GitRepository _contextUnstagedRepository;
+        private IReadOnlyList<GitWorktreeFile> _contextUnstagedFiles = Array.Empty<GitWorktreeFile>();
         private IReadOnlyList<string> _contextDiscardPaths = Array.Empty<string>();
         private bool _stagedPointerSelection;
         private bool _contextPointerSelection;
@@ -96,7 +98,7 @@ namespace Bough.App.Views
             }
             StagedUnstageItem.Header = viewModel.UnstageSelectedText;
             ToolTip.SetTip(StagedUnstageItem, viewModel.UnstageSelectedText);
-            string discardLabel = viewModel.GetDiscardContextMenuText(viewModel.UnstagedFiles.Where(file => _contextDiscardPaths.Contains(file.Path)).ToList());
+            string discardLabel = viewModel.GetDiscardContextMenuText(_contextUnstagedFiles);
             DiscardContextItem.Header = discardLabel;
             ToolTip.SetTip(DiscardContextItem, discardLabel);
             StopTrackingContextItem.Header = viewModel.StopTrackingContextMenuText;
@@ -112,6 +114,8 @@ namespace Bough.App.Views
             UnstagedDangerSeparator.IsVisible = false;
             _contextStagedRepository = null;
             _contextStagedFile = null;
+            _contextUnstagedRepository = null;
+            _contextUnstagedFiles = Array.Empty<GitWorktreeFile>();
             _contextDiscardPaths = Array.Empty<string>();
             _stagedPointerSelection = false;
             _contextPointerSelection = false;
@@ -535,6 +539,8 @@ namespace Bough.App.Views
             UnstagedDangerSeparator.IsVisible = false;
             if (DataContext is not LocalChangesViewModel viewModel)
             {
+                _contextUnstagedRepository = null;
+                _contextUnstagedFiles = Array.Empty<GitWorktreeFile>();
                 DiscardContextItem.IsEnabled = false;
                 StopTrackingContextItem.IsVisible = false;
                 IgnoreContextItem.IsVisible = false;
@@ -550,6 +556,8 @@ namespace Bough.App.Views
             _contextPointerSelection = false;
             HashSet<string> paths = new(_contextDiscardPaths, StringComparer.Ordinal);
             GitWorktreeFile[] files = viewModel.UnstagedFiles.Where(file => paths.Contains(file.Path)).ToArray();
+            _contextUnstagedRepository = viewModel.CurrentRepository;
+            _contextUnstagedFiles = files;
             _contextDiscardPaths = files.Select(file => file.Path).ToArray();
             if (preservePointerSelection == true)
             {
@@ -596,12 +604,7 @@ namespace Bough.App.Views
                 return;
             }
 
-            if (_contextDiscardPaths.Count == 0)
-            {
-                return;
-            }
-
-            await viewModel.DiscardPathsAsync(_contextDiscardPaths);
+            await viewModel.DiscardFilesAsync(_contextUnstagedRepository, _contextUnstagedFiles);
         }
 
         private async void StopTrackingContextClicked(object sender, RoutedEventArgs eventArgs)
@@ -611,12 +614,7 @@ namespace Bough.App.Views
                 return;
             }
 
-            if (viewModel.CanStopTrackingPaths(_contextDiscardPaths) == false)
-            {
-                return;
-            }
-
-            await viewModel.StopTrackingPathsAsync(_contextDiscardPaths);
+            await viewModel.StopTrackingFilesAsync(_contextUnstagedRepository, _contextUnstagedFiles);
         }
 
         private async void IgnoreRepositoryClicked(object sender, RoutedEventArgs eventArgs)
@@ -636,12 +634,7 @@ namespace Bough.App.Views
                 return;
             }
 
-            if (viewModel.CanIgnorePaths(_contextDiscardPaths) == false)
-            {
-                return;
-            }
-
-            await viewModel.IgnorePathsAsync(_contextDiscardPaths, location);
+            await viewModel.IgnoreFilesAsync(_contextUnstagedRepository, _contextUnstagedFiles, location);
         }
 
         private void WorkAreaSizeChanged(object sender, SizeChangedEventArgs eventArgs)
@@ -782,7 +775,7 @@ namespace Bough.App.Views
             try
             {
                 StashDialogOpening?.Invoke();
-                saved = await window.ShowDialog<bool>(owner);
+                saved = await window.ShowForAsync(owner);
             }
             finally
             {

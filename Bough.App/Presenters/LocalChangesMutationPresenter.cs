@@ -22,6 +22,74 @@ namespace Bough.App.Presenters
             _operationQueue = operationQueue;
         }
 
+        public Task<GitWorktreeStatus> RefreshStashSaveWorktreeAsync(LocalChangesViewModel screen, GitRepository repository)
+        {
+            return UiQueuedOperation.RunAsync(() =>
+            {
+                if (screen.IsCurrentRepository(repository) == false)
+                {
+                    return Task.FromResult<GitWorktreeStatus>(null);
+                }
+
+                int requestVersion = screen.BeginStashSaveWorktreeRefresh();
+                Task<GitWorktreeStatus> request = RefreshStashSaveWorktreeCoreAsync(screen, repository, requestVersion);
+                screen.TrackStashSaveWorktreeRefresh(repository, requestVersion, request);
+                return request;
+            });
+        }
+
+        private async Task<GitWorktreeStatus> RefreshStashSaveWorktreeCoreAsync(LocalChangesViewModel screen, GitRepository repository, int requestVersion)
+        {
+            try
+            {
+                if (screen.IsCurrentRepository(repository) == false)
+                {
+                    return null;
+                }
+                if (requestVersion != screen.WorktreeRequestVersion)
+                {
+                    return null;
+                }
+
+                GitWorktreeStatus status = await _workingTreeService.GetStatusAsync(repository);
+                if (screen.IsCurrentRepository(repository) == false)
+                {
+                    return null;
+                }
+                if (requestVersion != screen.WorktreeRequestVersion)
+                {
+                    return null;
+                }
+
+                screen.ApplyStashSaveWorktreeSnapshot(status);
+                if (screen.IsCurrentRepository(repository) == false)
+                {
+                    return null;
+                }
+                if (requestVersion != screen.WorktreeRequestVersion)
+                {
+                    return null;
+                }
+                return status;
+            }
+            catch
+            {
+                if (screen.IsCurrentRepository(repository) == false)
+                {
+                    return null;
+                }
+                if (requestVersion != screen.WorktreeRequestVersion)
+                {
+                    return null;
+                }
+                throw;
+            }
+            finally
+            {
+                screen.EndStashSaveWorktreeRefresh(repository, requestVersion);
+            }
+        }
+
         public Task StageAsync(LocalChangesViewModel screen, GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, string selectedPath, string preferredPath, string operationName)
         {
             return EnqueueAsync(screen, repository, operationName, cancellationToken => RunOperationAsync(screen, repository, async token =>

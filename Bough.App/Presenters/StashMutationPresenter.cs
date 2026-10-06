@@ -39,6 +39,60 @@ namespace Bough.App.Presenters
             }
         }
 
+        public async Task<StashMutationResult> RetrySaveRefreshAsync(StashViewModel screen, StashMutationResult savedResult)
+        {
+            GitRepository repository = savedResult.Repository;
+            int requestVersion = screen.BeginSavedRefresh(repository);
+            GitWorktreeStatus status = null;
+            Exception failure = null;
+            try
+            {
+                try
+                {
+                    IReadOnlyList<GitStashEntry> entries = await _stashService.GetStashesAsync(repository, CancellationToken.None);
+                    screen.ApplyMutationEntries(repository, requestVersion, entries);
+                }
+                catch (Exception exception)
+                {
+                    failure = exception;
+                }
+
+                try
+                {
+                    status = await _workingTreeService.GetStatusAsync(repository);
+                    screen.ApplyMutationStatus(repository, requestVersion, status);
+                }
+                catch (Exception exception)
+                {
+                    if (failure == null)
+                    {
+                        failure = exception;
+                    }
+                }
+
+                if (screen.IsSavedRefreshCurrent(repository, requestVersion) == false)
+                {
+                    status = null;
+                    if (failure == null)
+                    {
+                        failure = new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+                    }
+                }
+
+                string errorText = string.Empty;
+                if (failure != null)
+                {
+                    errorText = screen.GetMutationErrorText(failure);
+                }
+                screen.ApplySavedRefreshError(repository, requestVersion, errorText);
+                return new StashMutationResult(repository, savedResult.Kind, savedResult.Succeeded, savedResult.WorktreeMayHaveChanged, savedResult.StashesMayHaveChanged, status, errorText);
+            }
+            finally
+            {
+                screen.EndSavedRefresh(repository, requestVersion);
+            }
+        }
+
         private async Task<StashMutationResult> ExecuteAsync(StashViewModel screen, GitRepository repository, StashMutationKind kind, GitStashEntry entry, string message, bool includeUntracked, IReadOnlyList<GitWorktreeFile> expectedFiles, CancellationToken cancellationToken)
         {
             bool active = screen.BeginMutation(repository);

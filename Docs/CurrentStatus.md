@@ -2,21 +2,19 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
-## 2026-10-07 History 이동 결과·Stash 조회 API 인계
+## 2026-10-07 History 이동·Stash 완료 연결
 
-작업자 2가 커밋 이동의 `HistoryCommitSelectionResult`와 두 `SelectCommitAsync` overload, `ReportCommitSelectionResult` 연결을 완료했다. 요청 저장소·SHA·범위·원래 오류·요청 버전을 보존하며 성공·현재 범위에서 미발견·조회 실패·대체된 요청을 구분한다. 부모 SHA와 내부 이동은 결과를 소비하고 미발견·실패는 History 머리글과 공통 상태에 표시한다. 선택 기반 미리보기와 명시적 Open의 수명을 분리하고 참조 전환 실패 뒤 저장소·요청 재확인도 반영했다. 기존 Changes 상세 오류와 전용 파일 히스토리는 유지했다. MainWindow 태그의 전체 범위 진입 연결은 작업자 3에게 최종 API를 전달해 마무리 중이다.
+커밋 이동의 `HistoryCommitSelectionResult`와 두 `SelectCommitAsync` overload, `ReportCommitSelectionResult` 연결을 완료했다. 요청 저장소·SHA·범위·원래 오류·요청 버전을 보존하며 성공·현재 범위에서 미발견·조회 실패·대체된 요청을 구분한다. 부모 SHA와 내부 이동은 결과를 소비하고 미발견·실패는 History 머리글과 공통 상태에 표시한다. MainWindow 태그는 고정 저장소·전체 범위로 한 번 진입한 뒤 현재 저장소·태그 요청의 결과만 같은 표시 API로 전달한다. 숨긴 History의 참조 변경 상태는 성공한 동일 버전의 조회에서만 해제한다.
 
-`HistoryNavigationFound`, `HistoryNavigationNotFoundInScope`, `HistoryNavigationFailed` 세 키를 ID 3129~3131로 Excel·JSON에 병합했다. 빌드·테스트·UI 실행·diff check·리소스 대조 등 추가 검증은 수행하지 않았다.
+선택 기반 미리보기와 명시적 Open의 수명을 분리하고 참조 전환 실패 뒤 저장소·요청 재확인도 반영했다. 기존 Changes 상세 오류와 전용 파일 히스토리는 유지했다.
 
-작업자 1은 Stash 창의 요청 집합·성공과 갱신 실패 분리·읽기 전용 재시도, Unstaged 메뉴의 고정 대상과 무효 사유 표시를 완료했다. Save 전용 `RefreshStashSaveWorktreeAsync`는 현재 적용한 동일 상태를 반환하고 대체된 요청은 null, 현재 조회·적용 실패는 예외를 전달하는 계약으로 구현해 인계했다. MainWindow의 Save 완료 반환 연결은 작업자 3이 이 API로 마무리 중이다. 교차 연결 인계 전이므로 전체 완료로 표시하지 않는다.
+Stash 창의 현재 요청 집합·Git 성공·미해결 갱신 오류를 분리하고 읽기 전용 갱신 재시도를 연결했다. 성공 뒤 조회 오류가 남은 창은 자동으로 닫지 않으며 읽기 재시도가 Git 보관을 다시 실행하지 않는다. `CompleteStashSaveAsync`는 원래 성공·영향 플래그·입력 오류를 보존한 결과를 반환한다. Save 전용 `RefreshStashSaveWorktreeAsync`는 상태가 없을 때만 한 번 조회하고 현재 적용한 동일 스냅샷을 반환한다. MainWindow도 같은 스냅샷으로 충돌 경로를 적용하고 현재 조회·적용 오류를 반환한다. 과거 큐 오류로 이번 조회 성공·실패를 판단하지 않는다. Apply/Pop/Drop 계약은 유지했다.
 
-## 2026-10-07 Stash 완료 계약·리소스 준비
+Unstaged 메뉴는 메뉴 시점의 저장소·파일 상태·경로를 고정해 변경 버리기·추적 중지·무시로 전달한다. 대상 무효 사유를 기존 지역화 오류로 표시하며 새 선택이나 다른 저장소의 동일 경로로 바꾸지 않는다. 기존 FIFO와 실행 전 Core 검증은 유지했다.
 
-Stash 보관 완료의 `Task<StashMutationResult>` 반환 계약과 Save 전용 `Task<GitWorktreeStatus> RefreshStashSaveWorktreeAsync` 조회 계약을 확정해 작업자 1·3에게 전달했다. Git 성공과 입력 오류·갱신 오류를 보존하고, 고정 상태 스냅샷을 공통 완료에 전달하며 현재 조회 실패를 과거 큐 작업 오류와 구분한다. MainWindow는 부분 구현 상태이고 Save 전용 조회 API 인계를 기다린다. 창 수명·읽기 재시도 구현도 진행 중이므로 코드 완료로 기록하지 않는다.
+신규 한영 키는 Stash 네 키 ID 3125~3128과 `HistoryNavigationFound`, `HistoryNavigationNotFoundInScope`, `HistoryNavigationFailed` 세 키 ID 3129~3131을 Excel·JSON에 병합했다. 병합 중 이전 워크시트의 예약 XML 네임스페이스 접두사 표기를 수정하고 기존 셀 내용은 유지했다. 빌드·테스트·UI 실행·diff check·리소스 대조 등 추가 검증은 수행하지 않았다.
 
-신규 `StashSavedRefreshFailed`, `StashSaveRefreshRetry`, `StashSaveRefreshInProgress`, `StashSaveCompletionResultMissing` 네 키를 ID 3125~3128로 Excel·JSON에 병합했다. 병합 중 이전 워크시트에 저장된 예약 XML 네임스페이스 접두사 표기 문제를 수정했으며 기존 셀 내용은 유지했다. 빌드·테스트·UI 실행·diff check·리소스 대조 등 추가 검증은 수행하지 않았다.
-
-## 2026-10-07 History 상세 오류 상태 분리
+### History 상세 오류 상태 분리
 
 선택 커밋 상세·변경 파일 조회 오류를 원래 예외로 보관하고 `HasDetailError`·`DetailErrorText`로 표시하도록 반영했다. Commit·Changes 탭에서 같은 상세 오류를 현재 언어의 GitErrorLocalizer로 표시한다. 목록·메뉴의 `ErrorText`가 상세 실패나 성공한 빈 결과 판정에 섞이지 않도록 분리했으며, 기존 로딩·응답 guard·성공 후 빈 상태 판정은 유지한다. 새 문자열이나 외부 API·DI 연결은 추가하지 않았다. 이번 변경은 빌드·테스트·UI 실행·diff check·리소스 대조 등 추가 검증을 수행하지 않았다.
 
@@ -28,11 +26,11 @@ Stash 보관 완료의 `Task<StashMutationResult>` 반환 계약과 Save 전용 
 
 사용자의 파일 히스토리 화면 표시 요청 범위에서 실행 파일을 생성하고 현재 Bough 저장소를 읽어 실제 화면 콘텐츠를 `Docs/images/file-history.png`에 렌더했다. 메뉴 조작·테스트·하네스·회귀 검증은 수행하지 않았다. 이번 기능은 기존 beta.5 배포본에는 포함되지 않는다.
 
-기획 대비 주요 기능의 입력과 완료 경로를 읽어 [기능 진입과 완료 처리 검토](FeatureConnectionReview.md)에 기록했다. 충돌 대기 중 추가 초안 보호, Stash 재시도/갱신 실패, 폴더 열기 busy 무반응, 원격 후속 조회 실패 전달 등의 보완이 남아 있다. 이 발견을 모두 수정하거나 실행 재현한 것으로 기록하지 않는다.
+기획 대비 주요 기능의 입력과 완료 경로를 읽어 [기능 진입과 완료 처리 검토](FeatureConnectionReview.md)에 기록했다. 당시 발견한 Stash·History 승인 범위는 위 2026-10-07 기록에 반영했다. 충돌 대기 중 추가 초안 보호, 폴더 열기 busy 무반응, 원격 후속 조회 실패 전달 등의 보완은 남아 있다. 이 발견을 모두 수정하거나 실행 재현한 것으로 기록하지 않는다.
 
-Stash 보관 창의 실패 후 재시도·성공 후 갱신 실패 유지·읽기 전용 갱신 재시도와 Unstaged 메뉴의 무효 대상 안내를 작업자 1에게 배분했다. 작업자 3은 Save 완료의 갱신 오류 반환을 연결한다. 구현 인계 전이며 별도 검증은 수행하지 않는다. 내용 hunk 없는 변경 안내와 큰 파일 모달 수명 후보는 이번 수정 범위에 포함하지 않는다.
+당시 Stash 보관 창의 실패 후 재시도·성공 후 갱신 실패 유지·읽기 전용 갱신 재시도와 Unstaged 메뉴의 무효 대상 안내를 작업자 1에게 배분하고, 작업자 3에게 Save 완료 오류 반환 연결을 맡겼다. 이 범위는 위 2026-10-07 기록의 구현에 반영했다. 내용 hunk 없는 변경 안내와 큰 파일 모달 수명 후보는 수정 범위에 포함하지 않았다.
 
-작업자 2의 기능 연결 인계에서 Changes 표시 누락은 위 완료 범위로 분리했다. 남은 확정 세 건인 커밋 이동의 결과 안내, 선택 해제 뒤 미리보기 무효화, 참조 전환 실패 후 저장소·요청 재확인은 수정 계약을 확정해 작업자 2에게 배분했다. 작업자 3은 태그 이동의 전체 History 범위와 결과 표시를 연결한다. 전용 파일 히스토리의 완료 연결은 유지한다. 이 세 건의 코드 구현은 아직 인계 전이며 원격 사전 조회 대체의 무음 가능성은 추정·후속 후보로 남긴다. 추가 검증은 수행하지 않는다.
+작업자 2의 기능 연결 인계에서 Changes 표시 누락은 위 완료 범위로 분리했다. 커밋 이동 결과, 선택 해제 뒤 미리보기 무효화, 참조 전환 실패 후 저장소·요청 재확인을 작업자 2에게 배분하고 작업자 3에게 태그 이동의 전체 범위 연결을 맡겼다. 이 범위도 위 2026-10-07 기록에 반영했으며 전용 파일 히스토리는 유지했다. 원격 사전 조회 대체의 무음 가능성은 추정·후속 후보로 남긴다. 추가 검증은 수행하지 않았다.
 
 ## 2026-10-05 1차 마무리
 

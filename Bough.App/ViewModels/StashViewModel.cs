@@ -567,6 +567,61 @@ namespace Bough.App.ViewModels
             return await _mutationPresenter.RunAsync(this, repository, kind, entry, message, includeUntracked, expectedFiles, operationName);
         }
 
+        public Task<StashMutationResult> RetrySaveRefreshAsync(StashMutationResult savedResult)
+        {
+            return _mutationPresenter.RetrySaveRefreshAsync(this, savedResult);
+        }
+
+        internal int BeginSavedRefresh(GitRepository repository)
+        {
+            if (IsCurrentRepository(repository) == true)
+            {
+                _requestVersion++;
+                ErrorText = string.Empty;
+                IsBusy = true;
+            }
+            return _requestVersion;
+        }
+
+        internal bool IsSavedRefreshCurrent(GitRepository repository, int requestVersion)
+        {
+            if (IsCurrentRepository(repository) == false)
+            {
+                return true;
+            }
+            return requestVersion == _requestVersion;
+        }
+
+        internal void ApplySavedRefreshError(GitRepository repository, int requestVersion, string errorText)
+        {
+            if (IsCurrentRepository(repository) == false)
+            {
+                return;
+            }
+            if (requestVersion != _requestVersion)
+            {
+                return;
+            }
+            ErrorText = errorText;
+        }
+
+        internal void EndSavedRefresh(GitRepository repository, int requestVersion)
+        {
+            if (IsCurrentRepository(repository) == false)
+            {
+                return;
+            }
+            if (requestVersion != _requestVersion)
+            {
+                return;
+            }
+            if (_isMutating == true)
+            {
+                return;
+            }
+            IsBusy = false;
+        }
+
         internal bool BeginMutation(GitRepository repository)
         {
             bool active = IsCurrentRepository(repository);

@@ -809,6 +809,54 @@ namespace Bough.App.ViewModels
             return _worktreeLoadTask;
         }
 
+        public Task<GitWorktreeStatus> RefreshStashSaveWorktreeAsync(GitRepository repository)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            return _mutationPresenter.RefreshStashSaveWorktreeAsync(this, repository);
+        }
+
+        internal int WorktreeRequestVersion => _requestVersion;
+
+        internal int BeginStashSaveWorktreeRefresh()
+        {
+            int requestVersion = ++_requestVersion;
+            _previewVersion++;
+            IsBusy = true;
+            ErrorText = string.Empty;
+            return requestVersion;
+        }
+
+        internal void TrackStashSaveWorktreeRefresh(GitRepository repository, int requestVersion, Task<GitWorktreeStatus> request)
+        {
+            if (IsCurrentRepository(repository) == false)
+            {
+                return;
+            }
+            if (requestVersion != _requestVersion)
+            {
+                return;
+            }
+            _worktreeLoadTask = request;
+        }
+
+        internal void ApplyStashSaveWorktreeSnapshot(GitWorktreeStatus status)
+        {
+            ApplyWorktreeStatus(status);
+        }
+
+        internal void EndStashSaveWorktreeRefresh(GitRepository repository, int requestVersion)
+        {
+            if (IsCurrentRepository(repository) == false)
+            {
+                return;
+            }
+            if (requestVersion != _requestVersion)
+            {
+                return;
+            }
+            IsBusy = false;
+        }
+
         private async Task RefreshCoreAsync(GitRepository repository, int requestVersion, string preferredPath = null, bool preferStaged = false)
         {
             IsBusy = true;
@@ -966,7 +1014,26 @@ namespace Bough.App.ViewModels
                 files.Add(file);
             }
 
-            return QueueMutationAsync(repository, GetDiscardSelectionText(files), cancellationToken => DiscardCoreAsync(repository, files, cancellationToken));
+            return DiscardFilesAsync(repository, files);
+        }
+
+        public Task DiscardFilesAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files)
+        {
+            if (ValidateUnstagedMenuFiles(repository, files) == false)
+            {
+                return Task.CompletedTask;
+            }
+            foreach (GitWorktreeFile file in files)
+            {
+                if (file.IsConflict == true)
+                {
+                    SetLocalizedErrorText(new LocalizedText("LocalResolveBeforeDiscard", file.Path));
+                    return Task.CompletedTask;
+                }
+            }
+
+            GitWorktreeFile[] targets = files.ToArray();
+            return QueueMutationAsync(repository, GetDiscardSelectionText(targets), cancellationToken => DiscardCoreAsync(repository, targets, cancellationToken));
         }
 
         private Task DiscardCoreAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, CancellationToken cancellationToken)
@@ -1093,7 +1160,36 @@ namespace Bough.App.ViewModels
                 files.Add(file);
             }
 
-            return QueueMutationAsync(repository, GetStopTrackingSelectionText(files.Count), cancellationToken => StopTrackingCoreAsync(repository, files, cancellationToken));
+            return StopTrackingFilesAsync(repository, files);
+        }
+
+        public Task StopTrackingFilesAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files)
+        {
+            if (ValidateUnstagedMenuFiles(repository, files) == false)
+            {
+                return Task.CompletedTask;
+            }
+            foreach (GitWorktreeFile file in files)
+            {
+                if (file.IsUntracked == true)
+                {
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", file.Path));
+                    return Task.CompletedTask;
+                }
+                if (file.IsConflict == true)
+                {
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", file.Path));
+                    return Task.CompletedTask;
+                }
+                if (string.IsNullOrEmpty(file.OriginalPath) == false)
+                {
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", file.Path));
+                    return Task.CompletedTask;
+                }
+            }
+
+            GitWorktreeFile[] targets = files.ToArray();
+            return QueueMutationAsync(repository, GetStopTrackingSelectionText(targets.Length), cancellationToken => StopTrackingCoreAsync(repository, targets, cancellationToken));
         }
 
         private Task StopTrackingCoreAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, CancellationToken cancellationToken)
@@ -1104,8 +1200,19 @@ namespace Bough.App.ViewModels
         public Task IgnorePathsAsync(IReadOnlyList<string> paths, GitIgnoreLocation location)
         {
             GitRepository repository = _repository;
-            if (CanIgnorePaths(paths) == false)
+            if (repository == null)
             {
+                SetLocalizedErrorText(new LocalizedText("LocalSelectionSetChanged"));
+                return Task.CompletedTask;
+            }
+            if (paths == null)
+            {
+                SetLocalizedErrorText(new LocalizedText("LocalSelectionSetChanged"));
+                return Task.CompletedTask;
+            }
+            if (paths.Count == 0)
+            {
+                SetLocalizedErrorText(new LocalizedText("LocalSelectionSetChanged"));
                 return Task.CompletedTask;
             }
 
@@ -1122,7 +1229,77 @@ namespace Bough.App.ViewModels
                 files.Add(file);
             }
 
-            return QueueMutationAsync(repository, IgnoreMenuText, cancellationToken => IgnoreCoreAsync(repository, files, location, cancellationToken));
+            return IgnoreFilesAsync(repository, files, location);
+        }
+
+        public Task IgnoreFilesAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, GitIgnoreLocation location)
+        {
+            if (ValidateUnstagedMenuFiles(repository, files) == false)
+            {
+                return Task.CompletedTask;
+            }
+            foreach (GitWorktreeFile file in files)
+            {
+                if (file.IsUntracked == false)
+                {
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", file.Path));
+                    return Task.CompletedTask;
+                }
+                if (file.IsConflict == true)
+                {
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", file.Path));
+                    return Task.CompletedTask;
+                }
+            }
+
+            GitWorktreeFile[] targets = files.ToArray();
+            return QueueMutationAsync(repository, IgnoreMenuText, cancellationToken => IgnoreCoreAsync(repository, targets, location, cancellationToken));
+        }
+
+        private bool ValidateUnstagedMenuFiles(GitRepository repository, IReadOnlyList<GitWorktreeFile> files)
+        {
+            if (repository == null)
+            {
+                SetLocalizedErrorText(new LocalizedText("LocalSelectionSetChanged"));
+                return false;
+            }
+            if (IsCurrentRepository(repository) == false)
+            {
+                SetLocalizedErrorText(new LocalizedText("LocalSelectionSetChanged"));
+                return false;
+            }
+            if (files == null)
+            {
+                SetLocalizedErrorText(new LocalizedText("LocalSelectionSetChanged"));
+                return false;
+            }
+            if (files.Count == 0)
+            {
+                SetLocalizedErrorText(new LocalizedText("LocalSelectionSetChanged"));
+                return false;
+            }
+
+            List<GitWorktreeFile> current = [];
+            foreach (GitWorktreeFile file in files)
+            {
+                GitWorktreeFile match = _unstagedFiles.FirstOrDefault(candidate => candidate.Path == file.Path);
+                if (match == null)
+                {
+                    SetLocalizedErrorText(new LocalizedText("LocalSelectedFileUnavailable", file.Path));
+                    return false;
+                }
+                current.Add(match);
+            }
+            try
+            {
+                _workingTreeService.ValidateSelectedFiles(files, current, false);
+                return true;
+            }
+            catch (GitException exception)
+            {
+                SetLocalizedErrorText(new LocalizedText(exception));
+                return false;
+            }
         }
 
         private Task IgnoreCoreAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, GitIgnoreLocation location, CancellationToken cancellationToken)
@@ -1280,7 +1457,7 @@ namespace Bough.App.ViewModels
             SetLocalizedErrorText(new LocalizedText(exception));
         }
 
-        private bool IsCurrentRepository(GitRepository repository)
+        internal bool IsCurrentRepository(GitRepository repository)
         {
             if (_repository == null)
             {
