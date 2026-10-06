@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -32,16 +34,24 @@ namespace Bough.App.Views
         private HistoryViewModel _layoutViewModel;
         private bool _commitListHeightUserSet;
         private bool _commitListHeightUpdateQueued;
+        private readonly HashSet<ContextMenu> _openFileMenus = [];
+        private TaskCompletionSource<bool> _previewMenusClosed;
+        private bool _previewRightClickPending;
+        private int _previewPointerVersion;
 
         public HistoryView()
         {
             InitializeComponent();
             LanguageChangeBinding.Bind(this, () => (DataContext as HistoryViewModel)?.Strings);
             AddHandler(TreeViewItem.ExpandedEvent, TreeExpanded);
+            HistoryChangedFiles.AddHandler(InputElement.PointerPressedEvent, PreviewPointerPressed, RoutingStrategies.Tunnel, true);
+            HistoryChangedFiles.AddHandler(InputElement.PointerReleasedEvent, PreviewPointerReleased, RoutingStrategies.Bubble, true);
             HistoryCommitList.TemplateApplied += (_, _) => AttachCommitScrollViewer();
             DataContextChanged += (_, _) =>
             {
                 _layoutViewModel?.ExternalFileOpen.Invalidate();
+                _layoutViewModel?.FilePreview.Suspend();
+                ResetPreviewMenuGate();
                 AttachLayoutViewModel();
             };
             AttachedToVisualTree += (_, _) =>
@@ -53,6 +63,8 @@ namespace Bough.App.Views
             DetachedFromVisualTree += (_, _) =>
             {
                 (DataContext as HistoryViewModel)?.ExternalFileOpen.Invalidate();
+                (DataContext as HistoryViewModel)?.FilePreview.Suspend();
+                ResetPreviewMenuGate();
                 DetachCommitScrollViewer();
                 DetachLayoutViewModel();
             };
@@ -73,6 +85,8 @@ namespace Bough.App.Views
             }
 
             _layoutViewModel.PropertyChanged += LayoutViewModelPropertyChanged;
+            _layoutViewModel.FilePreview.SetPresentationScheduler(SchedulePreviewPresentationAsync);
+            _layoutViewModel.FilePreview.Resume();
             ScheduleCommitListHeightUpdate();
         }
 
@@ -84,6 +98,7 @@ namespace Bough.App.Views
             }
 
             _layoutViewModel.PropertyChanged -= LayoutViewModelPropertyChanged;
+            _layoutViewModel.FilePreview.SetPresentationScheduler(null);
             _layoutViewModel = null;
         }
 
@@ -596,6 +611,107 @@ namespace Bough.App.Views
             catch (Exception exception) { viewModel.ReportActionError(exception); }
         }
 
+        private void PreviewPointerPressed(object sender, PointerPressedEventArgs eventArgs)
+        {
+            if (eventArgs.GetCurrentPoint(HistoryChangedFiles).Properties.IsRightButtonPressed == false)
+            {
+                return;
+            }
+            _previewRightClickPending = true;
+            _previewPointerVersion++;
+            EnsurePreviewMenuGate();
+        }
+
+        private void PreviewPointerReleased(object sender, PointerReleasedEventArgs eventArgs)
+        {
+            if (_previewRightClickPending == false)
+            {
+                return;
+            }
+            int version = _previewPointerVersion;
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (version != _previewPointerVersion)
+                {
+                    return;
+                }
+                _previewRightClickPending = false;
+                ReleasePreviewMenuGate();
+            }, DispatcherPriority.Background);
+        }
+
+        private void EnsurePreviewMenuGate()
+        {
+            if (_previewMenusClosed == null)
+            {
+                _previewMenusClosed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            }
+        }
+
+        private void ReleasePreviewMenuGate()
+        {
+            if (_previewRightClickPending)
+            {
+                return;
+            }
+            if (_openFileMenus.Count > 0)
+            {
+                return;
+            }
+            TaskCompletionSource<bool> completion = _previewMenusClosed;
+            _previewMenusClosed = null;
+            completion?.TrySetResult(true);
+        }
+
+        private void ResetPreviewMenuGate()
+        {
+            _previewPointerVersion++;
+            _previewRightClickPending = false;
+            _openFileMenus.Clear();
+            ReleasePreviewMenuGate();
+        }
+
+        private async Task SchedulePreviewPresentationAsync(Action apply, CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                TaskCompletionSource<bool> gate = _previewMenusClosed;
+                if (gate != null)
+                {
+                    await gate.Task.WaitAsync(cancellationToken);
+                }
+                bool applied = false;
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    if (_previewRightClickPending)
+                    {
+                        return;
+                    }
+                    if (_openFileMenus.Count > 0)
+                    {
+                        return;
+                    }
+                    apply();
+                    applied = true;
+                }, DispatcherPriority.Background, cancellationToken);
+                if (applied)
+                {
+                    return;
+                }
+            }
+        }
+
+        private void FileContextClosed(object sender, RoutedEventArgs eventArgs)
+        {
+            if (sender is not ContextMenu menu)
+            {
+                return;
+            }
+            _openFileMenus.Remove(menu);
+            ReleasePreviewMenuGate();
+        }
+
         private static void DisableFileMenu(ContextMenu menu)
         {
             foreach (MenuItem item in menu.Items.OfType<MenuItem>())
@@ -611,6 +727,9 @@ namespace Bough.App.Views
             {
                 return;
             }
+            _previewRightClickPending = false;
+            _openFileMenus.Add(menu);
+            EnsurePreviewMenuGate();
             DisableFileMenu(menu);
             if (DataContext is not HistoryViewModel viewModel)
             {

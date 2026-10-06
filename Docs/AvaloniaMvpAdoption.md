@@ -51,6 +51,8 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 - History의 기본 상세 탭은 Commit·Changes다. 사용자 요청으로 커밋 우클릭의 File Tree와 파일 우클릭의 파일 트리에서 보기 항목을 제거했다. 기존 `IsFileTreeView` 보조 화면과 `HistoryFileTreePresenter` 조회 구현은 내부에 남아 있으며 현재 UI 진입 메뉴는 제공하지 않는다. `Services/HistoryGraphBuilder`가 커밋 그래프 행을 계산하고 `ViewModels/Models`의 항목이 표시 상태를 보관한다.
 - 파일 메뉴의 외부 Open은 메뉴 시점 커밋의 임시 스냅샷을 OS 기본 연결 프로그램으로 연다. Core의 `GitCommitFileActionService`는 Git 내용 조회·고유 임시 파일 쓰기, `HistoryExternalFilePresenter`는 비동기 준비·고정 대상 수명, View는 OS 실행과 오류 표시를 맡는다. 선택 기반 하단 미리보기와 외부 열기를 구분하며 메뉴 준비는 동기 디스크 조회·Git 실행으로 UI 스레드를 기다리게 하지 않는다. 구현과 실행 미확인 상태는 CurrentStatus를 따른다.
 
+- 선택 기반 하단 미리보기는 `HistoryPreviewPresenter`가 `HistoryPreviewRequest`의 저장소·상세 세대·비교 부모·경로·선택을 고정하고 실행 중인 조회 하나와 최신 대기 요청 하나를 조정한다. Core의 `GetFileContentAsync` 호출 전체를 백그라운드에서 실행해 Git 준비·프로세스 시작·내용 해석이 UI 입력을 붙잡지 않도록 한다. `HistoryViewModel`은 로딩·내용·사유 바인딩을 적용하고 `HistoryView`가 낮은 UI 우선순위와 파일 메뉴 수명으로 표시 시점을 조정한다. 메뉴가 열린 동안 표시를 기다리며 닫힌 뒤에도 현재 요청인지 재확인한다. 취소된 byte 조회는 Git 프로세스 종료까지 비동기로 기다린 뒤 최신 조회를 진행한다. View 분리와 재연결은 Presenter의 `Suspend`/`Resume`으로 처리하고 완료된 표시를 다시 읽지 않는다. 읽기 미리보기와 변경 명령의 FIFO 큐, 외부 Open의 요청 수명은 구분한다.
+
 ## 터미널 연결
 
 `Composition/MainWindowChildren`과 Console 호출부는 `Core/Interfaces/ITerminalLauncher`를 생성자 주입받는다. `App.axaml.cs`가 시작 시 OS를 판별해 `WindowsTerminalLauncher`·`MacOsTerminalLauncher`·`LinuxTerminalLauncher` 중 하나를 Singleton으로 등록하며, 지원하지 않는 OS에는 오류를 반환하는 구현을 등록한다. 공통 추상 `TerminalLauncher`는 저장소 확인·프로세스 실행·Git 경로 연결만 맡고 OS 분기를 갖지 않는다.

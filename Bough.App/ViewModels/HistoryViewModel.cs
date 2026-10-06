@@ -47,6 +47,7 @@ namespace Bough.App.ViewModels
         private readonly HistoryCommitPresenter _commitPresenter;
         private readonly HistoryFileTreePresenter _fileTreePresenter;
         private readonly HistoryExternalFilePresenter _externalFilePresenter;
+        private readonly HistoryPreviewPresenter _previewPresenter;
         private readonly HistoryActionPresenter _actionPresenter;
         private readonly GitCommitInspectionService _inspectionService;
         private readonly GitCommitFileActionService _fileActionService;
@@ -64,6 +65,7 @@ namespace Bough.App.ViewModels
         private bool _isLoadingMore;
         private bool _isLoadingInspection;
         private bool _isLoadingChanges;
+        private bool _isLoadingPreview;
         private bool _hasLoadedChanges;
         private Exception _detailError;
         private string _pageErrorText = string.Empty;
@@ -84,10 +86,6 @@ namespace Bough.App.ViewModels
         private int _expandRequest;
         private int _treeRequest;
         private int _treeFilterRequest;
-        private int _previewRequest;
-        private int _selectionPreviewRequest;
-        private int _explicitPreviewRequest;
-        private bool _isExplicitPreview;
         private Task _listLoadTask = Task.CompletedTask;
         private bool _hasLoadedHistory;
         private Exception _historyLoadError;
@@ -103,6 +101,7 @@ namespace Bough.App.ViewModels
             _commitPresenter = new HistoryCommitPresenter(inspectionService, commitMessageService);
             _fileTreePresenter = new HistoryFileTreePresenter(inspectionService);
             _externalFilePresenter = new HistoryExternalFilePresenter(this, fileActionService);
+            _previewPresenter = new HistoryPreviewPresenter(this, inspectionService);
             _actionPresenter = new HistoryActionPresenter(actionService, operationQueue);
             _inspectionService = inspectionService;
             _fileActionService = fileActionService;
@@ -222,12 +221,8 @@ namespace Bough.App.ViewModels
                 {
                     return;
                 }
-                _previewRequest++;
-                _isExplicitPreview = false;
+                _previewPresenter.Clear();
                 _externalFilePresenter.Invalidate();
-                PreviewPath = string.Empty;
-                PreviewText = string.Empty;
-                PreviewReason = string.Empty;
                 _ = LoadChangesAsync();
             }
         }
@@ -279,15 +274,7 @@ namespace Bough.App.ViewModels
                 }
                 if (value == null)
                 {
-                    _selectionPreviewRequest++;
-                    if (_isExplicitPreview)
-                    {
-                        return;
-                    }
-                    _previewRequest++;
-                    PreviewPath = string.Empty;
-                    PreviewText = string.Empty;
-                    PreviewReason = string.Empty;
+                    _previewPresenter.ClearChangedSelection();
                     return;
                 }
                 _ = OpenSelectedFileAsync(value);
@@ -304,6 +291,7 @@ namespace Bough.App.ViewModels
                 }
                 if (value == null)
                 {
+                    _previewPresenter.ClearTreeSelection();
                     return;
                 }
                 _ = SelectTreeItemAsync(value);
@@ -1131,8 +1119,7 @@ namespace Bough.App.ViewModels
             _expandRequest++;
             _treeRequest++;
             _treeFilterRequest++;
-            _previewRequest++;
-            _isExplicitPreview = false;
+            _previewPresenter.Clear();
             _inspection = null;
             OnPropertyChanged(nameof(Inspection));
             OnPropertyChanged(nameof(AuthorDescription));
@@ -1152,9 +1139,6 @@ namespace Bough.App.ViewModels
             VisibleChangedFiles.Clear();
             TreeRoots.Clear();
             VisibleTreeRoots.Clear();
-            PreviewPath = string.Empty;
-            PreviewText = string.Empty;
-            PreviewReason = string.Empty;
             _isLoadingInspection = false;
             _isLoadingChanges = false;
             _hasLoadedChanges = false;
@@ -1530,10 +1514,7 @@ namespace Bough.App.ViewModels
         {
             IsFileTreeView = true;
             TreeSearch = string.Empty;
-            _previewRequest++;
-            PreviewPath = string.Empty;
-            PreviewText = string.Empty;
-            PreviewReason = string.Empty;
+            _previewPresenter.Clear();
             _selectedTreeFile = null;
             OnPropertyChanged(nameof(SelectedTreeFile));
             await LoadTreeAsync();
@@ -1542,10 +1523,7 @@ namespace Bough.App.ViewModels
         public async Task CloseFileTreeAsync()
         {
             IsFileTreeView = false;
-            _previewRequest++;
-            PreviewPath = string.Empty;
-            PreviewText = string.Empty;
-            PreviewReason = string.Empty;
+            _previewPresenter.Clear();
             if (SelectedTab != 1)
             {
                 return;
@@ -1721,14 +1699,12 @@ namespace Bough.App.ViewModels
                 catch (Exception exception) { SetLocalizedErrorText(new LocalizedText(exception)); }
                 return;
             }
-            await OpenFileAsync(item.Path, false);
+            await RequestPreviewAsync(item.Path, false, true, null, item);
         }
 
         private Task OpenSelectedFileAsync(HistoryInspectionFileItem selected)
         {
-            _isExplicitPreview = false;
-            int selectionRequest = ++_selectionPreviewRequest;
-            return LoadFilePreviewAsync(selected.Path, selected.File.StatusCode == 'D', false, selected, selectionRequest, 0);
+            return RequestPreviewAsync(selected.Path, selected.IsDeleted, false, selected, null);
         }
 
         public Task OpenFileAsync(string repositoryRoot, string commitHash, string path, bool deleted)
@@ -1739,122 +1715,74 @@ namespace Bough.App.ViewModels
 
         public Task OpenFileAsync(string path, bool deleted)
         {
-            _isExplicitPreview = true;
-            int explicitRequest = ++_explicitPreviewRequest;
-            return LoadFilePreviewAsync(path, deleted, true, null, 0, explicitRequest);
+            return RequestPreviewAsync(path, deleted, true, null, null);
         }
 
-        private async Task LoadFilePreviewAsync(string path, bool deleted, bool explicitOpen,
-            HistoryInspectionFileItem selection, int selectionRequest, int explicitRequest)
+        private Task RequestPreviewAsync(string path, bool deleted, bool explicitPreview,
+            HistoryInspectionFileItem selection, HistoryTreeItem treeSelection)
         {
-            GitRepository repository = _repository;
-            GitCommitInspection inspection = _inspection;
-            if (repository == null)
+            if (_repository == null)
             {
-                return;
+                return Task.CompletedTask;
             }
-            if (inspection == null)
+            if (_inspection == null)
             {
-                return;
+                return Task.CompletedTask;
             }
-            int request = ++_previewRequest;
-            string revision = inspection.Hash;
-            string parent = SelectedParent;
-            if (deleted)
-            {
-                revision = parent;
-            }
+            HistoryPreviewRequest request = new(_repository, _inspection, _inspectionRequest, SelectedParent,
+                path, deleted, explicitPreview, selection, treeSelection);
+            return _previewPresenter.RequestAsync(request);
+        }
+
+        public HistoryPreviewPresenter FilePreview { get { return _previewPresenter; } }
+        internal int PreviewInspectionVersion { get { return _inspectionRequest; } }
+        public bool IsLoadingPreview
+        {
+            get { return _isLoadingPreview; }
+            private set { SetProperty(ref _isLoadingPreview, value); }
+        }
+
+        internal void ClearPreviewDisplay()
+        {
+            PreviewPath = string.Empty;
+            PreviewText = string.Empty;
+            PreviewReason = string.Empty;
+            IsLoadingPreview = false;
+        }
+
+        internal void BeginPreviewDisplay(HistoryPreviewRequest request)
+        {
             PreviewText = string.Empty;
             PreviewPath = string.Empty;
-            if (revision.Length == 0)
+            if (string.IsNullOrEmpty(request.Revision) == false)
             {
-                SetLocalizedPreviewReason(new LocalizedText("HistoryPreviewFileAbsent"));
-                return;
+                PreviewPath = $"{request.Path} @ {request.Revision.Substring(0, 8)}";
             }
-            PreviewPath = $"{path} @ {revision.Substring(0, 8)}";
+            IsLoadingPreview = true;
             SetLocalizedPreviewReason(new LocalizedText("HistoryPreviewLoading"));
-            try
+        }
+
+        internal void ShowAbsentPreview()
+        {
+            IsLoadingPreview = false;
+            SetLocalizedPreviewReason(new LocalizedText("HistoryPreviewFileAbsent"));
+        }
+
+        internal void ApplyPreviewContent(GitCommitFileContent content)
+        {
+            SetLocalizedPreviewReason(new LocalizedText(content.ReasonCode, content.ReasonArguments.ToArray()));
+            if (content.ReasonCode == "HistorySubmoduleGitlink")
             {
-                GitCommitFileContent content = await _inspectionService.GetFileContentAsync(repository, revision, path);
-                if (request != _previewRequest)
-                {
-                    return;
-                }
-                if (_repository != repository)
-                {
-                    return;
-                }
-                if (_inspection != inspection)
-                {
-                    return;
-                }
-                if (SelectedParent != parent)
-                {
-                    return;
-                }
-                if (explicitOpen)
-                {
-                    if (explicitRequest != _explicitPreviewRequest)
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    if (selectionRequest != _selectionPreviewRequest)
-                    {
-                        return;
-                    }
-                    if (SelectedChangedFile != selection)
-                    {
-                        return;
-                    }
-                }
-                PreviewText = content.Text;
-                SetLocalizedPreviewReason(new LocalizedText(content.ReasonCode, content.ReasonArguments.ToArray()));
-                if (content.ReasonCode == "HistorySubmoduleGitlink")
-                {
-                    SetLocalizedPreviewReason(new LocalizedText("HistoryPreviewTarget", new LocalizedText(content.ReasonCode, content.ReasonArguments.ToArray()), content.ObjectHash));
-                }
+                SetLocalizedPreviewReason(new LocalizedText("HistoryPreviewTarget", new LocalizedText(content.ReasonCode, content.ReasonArguments.ToArray()), content.ObjectHash));
             }
-            catch (Exception exception)
-            {
-                if (request != _previewRequest)
-                {
-                    return;
-                }
-                if (_repository != repository)
-                {
-                    return;
-                }
-                if (_inspection != inspection)
-                {
-                    return;
-                }
-                if (SelectedParent != parent)
-                {
-                    return;
-                }
-                if (explicitOpen)
-                {
-                    if (explicitRequest != _explicitPreviewRequest)
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    if (selectionRequest != _selectionPreviewRequest)
-                    {
-                        return;
-                    }
-                    if (SelectedChangedFile != selection)
-                    {
-                        return;
-                    }
-                }
-                SetLocalizedPreviewReason(new LocalizedText(exception));
-            }
+            PreviewText = content.Text;
+            IsLoadingPreview = false;
+        }
+
+        internal void ShowPreviewError(Exception exception)
+        {
+            IsLoadingPreview = false;
+            SetLocalizedPreviewReason(new LocalizedText(exception));
         }
 
         public HistoryFileActionContext CreateFileActionContext(object file)

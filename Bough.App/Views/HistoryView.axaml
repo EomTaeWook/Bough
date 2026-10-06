@@ -367,7 +367,7 @@
                                        ToolTip.Tip="{Binding PathDescription}" />
                           </Expander.Header>
                           <Expander.ContextMenu>
-                            <ContextMenu Tag="{Binding}" Opened="FileContextOpened">
+                            <ContextMenu Tag="{Binding}" Opened="FileContextOpened" Closed="FileContextClosed">
                               <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" CommandParameter="open" Click="OpenFileClicked" />
                               <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" CommandParameter="explorer" Click="ExplorerFileClicked" />
                               <Separator />
@@ -444,7 +444,7 @@
                 </StackPanel>
                 <TextBox Grid.Row="1" PlaceholderText="{Binding Labels.SearchChangedPaths}" Text="{Binding FileSearch, Mode=TwoWay}"
                          Margin="0,0,0,8" />
-                <ListBox Grid.Row="2" ItemsSource="{Binding VisibleChangedFiles}"
+                <ListBox x:Name="HistoryChangedFiles" Grid.Row="2" ItemsSource="{Binding VisibleChangedFiles}"
                          SelectedItem="{Binding SelectedChangedFile, Mode=TwoWay}"
                          Background="{DynamicResource BoughBrushSurface}" Foreground="{DynamicResource BoughBrushText}"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -453,7 +453,7 @@
                     <DataTemplate x:DataType="models:HistoryInspectionFileItem">
                       <Border Padding="8,6" ToolTip.Tip="{Binding PathDescription}">
                         <Border.ContextMenu>
-                          <ContextMenu Tag="{Binding}" Opened="FileContextOpened">
+                          <ContextMenu Tag="{Binding}" Opened="FileContextOpened" Closed="FileContextClosed">
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" CommandParameter="open" Click="OpenFileClicked" />
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" CommandParameter="explorer" Click="ExplorerFileClicked" />
                             <Separator />
@@ -528,7 +528,7 @@
                     <TreeDataTemplate x:DataType="models:HistoryTreeItem" ItemsSource="{Binding Children}">
                       <Border Padding="3" ToolTip.Tip="{Binding ToolTipPath}">
                         <Border.ContextMenu>
-                          <ContextMenu Tag="{Binding}" Opened="FileContextOpened">
+                          <ContextMenu Tag="{Binding}" Opened="FileContextOpened" Closed="FileContextClosed">
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" CommandParameter="open" Click="OpenFileClicked" />
                             <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" CommandParameter="explorer" Click="ExplorerFileClicked" />
                             <Separator />

@@ -255,7 +255,14 @@ namespace Bough.Core.Git
             {
                 if (process.HasExited == false)
                 {
-                    process.Kill(true);
+                    try
+                    {
+                        process.Kill(true);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                    }
+                    await process.WaitForExitAsync(CancellationToken.None);
                 }
             }
         }
