@@ -6208,5 +6208,17 @@
     "Name": "HistoryNavigationFailed",
     "Kor": "커밋 {0} 이동에 필요한 이력을 읽지 못했습니다. {1}",
     "Eng": "Could not read history to navigate to commit {0}. {1}"
+  },
+  {
+    "Id": 3132,
+    "Name": "CommitFileTemporarySnapshotFailed",
+    "Kor": "파일 {0}의 커밋 스냅샷을 임시 읽기 전용 파일로 준비하지 못했습니다.",
+    "Eng": "Could not prepare the commit snapshot of {0} as a temporary read-only file."
+  },
+  {
+    "Id": 3133,
+    "Name": "HistorySnapshotOpenFailed",
+    "Kor": "파일 {0}의 스냅샷을 기본 연결 프로그램으로 열지 못했습니다. 파일 연결과 프로그램 설정을 확인하세요.",
+    "Eng": "Could not open the snapshot of {0} with its default application. Check the file association and application settings."
   }
 ]

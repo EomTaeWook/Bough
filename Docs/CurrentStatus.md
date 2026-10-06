@@ -2,6 +2,16 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
+## 2026-10-07 파일 열기·우클릭 지연·날짜 타임라인
+
+사용자가 Changes 파일 메뉴의 열기 무반응과 간헐적인 우클릭 지연을 제보했다. 기존 Open은 외부 프로그램이 아니라 파일 선택 때 이미 표시한 하단 미리보기를 다시 읽는 경로였다. 사용자가 선택한 기본 편집기·연결 프로그램 실행으로 메뉴 Open을 변경했다. 메뉴 시점 커밋의 임시 읽기 전용 스냅샷을 준비하며 삭제 파일은 고정된 비교 부모의 버전을 사용한다. 작업 파일·인덱스는 변경하지 않고 선택 기반 하단 미리보기는 유지했다.
+
+Core `GitCommitFileActionService.PrepareSnapshotFileAsync`는 기존 원본 바이트·50MiB 내보내기 계약을 사용해 고유 임시 디렉터리의 일반 파일을 준비한다. `GitTemporarySnapshotFile`이 생성 위치를 반환하고 `HistoryExternalFilePresenter`가 취소·요청 버전·상세 대상 수명과 실행 전 대체 결과 정리를 조정한다. View는 Windows 기본 파일 연결 또는 macOS/Linux의 `open`/`xdg-open`을 사용한다. 외부로 전달한 파일은 프로그램의 지연 읽기를 위해 유지하며 전체 임시폴더 정리는 추가하지 않았다. 임시 준비와 연결 실행 오류 두 키를 Excel·JSON에 ID 3132~3133으로 병합하고 기존 GitErrorLocalizer·공통 상태 표시를 사용한다.
+
+메뉴를 여는 `FileContextOpened`에서 동기 `File.Exists`와 작업 경로 계산을 제거했다. 각 항목은 메모리의 고정 행 모델과 현재 상세 수명으로 준비하고 탐색기 클릭에서 작업 파일 존재를 확인한다. 실제 지연 원인과 체감 개선은 측정하지 않았다. 전용 파일 히스토리의 상단 날짜 타임라인·양 끝 날짜·선택 위치 행 및 연결 코드는 제거했으며, 왼쪽 목록의 커밋 날짜와 diff·splitter·취소/닫기는 유지했다.
+
+사용자의 우클릭 확인 발언은 곧 열기 실패 제보로 정정됐다. 릴리스 생성은 중단한 상태이며 새 실행 파일을 만들지 않았다. 이번 소스 변경의 빌드·테스트·UI 실행·추가 검증과 푸시는 수행하지 않았다.
+
 ## 2026-10-07 Changes 파일 메뉴 대상 전달 수정
 
 사용자가 Changes 탭의 파일 우클릭에서 열기·탐색기·히스토리·내보내기·경로 복사가 모두 반응하지 않는다고 제보했다. 기존 `FileContextOpened`는 `ContextMenu.PlacementTarget`이 없으면 파일 대상 설정 전에 종료한다. [Avalonia 12.1.3 구현](https://github.com/AvaloniaUI/Avalonia/blob/12.1.3/src/Avalonia.Controls/ContextMenu.cs)은 일반 우클릭의 대상 컨트롤을 내부 Popup에 설정하고 공개 ContextMenu 속성에는 기록하지 않는다. 따라서 정상적으로 보이는 메뉴에 실행 대상이 전달되지 않는 공통 코드 결함을 확인했다.

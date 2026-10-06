@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Bough.App.Localization;
@@ -78,8 +76,6 @@ namespace Bough.App.Views
             ToolTip.SetTip(BaselineText, _model.Repository.RootPath + " · " + _model.RevisionHash);
             CancelButton.IsVisible = _model.IsLoadingList || _model.IsLoadingDiff;
             LoadingProgress.IsVisible = CancelButton.IsVisible;
-            ToolTip.SetTip(DateTimeline, _strings.GetString("FileHistoryTimelineTip"));
-            AutomationProperties.SetName(DateTimeline, _strings.GetString("FileHistoryTimelineTip"));
             foreach (FileHistoryEntryItem entry in _model.Entries)
             {
                 entry.SetStatusText(GetStatusText(entry.Status));
@@ -109,13 +105,11 @@ namespace Bough.App.Views
             SelectedPathText.Text = _model.FilePath;
             SelectedTitleText.Text = string.Empty;
             SelectedMetadataText.Text = string.Empty;
-            SelectionPositionText.Text = string.Empty;
             if (selected != null)
             {
                 SelectedPathText.Text = selected.PathDescription;
                 SelectedTitleText.Text = selected.Title;
                 SelectedMetadataText.Text = _strings.Format("FileHistorySelectedCommit", selected.Author, selected.ShortHash, selected.Date);
-                SelectionPositionText.Text = _strings.Format("FileHistoryTimelineSelection", _model.Entries.IndexOf(selected) + 1, _model.Entries.Count, selected.Date);
             }
             ToolTip.SetTip(SelectedPathText, SelectedPathText.Text);
             DiffMessage.Text = string.Empty;
@@ -149,7 +143,6 @@ namespace Bough.App.Views
                 DiffMessage.Text = _strings.GetString("FileHistorySelectCommit");
             }
             DiffMessage.IsVisible = DiffMessage.Text.Length > 0;
-            RefreshTimeline();
         }
 
         private string GetStatusText(string status)
@@ -181,63 +174,6 @@ namespace Bough.App.Views
                 return Foreground;
             }
             return brush;
-        }
-
-        private void TimelineSizeChanged(object sender, SizeChangedEventArgs eventArgs) { RefreshTimeline(); }
-
-        private void RefreshTimeline()
-        {
-            DateTimeline.Children.Clear();
-            FirstDateText.Text = string.Empty;
-            LastDateText.Text = string.Empty;
-            if (_model.Entries.Count == 0)
-            {
-                return;
-            }
-            DateTimeOffset first = _model.Entries.Min(item => item.Entry.AuthoredAt);
-            DateTimeOffset last = _model.Entries.Max(item => item.Entry.AuthoredAt);
-            FirstDateText.Text = first.ToString("yyyy-MM-dd", CultureInfo.CurrentCulture);
-            LastDateText.Text = last.ToString("yyyy-MM-dd", CultureInfo.CurrentCulture);
-            double width = Math.Max(0, DateTimeline.Bounds.Width - 16);
-            Border axis = new() { Width = width, Height = 1, Background = GetBrush("BoughBrushBorder") };
-            Canvas.SetLeft(axis, 8);
-            Canvas.SetTop(axis, 18);
-            DateTimeline.Children.Add(axis);
-            double span = Math.Max(1, (last - first).TotalSeconds);
-            foreach (FileHistoryEntryItem item in _model.Entries)
-            {
-                double height = 8;
-                IBrush brush = GetBrush("BoughBrushTextSubtle");
-                if (ReferenceEquals(item, _model.SelectedEntry))
-                {
-                    height = 18;
-                    brush = GetBrush("BoughBrushAccent");
-                }
-                Border tick = new() { Width = 2, Height = height, Background = brush };
-                Canvas.SetLeft(tick, 8 + (item.Entry.AuthoredAt - first).TotalSeconds / span * width);
-                Canvas.SetTop(tick, 18 - height);
-                DateTimeline.Children.Add(tick);
-            }
-        }
-
-        private void TimelinePressed(object sender, PointerPressedEventArgs eventArgs)
-        {
-            if (eventArgs.GetCurrentPoint(DateTimeline).Properties.IsLeftButtonPressed == false)
-            {
-                return;
-            }
-            if (_model.Entries.Count == 0)
-            {
-                return;
-            }
-            DateTimeOffset first = _model.Entries.Min(item => item.Entry.AuthoredAt);
-            DateTimeOffset last = _model.Entries.Max(item => item.Entry.AuthoredAt);
-            double width = Math.Max(1, DateTimeline.Bounds.Width - 16);
-            double position = Math.Clamp((eventArgs.GetPosition(DateTimeline).X - 8) / width, 0, 1);
-            DateTimeOffset target = first.AddSeconds((last - first).TotalSeconds * position);
-            _model.SelectedEntry = _model.Entries.MinBy(item => Math.Abs((item.Entry.AuthoredAt - target).TotalSeconds));
-            FileCommits.ScrollIntoView(_model.SelectedEntry);
-            eventArgs.Handled = true;
         }
 
         private async void RefreshClicked(object sender, RoutedEventArgs eventArgs) { await _presenter.LoadAsync(); }

@@ -46,6 +46,7 @@ namespace Bough.App.ViewModels
         private readonly HistoryNavigationPresenter _navigationPresenter;
         private readonly HistoryCommitPresenter _commitPresenter;
         private readonly HistoryFileTreePresenter _fileTreePresenter;
+        private readonly HistoryExternalFilePresenter _externalFilePresenter;
         private readonly HistoryActionPresenter _actionPresenter;
         private readonly GitCommitInspectionService _inspectionService;
         private readonly GitCommitFileActionService _fileActionService;
@@ -101,6 +102,7 @@ namespace Bough.App.ViewModels
             _navigationPresenter = new HistoryNavigationPresenter(this);
             _commitPresenter = new HistoryCommitPresenter(inspectionService, commitMessageService);
             _fileTreePresenter = new HistoryFileTreePresenter(inspectionService);
+            _externalFilePresenter = new HistoryExternalFilePresenter(this, fileActionService);
             _actionPresenter = new HistoryActionPresenter(actionService, operationQueue);
             _inspectionService = inspectionService;
             _fileActionService = fileActionService;
@@ -222,6 +224,7 @@ namespace Bough.App.ViewModels
                 }
                 _previewRequest++;
                 _isExplicitPreview = false;
+                _externalFilePresenter.Invalidate();
                 PreviewPath = string.Empty;
                 PreviewText = string.Empty;
                 PreviewReason = string.Empty;
@@ -1122,6 +1125,7 @@ namespace Bough.App.ViewModels
 
         private void ClearInspection()
         {
+            _externalFilePresenter.Invalidate();
             IsFileTreeView = false;
             _inspectionRequest++;
             _expandRequest++;
@@ -1940,6 +1944,7 @@ namespace Bough.App.ViewModels
         }
 
         public GitCommitFileActionService FileActions { get { return _fileActionService; } }
+        public HistoryExternalFilePresenter ExternalFileOpen { get { return _externalFilePresenter; } }
 
         public void NotifyFileRestored(string repositoryRoot, string path)
         {

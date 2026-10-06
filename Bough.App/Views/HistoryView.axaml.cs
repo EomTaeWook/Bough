@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -38,7 +39,11 @@ namespace Bough.App.Views
             LanguageChangeBinding.Bind(this, () => (DataContext as HistoryViewModel)?.Strings);
             AddHandler(TreeViewItem.ExpandedEvent, TreeExpanded);
             HistoryCommitList.TemplateApplied += (_, _) => AttachCommitScrollViewer();
-            DataContextChanged += (_, _) => AttachLayoutViewModel();
+            DataContextChanged += (_, _) =>
+            {
+                _layoutViewModel?.ExternalFileOpen.Invalidate();
+                AttachLayoutViewModel();
+            };
             AttachedToVisualTree += (_, _) =>
             {
                 AttachCommitScrollViewer();
@@ -47,6 +52,7 @@ namespace Bough.App.Views
             };
             DetachedFromVisualTree += (_, _) =>
             {
+                (DataContext as HistoryViewModel)?.ExternalFileOpen.Invalidate();
                 DetachCommitScrollViewer();
                 DetachLayoutViewModel();
             };
@@ -614,8 +620,7 @@ namespace Bough.App.Views
             try
             {
                 HistoryFileActionContext context = viewModel.CreateFileActionContext(menu.Tag);
-                GitRepository repository = viewModel.RequireFileActionRepository(context);
-                string workingPath = viewModel.FileActions.GetWorkingPath(repository, context.Path);
+                viewModel.RequireFileActionRepository(context);
                 foreach (MenuItem item in menu.Items.OfType<MenuItem>())
                 {
                     item.Tag = context;
@@ -627,11 +632,7 @@ namespace Bough.App.Views
                             item.IsEnabled = context.IsDirectory == false;
                             break;
                         case "explorer":
-                            item.IsEnabled = context.IsDirectory == false && context.IsGitlink == false && File.Exists(workingPath);
-                            if (item.IsEnabled == false)
-                            {
-                                ToolTip.SetTip(item, viewModel.Strings.GetString("HistoryWorkingFileAbsentTooltip"));
-                            }
+                            item.IsEnabled = context.IsDirectory == false && context.IsGitlink == false;
                             break;
                         case "save":
                             item.IsEnabled = context.IsDirectory == false && context.IsGitlink == false && context.IsDeleted == false;
@@ -687,20 +688,100 @@ namespace Bough.App.Views
             {
                 return;
             }
-            if (viewModel.IsFileTreeView == false)
-            {
-                if (viewModel.SelectedTab == 0)
-                {
-                    viewModel.SelectedTab = 1;
-                }
-            }
+            GitTemporarySnapshotFile snapshot = null;
+            bool launched = false;
+            int openRequest = -1;
             try
             {
-                await viewModel.OpenFileAsync(context.RepositoryRoot, context.CommitHash, context.Path, context.IsDeleted);
+                Task<GitTemporarySnapshotFile> preparation = viewModel.ExternalFileOpen.PrepareAsync(context);
+                openRequest = viewModel.ExternalFileOpen.RequestVersion;
+                snapshot = await preparation;
+                if (snapshot == null)
+                {
+                    return;
+                }
+                if (ReferenceEquals(DataContext, viewModel) == false)
+                {
+                    return;
+                }
+                if (openRequest != viewModel.ExternalFileOpen.RequestVersion)
+                {
+                    return;
+                }
+                viewModel.RequireFileActionRepository(context);
+                ProcessStartInfo start = new();
+                if (OperatingSystem.IsWindows())
+                {
+                    start.FileName = snapshot.FilePath;
+                    start.UseShellExecute = true;
+                }
+                else
+                {
+                    start.UseShellExecute = false;
+                    if (OperatingSystem.IsMacOS())
+                    {
+                        start.FileName = "open";
+                    }
+                    else
+                    {
+                        start.FileName = "xdg-open";
+                    }
+                    start.ArgumentList.Add(snapshot.FilePath);
+                    start.RedirectStandardOutput = true;
+                    start.RedirectStandardError = true;
+                }
+                try
+                {
+                    using Process process = Process.Start(start);
+                    launched = true;
+                    if (OperatingSystem.IsWindows())
+                    {
+                        return;
+                    }
+                    if (process == null)
+                    {
+                        return;
+                    }
+                    Task output = process.StandardOutput.BaseStream.CopyToAsync(Stream.Null);
+                    Task error = process.StandardError.BaseStream.CopyToAsync(Stream.Null);
+                    await process.WaitForExitAsync();
+                    await Task.WhenAll(output, error);
+                    if (process.ExitCode != 0)
+                    {
+                        throw new GitException("HistorySnapshotOpenFailed", null, context.Path);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    throw new GitException("HistorySnapshotOpenFailed", exception, context.Path);
+                }
             }
             catch (Exception exception)
             {
+                if (ReferenceEquals(DataContext, viewModel) == false)
+                {
+                    return;
+                }
+                if (openRequest != viewModel.ExternalFileOpen.RequestVersion)
+                {
+                    return;
+                }
+                try
+                {
+                    viewModel.RequireFileActionRepository(context);
+                }
+                catch (GitException)
+                {
+                    return;
+                }
                 viewModel.ReportActionError(exception);
+            }
+            finally
+            {
+                if (launched == false)
+                {
+                    await viewModel.FileActions.DiscardSnapshotFileAsync(snapshot);
+                }
             }
         }
 

@@ -16,7 +16,7 @@
     <Style Selector="SelectableTextBlock.diffCode.diffRemoved"><Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffRemoved}" /></Style>
     <Style Selector="SelectableTextBlock.diffCode.diffHunk"><Setter Property="Foreground" Value="{DynamicResource BoughBrushDiffHunk}" /></Style>
   </Window.Styles>
-  <Grid Margin="12" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="16">
+  <Grid Margin="12" RowDefinitions="Auto,*,Auto" RowSpacing="16">
     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
       <StackPanel Spacing="8">
         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -33,15 +33,7 @@
         </StackPanel>
       </Button>
     </Grid>
-    <Grid Grid.Row="1" RowDefinitions="30,Auto">
-      <Canvas x:Name="DateTimeline" Cursor="Hand" Background="Transparent" SizeChanged="TimelineSizeChanged" PointerPressed="TimelinePressed" />
-      <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-        <TextBlock x:Name="FirstDateText" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
-        <TextBlock x:Name="SelectionPositionText" Grid.Column="1" FontSize="12" Foreground="{DynamicResource BoughBrushAccent}" TextAlignment="Center" TextTrimming="CharacterEllipsis" />
-        <TextBlock x:Name="LastDateText" Grid.Column="2" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
-      </Grid>
-    </Grid>
-    <Grid Grid.Row="2">
+    <Grid Grid.Row="1">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="320" MinWidth="240" />
         <ColumnDefinition Width="6" />
@@ -105,7 +97,7 @@
         </Grid>
       </Border>
     </Grid>
-    <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+    <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
       <ProgressBar x:Name="LoadingProgress" Height="3" IsIndeterminate="True" VerticalAlignment="Center" Margin="0,0,8,0" />
       <Button x:Name="CancelButton" Grid.Column="1" MinHeight="32" MinWidth="80" Click="CancelClicked" />
       <Button x:Name="CloseButton" Grid.Column="2" MinHeight="32" MinWidth="80" Click="CloseClicked">
