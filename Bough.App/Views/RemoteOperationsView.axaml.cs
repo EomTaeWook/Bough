@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -65,7 +66,44 @@ namespace Bough.App.Views
         public RemoteOperationsView()
         {
             InitializeComponent();
+            ConfigureOptionalToolTip(UpstreamValue);
+            ConfigureOptionalToolTip(PushButton);
+            ConfigureOptionalToolTip(OperationStatusText);
+            ConfigureOptionalToolTip(PushAvailabilityNotice);
             _languageBinding = LanguageChangeBinding.Bind(this, () => _stringHelper, RefreshLocalizedLabels);
+        }
+
+        private static void ConfigureOptionalToolTip(Control control)
+        {
+            control.PropertyChanged += OnOptionalToolTipChanged;
+            NormalizeOptionalToolTip(control);
+        }
+
+        private static void OnOptionalToolTipChanged(object sender, AvaloniaPropertyChangedEventArgs eventArgs)
+        {
+            if (eventArgs.Property != ToolTip.TipProperty)
+            {
+                return;
+            }
+            if (sender is not Control control)
+            {
+                return;
+            }
+            NormalizeOptionalToolTip(control);
+        }
+
+        private static void NormalizeOptionalToolTip(Control control)
+        {
+            if (ToolTip.GetTip(control) is not string text)
+            {
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(text) == false)
+            {
+                return;
+            }
+            ToolTip.SetIsOpen(control, false);
+            control.SetCurrentValue(ToolTip.TipProperty, null);
         }
 
         private void RefreshLocalizedLabels()
