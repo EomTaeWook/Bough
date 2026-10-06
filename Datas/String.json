@@ -6190,5 +6190,23 @@
     "Name": "StashSaveCompletionResultMissing",
     "Kor": "보관 완료 결과를 확인할 수 없습니다.",
     "Eng": "The stash completion result is unavailable."
+  },
+  {
+    "Id": 3129,
+    "Name": "HistoryNavigationFound",
+    "Kor": "커밋 {0}(으)로 이동했습니다.",
+    "Eng": "Moved to commit {0}."
+  },
+  {
+    "Id": 3130,
+    "Name": "HistoryNavigationNotFoundInScope",
+    "Kor": "현재 조회 범위({1})에서 커밋 {0}을 찾지 못했습니다.",
+    "Eng": "Commit {0} was not found in the current history scope ({1})."
+  },
+  {
+    "Id": 3131,
+    "Name": "HistoryNavigationFailed",
+    "Kor": "커밋 {0} 이동에 필요한 이력을 읽지 못했습니다. {1}",
+    "Eng": "Could not read history to navigate to commit {0}. {1}"
   }
 ]

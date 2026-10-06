@@ -368,6 +368,7 @@ namespace Bough.App.ViewModels
 
         private async Task<bool> QueueBranchSwitchAsync(GitRepository repository, string branchName, string successMessage)
         {
+            int operation = -1;
             GitOperationQueueState state = _branchPresenter.GetQueueState(repository.RootPath);
             if (state.IsRunning)
             {
@@ -382,24 +383,40 @@ namespace Bough.App.ViewModels
                 return await _branchPresenter.SwitchAsync(repository, branchName,
                     _stringHelper.Format("ReferenceSwitchOperationRunning", branchName), () =>
                     {
-                        if (IsCurrentRepository(repository.RootPath))
+                        if (IsCurrentRepository(repository.RootPath) == false)
                         {
-                            _branchChangeInProgress = true;
-                            _branchChangeTarget = branchName;
-                            _snapshotPresenter.Invalidate();
-                            IsBusy = true;
-                            StatusMessage = _stringHelper.Format("ReferenceSwitchInProgress", branchName);
+                            return;
                         }
+                        operation = ++_branchChangeVersion;
+                        _branchChangeInProgress = true;
+                        _branchChangeTarget = branchName;
+                        _snapshotPresenter.Invalidate();
+                        IsBusy = true;
+                        StatusMessage = _stringHelper.Format("ReferenceSwitchInProgress", branchName);
                     }, async updated =>
                     {
                         if (IsCurrentRepository(repository.RootPath) == false)
                         {
                             return true;
                         }
+                        if (operation != _branchChangeVersion)
+                        {
+                            return true;
+                        }
 
                         _repository = updated;
-                        bool refreshed = await RefreshCoreAsync();
+                        Task<bool> refresh = RefreshCoreAsync();
+                        int refreshRequest = _snapshotPresenter.RequestVersion;
+                        bool refreshed = await refresh;
                         if (IsCurrentRepository(repository.RootPath) == false)
+                        {
+                            return true;
+                        }
+                        if (operation != _branchChangeVersion)
+                        {
+                            return true;
+                        }
+                        if (refreshRequest != _snapshotPresenter.RequestVersion)
                         {
                             return true;
                         }
@@ -416,29 +433,56 @@ namespace Bough.App.ViewModels
                         return refreshed;
                     }, () =>
                     {
-                        if (IsCurrentRepository(repository.RootPath))
+                        if (IsCurrentRepository(repository.RootPath) == false)
                         {
-                            _branchChangeInProgress = false;
-                            _branchChangeTarget = null;
-                            IsBusy = _snapshotPresenter.HasActiveLoad;
+                            return;
                         }
+                        if (operation != _branchChangeVersion)
+                        {
+                            return;
+                        }
+                        _branchChangeInProgress = false;
+                        _branchChangeTarget = null;
+                        IsBusy = _snapshotPresenter.HasActiveLoad;
                     });
             }
             catch (Exception exception)
             {
-                if (IsCurrentRepository(repository.RootPath))
+                if (IsCurrentRepository(repository.RootPath) == false)
                 {
-                    await RefreshCoreAsync();
-                    BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", branchName, CurrentBranchDisplay, _errorLocalizer.GetDisplayMessage(exception));
-                    StatusMessage = BranchSwitchFailureMessage;
+                    return false;
                 }
+                if (operation != _branchChangeVersion)
+                {
+                    return false;
+                }
+                Task<bool> refresh = RefreshCoreAsync();
+                int refreshRequest = _snapshotPresenter.RequestVersion;
+                await refresh;
+                if (IsCurrentRepository(repository.RootPath) == false)
+                {
+                    return false;
+                }
+                if (operation != _branchChangeVersion)
+                {
+                    return false;
+                }
+                if (refreshRequest != _snapshotPresenter.RequestVersion)
+                {
+                    return false;
+                }
+                BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", branchName, CurrentBranchDisplay, _errorLocalizer.GetDisplayMessage(exception));
+                StatusMessage = BranchSwitchFailureMessage;
                 return false;
             }
             finally
             {
                 if (IsCurrentRepository(repository.RootPath))
                 {
-                    PendingBranchSwitchMessage = string.Empty;
+                    if (operation == _branchChangeVersion)
+                    {
+                        PendingBranchSwitchMessage = string.Empty;
+                    }
                 }
             }
         }

@@ -165,9 +165,9 @@
     </Style>
   </UserControl.Styles>
 
-  <Grid RowDefinitions="66,*">
+  <Grid RowDefinitions="Auto,*">
     <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
-      <Grid ColumnDefinitions="*,Auto" RowDefinitions="32,34" Margin="22,0" ColumnSpacing="14">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="32,34,Auto" Margin="22,0" ColumnSpacing="14">
         <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Labels.Heading}" FontSize="18" FontWeight="SemiBold"
                    Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Bottom" />
         <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
@@ -181,6 +181,10 @@
         <Border Grid.Column="1" Grid.RowSpan="2" Background="{DynamicResource BoughBrushRaised}" CornerRadius="12" Padding="10,5" VerticalAlignment="Center">
           <TextBlock Text="{Binding CountText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
         </Border>
+        <ScrollViewer Grid.Row="2" Grid.ColumnSpan="2" IsVisible="{Binding HasNavigationMessage}" MaxHeight="96"
+                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
+          <TextBlock Text="{Binding NavigationMessage}" Foreground="{DynamicResource BoughBrushError}" FontSize="12" TextWrapping="Wrap" />
+        </ScrollViewer>
       </Grid>
     </Border>
 

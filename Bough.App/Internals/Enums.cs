@@ -34,6 +34,14 @@ namespace Bough.App.Internals
         Other
     }
 
+    public enum HistoryCommitSelectionOutcome
+    {
+        Found,
+        NotFoundInScope,
+        Failed,
+        Superseded
+    }
+
     public enum ReferenceTreeNodeKind
     {
         Section,

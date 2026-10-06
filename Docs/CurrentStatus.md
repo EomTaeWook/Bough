@@ -2,6 +2,14 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
+## 2026-10-07 History 이동 결과·Stash 조회 API 인계
+
+작업자 2가 커밋 이동의 `HistoryCommitSelectionResult`와 두 `SelectCommitAsync` overload, `ReportCommitSelectionResult` 연결을 완료했다. 요청 저장소·SHA·범위·원래 오류·요청 버전을 보존하며 성공·현재 범위에서 미발견·조회 실패·대체된 요청을 구분한다. 부모 SHA와 내부 이동은 결과를 소비하고 미발견·실패는 History 머리글과 공통 상태에 표시한다. 선택 기반 미리보기와 명시적 Open의 수명을 분리하고 참조 전환 실패 뒤 저장소·요청 재확인도 반영했다. 기존 Changes 상세 오류와 전용 파일 히스토리는 유지했다. MainWindow 태그의 전체 범위 진입 연결은 작업자 3에게 최종 API를 전달해 마무리 중이다.
+
+`HistoryNavigationFound`, `HistoryNavigationNotFoundInScope`, `HistoryNavigationFailed` 세 키를 ID 3129~3131로 Excel·JSON에 병합했다. 빌드·테스트·UI 실행·diff check·리소스 대조 등 추가 검증은 수행하지 않았다.
+
+작업자 1은 Stash 창의 요청 집합·성공과 갱신 실패 분리·읽기 전용 재시도, Unstaged 메뉴의 고정 대상과 무효 사유 표시를 완료했다. Save 전용 `RefreshStashSaveWorktreeAsync`는 현재 적용한 동일 상태를 반환하고 대체된 요청은 null, 현재 조회·적용 실패는 예외를 전달하는 계약으로 구현해 인계했다. MainWindow의 Save 완료 반환 연결은 작업자 3이 이 API로 마무리 중이다. 교차 연결 인계 전이므로 전체 완료로 표시하지 않는다.
+
 ## 2026-10-07 Stash 완료 계약·리소스 준비
 
 Stash 보관 완료의 `Task<StashMutationResult>` 반환 계약과 Save 전용 `Task<GitWorktreeStatus> RefreshStashSaveWorktreeAsync` 조회 계약을 확정해 작업자 1·3에게 전달했다. Git 성공과 입력 오류·갱신 오류를 보존하고, 고정 상태 스냅샷을 공통 완료에 전달하며 현재 조회 실패를 과거 큐 작업 오류와 구분한다. MainWindow는 부분 구현 상태이고 Save 전용 조회 API 인계를 기다린다. 창 수명·읽기 재시도 구현도 진행 중이므로 코드 완료로 기록하지 않는다.

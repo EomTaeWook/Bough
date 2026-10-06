@@ -30,7 +30,8 @@
 소유 범위는 History·Reference View·ViewModel·Presenter, 그래프·상세 화면 항목, GitActionDialogs와 해당 Core 서비스다.
 
 - History: 커밋 그래프·참조 배지, 전체/현재 브랜치 범위, 페이지 추가 조회, 상세·비교 부모·변경 파일·파일 내용, 파일 내보내기와 커밋 명령. [파일 히스토리](../Design/FileHistory.md)는 독립 창에서 파일 커밋 목록·날짜 위치·줄 번호 diff를 제공한다. 파일 트리의 내부 조회 구현과 현재 제공하지 않는 UI 진입을 구분한다.
-- 커밋 이동 결과 계약은 `Task<HistoryCommitSelectionResult> SelectCommitAsync(string commitHash)`와 `SelectCommitAsync(GitRepository repository, string commitHash, GitHistoryScope scope)`다. 결과는 `RepositoryRoot`, `CommitHash`, `Scope`, `Outcome`, 원본 `Exception Error`를 보존한다. `HistoryCommitSelectionOutcome`은 App의 `Internals/Enums.cs`에 `Found`, `NotFoundInScope`, `Failed`, `Superseded`로 둔다. 단일 인수는 현재 저장소·범위를 유지하고 태그 진입은 전달한 저장소·전체 범위를 사용한다. 새 API의 구현·인계 상태는 CurrentStatus를 따른다.
+- 커밋 이동 결과 계약은 `Task<HistoryCommitSelectionResult> SelectCommitAsync(string commitHash)`와 `SelectCommitAsync(GitRepository repository, string commitHash, GitHistoryScope scope)`다. 결과는 `RepositoryRoot`, `CommitHash`, `Scope`, `Outcome`, 원본 `Exception Error`, `RequestVersion`을 보존한다. `HistoryCommitSelectionOutcome`은 App의 `Internals/Enums.cs`에 `Found`, `NotFoundInScope`, `Failed`, `Superseded`로 둔다. 단일 인수는 현재 저장소·범위를 유지하고 태그 진입은 전달한 저장소·전체 범위를 사용한다. 새 API의 구현·인계 상태는 CurrentStatus를 따른다.
+- 이동 결과는 `ReportCommitSelectionResult(result)`로 표시한다. 현재 저장소·범위·Presenter 요청 버전이 맞는 결과만 소비하고 `Superseded`는 표시하지 않는다. 성공은 공통 `ActionMessage`, 미발견·실패는 머리글의 `NavigationMessage`와 공통 상태로 전달한다. 목록·상세 오류와 이동 안내를 구분하며 MainWindow에서 같은 결과를 다시 번역하거나 중복 발행하지 않는다.
 - 선택 기반 파일 미리보기와 명시적 Open의 수명을 구분한다. 선택 해제는 선택 요청을 무효화하고, 저장소·커밋·부모 변경은 두 경로를 무효화한다. 참조 전환 실패 후 조회 완료에서도 저장소와 요청 수명을 각각 재확인한다. 이미 반영한 Changes 로딩·오류·빈 결과와 전용 파일 히스토리 연결은 되돌리지 않는다.
 - 참조: 조회·현재 브랜치 표시, 브랜치 생성·추적·전환·삭제, 태그 생성·단일 삭제 대화상자, 로컬 브랜치·태그 이름 변경. 메뉴를 연 시점의 저장소·참조·객체 OID를 고정하며 원격 변경은 서버 영향을 구분한다.
 - [커밋 상세](../Design/CommitInspection.md), [커밋 명령](../Design/CommitActions.md), [태그 삭제](../Design/TagDeletion.md), [참조 이름 변경](../Design/ReferenceRename.md)을 따른다.
@@ -42,7 +43,7 @@
 소유 범위는 MainWindow·MainWindowViewModel, 원격 View·ViewModel·Presenter·진행 창과 서비스, 충돌 해결 화면·Presenter·Core 계약, 복제 화면·Presenter·Core, App 시작·DI·배포 설정이다.
 
 - 상단 저장소 선택·추가 메뉴·시작 화면의 열기·복제 진입, 화면 전환·영역별 조회·공통 사이드바 상태, 작업 완료 후 갱신 순서와 숨긴 History의 참조 변경 반영.
-- 태그 커밋 이동은 작업자 2의 고정 저장소·조회 범위 overload와 결과 계약을 소비한다. 저장소 요청·태그 선택 요청 버전을 각각 검사하며 실패를 공통 상태에 표시한다. History의 dirty 버전은 해당 갱신이 성공하고 버전이 일치한 경우에만 해제한다.
+- 태그 커밋 이동은 `History.SelectCommitAsync(repository, hash, GitHistoryScope.All)` 뒤 `History.ReportCommitSelectionResult(result)`로 연결한다. 저장소 인스턴스·저장소 요청·태그 선택 요청 버전을 각각 검사하며 현재 결과만 표시한다. History의 dirty 버전은 해당 갱신이 성공하고 버전이 일치한 경우에만 해제한다.
 - Fetch/Pull/Push의 FIFO·실행 직전 검증·진행·취소·완료 연결. 기본 Pull 실행은 작업자 1의 GitSettingsService 설정을 읽으며 일회성 메뉴는 저장값을 바꾸지 않는다.
 - [충돌 창](../Design/ConflictEntry.md)의 진입·파일 선택·개별/일괄 선택·직접 편집·저장·스테이징·리베이스 계속. 화면에서 Git 도메인 검증을 재구현하지 않는다.
 - [복제](../Design/RepositoryClone.md)의 단일 목적지, 시작 신호, 고정 오류 분류와 현재 목적지 상태 안내. 실패 이유와 폴더 상태를 구분하고 원문 stderr를 노출하지 않는다.

@@ -517,7 +517,8 @@ namespace Bough.App.Views
             {
                 return;
             }
-            await viewModel.SelectCommitAsync(hash);
+            HistoryCommitSelectionResult result = await viewModel.SelectCommitAsync(hash);
+            viewModel.ReportCommitSelectionResult(result);
         }
 
         private async void CopyParentClicked(object sender, RoutedEventArgs eventArgs)
@@ -643,6 +644,7 @@ namespace Bough.App.Views
             }
             string workingPath = viewModel.FileActions.GetWorkingPath(viewModel.CurrentRepository, _menuFilePath);
             items[0].IsEnabled = isDirectory == false;
+            items[0].CommandParameter = _menuFileDeleted;
             items[1].IsEnabled = isDirectory == false && isGitlink == false && File.Exists(workingPath);
             if (items[1].IsEnabled == false) ToolTip.SetTip(items[1], viewModel.Strings.GetString("HistoryWorkingFileAbsentTooltip"));
             else ToolTip.SetTip(items[1], string.Empty);
@@ -676,10 +678,19 @@ namespace Bough.App.Views
 
         private async void OpenFileClicked(object sender, RoutedEventArgs eventArgs)
         {
-            if (TryGetFileContext(out HistoryViewModel viewModel, out GitRepository repository) == false)
+            if (DataContext is not HistoryViewModel viewModel)
             {
                 return;
             }
+            if (sender is not MenuItem item)
+            {
+                return;
+            }
+            if (item.Tag is not HistoryFileActionContext context)
+            {
+                return;
+            }
+            bool deleted = item.CommandParameter is true;
             if (viewModel.IsFileTreeView == false)
             {
                 if (viewModel.SelectedTab == 0)
@@ -687,7 +698,14 @@ namespace Bough.App.Views
                     viewModel.SelectedTab = 1;
                 }
             }
-            await viewModel.OpenFileAsync(_menuFilePath, _menuFileDeleted);
+            try
+            {
+                await viewModel.OpenFileAsync(context.RepositoryRoot, context.CommitHash, context.Path, deleted);
+            }
+            catch (Exception exception)
+            {
+                viewModel.ReportActionError(exception);
+            }
         }
 
         private void ExplorerFileClicked(object sender, RoutedEventArgs eventArgs)
