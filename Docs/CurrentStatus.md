@@ -2,6 +2,14 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
+## 2026-10-07 Changes 파일 메뉴 대상 전달 수정
+
+사용자가 Changes 탭의 파일 우클릭에서 열기·탐색기·히스토리·내보내기·경로 복사가 모두 반응하지 않는다고 제보했다. 기존 `FileContextOpened`는 `ContextMenu.PlacementTarget`이 없으면 파일 대상 설정 전에 종료한다. [Avalonia 12.1.3 구현](https://github.com/AvaloniaUI/Avalonia/blob/12.1.3/src/Avalonia.Controls/ContextMenu.cs)은 일반 우클릭의 대상 컨트롤을 내부 Popup에 설정하고 공개 ContextMenu 속성에는 기록하지 않는다. 따라서 정상적으로 보이는 메뉴에 실행 대상이 전달되지 않는 공통 코드 결함을 확인했다.
+
+파일 행 모델을 ContextMenu에 명시적으로 바인딩하고 메뉴를 열 때 각 항목에 고정 저장소·커밋·경로·삭제 상태·상세 요청·비교 부모를 전달하도록 수정했다. 열기·탐색기·히스토리·내보내기·경로 복사는 같은 항목별 컨텍스트를 소비한다. 공개 PlacementTarget 의존과 공유 파일 경로 필드, 메뉴 개수·인덱스 의존은 제거했다. 무효 대상은 메뉴를 비활성화하고 기존 지역화 오류를 표시하며 내보내기의 대기 뒤에도 같은 대상 수명을 확인한다. 전용 FileHistory 창 연결과 기존 Open·Changes 상태는 유지했다.
+
+앞선 전용 파일 히스토리 기록은 창·Presenter 소스 구현이며 실제 파일 메뉴의 동작 완료를 확인한 기록이 아니다. 이번 공통 메뉴 수정도 빌드·앱 실행·추가 검증을 수행하지 않았고 수정된 실행 파일을 생성하지 않았다. 실행 결과가 확인된 상태로 표시하지 않는다. 자동 푸시는 사용자 최신 지시에 따라 중단했다.
+
 ## 2026-10-07 History 이동·Stash 완료 연결
 
 커밋 이동의 `HistoryCommitSelectionResult`와 두 `SelectCommitAsync` overload, `ReportCommitSelectionResult` 연결을 완료했다. 요청 저장소·SHA·범위·원래 오류·요청 버전을 보존하며 성공·현재 범위에서 미발견·조회 실패·대체된 요청을 구분한다. 부모 SHA와 내부 이동은 결과를 소비하고 미발견·실패는 History 머리글과 공통 상태에 표시한다. MainWindow 태그는 고정 저장소·전체 범위로 한 번 진입한 뒤 현재 저장소·태그 요청의 결과만 같은 표시 API로 전달한다. 숨긴 History의 참조 변경 상태는 성공한 동일 버전의 조회에서만 해제한다.

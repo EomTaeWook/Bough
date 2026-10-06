@@ -1853,6 +1853,71 @@ namespace Bough.App.ViewModels
             }
         }
 
+        public HistoryFileActionContext CreateFileActionContext(object file)
+        {
+            if (_repository == null)
+            {
+                throw new GitException("HistoryRepositoryRequired", null, Array.Empty<object>());
+            }
+            if (_inspection == null)
+            {
+                throw new GitException("HistoryCommitRequired", null, Array.Empty<object>());
+            }
+            if (file is HistoryInspectionFileItem changed)
+            {
+                if (ChangedFiles.Contains(changed) == false)
+                {
+                    throw new GitException("HistorySelectedCommitChanged", null, Array.Empty<object>());
+                }
+                return new HistoryFileActionContext(_repository.RootPath, _inspection.Hash, changed.Path,
+                    changed.IsDeleted, false, false, _inspectionRequest, SelectedParent);
+            }
+            if (file is HistoryTreeItem tree)
+            {
+                if (tree.IsPlaceholder)
+                {
+                    throw new GitException("HistorySelectedCommitChanged", null, Array.Empty<object>());
+                }
+                if (ContainsTreeItem(TreeRoots, tree) == false)
+                {
+                    throw new GitException("HistorySelectedCommitChanged", null, Array.Empty<object>());
+                }
+                return new HistoryFileActionContext(_repository.RootPath, _inspection.Hash, tree.Path,
+                    false, tree.IsDirectory, tree.Entry.IsGitlink, _inspectionRequest, SelectedParent);
+            }
+            throw new GitException("HistorySelectedCommitChanged", null, Array.Empty<object>());
+        }
+
+        private static bool ContainsTreeItem(IEnumerable<HistoryTreeItem> items, HistoryTreeItem target)
+        {
+            foreach (HistoryTreeItem item in items)
+            {
+                if (ReferenceEquals(item, target))
+                {
+                    return true;
+                }
+                if (ContainsTreeItem(item.Children, target))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public GitRepository RequireFileActionRepository(HistoryFileActionContext context)
+        {
+            GitRepository repository = RequireSelectedRepository(context.RepositoryRoot, context.CommitHash);
+            if (context.InspectionRequest != _inspectionRequest)
+            {
+                throw new GitException("HistorySelectedCommitChanged", null, Array.Empty<object>());
+            }
+            if (context.ComparisonParent != SelectedParent)
+            {
+                throw new GitException("HistorySelectedCommitChanged", null, Array.Empty<object>());
+            }
+            return repository;
+        }
+
         public FileHistoryPresenter CreateFileHistoryPresenter(string repositoryRoot, string commitHash, string path)
         {
             GitRepository repository = RequireSelectedRepository(repositoryRoot, commitHash);

@@ -24,8 +24,6 @@ namespace Bough.App.Views
     {
         private string _menuCommitHash;
         private string _menuRepositoryRoot;
-        private string _menuFilePath;
-        private bool _menuFileDeleted;
         private ScrollViewer _commitScrollViewer;
         private HistoryViewModel _lastAutoViewModel;
         private int _lastAutoListVersion = -1;
@@ -592,81 +590,88 @@ namespace Bough.App.Views
             catch (Exception exception) { viewModel.ReportActionError(exception); }
         }
 
+        private static void DisableFileMenu(ContextMenu menu)
+        {
+            foreach (MenuItem item in menu.Items.OfType<MenuItem>())
+            {
+                item.Tag = null;
+                item.IsEnabled = false;
+            }
+        }
+
         private void FileContextOpened(object sender, RoutedEventArgs eventArgs)
         {
-            _menuFilePath = null;
-            _menuFileDeleted = false;
-            _menuRepositoryRoot = null;
-            _menuCommitHash = null;
             if (sender is not ContextMenu menu)
             {
                 return;
             }
-            if (menu.PlacementTarget is not Control target)
-            {
-                return;
-            }
+            DisableFileMenu(menu);
             if (DataContext is not HistoryViewModel viewModel)
             {
+                menu.Close();
                 return;
             }
-            if (viewModel.CurrentRepository == null)
+            try
             {
-                return;
+                HistoryFileActionContext context = viewModel.CreateFileActionContext(menu.Tag);
+                GitRepository repository = viewModel.RequireFileActionRepository(context);
+                string workingPath = viewModel.FileActions.GetWorkingPath(repository, context.Path);
+                foreach (MenuItem item in menu.Items.OfType<MenuItem>())
+                {
+                    item.Tag = context;
+                    ToolTip.SetTip(item, null);
+                    switch (item.CommandParameter as string)
+                    {
+                        case "open":
+                        case "history":
+                            item.IsEnabled = context.IsDirectory == false;
+                            break;
+                        case "explorer":
+                            item.IsEnabled = context.IsDirectory == false && context.IsGitlink == false && File.Exists(workingPath);
+                            if (item.IsEnabled == false)
+                            {
+                                ToolTip.SetTip(item, viewModel.Strings.GetString("HistoryWorkingFileAbsentTooltip"));
+                            }
+                            break;
+                        case "save":
+                            item.IsEnabled = context.IsDirectory == false && context.IsGitlink == false && context.IsDeleted == false;
+                            break;
+                        case "copy":
+                            item.IsEnabled = true;
+                            break;
+                    }
+                }
             }
-            if (viewModel.Inspection == null)
+            catch (Exception exception)
             {
-                return;
+                DisableFileMenu(menu);
+                menu.Close();
+                viewModel.ReportActionError(exception);
             }
-            bool isDirectory = false;
-            bool isGitlink = false;
-            if (target.DataContext is HistoryInspectionFileItem changed)
-            {
-                _menuFilePath = changed.Path;
-                _menuFileDeleted = changed.File.StatusCode == 'D';
-            }
-            else if (target.DataContext is HistoryTreeItem tree)
-            {
-                if (tree.IsPlaceholder == true) return;
-                _menuFilePath = tree.Path;
-                isDirectory = tree.IsDirectory;
-                isGitlink = tree.Entry.IsGitlink;
-            }
-            if (_menuFilePath == null) return;
-            _menuRepositoryRoot = viewModel.CurrentRepository.RootPath;
-            _menuCommitHash = viewModel.Inspection.Hash;
-            MenuItem[] items = menu.Items.OfType<MenuItem>().ToArray();
-            if (items.Length < 5) return;
-            HistoryFileActionContext context = new(_menuRepositoryRoot, _menuCommitHash, _menuFilePath);
-            foreach (MenuItem item in items)
-            {
-                item.Tag = context;
-            }
-            string workingPath = viewModel.FileActions.GetWorkingPath(viewModel.CurrentRepository, _menuFilePath);
-            items[0].IsEnabled = isDirectory == false;
-            items[0].CommandParameter = _menuFileDeleted;
-            items[1].IsEnabled = isDirectory == false && isGitlink == false && File.Exists(workingPath);
-            if (items[1].IsEnabled == false) ToolTip.SetTip(items[1], viewModel.Strings.GetString("HistoryWorkingFileAbsentTooltip"));
-            else ToolTip.SetTip(items[1], string.Empty);
-            items[2].IsEnabled = isDirectory == false;
-            items[3].IsEnabled = isDirectory == false && isGitlink == false && _menuFileDeleted == false;
         }
 
-        private bool TryGetFileContext(out HistoryViewModel viewModel, out GitRepository repository)
+        private bool TryGetFileContext(object sender, out HistoryViewModel viewModel,
+            out GitRepository repository, out HistoryFileActionContext context)
         {
             viewModel = DataContext as HistoryViewModel;
             repository = null;
+            context = null;
             if (viewModel == null)
-            {
-                return false;
-            }
-            if (_menuFilePath == null)
             {
                 return false;
             }
             try
             {
-                repository = viewModel.RequireSelectedRepository(_menuRepositoryRoot, _menuCommitHash);
+                if (sender is not MenuItem item)
+                {
+                    throw new GitException("HistorySelectedCommitChanged", null, Array.Empty<object>());
+                }
+                if (item.Tag is not HistoryFileActionContext captured)
+                {
+                    throw new GitException("HistorySelectedCommitChanged", null, Array.Empty<object>());
+                }
+                repository = viewModel.RequireFileActionRepository(captured);
+                context = captured;
                 return true;
             }
             catch (Exception exception)
@@ -678,19 +683,10 @@ namespace Bough.App.Views
 
         private async void OpenFileClicked(object sender, RoutedEventArgs eventArgs)
         {
-            if (DataContext is not HistoryViewModel viewModel)
+            if (TryGetFileContext(sender, out HistoryViewModel viewModel, out GitRepository repository, out HistoryFileActionContext context) == false)
             {
                 return;
             }
-            if (sender is not MenuItem item)
-            {
-                return;
-            }
-            if (item.Tag is not HistoryFileActionContext context)
-            {
-                return;
-            }
-            bool deleted = item.CommandParameter is true;
             if (viewModel.IsFileTreeView == false)
             {
                 if (viewModel.SelectedTab == 0)
@@ -700,7 +696,7 @@ namespace Bough.App.Views
             }
             try
             {
-                await viewModel.OpenFileAsync(context.RepositoryRoot, context.CommitHash, context.Path, deleted);
+                await viewModel.OpenFileAsync(context.RepositoryRoot, context.CommitHash, context.Path, context.IsDeleted);
             }
             catch (Exception exception)
             {
@@ -710,13 +706,16 @@ namespace Bough.App.Views
 
         private void ExplorerFileClicked(object sender, RoutedEventArgs eventArgs)
         {
-            if (TryGetFileContext(out HistoryViewModel viewModel, out GitRepository repository) == false) return;
+            if (TryGetFileContext(sender, out HistoryViewModel viewModel, out GitRepository repository, out HistoryFileActionContext context) == false)
+            {
+                return;
+            }
             try
             {
-                string absolute = viewModel.FileActions.GetWorkingPath(repository, _menuFilePath);
+                string absolute = viewModel.FileActions.GetWorkingPath(repository, context.Path);
                 if (File.Exists(absolute) == false)
                 {
-                    throw new GitException("HistoryWorkingFileAbsent", null, _menuFilePath);
+                    throw new GitException("HistoryWorkingFileAbsent", null, context.Path);
                 }
                 ProcessStartInfo start = new();
                 if (OperatingSystem.IsWindows() == true)
@@ -737,20 +736,15 @@ namespace Bough.App.Views
                 }
                 Process.Start(start);
             }
-            catch (Exception exception) { viewModel.ReportActionError(exception); }
+            catch (Exception exception)
+            {
+                viewModel.ReportActionError(exception);
+            }
         }
 
         private void FileHistoryClicked(object sender, RoutedEventArgs eventArgs)
         {
-            if (sender is not MenuItem item)
-            {
-                return;
-            }
-            if (item.Tag is not HistoryFileActionContext context)
-            {
-                return;
-            }
-            if (DataContext is not HistoryViewModel viewModel)
+            if (TryGetFileContext(sender, out HistoryViewModel viewModel, out GitRepository repository, out HistoryFileActionContext context) == false)
             {
                 return;
             }
@@ -771,7 +765,7 @@ namespace Bough.App.Views
 
         private async void SaveFileClicked(object sender, RoutedEventArgs eventArgs)
         {
-            if (TryGetFileContext(out HistoryViewModel viewModel, out GitRepository repository) == false)
+            if (TryGetFileContext(sender, out HistoryViewModel viewModel, out GitRepository repository, out HistoryFileActionContext context) == false)
             {
                 return;
             }
@@ -779,14 +773,16 @@ namespace Bough.App.Views
             {
                 return;
             }
-            string root = _menuRepositoryRoot;
-            string hash = _menuCommitHash;
-            string path = _menuFilePath;
+            string hash = context.CommitHash;
+            string path = context.Path;
             try
             {
                 IStorageFile file = await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions { SuggestedFileName = Path.GetFileName(path) });
-                if (file == null) return;
-                viewModel.RequireSelectedRepository(root, hash);
+                if (file == null)
+                {
+                    return;
+                }
+                viewModel.RequireFileActionRepository(context);
                 string localPath = file.TryGetLocalPath();
                 if (localPath != null && File.Exists(localPath) == true)
                 {
@@ -794,23 +790,41 @@ namespace Bough.App.Views
                         viewModel.Strings.GetString("HistoryExportOverwriteTitle"),
                         viewModel.Strings.Format("HistoryExportOverwriteMessage", localPath, path, hash.Substring(0, 8)),
                         viewModel.Strings.GetString("HistoryExportOverwriteAction"), viewModel.Strings);
-                    if (confirmed == false) return;
+                    if (confirmed == false)
+                    {
+                        return;
+                    }
                 }
-                viewModel.RequireSelectedRepository(root, hash);
+                viewModel.RequireFileActionRepository(context);
                 byte[] bytes = await viewModel.FileActions.GetSnapshotBytesAsync(repository, hash, path);
-                viewModel.RequireSelectedRepository(root, hash);
+                viewModel.RequireFileActionRepository(context);
                 await using Stream stream = await file.OpenWriteAsync();
                 await stream.WriteAsync(bytes);
             }
-            catch (Exception exception) { viewModel.ReportActionError(exception); }
+            catch (Exception exception)
+            {
+                viewModel.ReportActionError(exception);
+            }
         }
 
         private async void CopyPathClicked(object sender, RoutedEventArgs eventArgs)
         {
-            if (TryGetFileContext(out HistoryViewModel viewModel, out GitRepository repository) == false) return;
-            IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-            if (clipboard != null) await clipboard.SetTextAsync(_menuFilePath);
+            if (TryGetFileContext(sender, out HistoryViewModel viewModel, out GitRepository repository, out HistoryFileActionContext context) == false)
+            {
+                return;
+            }
+            try
+            {
+                IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard != null)
+                {
+                    await clipboard.SetTextAsync(context.Path);
+                }
+            }
+            catch (Exception exception)
+            {
+                viewModel.ReportActionError(exception);
+            }
         }
-
     }
 }

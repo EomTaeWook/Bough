@@ -367,14 +367,14 @@
                                        ToolTip.Tip="{Binding PathDescription}" />
                           </Expander.Header>
                           <Expander.ContextMenu>
-                            <ContextMenu Opened="FileContextOpened">
-                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" Click="OpenFileClicked" />
-                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" Click="ExplorerFileClicked" />
+                            <ContextMenu Tag="{Binding}" Opened="FileContextOpened">
+                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" CommandParameter="open" Click="OpenFileClicked" />
+                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" CommandParameter="explorer" Click="ExplorerFileClicked" />
                               <Separator />
-                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" Click="FileHistoryClicked" />
+                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" CommandParameter="history" Click="FileHistoryClicked" />
                               <Separator />
-                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" Click="SaveFileClicked" />
-                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" Click="CopyPathClicked" />
+                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" CommandParameter="save" Click="SaveFileClicked" />
+                              <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" CommandParameter="copy" Click="CopyPathClicked" />
                             </ContextMenu>
                           </Expander.ContextMenu>
                           <StackPanel Spacing="5">
@@ -453,14 +453,14 @@
                     <DataTemplate x:DataType="models:HistoryInspectionFileItem">
                       <Border Padding="8,6" ToolTip.Tip="{Binding PathDescription}">
                         <Border.ContextMenu>
-                          <ContextMenu Opened="FileContextOpened">
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" Click="OpenFileClicked" />
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" Click="ExplorerFileClicked" />
+                          <ContextMenu Tag="{Binding}" Opened="FileContextOpened">
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" CommandParameter="open" Click="OpenFileClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" CommandParameter="explorer" Click="ExplorerFileClicked" />
                             <Separator />
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" Click="FileHistoryClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" CommandParameter="history" Click="FileHistoryClicked" />
                             <Separator />
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" Click="SaveFileClicked" />
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" Click="CopyPathClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" CommandParameter="save" Click="SaveFileClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" CommandParameter="copy" Click="CopyPathClicked" />
                           </ContextMenu>
                         </Border.ContextMenu>
                         <Grid ColumnDefinitions="75,*">
@@ -528,14 +528,14 @@
                     <TreeDataTemplate x:DataType="models:HistoryTreeItem" ItemsSource="{Binding Children}">
                       <Border Padding="3" ToolTip.Tip="{Binding ToolTipPath}">
                         <Border.ContextMenu>
-                          <ContextMenu Opened="FileContextOpened">
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" Click="OpenFileClicked" />
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" Click="ExplorerFileClicked" />
+                          <ContextMenu Tag="{Binding}" Opened="FileContextOpened">
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding Open}" CommandParameter="open" Click="OpenFileClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ShowExplorer}" CommandParameter="explorer" Click="ExplorerFileClicked" />
                             <Separator />
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" Click="FileHistoryClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding FileHistory}" CommandParameter="history" Click="FileHistoryClicked" />
                             <Separator />
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" Click="SaveFileClicked" />
-                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" Click="CopyPathClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding SaveAs}" CommandParameter="save" Click="SaveFileClicked" />
+                            <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopyPath}" CommandParameter="copy" Click="CopyPathClicked" />
                           </ContextMenu>
                         </Border.ContextMenu>
                         <StackPanel Orientation="Horizontal" Spacing="7">
