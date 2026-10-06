@@ -426,6 +426,15 @@
                 <StackPanel Grid.Row="0" Spacing="3" Margin="0,0,0,9">
                   <TextBlock Text="{Binding MessageFirstLine}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                   <TextBlock Text="{Binding ChangesSummary}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
+                  <TextBlock Text="{Binding Labels.LoadingChanges}" IsVisible="{Binding IsLoadingDetails}"
+                             FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
+                  <TextBlock Text="{Binding Labels.NoChanges}" IsVisible="{Binding HasNoChangedFiles}"
+                             FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
+                  <ScrollViewer MaxHeight="96" IsVisible="{Binding HasDetailError}"
+                                VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource BoughBrushError}"
+                               FontSize="12" TextWrapping="Wrap" />
+                  </ScrollViewer>
                 </StackPanel>
                 <TextBox Grid.Row="1" PlaceholderText="{Binding Labels.SearchChangedPaths}" Text="{Binding FileSearch, Mode=TwoWay}"
                          Margin="0,0,0,8" />

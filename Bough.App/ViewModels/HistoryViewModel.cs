@@ -59,6 +59,9 @@ namespace Bough.App.ViewModels
         private bool _hasMore;
         private bool _isLoading;
         private bool _isLoadingMore;
+        private bool _isLoadingInspection;
+        private bool _isLoadingChanges;
+        private bool _hasLoadedChanges;
         private string _pageErrorText = string.Empty;
         private int _listVersion;
         private string _selectedMessage;
@@ -326,7 +329,27 @@ namespace Bough.App.ViewModels
         public bool IsEmpty { get { return Commits.Count == 0 && IsLoading == false && HasLoadError == false; } }
         public bool HasLoadError { get { return Commits.Count == 0 && ErrorText.Length > 0; } }
         public string CountText { get { return _stringHelper.Format("HistoryCommitCount", Commits.Count); } }
-        public bool HasNoChangedFiles { get { return ChangedFiles.Count == 0; } }
+        public bool IsLoadingDetails { get { return _isLoadingInspection || _isLoadingChanges; } }
+        public bool HasDetailError { get { return ErrorText.Length > 0; } }
+        public bool HasNoChangedFiles
+        {
+            get
+            {
+                if (_hasLoadedChanges == false)
+                {
+                    return false;
+                }
+                if (IsLoadingDetails == true)
+                {
+                    return false;
+                }
+                if (HasDetailError == true)
+                {
+                    return false;
+                }
+                return ChangedFiles.Count == 0;
+            }
+        }
         public string ChangesSummary { get { if (_inspection == null) return string.Empty; return $"{_inspection.AuthorName}  ·  {_inspection.Hash.Substring(0, 8)}  ·  {_inspection.AuthoredAt:yyyy-MM-dd HH:mm zzz}"; } }
         public string MessageFirstLine { get { return GitCommitMessageService.GetFirstLine(SelectedMessage); } }
 
@@ -374,6 +397,8 @@ namespace Bough.App.ViewModels
                 {
                     OnPropertyChanged(nameof(HasLoadError));
                     OnPropertyChanged(nameof(IsEmpty));
+                    OnPropertyChanged(nameof(HasDetailError));
+                    OnPropertyChanged(nameof(HasNoChangedFiles));
                 }
             }
         }
@@ -912,6 +937,16 @@ namespace Bough.App.ViewModels
             PreviewPath = string.Empty;
             PreviewText = string.Empty;
             PreviewReason = string.Empty;
+            _isLoadingInspection = false;
+            _isLoadingChanges = false;
+            _hasLoadedChanges = false;
+            NotifyDetailState();
+        }
+
+        private void NotifyDetailState()
+        {
+            OnPropertyChanged(nameof(IsLoadingDetails));
+            OnPropertyChanged(nameof(HasNoChangedFiles));
         }
 
         private async Task LoadInspectionAsync(HistoryCommitItem selected)
@@ -922,6 +957,9 @@ namespace Bough.App.ViewModels
                 return;
             }
 
+            _isLoadingInspection = true;
+            ErrorText = string.Empty;
+            NotifyDetailState();
             HistoryCommitResult result = await _commitPresenter.LoadAsync(repository, selected.Hash);
             if (result.IsCurrent == false)
             {
@@ -937,7 +975,9 @@ namespace Bough.App.ViewModels
             }
             if (result.Error != null)
             {
+                _isLoadingInspection = false;
                 SetLocalizedErrorText(new LocalizedText(result.Error));
+                NotifyDetailState();
                 return;
             }
             try
@@ -963,11 +1003,42 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                if (_commitPresenter.IsCurrent(result.RequestVersion))
+                if (_commitPresenter.IsCurrent(result.RequestVersion) == false)
                 {
-                    SetLocalizedErrorText(new LocalizedText(exception));
+                    return;
                 }
+                if (SelectedCommit != selected)
+                {
+                    return;
+                }
+                if (_repository != repository)
+                {
+                    return;
+                }
+                SetLocalizedErrorText(new LocalizedText(exception));
             }
+            finally
+            {
+                FinishInspectionLoading(result, selected, repository);
+            }
+        }
+
+        private void FinishInspectionLoading(HistoryCommitResult result, HistoryCommitItem selected, GitRepository repository)
+        {
+            if (_commitPresenter.IsCurrent(result.RequestVersion) == false)
+            {
+                return;
+            }
+            if (SelectedCommit != selected)
+            {
+                return;
+            }
+            if (_repository != repository)
+            {
+                return;
+            }
+            _isLoadingInspection = false;
+            NotifyDetailState();
         }
 
         private async Task LoadChangesAsync()
@@ -977,17 +1048,25 @@ namespace Bough.App.ViewModels
             GitCommitInspection inspection = _inspection;
             string parent = SelectedParent;
             int request = ++_inspectionRequest;
+            _hasLoadedChanges = false;
             ChangedFiles.Clear();
             VisibleChangedFiles.Clear();
             OnPropertyChanged(nameof(ComparisonText));
             if (repository == null)
             {
+                _isLoadingChanges = false;
+                NotifyDetailState();
                 return;
             }
             if (inspection == null)
             {
+                _isLoadingChanges = false;
+                NotifyDetailState();
                 return;
             }
+            _isLoadingChanges = true;
+            ErrorText = string.Empty;
+            NotifyDetailState();
             try
             {
                 GitCommitFileChanges changes = await _inspectionService.GetChangedFilesAsync(repository, inspection.Hash, parent);
@@ -1012,12 +1091,54 @@ namespace Bough.App.ViewModels
                     ChangedFiles.Add(new HistoryInspectionFileItem(file, _stringHelper));
                 }
                 FilterChangedFiles();
-                OnPropertyChanged(nameof(HasNoChangedFiles));
+                _hasLoadedChanges = true;
             }
             catch (Exception exception)
             {
-                if (request == _inspectionRequest) SetLocalizedErrorText(new LocalizedText(exception));
+                if (request != _inspectionRequest)
+                {
+                    return;
+                }
+                if (_repository != repository)
+                {
+                    return;
+                }
+                if (_inspection != inspection)
+                {
+                    return;
+                }
+                if (SelectedParent != parent)
+                {
+                    return;
+                }
+                SetLocalizedErrorText(new LocalizedText(exception));
             }
+            finally
+            {
+                FinishChangesLoading(request, repository, inspection, parent);
+            }
+        }
+
+        private void FinishChangesLoading(int request, GitRepository repository, GitCommitInspection inspection, string parent)
+        {
+            if (request != _inspectionRequest)
+            {
+                return;
+            }
+            if (_repository != repository)
+            {
+                return;
+            }
+            if (_inspection != inspection)
+            {
+                return;
+            }
+            if (SelectedParent != parent)
+            {
+                return;
+            }
+            _isLoadingChanges = false;
+            NotifyDetailState();
         }
 
         private void FilterChangedFiles()

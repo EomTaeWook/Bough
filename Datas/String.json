@@ -6160,5 +6160,11 @@
     "Name": "FileHistoryResizePanels",
     "Kor": "파일 커밋 목록과 diff 너비 조절",
     "Eng": "Resize the file commit list and diff"
+  },
+  {
+    "Id": 3124,
+    "Name": "HistoryLoadingChanges",
+    "Kor": "변경 파일을 불러오는 중입니다.",
+    "Eng": "Loading changed files."
   }
 ]

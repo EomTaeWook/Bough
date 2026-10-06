@@ -38,6 +38,7 @@ namespace Bough.App.ViewModels.Models
         public string ExpandAll { get { return _strings.GetString("HistoryExpandAll"); } }
         public string CollapseAll { get { return _strings.GetString("HistoryCollapseAll"); } }
         public string NoChanges { get { return _strings.GetString("HistoryNoChanges"); } }
+        public string LoadingChanges { get { return _strings.GetString("HistoryLoadingChanges"); } }
         public string Open { get { return _strings.GetString("HistoryOpen"); } }
         public string ShowExplorer { get { return _strings.GetString("HistoryShowExplorer"); } }
         public string FileHistory { get { return _strings.GetString("HistoryFileHistory"); } }
