@@ -62,6 +62,7 @@ namespace Bough.App.ViewModels
         private bool _isLoadingInspection;
         private bool _isLoadingChanges;
         private bool _hasLoadedChanges;
+        private Exception _detailError;
         private string _pageErrorText = string.Empty;
         private int _listVersion;
         private string _selectedMessage;
@@ -330,7 +331,18 @@ namespace Bough.App.ViewModels
         public bool HasLoadError { get { return Commits.Count == 0 && ErrorText.Length > 0; } }
         public string CountText { get { return _stringHelper.Format("HistoryCommitCount", Commits.Count); } }
         public bool IsLoadingDetails { get { return _isLoadingInspection || _isLoadingChanges; } }
-        public bool HasDetailError { get { return ErrorText.Length > 0; } }
+        public bool HasDetailError { get { return _detailError != null; } }
+        public string DetailErrorText
+        {
+            get
+            {
+                if (_detailError == null)
+                {
+                    return string.Empty;
+                }
+                return _errorLocalizer.GetDisplayMessage(_detailError);
+            }
+        }
         public bool HasNoChangedFiles
         {
             get
@@ -397,8 +409,6 @@ namespace Bough.App.ViewModels
                 {
                     OnPropertyChanged(nameof(HasLoadError));
                     OnPropertyChanged(nameof(IsEmpty));
-                    OnPropertyChanged(nameof(HasDetailError));
-                    OnPropertyChanged(nameof(HasNoChangedFiles));
                 }
             }
         }
@@ -940,7 +950,16 @@ namespace Bough.App.ViewModels
             _isLoadingInspection = false;
             _isLoadingChanges = false;
             _hasLoadedChanges = false;
+            SetDetailError(null);
             NotifyDetailState();
+        }
+
+        private void SetDetailError(Exception exception)
+        {
+            _detailError = exception;
+            OnPropertyChanged(nameof(DetailErrorText));
+            OnPropertyChanged(nameof(HasDetailError));
+            OnPropertyChanged(nameof(HasNoChangedFiles));
         }
 
         private void NotifyDetailState()
@@ -958,6 +977,7 @@ namespace Bough.App.ViewModels
             }
 
             _isLoadingInspection = true;
+            SetDetailError(null);
             ErrorText = string.Empty;
             NotifyDetailState();
             HistoryCommitResult result = await _commitPresenter.LoadAsync(repository, selected.Hash);
@@ -976,7 +996,7 @@ namespace Bough.App.ViewModels
             if (result.Error != null)
             {
                 _isLoadingInspection = false;
-                SetLocalizedErrorText(new LocalizedText(result.Error));
+                SetDetailError(result.Error);
                 NotifyDetailState();
                 return;
             }
@@ -1015,7 +1035,7 @@ namespace Bough.App.ViewModels
                 {
                     return;
                 }
-                SetLocalizedErrorText(new LocalizedText(exception));
+                SetDetailError(exception);
             }
             finally
             {
@@ -1065,6 +1085,7 @@ namespace Bough.App.ViewModels
                 return;
             }
             _isLoadingChanges = true;
+            SetDetailError(null);
             ErrorText = string.Empty;
             NotifyDetailState();
             try
@@ -1111,7 +1132,7 @@ namespace Bough.App.ViewModels
                 {
                     return;
                 }
-                SetLocalizedErrorText(new LocalizedText(exception));
+                SetDetailError(exception);
             }
             finally
             {

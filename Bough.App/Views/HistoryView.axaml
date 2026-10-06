@@ -411,6 +411,8 @@
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
                   <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource BoughBrushError}" FontSize="12" TextWrapping="Wrap" />
+                  <TextBlock Text="{Binding DetailErrorText}" IsVisible="{Binding HasDetailError}"
+                             Foreground="{DynamicResource BoughBrushError}" FontSize="12" TextWrapping="Wrap" />
                 </StackPanel>
               </ScrollViewer>
             </TabItem>
@@ -432,7 +434,7 @@
                              FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
                   <ScrollViewer MaxHeight="96" IsVisible="{Binding HasDetailError}"
                                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource BoughBrushError}"
+                    <TextBlock Text="{Binding DetailErrorText}" Foreground="{DynamicResource BoughBrushError}"
                                FontSize="12" TextWrapping="Wrap" />
                   </ScrollViewer>
                 </StackPanel>

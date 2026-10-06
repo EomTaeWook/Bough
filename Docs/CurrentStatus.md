@@ -2,6 +2,10 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
+## 2026-10-07 History 상세 오류 상태 분리
+
+선택 커밋 상세·변경 파일 조회 오류를 원래 예외로 보관하고 `HasDetailError`·`DetailErrorText`로 표시하도록 반영했다. Commit·Changes 탭에서 같은 상세 오류를 현재 언어의 GitErrorLocalizer로 표시한다. 목록·메뉴의 `ErrorText`가 상세 실패나 성공한 빈 결과 판정에 섞이지 않도록 분리했으며, 기존 로딩·응답 guard·성공 후 빈 상태 판정은 유지한다. 새 문자열이나 외부 API·DI 연결은 추가하지 않았다. 이번 변경은 빌드·테스트·UI 실행·diff check·리소스 대조 등 추가 검증을 수행하지 않았다.
+
 ## 2026-10-06 파일 히스토리와 기능 연결 검토
 
 메인 History의 Changes 탭에서 선택 커밋 상세·변경 파일 로딩, 조회 오류, 성공한 빈 결과를 구분해 표시하도록 보완했다. 이전 요청의 완료가 현재 로딩 상태를 해제하지 않도록 요청·저장소·커밋·비교 부모 경계를 유지했다. 기존 `HistoryNoChanges`를 재사용하고 `HistoryLoadingChanges` 한영 키를 Excel·JSON에 추가했다. 이전 보조 패널의 `HistoryFileHistoryLoading`·`HistoryFileHistoryEmpty` 두 키는 추가하지 않았다. 이번 보완은 빌드·테스트·UI 실행·diff check·리소스 대조 등 추가 검증을 수행하지 않았다.
