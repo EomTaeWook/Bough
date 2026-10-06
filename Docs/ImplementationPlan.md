@@ -12,7 +12,6 @@
 - 첫 화면은 Local Changes를 먼저 표시하고 다른 영역은 필요한 시점에 읽는다. 늦은 응답을 버리고 같은 상태의 중복 조회를 줄인다. [저장소 전환 응답성](../Design/RepositorySwitchResponsiveness.md)을 따른다.
 - 결과·오류는 [공통 상태 메시지](../Design/GitClientWorkflow.md#공통-상태-메시지), 간격·버튼·메뉴는 [UI 일관성](../Design/UIConsistency.md)을 따른다. 입력 확인과 진행 상황은 해당 대화상자에서 표시한다.
 - 사용자 문구는 코드에 고정하지 않고 최종 문자열 계약을 총괄에게 전달한다. 총괄이 [데이터 변환 규칙](<데이터 변환 도구 사용법.md>)에 따라 Excel·JSON을 함께 병합한다. Core는 오류 코드·인수만 전달하고 [표시 경계에서 번역](GitErrorLocalization.md)한다.
-- 재사용 규칙·아키텍처 문서를 바꾸면 경로와 핵심 변경을 총괄 인계에 포함한다. 총괄은 [재사용 문서 변경 알림](../AGENTS.md#재사용-문서-변경-알림)에 따라 `AGENTS.local.md`에 등록한 수신 세션에 완료 내용을 전달한다.
 
 ## 작업자 1: Local Changes, Stash, Git Settings
 
