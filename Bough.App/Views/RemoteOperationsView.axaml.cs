@@ -528,7 +528,8 @@ namespace Bough.App.Views
                 repositoryRequestVersion, requestedBranch, requestedRemote, requestedPrune, OperationFinishedAsync);
             using CancellationTokenSource cancellation = new();
             Func<Task<bool>> observedOperation = () => presenter.ExecuteAsync(kind, fetchAll, operationName, target,
-                operation, worktreeMayChange, cancellation.Token);            RemoteOperationWindow dialog = new(session, operationName, target, observedOperation, closeOnSuccess, StringHelper, ErrorLocalizer, cancellation, OperationQueue, requestedRepository.RootPath);
+                operation, worktreeMayChange, cancellation.Token);
+            RemoteOperationWindow dialog = new(session, operationName, target, observedOperation, closeOnSuccess, StringHelper, ErrorLocalizer, cancellation, OperationQueue, requestedRepository.RootPath);
             InternalDialogOpening?.Invoke();
             try
             {

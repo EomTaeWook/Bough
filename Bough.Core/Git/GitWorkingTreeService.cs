@@ -788,7 +788,7 @@ namespace Bough.Core.Git
             return raw.Substring(messageStart + 2);
         }
 
-        public async Task<string> CommitAsync(GitRepository repository, string message, bool amend, CancellationToken cancellationToken = default)
+        public async Task<GitCommitResult> CommitAsync(GitRepository repository, string message, bool amend, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(message) == true)
             {
@@ -827,8 +827,15 @@ namespace Bough.Core.Git
             }
 
             await _runner.RunWithInputAsync(repository.RootPath, arguments, message, cancellationToken);
-            GitCommandResult head = await _runner.RunAsync(repository.RootPath, _headArguments, false, cancellationToken);
-            return head.Output.Trim();
+            try
+            {
+                GitCommandResult head = await _runner.RunAsync(repository.RootPath, _headArguments, false, cancellationToken);
+                return new GitCommitResult(head.Output.Trim(), null);
+            }
+            catch (Exception exception) when (exception is not OutOfMemoryException)
+            {
+                return new GitCommitResult(null, exception);
+            }
         }
 
         private async Task<List<string>> BuildUnstageArgumentsAsync(GitRepository repository, CancellationToken cancellationToken)

@@ -6220,5 +6220,41 @@
     "Name": "HistorySnapshotOpenFailed",
     "Kor": "파일 {0}의 스냅샷을 기본 연결 프로그램으로 열지 못했습니다. 파일 연결과 프로그램 설정을 확인하세요.",
     "Eng": "Could not open the snapshot of {0} with its default application. Check the file association and application settings."
+  },
+  {
+    "Id": 3134,
+    "Name": "MutationCompletedReadFailed",
+    "Kor": "Git 변경은 완료됐습니다. 최신 상태를 확인하려면 새로 고침하세요.\n{0}",
+    "Eng": "The Git change completed. Refresh to read the updated state.\n{0}"
+  },
+  {
+    "Id": 3138,
+    "Name": "LocalCommitSucceededRefreshFailed",
+    "Kor": "커밋은 완료됐지만 후속 조회 또는 화면 갱신에 실패했습니다. 새로 고침으로 조회만 다시 시도하세요. {0}",
+    "Eng": "The commit succeeded, but a follow-up read or screen refresh failed. Use Refresh to retry reads only. {0}"
+  },
+  {
+    "Id": 3139,
+    "Name": "LocalCommittedWithoutHash",
+    "Kor": "커밋이 완료됐습니다.",
+    "Eng": "The commit succeeded."
+  },
+  {
+    "Id": 3140,
+    "Name": "StashSavedWithoutDetails",
+    "Kor": "보관 명령이 완료됐습니다.",
+    "Eng": "The stash save command succeeded."
+  },
+  {
+    "Id": 3141,
+    "Name": "DiscardResolutionSwitchFileMessage",
+    "Kor": "현재 파일의 저장하지 않은 편집을 버리고 {0} 파일로 이동할까요?",
+    "Eng": "Discard the unsaved edits in the current file and open {0}?"
+  },
+  {
+    "Id": 3142,
+    "Name": "HistoryActionStateReadFailed",
+    "Kor": "Git 변경은 완료됐지만 저장소 상태를 읽지 못했습니다. 새로 고침이 필요합니다.",
+    "Eng": "The Git change completed, but the repository state could not be read. Refresh is required."
   }
 ]

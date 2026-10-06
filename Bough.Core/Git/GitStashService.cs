@@ -134,7 +134,16 @@ namespace Bough.Core.Git
             try
             {
                 await _runner.RunAsync(repository.RootPath, arguments, false, cancellationToken);
-                IReadOnlyList<GitStashEntry> after = await GetStashesAsync(repository, cancellationToken);
+            }
+            catch (Exception exception) when (exception is not OutOfMemoryException)
+            {
+                throw GitStashMutationException.FromError(exception, true, true);
+            }
+
+            IReadOnlyList<GitStashEntry> after = null;
+            try
+            {
+                after = await GetStashesAsync(repository, cancellationToken);
                 if (after.Count == 0)
                 {
                     throw new GitException("StashCreationMissing", null, Array.Empty<object>());
@@ -148,7 +157,7 @@ namespace Bough.Core.Git
             }
             catch (Exception exception) when (exception is not OutOfMemoryException)
             {
-                throw GitStashMutationException.FromError(exception, true, true);
+                return new GitStashSaveResult(null, after, exception);
             }
         }
 

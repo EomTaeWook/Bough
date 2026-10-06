@@ -79,7 +79,7 @@ namespace Bough.App.Presenters
             }
             if (result.Succeeded)
             {
-                _model.MarkStageSaved(resultText);
+                _model.MarkStageSaved(conflict, resultText);
                 try
                 {
                     await _completion.CompleteConflictStageAsync(repository, path);

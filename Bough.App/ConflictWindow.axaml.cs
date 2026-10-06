@@ -47,6 +47,7 @@ namespace Bough.App
                     return;
                 }
 
+                string draftText = _viewModel.ResultText;
                 _confirmationPending = true;
                 bool discard;
                 try
@@ -59,6 +60,10 @@ namespace Bough.App
                 finally
                 {
                     _confirmationPending = false;
+                }
+                if (draftText != _viewModel.ResultText)
+                {
+                    return;
                 }
                 if (discard == true)
                 {
@@ -104,9 +109,21 @@ namespace Bough.App
             _strings = strings;
             _errors = errors;
             DataContext = viewModel;
+            _viewModel.ConfirmFileChangeAsync = ConfirmFileChangeAsync;
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
-            Closed += delegate { _viewModel.PropertyChanged -= OnViewModelPropertyChanged; };
+            Closed += delegate
+            {
+                _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                _viewModel.ConfirmFileChangeAsync = null;
+            };
             UpdateStageStatus();
+        }
+
+        private Task<bool> ConfirmFileChangeAsync(ConflictFileItem file)
+        {
+            return GitActionDialogs.ConfirmAsync(this, _viewModel.DiscardResolutionTitle,
+                _strings.Format("DiscardResolutionSwitchFileMessage", file.RelativePath),
+                _viewModel.DiscardResolutionConfirmText, _strings);
         }
 
         private async void SaveAndStageClicked(object sender, RoutedEventArgs eventArgs)
@@ -116,22 +133,25 @@ namespace Bough.App
 
         private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
         {
-            if (eventArgs.PropertyName != nameof(ConflictResolutionViewModel.StageResult))
+            if (eventArgs.PropertyName == nameof(ConflictResolutionViewModel.StageResult))
             {
+                UpdateStageStatus();
                 return;
             }
-            UpdateStageStatus();
         }
 
         private void UpdateStageStatus()
         {
+            if (_viewModel == null)
+            {
+                return;
+            }
             ConflictStageResult result = _viewModel.StageResult;
             if (result == null)
             {
                 StageStatusBlock.Text = string.Empty;
                 return;
             }
-
             string message = GetStageMessage(result);
             if (result.RefreshException != null)
             {

@@ -670,11 +670,16 @@ namespace Bough.App.ViewModels
 
             if (kind == StashMutationKind.Save)
             {
-                SetLocalizedStatusText(new LocalizedText("StashSavedNotice", entryName));
                 if (StashMessage == message)
                 {
                     StashMessage = string.Empty;
                 }
+                if (string.IsNullOrEmpty(entryName) == true)
+                {
+                    SetLocalizedStatusText(new LocalizedText("StashSavedWithoutDetails"));
+                    return;
+                }
+                SetLocalizedStatusText(new LocalizedText("StashSavedNotice", entryName));
                 return;
             }
             if (kind == StashMutationKind.Apply)

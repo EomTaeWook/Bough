@@ -382,7 +382,7 @@ namespace Bough.Core.Git
             string oldName = await ValidateReferenceRenameAsync(repository, request, "refs/heads/", cancellationToken);
             if (oldName == request.NewName)
             {
-                return new GitReferenceRenameResult(await _repositoryService.OpenAsync(repository.RootPath, cancellationToken), false);
+                return await ReadReferenceRenameResultAsync(repository, false, cancellationToken);
             }
             GitCommandResult result = await _runner.RunAsync(repository.RootPath,
                 new string[] { "branch", "-m", "--", oldName, request.NewName }, true, cancellationToken);
@@ -390,7 +390,7 @@ namespace Bough.Core.Git
             {
                 throw new GitException("ReferenceRenameFailed", null, request.ReferenceName, "refs/heads/" + request.NewName, result.Error.Trim());
             }
-            return await ReadReferenceRenameResultAsync(repository, oldName, request.NewName, cancellationToken);
+            return await ReadReferenceRenameResultAsync(repository, true, cancellationToken);
         }
 
         public async Task<GitReferenceRenameResult> RenameLocalTagAsync(GitRepository repository,
@@ -399,7 +399,7 @@ namespace Bough.Core.Git
             string oldName = await ValidateReferenceRenameAsync(repository, request, "refs/tags/", cancellationToken);
             if (oldName == request.NewName)
             {
-                return new GitReferenceRenameResult(await _repositoryService.OpenAsync(repository.RootPath, cancellationToken), false);
+                return await ReadReferenceRenameResultAsync(repository, false, cancellationToken);
             }
             string destination = "refs/tags/" + request.NewName;
             string transaction = $"start\ncreate {destination} {request.ObjectId}\ndelete {request.ReferenceName} {request.ObjectId}\nprepare\ncommit\n";
@@ -415,7 +415,7 @@ namespace Bough.Core.Git
                 }
                 throw new GitException("ReferenceRenameFailed", exception, request.ReferenceName, destination, exception.Message);
             }
-            return await ReadReferenceRenameResultAsync(repository, oldName, request.NewName, cancellationToken);
+            return await ReadReferenceRenameResultAsync(repository, true, cancellationToken);
         }
 
         private async Task<string> ValidateReferenceRenameAsync(GitRepository repository, GitReferenceRenameRequest request,
@@ -548,17 +548,16 @@ namespace Bough.Core.Git
             return string.Empty;
         }
 
-        private async Task<GitReferenceRenameResult> ReadReferenceRenameResultAsync(GitRepository repository, string oldName,
-            string newName, CancellationToken cancellationToken)
+        private async Task<GitReferenceRenameResult> ReadReferenceRenameResultAsync(GitRepository repository, bool changed, CancellationToken cancellationToken)
         {
             try
             {
                 GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
-                return new GitReferenceRenameResult(updated, true);
+                return new GitReferenceRenameResult(updated, changed);
             }
-            catch (GitException exception)
+            catch (Exception exception)
             {
-                throw new GitException("ReferenceRenameStateReadFailed", exception, oldName, newName);
+                return new GitReferenceRenameResult(null, changed, exception);
             }
         }
 

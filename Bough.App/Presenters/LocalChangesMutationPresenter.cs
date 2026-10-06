@@ -157,16 +157,16 @@ namespace Bough.App.Presenters
         {
             return EnqueueAsync(screen, repository, operationName, async cancellationToken =>
             {
-                string hash = null;
+                GitCommitResult result = null;
                 await RunOperationAsync(screen, repository, async token =>
                 {
                     GitWorktreeStatus status = await _workingTreeService.GetStatusAsync(repository, token);
                     _workingTreeService.ValidateSelectedFiles(expectedFiles, status.Files.Where(file => file.IsStaged).ToArray(), true);
-                    hash = await _workingTreeService.CommitAsync(repository, message, amend, token);
+                    result = await _workingTreeService.CommitAsync(repository, message, amend, token);
                     screen.ClearCommittedDraft(repository, message, amend);
                     return true;
                 }, null, false, cancellationToken);
-                screen.ApplyCommitResult(repository, hash);
+                screen.ApplyCommitResult(repository, result.CommitHash, result.ReadError);
             });
         }
 

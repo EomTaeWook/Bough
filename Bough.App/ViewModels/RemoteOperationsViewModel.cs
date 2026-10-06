@@ -756,6 +756,14 @@ namespace Bough.App.ViewModels
                     SetLocalizedOperationStageText(new LocalizedText("RemoteStageCheckingState"));
                 }
                 GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellation.Token);
+                if (request != _requestVersion)
+                {
+                    return false;
+                }
+                if (ReferenceEquals(_repository, repository) == false)
+                {
+                    return false;
+                }
                 GitRemoteState updatedState = await _service.GetStateAsync(updated, cancellation.Token);
                 if (request != _requestVersion)
                 {
@@ -794,7 +802,26 @@ namespace Bough.App.ViewModels
             {
                 if (request == _requestVersion)
                 {
+                    if (ReferenceEquals(_repository, repository) == false)
+                    {
+                        return false;
+                    }
                     string refreshError = await RefreshAfterOutcomeAsync(repository, request);
+                    if (request != _requestVersion)
+                    {
+                        return false;
+                    }
+                    if (LatestOperationStateSnapshot == null)
+                    {
+                        if (ReferenceEquals(_repository, repository) == false)
+                        {
+                            return false;
+                        }
+                    }
+                    else if (ReferenceEquals(_repository, LatestOperationStateSnapshot.Repository) == false)
+                    {
+                        return false;
+                    }
                     if (completedResult == null)
                     {
                         SetLocalizedStatusText(new LocalizedText("RemoteOperationCanceled"));
@@ -816,7 +843,26 @@ namespace Bough.App.ViewModels
             {
                 if (request == _requestVersion)
                 {
+                    if (ReferenceEquals(_repository, repository) == false)
+                    {
+                        return false;
+                    }
                     string refreshError = await RefreshAfterOutcomeAsync(repository, request);
+                    if (request != _requestVersion)
+                    {
+                        return false;
+                    }
+                    if (LatestOperationStateSnapshot == null)
+                    {
+                        if (ReferenceEquals(_repository, repository) == false)
+                        {
+                            return false;
+                        }
+                    }
+                    else if (ReferenceEquals(_repository, LatestOperationStateSnapshot.Repository) == false)
+                    {
+                        return false;
+                    }
                     SetLocalizedStatusText(new LocalizedText(exception));
                     if (exception is GitRemoteOperationException remoteException)
                     {
@@ -861,6 +907,14 @@ namespace Bough.App.ViewModels
             try
             {
                 GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath);
+                if (request != _requestVersion)
+                {
+                    return string.Empty;
+                }
+                if (ReferenceEquals(_repository, repository) == false)
+                {
+                    return string.Empty;
+                }
                 GitRemoteState state = await _service.GetStateAsync(updated);
                 if (request != _requestVersion)
                 {
@@ -878,6 +932,14 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
+                if (request != _requestVersion)
+                {
+                    return string.Empty;
+                }
+                if (ReferenceEquals(_repository, repository) == false)
+                {
+                    return string.Empty;
+                }
                 return _errors.GetDisplayMessage(exception);
             }
         }

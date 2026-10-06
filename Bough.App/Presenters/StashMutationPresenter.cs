@@ -125,6 +125,7 @@ namespace Bough.App.Presenters
                         worktreeMayHaveChanged = true;
                         stashesMayHaveChanged = true;
                         succeeded = true;
+                        failure = saved.ReadError;
                         break;
                     case StashMutationKind.Apply:
                         await _stashService.ApplyAsync(repository, entry, cancellationToken);
@@ -160,12 +161,22 @@ namespace Bough.App.Presenters
             int requestVersion = screen.InvalidateMutationReads(repository, succeeded, worktreeMayHaveChanged, stashesMayHaveChanged);
             if (succeeded == true)
             {
-                string entryName = saved?.Created.Name;
-                if (entryName == null)
+                try
                 {
-                    entryName = entry.Name;
+                    string entryName = saved?.Created?.Name;
+                    if (entryName == null)
+                    {
+                        entryName = entry?.Name;
+                    }
+                    screen.ApplyMutationSuccess(repository, requestVersion, kind, entryName, message);
                 }
-                screen.ApplyMutationSuccess(repository, requestVersion, kind, entryName, message);
+                catch (Exception exception)
+                {
+                    if (failure == null)
+                    {
+                        failure = exception;
+                    }
+                }
             }
 
             if (stashesMayHaveChanged == true)
@@ -173,11 +184,14 @@ namespace Bough.App.Presenters
                 try
                 {
                     IReadOnlyList<GitStashEntry> entries = saved?.Entries;
-                    if (entries == null)
+                    if (saved == null)
                     {
                         entries = await _stashService.GetStashesAsync(repository, cancellationToken);
                     }
-                    screen.ApplyMutationEntries(repository, requestVersion, entries);
+                    if (entries != null)
+                    {
+                        screen.ApplyMutationEntries(repository, requestVersion, entries);
+                    }
                 }
                 catch (Exception exception)
                 {

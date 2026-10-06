@@ -407,20 +407,76 @@ namespace Bough.App.ViewModels
             }
         }
 
+        public Func<ConflictFileItem, Task<bool>> ConfirmFileChangeAsync { get; set; }
+
         public ConflictFileItem SelectedFile
         {
             get { return _selectedFile; }
             set
             {
-                if (SetProperty(ref _selectedFile, value) == false)
+                if (ReferenceEquals(_selectedFile, value))
                 {
                     return;
                 }
-                if (value != null)
+                if (value == null)
                 {
-                    _ = LoadConflictAsync(value);
+                    OnPropertyChanged(nameof(SelectedFile));
+                    return;
+                }
+                _ = SelectFileAsync(value);
+            }
+        }
+
+        private async Task SelectFileAsync(ConflictFileItem file)
+        {
+            if (IsBusy)
+            {
+                OnPropertyChanged(nameof(SelectedFile));
+                return;
+            }
+            GitRepository repository = _repository;
+            int request = ++_loadVersion;
+            string draftText = ResultText;
+            if (HasUnsavedConflictEdits)
+            {
+                if (ConfirmFileChangeAsync == null)
+                {
+                    OnPropertyChanged(nameof(SelectedFile));
+                    return;
+                }
+                bool discard = await ConfirmFileChangeAsync(file);
+                if (request != _loadVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(_repository, repository) == false)
+                {
+                    return;
+                }
+                if (draftText != ResultText)
+                {
+                    OnPropertyChanged(nameof(SelectedFile));
+                    return;
+                }
+                if (discard == false)
+                {
+                    OnPropertyChanged(nameof(SelectedFile));
+                    return;
                 }
             }
+            if (ConflictFiles.Contains(file) == false)
+            {
+                OnPropertyChanged(nameof(SelectedFile));
+                return;
+            }
+            if (IsBusy)
+            {
+                OnPropertyChanged(nameof(SelectedFile));
+                return;
+            }
+            ClearDocument();
+            SetSelectedFile(file);
+            await LoadConflictAsync(file);
         }
 
         public void SetCompletion(IConflictStageCompletion completion)
@@ -491,7 +547,8 @@ namespace Bough.App.ViewModels
 
             int request = ++_requestVersion;
             _stagePresenter.Invalidate();
-            string previousPath = _selectedFile?.RelativePath ?? string.Empty;
+            string previousPath = _currentConflict?.RelativePath ?? _selectedFile?.RelativePath ?? string.Empty;
+            bool preserveDraft = HasUnsavedConflictEdits;
             SetSelectedFile(null);
             ConflictFiles.Clear();
             foreach (string path in paths)
@@ -514,20 +571,18 @@ namespace Bough.App.ViewModels
                 return true;
             }
 
-            ConflictFileItem nextFile = ConflictFiles[0];
             ConflictFileItem previousFile = ConflictFiles.FirstOrDefault(file => file.RelativePath == previousPath);
-            if (previousFile != null)
+            if (preserveDraft)
             {
-                nextFile = previousFile;
-            }
-            SetSelectedFile(nextFile);
-            if (HasUnsavedConflictEdits == true)
-            {
-                if (previousPath == nextFile.RelativePath)
+                SetSelectedFile(previousFile);
+                if (previousFile == null)
                 {
-                    return true;
+                    SetLocalizedStatusMessage(new LocalizedText("ConflictResolvedExternallyWithUnsavedEdits"));
                 }
+                return true;
             }
+            ConflictFileItem nextFile = previousFile ?? ConflictFiles[0];
+            SetSelectedFile(nextFile);
             await LoadConflictCoreAsync(nextFile);
             if (request != _requestVersion)
             {
@@ -569,6 +624,7 @@ namespace Bough.App.ViewModels
 
             GitRepository repository = _repository;
             int loadVersion = ++_loadVersion;
+            string draftText = ResultText;
             bool isRebaseConflict = await _repositoryService.IsRebaseInProgressAsync(repository);
             if (loadVersion != _loadVersion)
             {
@@ -630,6 +686,10 @@ namespace Bough.App.ViewModels
                 return;
             }
             if (_selectedFile?.RelativePath != file.RelativePath)
+            {
+                return;
+            }
+            if (draftText != ResultText)
             {
                 return;
             }
@@ -830,8 +890,13 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(HasGeneralStatus));
         }
 
-        internal void MarkStageSaved(string resultText)
+        internal void MarkStageSaved(GitConflictFile conflict, string resultText)
         {
+            if (ReferenceEquals(_currentConflict, conflict) == false)
+            {
+                return;
+            }
+            // The saved snapshot becomes the baseline; later edits stay in ResultText.
             _loadedResultText = resultText;
             OnPropertyChanged(nameof(HasUnsavedConflictEdits));
         }
@@ -977,7 +1042,11 @@ namespace Bough.App.ViewModels
                 {
                     return false;
                 }
-                return true;
+                if (_currentConflict == null)
+                {
+                    return false;
+                }
+                return ConflictFiles.Any(file => file.RelativePath == _currentConflict.RelativePath);
             }
         }
 

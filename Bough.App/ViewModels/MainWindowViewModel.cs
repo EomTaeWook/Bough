@@ -88,6 +88,7 @@ namespace Bough.App.ViewModels
             Conflicts.PropertyChanged += OnConflictsPropertyChanged;
             _operationQueue.StateChanged += OnGitOperationQueueStateChanged;
             History.RepositoryChanged += OnHistoryRepositoryChanged;
+            History.ReferenceRefreshRequired += OnReferenceRefreshRequired;
             History.ActionMessage += message => StatusMessage = message;
             History.FileRestored += OnHistoryFileRestored;
             References.PropertyChanged += OnReferencesPropertyChanged;
@@ -95,6 +96,7 @@ namespace Bough.App.ViewModels
             LocalChanges.PropertyChanged += OnLocalChangesPropertyChanged;
             LocalChanges.Stashes.PropertyChanged += OnStashPropertyChanged;
             References.RepositoryChanged += OnReferenceRepositoryChanged;
+            References.ReferenceRefreshRequired += OnReferenceRefreshRequired;
             References.TagCommitSelected += OnTagCommitSelected;
             References.StashesRequested += OnStashesRequested;
             References.StashSelected += OnStashSelected;
@@ -538,6 +540,14 @@ namespace Bough.App.ViewModels
             History.Clear();
             LocalChanges.Clear();
             await GitSettings.SetRepositoryAsync(null);
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (_repository != null)
+            {
+                return;
+            }
             References.BindRepository(null);
             RemoteOperations.BindRepository(null);
             IsBusy = true;
@@ -603,6 +613,14 @@ namespace Bough.App.ViewModels
 
         private void StartRepositoryAreaLoads(GitRepository repository, int request, bool loadHistory)
         {
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
             References.BindRepository(repository);
             RemoteOperations.BindRepository(repository);
             IsLocalChangesLoading = true;
@@ -624,28 +642,49 @@ namespace Bough.App.ViewModels
 
         internal async Task ObserveRepositoryAreaAsync(Func<Task> load, int request, Action completed)
         {
+            GitRepository repository = _repository;
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
             try
             {
                 await load();
             }
             catch (Exception exception)
             {
-                if (request == _repositoryRequestVersion)
+                if (request != _repositoryRequestVersion)
                 {
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                    return;
                 }
+                if (ReferenceEquals(_repository, repository) == false)
+                {
+                    return;
+                }
+                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
             }
             finally
             {
                 if (request == _repositoryRequestVersion)
                 {
-                    completed?.Invoke();
+                    if (ReferenceEquals(_repository, repository))
+                    {
+                        completed?.Invoke();
+                    }
                 }
             }
         }
 
         internal async Task RefreshLocalChangesAndConflictsAsync(GitRepository repository, int request)
         {
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
             await LocalChanges.LoadWorktreeAsync(repository);
             if (request != _repositoryRequestVersion)
             {
@@ -658,8 +697,29 @@ namespace Bough.App.ViewModels
             await RefreshConflictsFromLocalChangesAsync(repository);
         }
 
+        internal bool IsCurrentRepositoryRequest(GitRepository repository, int request)
+        {
+            if (request != _repositoryRequestVersion)
+            {
+                return false;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return false;
+            }
+            return true;
+        }
+
         internal async Task RefreshRebaseStateAsync(GitRepository repository, int request)
         {
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
             bool isRebaseInProgress = await _repositoryService.IsRebaseInProgressAsync(repository);
             if (request != _repositoryRequestVersion)
             {
@@ -785,6 +845,15 @@ namespace Bough.App.ViewModels
             StartRepositoryAreaLoads(repository, request, IsHistoryView);
         }
 
+        private void OnReferenceRefreshRequired(string repositoryRoot)
+        {
+            if (string.IsNullOrWhiteSpace(repositoryRoot))
+            {
+                return;
+            }
+            _historyReferenceVersions[repositoryRoot] = ++_historyReferenceChangeVersion;
+        }
+
         private async void OnHistoryRepositoryChanged(GitRepository updated)
         {
             await ApplyActionRepositoryAsync(updated, true, true, false);
@@ -870,14 +939,19 @@ namespace Bough.App.ViewModels
             return true;
         }
 
-        internal void ReportRemoteCompletionFailure(Exception exception, int request)
+        internal void ReportRemoteCompletionFailure(Exception exception, GitRepository repository, int request)
         {
             if (request != _repositoryRequestVersion)
             {
                 return;
             }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
             StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
         }
+
         private async Task ApplyActionRepositoryAsync(GitRepository updated, bool refreshReferences, bool refreshRemote, bool refreshHistory)
         {
             if (_repository == null)
@@ -916,12 +990,33 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
+                if (request != _repositoryRequestVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(_repository, updated) == false)
+                {
+                    return;
+                }
                 StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
             }
         }
 
-        private async Task LoadHistoryAsync(GitRepository repository, int request)
+        internal void MarkRemoteHistoryReferencesDirty(GitRepository repository)
         {
+            _historyReferenceVersions[repository.RootPath] = ++_historyReferenceChangeVersion;
+        }
+
+        internal async Task LoadHistoryAsync(GitRepository repository, int request)
+        {
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
             _historyReferenceVersions.TryGetValue(repository.RootPath, out int referenceVersion);
             await History.LoadAsync(repository);
             if (request != _repositoryRequestVersion)
@@ -1124,9 +1219,29 @@ namespace Bough.App.ViewModels
                 return;
             }
             GitRepository requestRepository = _repository;
+            GitRepository completionRepository = requestRepository;
             int request = _repositoryRequestVersion;
+            _historyReferenceVersions[requestRepository.RootPath] = ++_historyReferenceChangeVersion;
+            string completionMessage;
+            if (string.IsNullOrWhiteSpace(commitHash))
+            {
+                completionMessage = _stringHelper.GetString("LocalCommittedWithoutHash");
+            }
+            else
+            {
+                completionMessage = _stringHelper.Format("MainCommitCompleted", commitHash);
+            }
+            SetStatusMessage(completionMessage, false);
             try
             {
+                if (request != _repositoryRequestVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(_repository, requestRepository) == false)
+                {
+                    return;
+                }
                 GitRepository updated = await _repositoryService.OpenAsync(requestRepository.RootPath);
                 if (request != _repositoryRequestVersion)
                 {
@@ -1137,23 +1252,39 @@ namespace Bough.App.ViewModels
                     return;
                 }
                 _repository = updated;
+                completionRepository = updated;
                 Conflicts.BindRepository(updated);
                 RepositoryMeta = FormatRepositoryMeta(updated);
                 _ = ObserveRepositoryAreaAsync(() => References.SetRepositoryAsync(updated), request, null);
                 _ = ObserveRepositoryAreaAsync(() => RemoteOperations.SetRepositoryAsync(updated), request, null);
                 if (IsHistoryView == true)
                 {
-                    _ = ObserveRepositoryAreaAsync(() => History.LoadAsync(updated), request, null);
+                    _ = ObserveRepositoryAreaAsync(() => LoadHistoryAsync(updated, request), request, null);
                 }
                 await RefreshConflictsFromLocalChangesAsync(updated);
-                SetStatusMessage(_stringHelper.Format("MainCommitCompleted", commitHash), false);
+                if (request != _repositoryRequestVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(_repository, updated) == false)
+                {
+                    return;
+                }
+                SetStatusMessage(completionMessage, false);
             }
             catch (Exception exception)
             {
-                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                if (request != _repositoryRequestVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(_repository, completionRepository) == false)
+                {
+                    return;
+                }
+                StatusMessage = completionMessage + Environment.NewLine + _errorLocalizer.GetDisplayMessage(exception);
             }
         }
-
         private async void OnLocalResolveRequested(string path)
         {
             try
@@ -1466,9 +1597,10 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
+            int request = _repositoryRequestVersion;
             bool hadConflicts = Conflicts.ConflictFiles.Count > 0;
             bool applied = await Conflicts.ApplyPathsAsync(repository, paths);
-            if (applied == false)
+            if (request != _repositoryRequestVersion)
             {
                 return;
             }
@@ -1476,23 +1608,26 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
+            if (applied == false)
+            {
+                return;
+            }
             NotifyRebaseState();
             if (Conflicts.ConflictFiles.Count == 0)
             {
                 _autoOpenedConflicts.Remove(repository.RootPath);
-                if (Conflicts.HasUnsavedConflictEdits == true)
+                if (Conflicts.HasUnsavedConflictEdits)
                 {
                     StatusMessage = Conflicts.StatusMessage;
                     return;
                 }
                 SetStatusMessage(_stringHelper.GetString("NoUnresolvedConflicts"), false);
-                if (hadConflicts == true)
+                if (hadConflicts)
                 {
                     ConflictResolutionCompleted?.Invoke();
                 }
                 return;
             }
-
             string signature = string.Join("\0", paths);
             _autoOpenedConflicts.TryGetValue(repository.RootPath, out string previousSignature);
             if (previousSignature == signature)
@@ -1508,11 +1643,20 @@ namespace Bough.App.ViewModels
 
         public async Task CompleteConflictStageAsync(GitRepository repository, string stagedPath)
         {
+            if (repository == null)
+            {
+                return;
+            }
             if (ReferenceEquals(_repository, repository) == false)
             {
                 return;
             }
+            int request = _repositoryRequestVersion;
             await RefreshConflictStateAsync(repository);
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
             if (ReferenceEquals(_repository, repository) == false)
             {
                 return;
@@ -1522,6 +1666,10 @@ namespace Bough.App.ViewModels
 
         public async Task RefreshConflictStateAsync(GitRepository repository)
         {
+            if (repository == null)
+            {
+                return;
+            }
             if (ReferenceEquals(_repository, repository) == false)
             {
                 return;
@@ -1536,8 +1684,24 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
-            await RefreshConflictsFromLocalChangesAsync(repository);
             await RefreshRebaseStateAsync(repository, request);
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
+            await RefreshConflictsFromLocalChangesAsync(repository);
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
         }
 
         private async Task ContinueRebaseAsync()

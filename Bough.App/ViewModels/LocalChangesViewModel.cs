@@ -1376,14 +1376,32 @@ namespace Bough.App.ViewModels
             _automaticMergeCommitMessage = string.Empty;
         }
 
-        internal void ApplyCommitResult(GitRepository repository, string hash)
+        internal void ApplyCommitResult(GitRepository repository, string hash, Exception readError = null)
         {
             if (IsCurrentRepository(repository) == false)
             {
                 return;
             }
 
-            SetLocalizedStatusText(new LocalizedText("LocalCommittedNotice", hash));
+            if (string.IsNullOrEmpty(hash) == true)
+            {
+                SetLocalizedStatusText(new LocalizedText("LocalCommittedWithoutHash"));
+            }
+            else
+            {
+                SetLocalizedStatusText(new LocalizedText("LocalCommittedNotice", hash));
+            }
+            if (readError != null)
+            {
+                SetLocalizedErrorText(new LocalizedText("LocalCommitSucceededRefreshFailed", new LocalizedText(readError)));
+            }
+            else if (string.IsNullOrEmpty(ErrorText) == false)
+            {
+                if (_errorTextLocalization != null)
+                {
+                    SetLocalizedErrorText(new LocalizedText("LocalCommitSucceededRefreshFailed", _errorTextLocalization));
+                }
+            }
             Committed?.Invoke(hash);
         }
 

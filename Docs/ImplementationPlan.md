@@ -21,6 +21,7 @@
 - Stash: 보관 입력 창과 대상 고정, 목록·미리보기, Apply/Pop/Drop, 부분 실패와 작업 트리 변경 여부에 따른 갱신 계약. 취소·Drop에서 작업 트리를 불필요하게 다시 읽지 않는다.
 - 보관 창의 완료는 현재 요청 집합과 미해결 오류로 판정한다. `Succeeded`는 Git 변경 성공을 유지하고 `CompleteStashSaveAsync`는 후속 갱신 오류가 포함된 `StashMutationResult`를 반환한다. 보관 성공 뒤 갱신 재시도는 읽기만 수행한다. Unstaged 메뉴는 메뉴 시점 저장소·경로를 고정하고 무효 대상의 이유를 표시한다.
 - Save 완료에 상태가 없으면 `Task<GitWorktreeStatus> RefreshStashSaveWorktreeAsync(GitRepository repository)`로 고정 저장소의 상태를 한 번 조회·적용하고 동일 스냅샷을 반환한다. 저장소·조회 요청 대체로 적용하지 않으면 null을 반환하고, 현재 조회·적용 실패는 예외를 전달한다. 이전 큐 작업 오류를 이번 조회 실패로 사용하지 않는다. Core 조회와 Presenter의 요청·적용 책임을 유지하며 Apply/Pop용 기존 API는 보존한다. 실제 구현·인계 상태는 CurrentStatus를 따른다.
+- Core의 성공한 stash push·commit/amend는 후속 목록·HEAD 조회 오류 때문에 변경 실패로 바꾸지 않는다. 기존 결과와 작은 커밋 결과에 원래 성공과 `ReadError`를 보존하고 Presenter가 소비한다. SHA를 얻지 못한 커밋도 완료 사실을 전달하며 기존 새로 고침으로 필요한 읽기를 다시 수행한다. 이번 수정에서는 별도 완료 계층이나 재시도 UI를 만들지 않는다.
 - Git Settings: Git 실행 파일·작성자·인증 계정·테마·Bough 기본 Pull 방식과 앱 언어의 즉시 적용·저장. GitHub 계정 인증과 커밋 작성자를 구분하며 `credential.helper` 출처·값 목록은 노출하지 않는다.
 - 표시 계약은 [화면과 동작](../Design/GitClientWorkflow.md), [원격과 Stash](../Design/RemoteAndStash.md), [GitHub 계정](../Design/GitHubAccountSwitching.md), [테마](../Design/AppearanceTheme.md)를 따른다.
 - MainWindow와 원격 실행 파일은 수정하지 않고 갱신·상태·설정 변경 이벤트 계약을 총괄에게 전달한다.
@@ -35,8 +36,9 @@
 - Changes 하단 미리보기는 파일 선택 → 백그라운드 조회 → 현재 결과 표시를 Presenter의 순차 작업으로 조정한다. 하나의 조회만 실행하고 새 선택은 이전 조회를 취소하며 대기 중인 옛 선택을 최신 선택으로 바꾼다. 조회 준비·Git 실행·내용 해석을 UI 스레드에서 수행하지 않고 메뉴·스크롤·선택 입력을 계속 받는다. 메뉴 표시를 조회 완료나 큰 텍스트 적용보다 먼저 처리하고 메뉴가 열린 동안 결과 적용을 미룬다. 저장소·커밋·비교 부모·선택·요청이 바뀌면 늦은 성공과 실패를 폐기한다. 현재 화면과 기존 로딩·제한 사유·외부 Open 수명을 유지하며 실제 반영·미검증 상태는 CurrentStatus를 따른다.
 - 선택 기반 하단 미리보기와 명시적 외부 Open의 수명을 구분한다. Open은 메뉴 시점 커밋의 읽기 전용 임시 스냅샷을 기본 편집기·연결 프로그램으로 연다. 선택 해제는 하단 미리보기 요청을 무효화하고, 저장소·커밋·부모 변경은 준비 중인 두 경로를 무효화한다. 이미 외부로 연 임시 파일은 그대로 유지한다. 메뉴를 여는 UI 경로에서 동기 파일 존재 조회·Git 실행을 제거하고 실행 시 고정 대상을 재확인한다. 참조 전환 실패 후 조회 완료에서도 저장소와 요청 수명을 각각 재확인한다. 이미 반영한 Changes 로딩·오류·빈 결과와 전용 파일 히스토리 연결은 되돌리지 않는다.
 - 참조: 조회·현재 브랜치 표시, 브랜치 생성·추적·전환·삭제, 태그 생성·단일 삭제 대화상자, 로컬 브랜치·태그 이름 변경. 메뉴를 연 시점의 저장소·참조·객체 OID를 고정하며 원격 변경은 서버 영향을 구분한다.
+- 참조 삭제·이름 변경은 실제 Git 성공과 후속 조회 실패를 기존 결과에서 구분한다. 조회 실패 때문에 성공 bool을 변경 실패로 반환해 같은 변경을 재실행하지 않으며 기존 상태 표시와 새로 고침을 사용한다. 최신 저장소를 조회하지 못했다면 이전 객체를 새 스냅샷으로 채택하지 않는다.
 - [커밋 상세](../Design/CommitInspection.md), [커밋 명령](../Design/CommitActions.md), [태그 삭제](../Design/TagDeletion.md), [참조 이름 변경](../Design/ReferenceRename.md)을 따른다.
-- MainWindow는 수정하지 않는다. 참조 변경의 `RepositoryChanged`와 History 갱신 의존을 총괄에게 전달한다. 숨긴 History의 참조 변경은 작업자 3이 복귀 시 반영한다.
+- MainWindow는 수정하지 않는다. 최신 메타데이터는 기존 `RepositoryChanged`로 전달하고 조회하지 못한 실제 변경은 `ReferenceRefreshRequired(root)`로 dirty 기록만 요청한다. 이 신호에서 이전 저장소 객체를 채택하거나 즉시 자식 조회를 시작하지 않는다. 숨긴 History의 참조 변경은 작업자 3이 복귀 시 반영한다.
 - Git Settings는 작업자 1, 원격 실행·진행 창과 RemoteOperationsViewModel은 작업자 3 소유다.
 
 ## 작업자 3: MainWindow, 원격 작업, 충돌 해결, 복제와 배포 연결
@@ -46,7 +48,9 @@
 - 상단 저장소 선택·추가 메뉴·시작 화면의 열기·복제 진입, 화면 전환·영역별 조회·공통 사이드바 상태, 작업 완료 후 갱신 순서와 숨긴 History의 참조 변경 반영.
 - 태그 커밋 이동은 `History.SelectCommitAsync(repository, hash, GitHistoryScope.All)` 뒤 `History.ReportCommitSelectionResult(result)`로 연결한다. 저장소 인스턴스·저장소 요청·태그 선택 요청 버전을 각각 검사하며 현재 결과만 표시한다. History의 dirty 버전은 해당 갱신이 성공하고 버전이 일치한 경우에만 해제한다.
 - Fetch/Pull/Push의 FIFO·실행 직전 검증·진행·취소·완료 연결. 기본 Pull 실행은 작업자 1의 GitSettingsService 설정을 읽으며 일회성 메뉴는 저장값을 바꾸지 않는다.
+- 원격 완료의 각 await 뒤와 자식 Load·Bind 시작 전에 기존 메인 요청·저장소 인스턴스를 독립 검사한다. 늦은 실패 표시도 같은 수명을 유지한다. 이번 가드 수정에서는 새 완료 결과 계층·조회 API·재시도 UI를 추가하지 않는다.
 - [충돌 창](../Design/ConflictEntry.md)의 진입·파일 선택·개별/일괄 선택·직접 편집·저장·스테이징·리베이스 계속. 화면에서 Git 도메인 검증을 재구현하지 않는다.
+- 충돌 저장 요청의 본문은 FIFO에서 고정해 처리하고 요청 이후 추가 편집한 초안은 자동 파일 이동·목록 초기화·창 닫기로 교체하지 않는다. 명시적 이동·닫기의 버리기 확인과 기존 완료 계약을 유지한다.
 - [복제](../Design/RepositoryClone.md)의 단일 목적지, 시작 신호, 고정 오류 분류와 현재 목적지 상태 안내. 실패 이유와 폴더 상태를 구분하고 원문 stderr를 노출하지 않는다.
 - [단일 파일 배포 정책](ReleasePolicy.md)에 따른 필수 리소스 포함과 로더·시작 연결. 릴리스 파일 생성·게시와 README 편집은 총괄이 맡는다.
 

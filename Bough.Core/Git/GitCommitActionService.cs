@@ -11,6 +11,8 @@ namespace Bough.Core.Git
 {
     public class GitCommitActionService
     {
+        public const string StateReadFailedCode = "HistoryActionStateReadFailed";
+
         private readonly GitCommandRunner _runner;
         private readonly GitRepositoryService _repositoryService;
         private readonly GitReferenceService _referenceService;
@@ -38,7 +40,7 @@ namespace Bough.Core.Git
         {
             string target = await VerifyCommitAsync(repository, commitHash, cancellationToken);
             await _runner.RunAsync(repository.RootPath, new string[] { "switch", "--detach", target }, false, cancellationToken);
-            return await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
+            return await ReadHistoryActionRepositoryAsync(repository.RootPath, cancellationToken);
         }
 
         public async Task<GitRepository> CreateBranchAsync(GitRepository repository, string branchName, string startHash, bool switchToBranch, CancellationToken cancellationToken = default)
@@ -198,7 +200,19 @@ namespace Bough.Core.Git
                 option = "--hard";
             }
             await _runner.RunAsync(repository.RootPath, new string[] { "reset", option, target }, false, cancellationToken);
-            return await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
+            return await ReadHistoryActionRepositoryAsync(repository.RootPath, cancellationToken);
+        }
+
+        private async Task<GitRepository> ReadHistoryActionRepositoryAsync(string repositoryRoot, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await _repositoryService.OpenAsync(repositoryRoot, cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                throw new GitException(StateReadFailedCode, exception, Array.Empty<object>());
+            }
         }
 
         private async Task<string> VerifyCommitAsync(GitRepository repository, string commitHash, CancellationToken cancellationToken)

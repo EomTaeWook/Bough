@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Commands;
@@ -88,6 +89,9 @@ namespace Bough.App.ViewModels
             OpenFolderCommand = new RelayCommand(OpenFolder, CanUseRepository);
         }
 
+        private int _referenceBindingVersion;
+        private int _referenceMutationRequest;
+        public event Action<string> ReferenceRefreshRequired;
         public event Action<GitRepository> RepositoryChanged;
         public event Action<string> TagCommitSelected;
         public event Action StashesRequested;
@@ -221,6 +225,7 @@ namespace Bough.App.ViewModels
 
         public void BindRepository(GitRepository repository)
         {
+            _referenceBindingVersion++;
             bool differentRepository = _repository == null || repository == null;
             if (_repository != null && repository != null)
             {
@@ -299,6 +304,7 @@ namespace Bough.App.ViewModels
                     return false;
                 }
                 GitReferenceSnapshot snapshot = result.Snapshot;
+                _repository = new GitRepository(repository.RootPath, repository.DisplayName, snapshot.CurrentBranch);
 
                 string selectedKey = SelectedTreeNode?.Key;
                 ClearItems();
@@ -553,46 +559,132 @@ namespace Bough.App.ViewModels
         }
 
         private async Task<bool> QueueBranchDeletionAsync(GitRepository repository, string successMessage,
-            Func<Func<Task<bool>>, Task<bool>> execute)
+            Func<Func<Task<bool>>, Task<bool>> execute, string refreshFailureKey = "ReferenceBranchDeleteRefreshFailed")
         {
+            int bindingVersion = _referenceBindingVersion;
+            int request = ++_referenceMutationRequest;
+            bool mutationSucceeded = false;
+            bool snapshotPublished = false;
+            Exception readError = null;
             try
             {
-                return await execute(async () =>
+                bool succeeded = await execute(async () =>
                 {
-                    if (IsCurrentRepository(repository.RootPath) == false)
+                    mutationSucceeded = true;
+                    try
                     {
+                        if (IsCurrentRepository(repository.RootPath) == false)
+                        {
+                            return true;
+                        }
+                        if (bindingVersion != _referenceBindingVersion)
+                        {
+                            return true;
+                        }
+                        if (request != _referenceMutationRequest)
+                        {
+                            return true;
+                        }
+                        Task<bool> refresh = RefreshCoreAsync();
+                        int snapshotRequest = _snapshotPresenter.RequestVersion;
+                        bool refreshed = await refresh;
+                        if (IsCurrentRepository(repository.RootPath) == false)
+                        {
+                            return true;
+                        }
+                        if (bindingVersion != _referenceBindingVersion)
+                        {
+                            return true;
+                        }
+                        if (request != _referenceMutationRequest)
+                        {
+                            return true;
+                        }
+                        if (snapshotRequest != _snapshotPresenter.RequestVersion)
+                        {
+                            return true;
+                        }
+                        if (refreshed)
+                        {
+                            StatusMessage = successMessage;
+                            RepositoryChanged?.Invoke(_repository);
+                            snapshotPublished = true;
+                        }
+                        else
+                        {
+                            StatusMessage = _stringHelper.Format(refreshFailureKey, successMessage, StatusMessage);
+                        }
                         return true;
                     }
-
-                    bool refreshed = await RefreshCoreAsync();
-                    if (IsCurrentRepository(repository.RootPath) == false)
+                    catch (Exception exception)
                     {
+                        readError = exception;
                         return true;
                     }
-                    if (refreshed)
-                    {
-                        StatusMessage = successMessage;
-                    }
-                    else
-                    {
-                        StatusMessage = _stringHelper.Format("ReferenceBranchDeleteRefreshFailed", successMessage, StatusMessage);
-                    }
-                    RepositoryChanged?.Invoke(repository);
-                    return true;
                 });
-            }
-            catch (OperationCanceledException)
-            {
-                return false;
+                if (readError != null)
+                {
+                    ExceptionDispatchInfo.Capture(readError).Throw();
+                }
+                return succeeded;
             }
             catch (Exception exception)
             {
-                if (IsCurrentRepository(repository.RootPath))
+                if (IsCurrentRepository(repository.RootPath) == false)
                 {
-                    await RefreshCoreAsync();
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                    return mutationSucceeded;
                 }
+                if (bindingVersion != _referenceBindingVersion)
+                {
+                    return mutationSucceeded;
+                }
+                if (request != _referenceMutationRequest)
+                {
+                    return mutationSucceeded;
+                }
+                if (mutationSucceeded)
+                {
+                    StatusMessage = _stringHelper.Format(refreshFailureKey, successMessage, _errorLocalizer.GetDisplayMessage(exception));
+                    return true;
+                }
+                Task<bool> refresh = RefreshCoreAsync();
+                int snapshotRequest = _snapshotPresenter.RequestVersion;
+                try
+                {
+                    await refresh;
+                }
+                catch (Exception)
+                {
+                    // Keep the original mutation error when the recovery read also fails.
+                }
+                if (IsCurrentRepository(repository.RootPath) == false)
+                {
+                    return false;
+                }
+                if (bindingVersion != _referenceBindingVersion)
+                {
+                    return false;
+                }
+                if (request != _referenceMutationRequest)
+                {
+                    return false;
+                }
+                if (snapshotRequest != _snapshotPresenter.RequestVersion)
+                {
+                    return false;
+                }
+                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
                 return false;
+            }
+            finally
+            {
+                if (mutationSucceeded)
+                {
+                    if (snapshotPublished == false)
+                    {
+                        ReferenceRefreshRequired?.Invoke(repository.RootPath);
+                    }
+                }
             }
         }
 
@@ -628,52 +720,16 @@ namespace Bough.App.ViewModels
                 (repository, applyResult) => _mutationPresenter.DeleteRemoteTagAsync(repository, preview, operationName, applyResult));
         }
 
-        private async Task<bool> RunTagDeletionAsync(string repositoryRoot, string successMessage,
+        private Task<bool> RunTagDeletionAsync(string repositoryRoot, string successMessage,
             Func<GitRepository, Func<Task<bool>>, Task<bool>> execute)
         {
             if (CanRunMenuAction(repositoryRoot) == false)
             {
-                return false;
+                return Task.FromResult(false);
             }
             GitRepository repository = _repository;
-            try
-            {
-                return await execute(repository, async () =>
-                {
-                    if (IsCurrentRepository(repositoryRoot) == false)
-                    {
-                        return true;
-                    }
-                    bool refreshed = await RefreshCoreAsync();
-                    if (IsCurrentRepository(repositoryRoot) == false)
-                    {
-                        return true;
-                    }
-                    if (refreshed)
-                    {
-                        StatusMessage = successMessage;
-                    }
-                    else
-                    {
-                        StatusMessage = _stringHelper.Format("TagDeleteRefreshFailed", successMessage, StatusMessage);
-                    }
-                    RepositoryChanged?.Invoke(_repository);
-                    return refreshed;
-                });
-            }
-            catch (Exception exception)
-            {
-                if (IsCurrentRepository(repositoryRoot))
-                {
-                    await RefreshCoreAsync();
-                    if (IsCurrentRepository(repositoryRoot) == false)
-                    {
-                        return false;
-                    }
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
-                }
-                return false;
-            }
+            return QueueBranchDeletionAsync(repository, successMessage,
+                applyResult => execute(repository, applyResult), "TagDeleteRefreshFailed");
         }
 
         public Task<bool> RenameLocalBranchAsync(GitReferenceRenameRequest request, string operationName,
@@ -699,46 +755,140 @@ namespace Bough.App.ViewModels
                 return false;
             }
             GitRepository repository = _repository;
+            int bindingVersion = _referenceBindingVersion;
+            int operation = ++_referenceMutationRequest;
+            GitReferenceRenameResult completed = null;
+            bool snapshotPublished = false;
+            Exception readError = null;
             try
             {
-                return await execute(repository, async result =>
+                bool succeeded = await execute(repository, async result =>
                 {
-                    if (IsCurrentRepository(request.RepositoryRoot) == false)
+                    completed = result;
+                    try
                     {
+                        if (IsCurrentRepository(request.RepositoryRoot) == false)
+                        {
+                            return true;
+                        }
+                        if (bindingVersion != _referenceBindingVersion)
+                        {
+                            return true;
+                        }
+                        if (operation != _referenceMutationRequest)
+                        {
+                            return true;
+                        }
+                        string message = describeResult(result);
+                        if (result.ReadError != null)
+                        {
+                            StatusMessage = describeRefreshFailure(message, _errorLocalizer.GetDisplayMessage(result.ReadError));
+                            return true;
+                        }
+                        _repository = result.Repository;
+                        Task<bool> refresh = RefreshCoreAsync();
+                        int snapshotRequest = _snapshotPresenter.RequestVersion;
+                        bool refreshed = await refresh;
+                        if (IsCurrentRepository(request.RepositoryRoot) == false)
+                        {
+                            return true;
+                        }
+                        if (bindingVersion != _referenceBindingVersion)
+                        {
+                            return true;
+                        }
+                        if (operation != _referenceMutationRequest)
+                        {
+                            return true;
+                        }
+                        if (snapshotRequest != _snapshotPresenter.RequestVersion)
+                        {
+                            return true;
+                        }
+                        if (refreshed)
+                        {
+                            StatusMessage = message;
+                            RepositoryChanged?.Invoke(_repository);
+                            snapshotPublished = true;
+                        }
+                        else
+                        {
+                            StatusMessage = describeRefreshFailure(message, StatusMessage);
+                        }
                         return true;
                     }
-                    _repository = result.Repository;
-                    bool refreshed = await RefreshCoreAsync();
-                    if (IsCurrentRepository(request.RepositoryRoot) == false)
+                    catch (Exception exception)
                     {
+                        readError = exception;
                         return true;
                     }
-                    string message = describeResult(result);
-                    if (refreshed)
-                    {
-                        StatusMessage = message;
-                    }
-                    else
-                    {
-                        StatusMessage = describeRefreshFailure(message, StatusMessage);
-                    }
-                    RepositoryChanged?.Invoke(result.Repository);
-                    return refreshed;
                 });
+                if (readError != null)
+                {
+                    ExceptionDispatchInfo.Capture(readError).Throw();
+                }
+                return succeeded;
             }
             catch (Exception exception)
             {
                 if (IsCurrentRepository(request.RepositoryRoot) == false)
                 {
+                    return completed != null;
+                }
+                if (bindingVersion != _referenceBindingVersion)
+                {
+                    return completed != null;
+                }
+                if (operation != _referenceMutationRequest)
+                {
+                    return completed != null;
+                }
+                if (completed != null)
+                {
+                    StatusMessage = describeRefreshFailure(describeResult(completed), _errorLocalizer.GetDisplayMessage(exception));
+                    return true;
+                }
+                Task<bool> refresh = RefreshCoreAsync();
+                int snapshotRequest = _snapshotPresenter.RequestVersion;
+                try
+                {
+                    await refresh;
+                }
+                catch (Exception)
+                {
+                    // Keep the original mutation error when the recovery read also fails.
+                }
+                if (IsCurrentRepository(request.RepositoryRoot) == false)
+                {
                     return false;
                 }
-                await RefreshCoreAsync();
-                if (IsCurrentRepository(request.RepositoryRoot) == false)
+                if (bindingVersion != _referenceBindingVersion)
+                {
+                    return false;
+                }
+                if (operation != _referenceMutationRequest)
+                {
+                    return false;
+                }
+                if (snapshotRequest != _snapshotPresenter.RequestVersion)
                 {
                     return false;
                 }
                 StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
                 return false;
+            }
+            finally
+            {
+                if (completed != null)
+                {
+                    if (completed.Changed)
+                    {
+                        if (snapshotPublished == false)
+                        {
+                            ReferenceRefreshRequired?.Invoke(request.RepositoryRoot);
+                        }
+                    }
+                }
             }
         }
 

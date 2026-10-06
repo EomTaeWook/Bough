@@ -22,30 +22,49 @@ namespace Bough.App.Presenters
             {
                 return;
             }
-            if (snapshot != null)
-            {
-                _model.RemoteOperations.ApplyOperationStateSnapshot(snapshot);
-            }
-
-            int request = _model.RepositoryRequestVersion;
-            _ = _model.ObserveRepositoryAreaAsync(() => _model.References.SetRepositoryAsync(updated), request, null);
-            if (_model.IsHistoryView)
-            {
-                _ = _model.ObserveRepositoryAreaAsync(() => _model.History.LoadAsync(updated), request, null);
-            }
-            if (worktreeMayChange == false)
-            {
-                return;
-            }
-
+            int request = repositoryRequestVersion;
             try
             {
+                if (_model.IsCurrentRepositoryRequest(updated, request) == false)
+                {
+                    return;
+                }
+                if (snapshot != null)
+                {
+                    _model.RemoteOperations.ApplyOperationStateSnapshot(snapshot);
+                }
+                _model.MarkRemoteHistoryReferencesDirty(updated);
+                _ = _model.ObserveRepositoryAreaAsync(() => _model.References.SetRepositoryAsync(updated), request, null);
+                if (_model.IsHistoryView)
+                {
+                    _ = _model.ObserveRepositoryAreaAsync(() => _model.LoadHistoryAsync(updated, request), request, null);
+                }
+                if (worktreeMayChange == false)
+                {
+                    return;
+                }
+                if (_model.IsCurrentRepositoryRequest(updated, request) == false)
+                {
+                    return;
+                }
                 await _model.RefreshRebaseStateAsync(updated, request);
+                if (_model.IsCurrentRepositoryRequest(updated, request) == false)
+                {
+                    return;
+                }
                 await _model.RefreshLocalChangesAndConflictsAsync(updated, request);
+                if (_model.IsCurrentRepositoryRequest(updated, request) == false)
+                {
+                    return;
+                }
             }
             catch (Exception exception)
             {
-                _model.ReportRemoteCompletionFailure(exception, request);
+                if (_model.IsCurrentRepositoryRequest(updated, request) == false)
+                {
+                    return;
+                }
+                _model.ReportRemoteCompletionFailure(exception, updated, request);
             }
         }
     }

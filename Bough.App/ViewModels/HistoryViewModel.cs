@@ -151,6 +151,9 @@ namespace Bough.App.ViewModels
         }
         public StringHelper Strings { get { return _stringHelper; } }
         public HistoryLabels Labels { get; }
+        private int _actionRepositoryVersion;
+        private int _actionRequest;
+        public event Action<string> ReferenceRefreshRequired;
         public event Action<GitRepository> RepositoryChanged;
         public event Action<string> ActionMessage;
         public GitRepository CurrentRepository { get { return _repository; } }
@@ -493,6 +496,7 @@ namespace Bough.App.ViewModels
 
         public void Clear()
         {
+            _actionRepositoryVersion++;
             _repository = null;
             _loadedBranchName = string.Empty;
             ResetHistoryList();
@@ -559,21 +563,21 @@ namespace Bough.App.ViewModels
         {
             string successMessage = _stringHelper.Format("HistoryResetSucceeded", preview.BranchName, preview.ShortHash);
             return await RunActionAsync(repositoryRoot, successMessage,
-                (repository, applyResult) => _actionPresenter.ResetAsync(repository, preview, mode, hardConfirmed, successMessage, applyResult));
+                (repository, applyResult, readFailure) => _actionPresenter.ResetAsync(repository, preview, mode, hardConfirmed, successMessage, applyResult, readFailure));
         }
 
         public async Task<bool> SwitchDetachedAsync(string repositoryRoot, string commitHash)
         {
             string successMessage = _stringHelper.Format("HistoryDetachedCheckoutSucceeded", commitHash.Substring(0, 8));
             return await RunActionAsync(repositoryRoot, successMessage,
-                (repository, applyResult) => _actionPresenter.SwitchDetachedAsync(repository, commitHash, successMessage, applyResult));
+                (repository, applyResult, readFailure) => _actionPresenter.SwitchDetachedAsync(repository, commitHash, successMessage, applyResult, readFailure));
         }
 
         public async Task<bool> CreateBranchAsync(string repositoryRoot, string commitHash, string branchName, bool switchToBranch)
         {
             string successMessage = _stringHelper.Format("HistoryBranchCreated", branchName);
             return await RunActionAsync(repositoryRoot, successMessage,
-                (repository, applyResult) => _actionPresenter.CreateBranchAsync(repository, commitHash, branchName, switchToBranch, successMessage, applyResult));
+                (repository, applyResult, readFailure) => _actionPresenter.CreateBranchAsync(repository, commitHash, branchName, switchToBranch, successMessage, applyResult));
         }
 
         public async Task<bool> CreateTagAsync(string repositoryRoot, string commitHash, string tagName, string successMessage)
@@ -648,44 +652,132 @@ namespace Bough.App.ViewModels
         }
 
         private async Task<bool> RunActionAsync(string repositoryRoot, string successMessage,
-            Func<GitRepository, Func<GitRepository, Task<bool>>, Task<bool>> execute)
+            Func<GitRepository, Func<GitRepository, Task<bool>>, Action<GitException>, Task<bool>> execute)
         {
             GitRepository repository = null;
+            int repositoryVersion = _actionRepositoryVersion;
+            int request = ++_actionRequest;
+            bool mutationSucceeded = false;
+            bool snapshotPublished = false;
+            Task expectedListLoad = null;
+            GitException stateReadError = null;
             try
             {
                 repository = RequireRepository(repositoryRoot);
-                return await execute(repository, updated => ApplyRepositoryActionAsync(repository, updated, successMessage));
-            }
-            catch (OperationCanceledException)
-            {
-                return false;
+                bool succeeded = await execute(repository, async updated =>
+                {
+                    mutationSucceeded = true;
+                    if (_repository == null)
+                    {
+                        ReferenceRefreshRequired?.Invoke(repositoryRoot);
+                        return true;
+                    }
+                    if (_repository.RootPath != repositoryRoot)
+                    {
+                        ReferenceRefreshRequired?.Invoke(repositoryRoot);
+                        return true;
+                    }
+                    if (repositoryVersion != _actionRepositoryVersion)
+                    {
+                        ReferenceRefreshRequired?.Invoke(repositoryRoot);
+                        return true;
+                    }
+                    if (request != _actionRequest)
+                    {
+                        ReferenceRefreshRequired?.Invoke(repositoryRoot);
+                        return true;
+                    }
+                    _repository = updated;
+                    RepositoryChanged?.Invoke(updated);
+                    snapshotPublished = true;
+                    Task load = LoadAsync(updated);
+                    expectedListLoad = _listLoadTask;
+                    await load;
+                    if (_repository == null)
+                    {
+                        return true;
+                    }
+                    if (_repository.RootPath != repositoryRoot)
+                    {
+                        return true;
+                    }
+                    if (repositoryVersion != _actionRepositoryVersion)
+                    {
+                        return true;
+                    }
+                    if (request != _actionRequest)
+                    {
+                        return true;
+                    }
+                    if (ReferenceEquals(expectedListLoad, _listLoadTask) == false)
+                    {
+                        return true;
+                    }
+                    if (_historyLoadError != null)
+                    {
+                        SetLocalizedErrorText(new LocalizedText("MutationCompletedReadFailed", new LocalizedText(_historyLoadError)));
+                        ActionMessage?.Invoke(ErrorText);
+                        return true;
+                    }
+                    ActionMessage?.Invoke(successMessage);
+                    return true;
+                }, exception => stateReadError = exception);
+                if (stateReadError != null)
+                {
+                    throw stateReadError;
+                }
+                return succeeded;
             }
             catch (Exception exception)
             {
-                if (repository == null)
+                Exception readError = exception;
+                if (exception is GitException gitException)
                 {
-                    ReportActionError(exception);
-                    return false;
+                    if (gitException.ErrorCode == GitCommitActionService.StateReadFailedCode)
+                    {
+                        mutationSucceeded = true;
+                        readError = gitException.InnerException ?? gitException;
+                    }
                 }
-                if (_repository?.RootPath == repository.RootPath)
+                if (mutationSucceeded)
                 {
-                    ReportActionError(exception);
+                    if (snapshotPublished == false)
+                    {
+                        ReferenceRefreshRequired?.Invoke(repositoryRoot);
+                    }
                 }
+                if (_repository == null)
+                {
+                    return mutationSucceeded;
+                }
+                if (_repository.RootPath != repositoryRoot)
+                {
+                    return mutationSucceeded;
+                }
+                if (repositoryVersion != _actionRepositoryVersion)
+                {
+                    return mutationSucceeded;
+                }
+                if (request != _actionRequest)
+                {
+                    return mutationSucceeded;
+                }
+                if (expectedListLoad != null)
+                {
+                    if (ReferenceEquals(expectedListLoad, _listLoadTask) == false)
+                    {
+                        return mutationSucceeded;
+                    }
+                }
+                if (mutationSucceeded)
+                {
+                    SetLocalizedErrorText(new LocalizedText("MutationCompletedReadFailed", new LocalizedText(readError)));
+                    ActionMessage?.Invoke(ErrorText);
+                    return true;
+                }
+                ReportActionError(exception);
                 return false;
             }
-        }
-
-        private async Task<bool> ApplyRepositoryActionAsync(GitRepository repository, GitRepository updated, string successMessage)
-        {
-            if (_repository?.RootPath != repository.RootPath)
-            {
-                return true;
-            }
-            _repository = updated;
-            RepositoryChanged?.Invoke(updated);
-            await LoadAsync(updated);
-            ActionMessage?.Invoke(successMessage);
-            return true;
         }
 
         public async Task LoadAsync(GitRepository repository)
@@ -693,6 +785,10 @@ namespace Bough.App.ViewModels
             _navigationPresenter.Invalidate();
             _commitPresenter.Invalidate();
             bool repositoryChanged = _repository == null || _repository.RootPath != repository.RootPath;
+            if (repositoryChanged)
+            {
+                _actionRepositoryVersion++;
+            }
             bool branchChanged = _loadedBranchName != repository.CurrentBranch;
             _repository = repository;
             _loadedBranchName = repository.CurrentBranch;
@@ -712,6 +808,7 @@ namespace Bough.App.ViewModels
         public Task<HistoryCommitSelectionResult> SelectCommitAsync(GitRepository repository, string commitHash, GitHistoryScope scope)
         {
             _navigationPresenter.Invalidate();
+            _actionRepositoryVersion++;
             bool reset = _repository == null;
             if (repository == null)
             {

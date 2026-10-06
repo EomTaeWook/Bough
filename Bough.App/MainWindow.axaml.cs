@@ -122,6 +122,8 @@ namespace Bough.App
                 }
 
                 eventArgs.Cancel = true;
+                ConflictWindow window = _conflictWindow;
+                string draftText = _viewModel.Conflicts.ResultText;
                 _activationSuppressionDepth++;
                 bool discard;
                 try
@@ -135,6 +137,14 @@ namespace Bough.App
                 {
                     _activationSuppressionDepth--;
                     CompleteInternalDialog();
+                }
+                if (ReferenceEquals(_conflictWindow, window) == false)
+                {
+                    return;
+                }
+                if (draftText != _viewModel.Conflicts.ResultText)
+                {
+                    return;
                 }
                 if (discard == true)
                 {
@@ -378,6 +388,10 @@ namespace Bough.App
                 return;
             }
 
+            if (_viewModel.Conflicts.HasUnsavedConflictEdits)
+            {
+                return;
+            }
             _conflictWindow.CloseAfterConfirmation();
             _conflictWindow = null;
             _wasDeactivated = false;
@@ -391,8 +405,10 @@ namespace Bough.App
                 return true;
             }
 
+            ConflictWindow window = _conflictWindow;
             if (_viewModel.Conflicts.HasUnsavedConflictEdits == true)
             {
+                string draftText = _viewModel.Conflicts.ResultText;
                 _activationSuppressionDepth++;
                 bool discard;
                 try
@@ -406,6 +422,14 @@ namespace Bough.App
                 {
                     _activationSuppressionDepth--;
                     CompleteInternalDialog();
+                }
+                if (ReferenceEquals(_conflictWindow, window) == false)
+                {
+                    return false;
+                }
+                if (draftText != _viewModel.Conflicts.ResultText)
+                {
+                    return false;
                 }
                 if (discard == false)
                 {
