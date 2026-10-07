@@ -57,7 +57,7 @@ namespace Bough.App.Presenters
             }
         }
 
-        private async Task LoadCoreAsync(ConflictFileItem file)
+        internal async Task LoadCoreAsync(ConflictFileItem file)
         {
             if (_model.CurrentRepository == null)
             {

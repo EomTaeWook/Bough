@@ -638,7 +638,7 @@ namespace Bough.App.ViewModels
             }
             ConflictFileItem nextFile = previousFile ?? ConflictFiles[0];
             SetSelectedFile(nextFile);
-            await LoadConflictCoreAsync(nextFile);
+            await _loadPresenter.LoadCoreAsync(nextFile);
             if (request != _requestVersion)
             {
                 return false;
