@@ -28,6 +28,7 @@ namespace Bough.App.ViewModels
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly MainWindowRemoteCompletionPresenter _remoteCompletionPresenter;
+        private readonly HistoryActionPresenter _revertPresenter;
         private readonly StringComparer _pathComparer;
         private readonly Dictionary<string, string> _autoOpenedConflicts;
         private readonly Dictionary<string, int> _historyReferenceVersions;
@@ -55,18 +56,22 @@ namespace Bough.App.ViewModels
         private bool _isReferencesLoading;
         private bool _isRemoteLoading;
         private bool _isRebaseInProgress;
+        private GitRevertState _revertState;
+        private bool _isRevertStateLoading;
+        private int _revertReadVersion;
         private int _repositoryRequestVersion;
         private int _historyReferenceChangeVersion;
         private int _tagCommitSelectionRequestVersion;
         private CancellationTokenSource _repositoryOpenCancellation;
 
-        public MainWindowViewModel(GitRepositoryService repositoryService, GitOperationQueue operationQueue, MainWindowChildren children, ConflictResolutionViewModel conflicts, RepositoryListViewModel repositoryList, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
+        public MainWindowViewModel(GitRepositoryService repositoryService, GitCommitActionService actionService, GitOperationQueue operationQueue, MainWindowChildren children, ConflictResolutionViewModel conflicts, RepositoryListViewModel repositoryList, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
         {
             _repositoryService = repositoryService;
             _operationQueue = operationQueue;
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
             _remoteCompletionPresenter = new MainWindowRemoteCompletionPresenter(this);
+            _revertPresenter = new HistoryActionPresenter(actionService, operationQueue);
             if (OperatingSystem.IsWindows() == true)
             {
                 _pathComparer = StringComparer.OrdinalIgnoreCase;
@@ -162,6 +167,97 @@ namespace Bough.App.ViewModels
                     return _stringHelper.Format("RebaseResolveBeforeContinue", conflictCount);
                 }
                 return _stringHelper.GetString("RebaseReadyToContinue");
+            }
+        }
+
+        public GitRepository CurrentRepository { get { return _repository; } }
+        public GitRevertState RevertState { get { return _revertState; } }
+        public bool IsRevertInProgress
+        {
+            get
+            {
+                if (_revertState == null)
+                {
+                    return false;
+                }
+                return _revertState.IsInProgress;
+            }
+        }
+        public string RevertProgressLabel { get { return _stringHelper.GetString("MainRevertProgressLabel"); } }
+        public string ContinueRevertText { get { return _stringHelper.GetString("MainRevertContinueAction"); } }
+        public string AbortRevertText { get { return _stringHelper.GetString("MainRevertAbortAction"); } }
+        public string RevertStatusText
+        {
+            get
+            {
+                if (_isRevertStateLoading)
+                {
+                    return _stringHelper.GetString("MainRevertCheckingConflicts");
+                }
+                if (IsLocalChangesLoading)
+                {
+                    return _stringHelper.GetString("MainRevertCheckingConflicts");
+                }
+                int conflicts = Conflicts.ConflictFiles.Count;
+                if (_revertState != null)
+                {
+                    conflicts = Math.Max(conflicts, _revertState.ConflictPaths.Count);
+                }
+                if (conflicts > 0)
+                {
+                    return _stringHelper.Format("MainRevertResolveBeforeContinue", conflicts);
+                }
+                if (Conflicts.HasUnsavedConflictEdits)
+                {
+                    return _stringHelper.GetString("MainRevertSaveDraftBeforeContinue");
+                }
+                return _stringHelper.GetString("MainRevertReadyToContinue");
+            }
+        }
+        public bool CanContinueRevert
+        {
+            get
+            {
+                if (CanAbortRevert == false)
+                {
+                    return false;
+                }
+                if (IsLocalChangesLoading)
+                {
+                    return false;
+                }
+                if (Conflicts.ConflictFiles.Count > 0)
+                {
+                    return false;
+                }
+                if (_revertState.ConflictPaths.Count > 0)
+                {
+                    return false;
+                }
+                return Conflicts.HasUnsavedConflictEdits == false;
+            }
+        }
+        public bool CanAbortRevert
+        {
+            get
+            {
+                if (HasRepository == false)
+                {
+                    return false;
+                }
+                if (IsRevertInProgress == false)
+                {
+                    return false;
+                }
+                if (_isRevertStateLoading)
+                {
+                    return false;
+                }
+                if (IsBusy)
+                {
+                    return false;
+                }
+                return Conflicts.IsBusy == false;
             }
         }
 
@@ -521,6 +617,7 @@ namespace Bough.App.ViewModels
             ClearGitOperationQueueState();
             Conflicts.BindRepository(null);
             IsRebaseInProgress = false;
+            ClearRevertState();
             HasRepository = false;
             IsLocalChangesLoading = false;
             IsReferencesLoading = false;
@@ -628,6 +725,7 @@ namespace Bough.App.ViewModels
             IsRemoteLoading = true;
             _ = ObserveRepositoryAreaAsync(() => RefreshLocalChangesAndConflictsAsync(repository, request), request, () => IsLocalChangesLoading = false);
             _ = ObserveRepositoryAreaAsync(() => RefreshRebaseStateAsync(repository, request), request, null);
+            _ = ObserveRepositoryAreaAsync(() => RefreshRevertStateAsync(repository, request), request, null);
             _ = ObserveRepositoryAreaAsync(References.RefreshAsync, request, () => IsReferencesLoading = false);
             _ = ObserveRepositoryAreaAsync(RemoteOperations.RefreshAsync, request, () => IsRemoteLoading = false);
             if (IsGitSettingsView == true)
@@ -752,6 +850,7 @@ namespace Bough.App.ViewModels
                 ClearGitOperationQueueState();
                 Conflicts.BindRepository(null);
                 IsRebaseInProgress = false;
+                ClearRevertState();
                 HasRepository = false;
                 IsLocalChangesLoading = false;
                 IsReferencesLoading = false;
@@ -852,6 +951,19 @@ namespace Bough.App.ViewModels
                 return;
             }
             _historyReferenceVersions[repositoryRoot] = ++_historyReferenceChangeVersion;
+            GitRepository repository = _repository;
+            if (repository == null)
+            {
+                return;
+            }
+            if (_pathComparer.Equals(repository.RootPath, repositoryRoot) == false)
+            {
+                return;
+            }
+            int request = _repositoryRequestVersion;
+            // Revert can remain pending even when the mutation's repository read failed.
+            // This reads its state only; it never adopts the original object or binds children.
+            _ = ObserveRepositoryAreaAsync(() => RefreshRevertStateAsync(repository, request, true), request, null);
         }
 
         private async void OnHistoryRepositoryChanged(GitRepository updated)
@@ -968,6 +1080,7 @@ namespace Bough.App.ViewModels
             RepositoryMeta = FormatRepositoryMeta(updated);
             int request = _repositoryRequestVersion;
             _ = ObserveRepositoryAreaAsync(() => RefreshRebaseStateAsync(updated, request), request, null);
+            _ = ObserveRepositoryAreaAsync(() => RefreshRevertStateAsync(updated, request), request, null);
             if (refreshReferences == true)
             {
                 _ = ObserveRepositoryAreaAsync(() => References.SetRepositoryAsync(updated), request, null);
@@ -1257,6 +1370,7 @@ namespace Bough.App.ViewModels
                 RepositoryMeta = FormatRepositoryMeta(updated);
                 _ = ObserveRepositoryAreaAsync(() => References.SetRepositoryAsync(updated), request, null);
                 _ = ObserveRepositoryAreaAsync(() => RemoteOperations.SetRepositoryAsync(updated), request, null);
+                _ = ObserveRepositoryAreaAsync(() => RefreshRevertStateAsync(updated, request), request, null);
                 if (IsHistoryView == true)
                 {
                     _ = ObserveRepositoryAreaAsync(() => LoadHistoryAsync(updated, request), request, null);
@@ -1567,7 +1681,25 @@ namespace Bough.App.ViewModels
                 return;
             }
             GitRepository repository = _repository;
+            int request = _repositoryRequestVersion;
+            await RefreshRevertStateAsync(repository, request);
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
             IReadOnlyList<string> paths = await _repositoryService.GetConflictPathsAsync(repository);
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
             await ApplyConflictPathsAsync(repository, paths);
         }
 
@@ -1684,6 +1816,15 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
+            await RefreshRevertStateAsync(repository, request);
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
             await RefreshRebaseStateAsync(repository, request);
             if (request != _repositoryRequestVersion)
             {
@@ -1702,6 +1843,311 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
+        }
+
+        private void ClearRevertState()
+        {
+            _revertReadVersion++;
+            _revertState = null;
+            _isRevertStateLoading = false;
+            NotifyRevertState();
+        }
+
+        private void NotifyRevertState()
+        {
+            OnPropertyChanged(nameof(RevertState));
+            OnPropertyChanged(nameof(IsRevertInProgress));
+            OnPropertyChanged(nameof(RevertStatusText));
+            OnPropertyChanged(nameof(CanContinueRevert));
+            OnPropertyChanged(nameof(CanAbortRevert));
+        }
+
+        private async Task RefreshRevertStateAsync(GitRepository repository, int request, bool applyConflicts = false)
+        {
+            if (IsCurrentRepositoryRequest(repository, request) == false)
+            {
+                return;
+            }
+            int read = ++_revertReadVersion;
+            _isRevertStateLoading = true;
+            NotifyRevertState();
+            try
+            {
+                GitRevertState state = await _revertPresenter.GetRevertStateAsync(repository);
+                if (read != _revertReadVersion)
+                {
+                    return;
+                }
+                if (IsCurrentRepositoryRequest(repository, request) == false)
+                {
+                    return;
+                }
+                if (_pathComparer.Equals(state.RepositoryRoot, repository.RootPath) == false)
+                {
+                    return;
+                }
+                _revertState = state;
+                Conflicts.SetRevertState(repository, state);
+                NotifyRevertState();
+                if (applyConflicts)
+                {
+                    if (state.IsInProgress)
+                    {
+                        await ApplyConflictPathsAsync(repository, state.ConflictPaths);
+                        if (read != _revertReadVersion)
+                        {
+                            return;
+                        }
+                        if (IsCurrentRepositoryRequest(repository, request) == false)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                if (read != _revertReadVersion)
+                {
+                    return;
+                }
+                if (IsCurrentRepositoryRequest(repository, request) == false)
+                {
+                    return;
+                }
+                throw;
+            }
+            finally
+            {
+                if (read == _revertReadVersion)
+                {
+                    if (IsCurrentRepositoryRequest(repository, request))
+                    {
+                        _isRevertStateLoading = false;
+                        NotifyRevertState();
+                    }
+                }
+            }
+        }
+
+        public async Task ContinueRevertAsync()
+        {
+            if (CanContinueRevert == false)
+            {
+                return;
+            }
+            GitRepository repository = _repository;
+            GitRevertState state = _revertState;
+            int request = _repositoryRequestVersion;
+            try
+            {
+                GitRevertResult result = await _revertPresenter.ContinueRevertAsync(repository, state,
+                    _stringHelper.GetString("MainRevertContinueAction"),
+                    completion => ApplyRevertResultAsync(repository, completion, request, null, null));
+                ReportRevertResult(repository, result, request, state.TargetHash);
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentRepositoryRequest(repository, request) == false)
+                {
+                    return;
+                }
+                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+            }
+        }
+
+        public async Task<GitRevertResult> AbortRevertAsync(GitRepository repository, GitRevertState state,
+            int request, string confirmedPath, string confirmedDraft)
+        {
+            if (IsCurrentRepositoryRequest(repository, request) == false)
+            {
+                return null;
+            }
+            if (ReferenceEquals(_revertState, state) == false)
+            {
+                return null;
+            }
+            if (CanAbortRevert == false)
+            {
+                return null;
+            }
+            try
+            {
+                GitRevertResult result = await _revertPresenter.AbortRevertAsync(repository, state,
+                    _stringHelper.GetString("MainRevertAbortAction"),
+                    completion => ApplyRevertResultAsync(repository, completion, request, confirmedPath, confirmedDraft));
+                ReportRevertResult(repository, result, request, state.TargetHash);
+                return result;
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentRepositoryRequest(repository, request) == false)
+                {
+                    return null;
+                }
+                StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                return null;
+            }
+        }
+
+        private async Task ApplyRevertResultAsync(GitRepository original, GitRevertResult result, int request,
+            string confirmedPath, string confirmedDraft)
+        {
+            if (_pathComparer.Equals(result.RepositoryRoot, original.RootPath) == false)
+            {
+                throw new GitException("CommitRevertRepositoryChanged", null, Array.Empty<object>());
+            }
+            // The original root remains dirty even if its completion belongs to an older screen.
+            _historyReferenceVersions[original.RootPath] = ++_historyReferenceChangeVersion;
+            if (IsCurrentRepositoryRequest(original, request) == false)
+            {
+                return;
+            }
+            GitRepository repository = original;
+            if (result.Repository != null)
+            {
+                if (_pathComparer.Equals(result.Repository.RootPath, original.RootPath) == false)
+                {
+                    throw new GitException("CommitRevertRepositoryChanged", null, Array.Empty<object>());
+                }
+                repository = result.Repository;
+                _repository = repository;
+                Conflicts.BindRepository(repository);
+                RepositoryMeta = FormatRepositoryMeta(repository);
+            }
+            _revertReadVersion++;
+            _isRevertStateLoading = false;
+            if (result.State != null)
+            {
+                if (_pathComparer.Equals(result.State.RepositoryRoot, original.RootPath) == false)
+                {
+                    throw new GitException("CommitRevertRepositoryChanged", null, Array.Empty<object>());
+                }
+                _revertState = result.State;
+                Conflicts.SetRevertState(repository, result.State);
+            }
+            NotifyRevertState();
+            if (result.Outcome == GitRevertOutcome.Aborted)
+            {
+                if (result.State != null)
+                {
+                    if (result.State.IsInProgress == false)
+                    {
+                        if (Conflicts.CurrentFilePath == confirmedPath)
+                        {
+                            if (Conflicts.ResultText == confirmedDraft)
+                            {
+                                Conflicts.DiscardClosedWindowEdits();
+                            }
+                        }
+                    }
+                }
+            }
+            if (IsCurrentRepositoryRequest(repository, request) == false)
+            {
+                return;
+            }
+            IsLocalChangesLoading = true;
+            try
+            {
+                await LocalChanges.LoadWorktreeAsync(repository);
+                if (IsCurrentRepositoryRequest(repository, request) == false)
+                {
+                    return;
+                }
+                IReadOnlyList<string> paths = LocalChanges.ConflictFiles.Select(file => file.Path).ToArray();
+                if (result.State != null)
+                {
+                    paths = result.State.ConflictPaths;
+                }
+                await ApplyConflictPathsAsync(repository, paths);
+                if (IsCurrentRepositoryRequest(repository, request) == false)
+                {
+                    return;
+                }
+            }
+            finally
+            {
+                if (IsCurrentRepositoryRequest(repository, request))
+                {
+                    IsLocalChangesLoading = false;
+                }
+            }
+            if (IsCurrentRepositoryRequest(repository, request) == false)
+            {
+                return;
+            }
+            await References.SetRepositoryAsync(repository);
+            if (IsCurrentRepositoryRequest(repository, request) == false)
+            {
+                return;
+            }
+            await RemoteOperations.SetRepositoryAsync(repository);
+            if (IsCurrentRepositoryRequest(repository, request) == false)
+            {
+                return;
+            }
+            if (IsHistoryView)
+            {
+                await LoadHistoryAsync(repository, request);
+                if (IsCurrentRepositoryRequest(repository, request) == false)
+                {
+                    return;
+                }
+            }
+        }
+
+        private void ReportRevertResult(GitRepository original, GitRevertResult result, int request, string targetHash)
+        {
+            if (_pathComparer.Equals(result.RepositoryRoot, original.RootPath) == false)
+            {
+                return;
+            }
+            GitRepository repository = original;
+            if (result.Repository != null)
+            {
+                repository = result.Repository;
+            }
+            if (IsCurrentRepositoryRequest(repository, request) == false)
+            {
+                return;
+            }
+            if (result.Outcome == GitRevertOutcome.Failed)
+            {
+                if (result.OperationError == null)
+                {
+                    return;
+                }
+                SetStatusMessage(_errorLocalizer.GetDisplayMessage(result.OperationError), true);
+                return;
+            }
+            string message;
+            switch (result.Outcome)
+            {
+                case GitRevertOutcome.Completed:
+                    string shortHash = targetHash.Substring(0, Math.Min(8, targetHash.Length));
+                    message = _stringHelper.Format("HistoryRevertSucceeded", shortHash);
+                    break;
+                case GitRevertOutcome.Aborted:
+                    message = _stringHelper.GetString("HistoryRevertAborted");
+                    break;
+                case GitRevertOutcome.Paused:
+                    message = _stringHelper.GetString("HistoryRevertPaused");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(result));
+            }
+            if (result.OperationError != null)
+            {
+                message += Environment.NewLine + _errorLocalizer.GetDisplayMessage(result.OperationError);
+            }
+            if (result.ReadError != null)
+            {
+                string refreshError = _stringHelper.Format("CommitRevertRefreshFailed",
+                    _errorLocalizer.GetDisplayMessage(result.ReadError));
+                message += Environment.NewLine + refreshError;
+            }
+            SetStatusMessage(message, true);
         }
 
         private async Task ContinueRebaseAsync()
@@ -2014,6 +2460,11 @@ namespace Bough.App.ViewModels
 
         private void OnConflictsPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
         {
+            if (eventArgs.PropertyName == nameof(ConflictResolutionViewModel.HasUnsavedConflictEdits))
+            {
+                NotifyRevertState();
+                return;
+            }
             if (eventArgs.PropertyName != nameof(ConflictResolutionViewModel.IsBusy))
             {
                 return;
@@ -2081,6 +2532,7 @@ namespace Bough.App.ViewModels
         {
             OnPropertyChanged(nameof(RebaseStatusText));
             ContinueRebaseCommand.NotifyCanExecuteChanged();
+            NotifyRevertState();
         }
 
         private bool CanRefresh()
@@ -2157,6 +2609,7 @@ namespace Bough.App.ViewModels
             ShowLocalChangesCommand.NotifyCanExecuteChanged();
             ShowGitSettingsCommand.NotifyCanExecuteChanged();
             ContinueRebaseCommand.NotifyCanExecuteChanged();
+            NotifyRevertState();
         }
 
     }

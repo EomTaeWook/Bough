@@ -76,6 +76,8 @@ namespace Bough.App.ViewModels
         private bool _hasDocument;
         private bool _isBusy;
         private bool _isRebaseConflict;
+        private bool _isRevertInProgress;
+        private bool _isRevertConflict;
         private int _activeSaveCount;
 
         public ConflictResolutionViewModel(GitRepositoryService repositoryService, GitOperationQueue operationQueue, ConflictParser parser, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
@@ -162,6 +164,10 @@ namespace Bough.App.ViewModels
                 {
                     return _stringHelper.GetString("RebaseReplayChange");
                 }
+                if (_isRevertConflict)
+                {
+                    return _stringHelper.GetString("RevertIncomingChange");
+                }
                 return _stringHelper.GetString("IncomingChange");
             }
         }
@@ -183,6 +189,10 @@ namespace Bough.App.ViewModels
                 if (_isRebaseConflict)
                 {
                     return _stringHelper.GetString("RebaseUseReplay");
+                }
+                if (_isRevertConflict)
+                {
+                    return _stringHelper.GetString("RevertUseIncomingChange");
                 }
                 return _stringHelper.GetString("UseIncomingChange");
             }
@@ -526,11 +536,52 @@ namespace Bough.App.ViewModels
                 return;
             }
 
+            _isRevertInProgress = false;
             SetSelectedFile(null);
             ConflictFiles.Clear();
             OnPropertyChanged(nameof(ConflictCountText));
             ClearDocument();
             SetLocalizedStatusMessage(new LocalizedText("OpenRepositoryToFindConflicts"));
+        }
+
+        public void SetRevertState(GitRepository repository, GitRevertState state)
+        {
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
+            if (state == null)
+            {
+                return;
+            }
+            if (string.Equals(state.RepositoryRoot, repository.RootPath, _pathComparison) == false)
+            {
+                return;
+            }
+            _isRevertInProgress = state.IsInProgress;
+            if (HasDocument == false)
+            {
+                return;
+            }
+            if (HasUnsavedConflictEdits)
+            {
+                if (_isRevertInProgress == false)
+                {
+                    return;
+                }
+            }
+            bool wasRevert = _isRevertConflict;
+            _isRevertConflict = _isRevertInProgress;
+            if (_isRevertConflict)
+            {
+                _theirsSourceLocalization = new LocalizedText("RevertIncomingIndexSource");
+            }
+            else if (wasRevert)
+            {
+                _theirsSourceLocalization = new LocalizedText("ConflictIncomingIndexStage3");
+            }
+            NotifyChangeLabels();
+            RefreshLocalization();
         }
 
         public void DiscardClosedWindowEdits()
@@ -639,6 +690,7 @@ namespace Bough.App.ViewModels
                 return;
             }
 
+            bool isRevertConflict = _isRevertInProgress;
             string currentChangeLabel = _stringHelper.GetString("CurrentChange");
             string incomingChangeLabel = _stringHelper.GetString("IncomingChange");
             string currentSourceLabel = repository.CurrentBranch;
@@ -652,6 +704,15 @@ namespace Bough.App.ViewModels
             }
 
             string incomingIndexSource = _stringHelper.GetString("ConflictIncomingIndexStage3");
+            if (isRebaseConflict == false)
+            {
+                if (isRevertConflict)
+                {
+                    incomingChangeLabel = _stringHelper.GetString("RevertIncomingChange");
+                    incomingSourceLabel = incomingChangeLabel;
+                    incomingIndexSource = _stringHelper.GetString("RevertIncomingIndexSource");
+                }
+            }
             GitConflictFile conflict = await _repositoryService.LoadConflictAsync(repository, file.RelativePath,
                 currentSourceLabel, incomingSourceLabel, incomingIndexSource);
             if (loadVersion != _loadVersion)
@@ -702,6 +763,11 @@ namespace Bough.App.ViewModels
             _currentConflict = conflict;
             _stagePresenter.Invalidate();
             _isRebaseConflict = isRebaseConflict;
+            _isRevertConflict = _isRevertInProgress;
+            if (isRebaseConflict)
+            {
+                _isRevertConflict = false;
+            }
             NotifyChangeLabels();
             _choices.Clear();
             _currentHunkIndex = 0;
@@ -727,6 +793,10 @@ namespace Bough.App.ViewModels
             if (conflict.TheirsSource == incomingIndexSource)
             {
                 _theirsSourceLocalization = new LocalizedText("ConflictIncomingIndexStage3");
+            }
+            if (_isRevertConflict)
+            {
+                _theirsSourceLocalization = new LocalizedText("RevertIncomingIndexSource");
             }
             OnPropertyChanged(nameof(OursSource));
             OnPropertyChanged(nameof(TheirsSource));
@@ -999,6 +1069,7 @@ namespace Bough.App.ViewModels
             _currentConflict = null;
             _stagePresenter.Invalidate();
             _isRebaseConflict = false;
+            _isRevertConflict = false;
             NotifyChangeLabels();
             _choices.Clear();
             HasDocument = false;

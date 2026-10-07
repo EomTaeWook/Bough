@@ -559,6 +559,129 @@ namespace Bough.App.ViewModels
             return await _actionPresenter.GetResetPreviewAsync(repository, commitHash);
         }
 
+        public Task<GitRevertPreview> GetRevertPreviewAsync(string repositoryRoot, string commitHash)
+        {
+            return _actionPresenter.GetRevertPreviewAsync(RequireRepository(repositoryRoot), commitHash);
+        }
+
+        public async Task RevertAsync(string repositoryRoot, GitRevertPreview preview, int mainlineParent)
+        {
+            int repositoryVersion = _actionRepositoryVersion;
+            int request = ++_actionRequest;
+            Task expectedListLoad = null;
+            try
+            {
+                GitRepository repository = RequireRepository(repositoryRoot);
+                GitRevertResult result = await _actionPresenter.RevertAsync(repository, preview, mainlineParent,
+                    _stringHelper.GetString("HistoryRevertAction"), async completed =>
+                    {
+                        if (IsCurrentRevertRequest(repositoryRoot, repositoryVersion, request) == false)
+                        {
+                            ReferenceRefreshRequired?.Invoke(repositoryRoot);
+                            return;
+                        }
+                        if (completed.Repository == null)
+                        {
+                            ReferenceRefreshRequired?.Invoke(repositoryRoot);
+                            return;
+                        }
+                        _repository = completed.Repository;
+                        RepositoryChanged?.Invoke(completed.Repository);
+                        Task load = LoadAsync(completed.Repository);
+                        expectedListLoad = _listLoadTask;
+                        await load;
+                        if (IsCurrentRevertRequest(repositoryRoot, repositoryVersion, request) == false)
+                        {
+                            return;
+                        }
+                        if (ReferenceEquals(expectedListLoad, _listLoadTask) == false)
+                        {
+                            return;
+                        }
+                        if (_historyLoadError != null)
+                        {
+                            throw _historyLoadError;
+                        }
+                    });
+                if (IsCurrentRevertRequest(repositoryRoot, repositoryVersion, request) == false)
+                {
+                    return;
+                }
+                if (expectedListLoad != null)
+                {
+                    if (ReferenceEquals(expectedListLoad, _listLoadTask) == false)
+                    {
+                        return;
+                    }
+                }
+                LocalizedText notice = null;
+                if (result.Outcome == GitRevertOutcome.Completed)
+                {
+                    notice = new LocalizedText("HistoryRevertSucceeded", preview.TargetHash.Substring(0, 8));
+                }
+                if (result.Outcome == GitRevertOutcome.Paused)
+                {
+                    notice = new LocalizedText("HistoryRevertPaused");
+                }
+                string message = string.Empty;
+                if (notice != null)
+                {
+                    message = notice.GetText(_stringHelper);
+                }
+                if (result.OperationError != null)
+                {
+                    if (message.Length > 0)
+                    {
+                        message += Environment.NewLine;
+                    }
+                    message += _errorLocalizer.GetDisplayMessage(result.OperationError);
+                }
+                if (result.ReadError != null)
+                {
+                    SetLocalizedErrorText(new LocalizedText("CommitRevertRefreshFailed", new LocalizedText(result.ReadError)));
+                    ActionMessage?.Invoke(message + Environment.NewLine + ErrorText);
+                    return;
+                }
+                if (result.OperationError != null)
+                {
+                    SetLocalizedErrorText(new LocalizedText(result.OperationError));
+                    ActionMessage?.Invoke(message);
+                    return;
+                }
+                SetLocalizedErrorText(null);
+                ActionMessage?.Invoke(message);
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentRevertRequest(repositoryRoot, repositoryVersion, request) == false)
+                {
+                    return;
+                }
+                ReportActionError(exception);
+            }
+        }
+
+        private bool IsCurrentRevertRequest(string repositoryRoot, int repositoryVersion, int request)
+        {
+            if (_repository == null)
+            {
+                return false;
+            }
+            if (_repository.RootPath != repositoryRoot)
+            {
+                return false;
+            }
+            if (repositoryVersion != _actionRepositoryVersion)
+            {
+                return false;
+            }
+            if (request != _actionRequest)
+            {
+                return false;
+            }
+            return true;
+        }
+
         public async Task<bool> ResetAsync(string repositoryRoot, GitResetPreview preview, GitResetMode mode, bool hardConfirmed)
         {
             string successMessage = _stringHelper.Format("HistoryResetSucceeded", preview.BranchName, preview.ShortHash);

@@ -23,6 +23,7 @@ namespace Bough.App.ViewModels.Models
         public string CreateTagHere { get { return _strings.GetString("HistoryCreateTagHere"); } }
         public string CheckoutCommit { get { return _strings.GetString("HistoryCheckoutCommit"); } }
         public string ResetCommit { get { return _strings.GetString("HistoryResetCommit"); } }
+        public string RevertCommit { get { return _strings.GetString("HistoryRevertCommit"); } }
         public string MoreReferencesTooltip { get { return _strings.GetString("HistoryMoreReferencesTooltip"); } }
         public string AllReferencesHeading { get { return _strings.GetString("HistoryAllReferencesHeading"); } }
         public string Empty { get { return _strings.GetString("HistoryEmpty"); } }

@@ -9,7 +9,7 @@ using Bough.Core.Internals;
 
 namespace Bough.Core.Git
 {
-    public class GitCommitActionService
+    public partial class GitCommitActionService
     {
         public const string StateReadFailedCode = "HistoryActionStateReadFailed";
 

@@ -13,6 +13,8 @@ using Bough.App.ViewModels;
 using Bough.App.ViewModels.Models;
 using Bough.App.Views;
 using Bough.Core.Git;
+using Bough.Core.Git.Models;
+using Bough.Core.Internals;
 
 namespace Bough.App
 {
@@ -24,6 +26,7 @@ namespace Bough.App
         private readonly CloneRepositoryPresenter _clonePresenter;
         private ConflictWindow _conflictWindow;
         private bool _closeConfirmed;
+        private bool _revertAbortConfirmationPending;
         private bool _wasDeactivated;
         private bool _conflictWasDeactivated;
         private bool _stashDialogOpen;
@@ -379,6 +382,108 @@ namespace Bough.App
                 await RefreshAfterActivationAsync();
             };
             window.Show(this);
+        }
+
+        private async void ContinueRevertClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            await _viewModel.ContinueRevertAsync();
+        }
+
+        private async void AbortRevertClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (_revertAbortConfirmationPending)
+            {
+                return;
+            }
+            if (_viewModel.CanAbortRevert == false)
+            {
+                return;
+            }
+            GitRepository repository = _viewModel.CurrentRepository;
+            GitRevertState state = _viewModel.RevertState;
+            int request = _viewModel.RepositoryRequestVersion;
+            ConflictWindow window = _conflictWindow;
+            string path = _viewModel.Conflicts.CurrentFilePath;
+            string draft = _viewModel.Conflicts.ResultText;
+            bool confirmed;
+            _revertAbortConfirmationPending = true;
+            _activationSuppressionDepth++;
+            try
+            {
+                confirmed = await GitActionDialogs.ConfirmAsync(this,
+                    _stringHelper.GetString("MainRevertAbortTitle"),
+                    _stringHelper.Format("MainRevertAbortMessage", repository.RootPath),
+                    _stringHelper.GetString("MainRevertAbortAction"), _stringHelper);
+            }
+            finally
+            {
+                _activationSuppressionDepth--;
+                _revertAbortConfirmationPending = false;
+                CompleteInternalDialog();
+            }
+            if (confirmed == false)
+            {
+                return;
+            }
+            if (request != _viewModel.RepositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_viewModel.CurrentRepository, repository) == false)
+            {
+                return;
+            }
+            if (ReferenceEquals(_viewModel.RevertState, state) == false)
+            {
+                return;
+            }
+            if (ReferenceEquals(_conflictWindow, window) == false)
+            {
+                return;
+            }
+            if (_viewModel.Conflicts.CurrentFilePath != path)
+            {
+                return;
+            }
+            if (_viewModel.Conflicts.ResultText != draft)
+            {
+                return;
+            }
+            GitRevertResult result = await _viewModel.AbortRevertAsync(repository, state, request, path, draft);
+            if (request != _viewModel.RepositoryRequestVersion)
+            {
+                return;
+            }
+            if (result == null)
+            {
+                return;
+            }
+            GitRepository applied = repository;
+            if (result.Repository != null)
+            {
+                applied = result.Repository;
+            }
+            if (ReferenceEquals(_viewModel.CurrentRepository, applied) == false)
+            {
+                return;
+            }
+            if (result.Outcome != GitRevertOutcome.Aborted)
+            {
+                return;
+            }
+            if (result.State == null)
+            {
+                return;
+            }
+            if (result.State.IsInProgress)
+            {
+                return;
+            }
+            if (ReferenceEquals(_conflictWindow, window) == false)
+            {
+                return;
+            }
+            CloseCompletedConflictWindow();
         }
 
         private void CloseCompletedConflictWindow()

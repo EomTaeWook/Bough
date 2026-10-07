@@ -6256,5 +6256,245 @@
     "Name": "HistoryActionStateReadFailed",
     "Kor": "Git 변경은 완료됐지만 저장소 상태를 읽지 못했습니다. 새로 고침이 필요합니다.",
     "Eng": "The Git change completed, but the repository state could not be read. Refresh is required."
+  },
+  {
+    "Id": 3143,
+    "Name": "HistoryRevertCommit",
+    "Kor": "이 커밋 되돌리기…",
+    "Eng": "Revert this commit…"
+  },
+  {
+    "Id": 3144,
+    "Name": "HistoryRevertTitle",
+    "Kor": "커밋 되돌리기",
+    "Eng": "Revert commit"
+  },
+  {
+    "Id": 3145,
+    "Name": "HistoryRevertTargetDescription",
+    "Kor": "저장소: {0}\n현재 브랜치: {1}\n현재 HEAD: {2}\n대상 커밋: {3}\n{4}",
+    "Eng": "Repository: {0}\nCurrent branch: {1}\nCurrent HEAD: {2}\nTarget commit: {3}\n{4}"
+  },
+  {
+    "Id": 3146,
+    "Name": "HistoryRevertImpact",
+    "Kor": "선택 커밋의 변경을 취소하는 새 커밋을 만듭니다. 기존 커밋과 원격 참조는 유지합니다.",
+    "Eng": "Create a new commit that reverses the selected commit's changes. Existing commits and remote references are preserved."
+  },
+  {
+    "Id": 3147,
+    "Name": "HistoryRevertParentLabel",
+    "Kor": "병합 기준 부모",
+    "Eng": "Mainline parent"
+  },
+  {
+    "Id": 3148,
+    "Name": "HistoryRevertParentChoice",
+    "Kor": "{0}번 부모 · {1} · {2}",
+    "Eng": "Parent {0} · {1} · {2}"
+  },
+  {
+    "Id": 3149,
+    "Name": "HistoryRevertMergeWarning",
+    "Kor": "선택한 부모를 기준으로 병합 변경을 취소합니다. 이후 병합에서 가져오는 변경에도 영향을 줄 수 있습니다.",
+    "Eng": "Reverse the merge changes relative to the chosen parent. This can also affect changes introduced by later merges."
+  },
+  {
+    "Id": 3150,
+    "Name": "HistoryRevertAction",
+    "Kor": "되돌리기",
+    "Eng": "Revert"
+  },
+  {
+    "Id": 3151,
+    "Name": "HistoryRevertSucceeded",
+    "Kor": "커밋 {0}의 변경을 취소하는 새 커밋을 만들었습니다.",
+    "Eng": "Created a new commit that reverses the changes from {0}."
+  },
+  {
+    "Id": 3152,
+    "Name": "HistoryRevertPaused",
+    "Kor": "커밋 취소가 진행 중입니다. 충돌을 해결·저장·스테이징한 뒤 계속하거나 표시된 오류를 확인하세요.",
+    "Eng": "The revert is still in progress. Resolve, save, and stage conflicts before continuing, or review the reported error."
+  },
+  {
+    "Id": 3153,
+    "Name": "CommitRevertRefreshFailed",
+    "Kor": "커밋 취소 이후 상태를 갱신하지 못했습니다. 새로 고침으로 조회를 다시 시도하세요. {0}",
+    "Eng": "Could not refresh the state after the revert operation. Use Refresh to retry the read. {0}"
+  },
+  {
+    "Id": 3154,
+    "Name": "CommitRevertDetailsFailed",
+    "Kor": "선택 커밋의 부모와 메시지를 읽지 못했습니다.",
+    "Eng": "Could not read the selected commit's parents and message."
+  },
+  {
+    "Id": 3155,
+    "Name": "CommitRevertStateInvalid",
+    "Kor": "Git 작업 상태를 확인하지 못했습니다. 새로 고침한 뒤 다시 시도하세요.",
+    "Eng": "Could not determine the Git operation state. Refresh before trying again."
+  },
+  {
+    "Id": 3156,
+    "Name": "CommitRevertTargetChanged",
+    "Kor": "확인 후 현재 브랜치 또는 HEAD가 바뀌었습니다. 다시 확인하세요.",
+    "Eng": "The current branch or HEAD changed after confirmation. Review it again."
+  },
+  {
+    "Id": 3157,
+    "Name": "CommitRevertParentRequired",
+    "Kor": "병합 커밋의 유효한 기준 부모를 선택해야 합니다.",
+    "Eng": "Select a valid mainline parent for the merge commit."
+  },
+  {
+    "Id": 3158,
+    "Name": "CommitRevertUnresolvedConflicts",
+    "Kor": "미해결 충돌 {0}개가 남아 있어 되돌리기를 계속할 수 없습니다.",
+    "Eng": "Cannot continue the revert while {0} conflicts remain unresolved."
+  },
+  {
+    "Id": 3159,
+    "Name": "CommitRevertAlreadyInProgress",
+    "Kor": "이미 되돌리기가 진행 중입니다. 기존 작업을 계속하거나 중단하세요.",
+    "Eng": "A revert is already in progress. Continue or abort the existing operation."
+  },
+  {
+    "Id": 3160,
+    "Name": "CommitRevertOtherOperation",
+    "Kor": "다른 Git 작업이 진행 중이어서 되돌리기를 시작할 수 없습니다.",
+    "Eng": "Cannot start a revert while another Git operation is in progress."
+  },
+  {
+    "Id": 3161,
+    "Name": "CommitRevertCleanRequired",
+    "Kor": "작업 트리 또는 인덱스에 변경이 있습니다. 먼저 직접 정리하세요. 파일을 자동으로 버리거나 보관하지 않습니다.",
+    "Eng": "The working tree or index has changes. Resolve them first. Files are not discarded or stashed automatically."
+  },
+  {
+    "Id": 3162,
+    "Name": "CommitRevertDetachedHead",
+    "Kor": "로컬 브랜치에서만 되돌리기를 시작할 수 있습니다. 현재 HEAD는 분리된 상태입니다.",
+    "Eng": "Start a revert on a local branch. HEAD is currently detached."
+  },
+  {
+    "Id": 3163,
+    "Name": "CommitRevertNoLongerInProgress",
+    "Kor": "확인한 되돌리기가 더 이상 진행 중이 아닙니다.",
+    "Eng": "The confirmed revert is no longer in progress."
+  },
+  {
+    "Id": 3164,
+    "Name": "CommitRevertStateChanged",
+    "Kor": "확인 후 되돌리기 대상 또는 작업 상태가 바뀌었습니다. 최신 상태를 다시 확인하세요.",
+    "Eng": "The revert target or working state changed after confirmation. Review the latest state."
+  },
+  {
+    "Id": 3165,
+    "Name": "CommitRevertFailed",
+    "Kor": "Git 되돌리기 명령이 완료되지 않았습니다(종료 코드 {0}). 진행 상태를 확인하세요.",
+    "Eng": "The Git revert command did not complete (exit code {0}). Check the operation state."
+  },
+  {
+    "Id": 3166,
+    "Name": "CommitRevertRepositoryChanged",
+    "Kor": "확인한 저장소와 실행 대상 저장소가 다릅니다.",
+    "Eng": "The execution repository differs from the confirmed repository."
+  },
+  {
+    "Id": 3167,
+    "Name": "CommitRevertUnstagedChanges",
+    "Kor": "작업 트리의 변경을 스테이징한 뒤 되돌리기를 계속하세요. 새 파일이나 관련 없는 변경도 먼저 확인해야 합니다.",
+    "Eng": "Stage the intended working changes before continuing the revert. Review new files and unrelated edits first."
+  },
+  {
+    "Id": 3168,
+    "Name": "MainRevertProgressLabel",
+    "Kor": "커밋 취소 진행 중",
+    "Eng": "Revert in progress"
+  },
+  {
+    "Id": 3169,
+    "Name": "MainRevertCheckingConflicts",
+    "Kor": "충돌 상태를 확인하는 중입니다.",
+    "Eng": "Checking the conflict state."
+  },
+  {
+    "Id": 3170,
+    "Name": "MainRevertResolveBeforeContinue",
+    "Kor": "충돌 {0}개를 해결하고 저장·스테이징한 뒤 계속하세요.",
+    "Eng": "Resolve, save, and stage {0} conflicts before continuing."
+  },
+  {
+    "Id": 3171,
+    "Name": "MainRevertReadyToContinue",
+    "Kor": "충돌 해결 내용을 저장·스테이징했다면 커밋 취소를 계속하세요.",
+    "Eng": "Continue the revert after saving and staging your conflict resolutions."
+  },
+  {
+    "Id": 3172,
+    "Name": "MainRevertContinueAction",
+    "Kor": "계속",
+    "Eng": "Continue"
+  },
+  {
+    "Id": 3173,
+    "Name": "MainRevertAbortAction",
+    "Kor": "중단",
+    "Eng": "Abort"
+  },
+  {
+    "Id": 3174,
+    "Name": "MainRevertAbortTitle",
+    "Kor": "진행 중인 커밋 취소 중단",
+    "Eng": "Abort the pending revert"
+  },
+  {
+    "Id": 3175,
+    "Name": "MainRevertAbortMessage",
+    "Kor": "커밋 취소를 중단하고 시작 전 상태로 되돌릴까요? 저장하지 않은 충돌 해결 초안, 저장한 해결 내용과 진행 중 편집한 파일의 변경이 사라질 수 있습니다. 저장소: {0}",
+    "Eng": "Abort the revert and return to the state before it started? Unsaved conflict drafts, saved resolutions, and file edits made during the operation may be lost. Repository: {0}"
+  },
+  {
+    "Id": 3176,
+    "Name": "RevertIncomingChange",
+    "Kor": "되돌리기 변경",
+    "Eng": "Revert changes"
+  },
+  {
+    "Id": 3177,
+    "Name": "RevertUseIncomingChange",
+    "Kor": "되돌리기 변경 사용",
+    "Eng": "Use revert changes"
+  },
+  {
+    "Id": 3178,
+    "Name": "RevertIncomingIndexSource",
+    "Kor": "되돌리기 변경 (인덱스 stage 3)",
+    "Eng": "Revert changes (index stage 3)"
+  },
+  {
+    "Id": 3179,
+    "Name": "MainRevertSaveDraftBeforeContinue",
+    "Kor": "현재 충돌 파일의 추가 편집을 저장하거나 명시적으로 버린 뒤 계속하세요.",
+    "Eng": "Save or explicitly discard the additional edits in the current conflict file before continuing."
+  },
+  {
+    "Id": 3180,
+    "Name": "MainRevertCompleted",
+    "Kor": "커밋 취소가 완료됐습니다.",
+    "Eng": "The revert completed."
+  },
+  {
+    "Id": 3181,
+    "Name": "MainRevertPaused",
+    "Kor": "커밋 취소가 진행 중입니다. 충돌을 해결하거나 표시된 오류를 확인하세요.",
+    "Eng": "The revert is still in progress. Resolve the conflicts or review the reported error."
+  },
+  {
+    "Id": 3182,
+    "Name": "MainRevertAborted",
+    "Kor": "진행 중인 커밋 취소를 중단했습니다.",
+    "Eng": "The pending revert was aborted."
   }
 ]

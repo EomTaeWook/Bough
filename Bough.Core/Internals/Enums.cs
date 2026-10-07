@@ -16,6 +16,14 @@ namespace Bough.Core.Internals
         Hard
     }
 
+    public enum GitRevertOutcome
+    {
+        Completed,
+        Paused,
+        Aborted,
+        Failed
+    }
+
     public enum GitHistoryScope
     {
         All,

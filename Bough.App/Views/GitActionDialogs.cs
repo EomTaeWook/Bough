@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -612,6 +613,65 @@ namespace Bough.App.Views
             };
             dialog.Content = CreateContent(targetText, nameLabel, name, error, CreateButtons(cancel, create));
             return await dialog.ShowDialog<bool>(owner);
+        }
+
+        public static async Task<GitRevertChoice> RequestRevertAsync(Window owner, GitRevertPreview preview, StringHelper stringHelper)
+        {
+            Window dialog = CreateWindow(stringHelper.GetString("HistoryRevertTitle"));
+            dialog.Width = 600;
+            TextBlock target = new() { TextWrapping = TextWrapping.Wrap };
+            TextBlock impact = new() { TextWrapping = TextWrapping.Wrap };
+            bool isMerge = preview.Parents.Count > 1;
+            TextBlock parentLabel = new() { IsVisible = isMerge };
+            ComboBox parents = new() { SelectedIndex = -1, IsVisible = isMerge, HorizontalAlignment = HorizontalAlignment.Stretch };
+            TextBlock warning = new() { TextWrapping = TextWrapping.Wrap, IsVisible = isMerge };
+            Button cancel = new() { IsCancel = true };
+            Button revert = new() { IsDefault = true, IsEnabled = isMerge == false };
+            void RefreshLabels()
+            {
+                dialog.Title = stringHelper.GetString("HistoryRevertTitle");
+                target.Text = stringHelper.Format("HistoryRevertTargetDescription", preview.RepositoryRoot,
+                    preview.BranchName, preview.HeadHash, preview.TargetHash, preview.Subject);
+                impact.Text = stringHelper.GetString("HistoryRevertImpact");
+                parentLabel.Text = stringHelper.GetString("HistoryRevertParentLabel");
+                warning.Text = stringHelper.GetString("HistoryRevertMergeWarning");
+                cancel.Content = stringHelper.GetString("ReferenceCancel");
+                revert.Content = stringHelper.GetString("HistoryRevertAction");
+                Avalonia.Automation.AutomationProperties.SetName(parents, parentLabel.Text);
+                int selected = parents.SelectedIndex;
+                List<string> labels = new();
+                foreach (GitRevertParent parent in preview.Parents)
+                {
+                    labels.Add(stringHelper.Format("HistoryRevertParentChoice", parent.Number, parent.Hash.Substring(0, 8), parent.Subject));
+                }
+                parents.ItemsSource = labels;
+                parents.SelectedIndex = selected;
+            }
+            parents.SelectionChanged += delegate
+            {
+                if (isMerge)
+                {
+                    revert.IsEnabled = parents.SelectedIndex >= 0;
+                }
+            };
+            cancel.Click += delegate { dialog.Close(null); };
+            revert.Click += delegate
+            {
+                int mainline = 0;
+                if (isMerge)
+                {
+                    if (parents.SelectedIndex < 0)
+                    {
+                        return;
+                    }
+                    mainline = parents.SelectedIndex + 1;
+                }
+                dialog.Close(new GitRevertChoice(mainline));
+            };
+            RefreshLabels();
+            LanguageChangeBinding.Bind(dialog, () => stringHelper, RefreshLabels);
+            dialog.Content = CreateContent(target, impact, parentLabel, parents, warning, CreateButtons(cancel, revert));
+            return await dialog.ShowDialog<GitRevertChoice>(owner);
         }
 
         public static async Task<GitResetChoice> RequestResetAsync(Window owner, GitResetPreview preview, StringHelper stringHelper)

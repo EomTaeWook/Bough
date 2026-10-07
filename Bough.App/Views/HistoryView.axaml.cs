@@ -326,13 +326,10 @@ namespace Bough.App.Views
             {
                 return;
             }
-            HistoryCommitItem commit = menu.DataContext as HistoryCommitItem;
+            HistoryCommitItem commit = menu.Tag as HistoryCommitItem;
             if (commit == null)
             {
-                if (menu.PlacementTarget is Control target)
-                {
-                    commit = target.DataContext as HistoryCommitItem;
-                }
+                commit = menu.DataContext as HistoryCommitItem;
             }
             if (commit == null)
             {
@@ -357,7 +354,7 @@ namespace Bough.App.Views
             {
                 tag.Header = GitActionDialogs.TagText("HistoryCreateTagHere", viewModel.Strings);
             }
-            MenuItem reset = menu.Items.OfType<MenuItem>().LastOrDefault();
+            MenuItem reset = menu.Items.OfType<MenuItem>().FirstOrDefault(item => item.Tag as string == "reset");
             if (reset != null)
             {
                 reset.IsEnabled = viewModel.CurrentRepository.CurrentBranch != "Detached HEAD";

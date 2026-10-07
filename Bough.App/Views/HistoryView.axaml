@@ -202,11 +202,12 @@
             <DataTemplate x:DataType="models:HistoryCommitItem">
               <Border MinHeight="30" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" ToolTip.Tip="{Binding ToolTipText}">
                 <Border.ContextMenu>
-                  <ContextMenu Opened="CommitContextOpened">
+                  <ContextMenu Tag="{Binding}" Opened="CommitContextOpened">
                     <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CreateBranchHere}" Click="CreateCommitBranchClicked" />
                     <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CreateTagHere}" Tag="create-tag" Click="CreateCommitTagClicked" />
                     <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CheckoutCommit}" Click="CheckoutCommitClicked" />
                     <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding CopySha}" Click="CopyCommitShaClicked" />
+                    <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding RevertCommit}" Tag="revert" Click="RevertCommitClicked" />
                     <Separator />
                     <MenuItem x:CompileBindings="False" DataContext="{Binding DataContext.Labels, ElementName=HistoryRoot, x:CompileBindings=False}" Header="{Binding ResetCommit}" Tag="reset" Click="ResetCommitClicked" />
                   </ContextMenu>

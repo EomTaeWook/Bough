@@ -30,7 +30,7 @@ See the branch graph alongside local branch, remote branch, and tag badges, then
 
 ![Bough file history showing a date timeline, file commits, and numbered diff](Docs/images/file-history.png)
 
-Right-click a changed file and choose History to see its commits alongside the changes at each revision. Follow renames and select a commit by date position. This screen is available in the latest source; it is not included in the beta.5 download above.
+Right-click a changed file and choose History to open a dedicated window with its commits and changes at each revision. Follow renames and select a commit from the list. The date timeline has been removed from the current screen; the image above was captured before its removal.
 
 ### Local changes
 
@@ -63,9 +63,9 @@ Bough is designed to show the source of each conflicting change and preview the 
 
 - **Open and clone repositories:** Open an existing local repository, or clone a remote URL or local path into a new path or an empty folder and add it to the repository list.
 - **Local changes:** Inspect changed files and diffs with line numbers, stage and unstage, commit, discard changes, stop tracking files, and ignore untracked files.
-- **History and references:** Browse the commit graph and file changes; create, switch, delete, and rename branches; create, delete, and rename tags.
+- **History and references:** Browse the commit graph, file changes, and file history; revert a selected commit; create, switch, delete, and rename branches; create, delete, and rename tags.
 - **Remotes and stashes:** Fetch, Pull, and Push; configure the default Pull strategy or choose one for a single Pull; save, apply, and delete stashes.
-- **Conflict resolution:** Inspect merge or rebase changes, choose individual sections or apply one choice to the remaining sections, edit and preview the result, then save and stage it or continue a rebase.
+- **Conflict resolution:** Inspect merge, rebase, or revert changes, choose individual sections or apply one choice to the remaining sections, edit and preview the result, then save and stage it or continue the pending operation.
 
 Features and workflows are still being refined.
 
@@ -106,6 +106,8 @@ Bough adds and opens the repository when cloning finishes. The list's remove but
 When cloning fails, Bough shows the cause identified from Git diagnostics, such as authentication, repository access, connection, storage space, or file writing. Destination status is reported separately. If the folder is empty, you can retry using the same path after resolving the clone error. When the cause cannot be identified, Bough shows a general failure message and the exit code.
 
 Select **History** at the top to see commits from all local and remote references in a branch graph. Selecting a commit shows its author, date, message, and changed files in the details panel. The first 200 commits are shown; scroll down to load older history. Selecting and inspecting a commit does not change the repository.
+
+Right-click a commit and choose **Revert this commit…** to create a new commit reversing its changes on the current local branch. Confirm the repository, HEAD, and target; explicitly choose the mainline parent for a merge commit. Start with a clean working tree and index and no other Git operation in progress. Resolve any conflicts, save and stage the result, then select **Continue** in the pending revert banner. **Abort** returns to the prior state and may discard conflict resolutions or file edits made during the operation, so review its confirmation first. Use Refresh for read errors after a successful Git change.
 
 Right-click a branch under **Git references** on the left to delete a local or remote branch. Confirm the target before deletion. The checked-out branch and a remote's default branch cannot be deleted, and local branches with unmerged commits are kept. Deleting a remote branch affects the server and other users.
 

@@ -292,7 +292,7 @@
         </Grid>
       </Border>
 
-      <Grid Grid.Column="1" RowDefinitions="Auto,*">
+      <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*">
         <Border Grid.Row="0" IsVisible="{Binding IsRebaseInProgress}"
                 Background="{DynamicResource BoughBrushWarningSurface}"
                 BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="0,0,0,1">
@@ -306,23 +306,41 @@
           </Grid>
         </Border>
 
-        <Border Grid.Row="1" IsVisible="{Binding IsHistoryView}">
+        <Border Grid.Row="1" IsVisible="{Binding IsRevertInProgress}"
+                Background="{DynamicResource BoughBrushWarningSurface}"
+                BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="0,0,0,1">
+          <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="16,8" ColumnSpacing="8">
+            <TextBlock Grid.Column="0" Text="{Binding RevertProgressLabel}" FontWeight="SemiBold"
+                       Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding RevertStatusText}" TextWrapping="Wrap"
+                       Foreground="{DynamicResource BoughBrushTextMuted}" VerticalAlignment="Center" />
+            <Button Grid.Column="2" Content="{Binding AbortRevertText}" IsEnabled="{Binding CanAbortRevert}"
+                    Click="AbortRevertClicked" AutomationProperties.Name="{Binding AbortRevertText}"
+                    VerticalAlignment="Center" Height="32" MinWidth="80" Padding="12,4" />
+            <Button Grid.Column="3" Classes="primary" Content="{Binding ContinueRevertText}"
+                    IsEnabled="{Binding CanContinueRevert}" Click="ContinueRevertClicked"
+                    AutomationProperties.Name="{Binding ContinueRevertText}"
+                    VerticalAlignment="Center" Height="32" MinWidth="80" Padding="12,4" />
+          </Grid>
+        </Border>
+
+        <Border Grid.Row="2" IsVisible="{Binding IsHistoryView}">
           <views:HistoryView DataContext="{Binding History}" />
         </Border>
-        <Border Grid.Row="1" IsVisible="{Binding IsLocalChangesView}">
+        <Border Grid.Row="2" IsVisible="{Binding IsLocalChangesView}">
           <Grid>
             <views:LocalChangesView x:Name="LocalChangesPanel" DataContext="{Binding LocalChanges}" />
             <ProgressBar IsVisible="{Binding IsLocalChangesLoading}" IsIndeterminate="True"
                          Height="3" VerticalAlignment="Top" />
           </Grid>
         </Border>
-        <Border Grid.Row="1" IsVisible="{Binding IsStashView}">
+        <Border Grid.Row="2" IsVisible="{Binding IsStashView}">
           <views:StashView DataContext="{Binding LocalChanges.Stashes}" />
         </Border>
-        <Border Grid.Row="1" IsVisible="{Binding IsGitSettingsView}">
+        <Border Grid.Row="2" IsVisible="{Binding IsGitSettingsView}">
           <views:GitSettingsView x:Name="GitSettingsPanel" DataContext="{Binding GitSettings}" />
         </Border>
-        <Border Grid.Row="1" IsVisible="{Binding IsRepositoryStartView}"
+        <Border Grid.Row="2" IsVisible="{Binding IsRepositoryStartView}"
                 Background="{DynamicResource BoughBrushCanvas}" Padding="32">
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="24" MaxWidth="480">
             <Image Source="/Assets/AppIcon.png" Width="72" Height="72" HorizontalAlignment="Center" />
