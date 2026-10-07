@@ -28,9 +28,9 @@ See the branch graph alongside local branch, remote branch, and tag badges, then
 
 ### File history
 
-![Bough file history showing a date timeline, file commits, and numbered diff](Docs/images/file-history.png)
+![Bough file history showing file commits, rename history, and numbered diff](Docs/images/file-history.png)
 
-Right-click a changed file and choose History to open a dedicated window with its commits and changes at each revision. Follow renames and select a commit from the list. The date timeline has been removed from the current screen; the image above was captured before its removal.
+Right-click a changed file and choose History to open a dedicated window with its commits and changes at each revision. Follow renames and select a commit from the list.
 
 ### Local changes
 
@@ -38,7 +38,7 @@ Right-click a changed file and choose History to open a dedicated window with it
 
 Browse staged changes and working files separately, and read diffs with previous and current line numbers. Prepare a commit message in the area below the preview.
 
-The original three screenshots use demo repositories with the light theme and English UI. File history uses the Bough repository with the dark theme and Korean UI. Operating system title bars are omitted.
+All screenshots show actual application content using demo repositories with the light theme and English UI. Operating system title bars are omitted.
 
 ## Why Bough?
 
