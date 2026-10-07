@@ -1,5 +1,24 @@
 # 릴리스
 
+## v0.1.0-beta.6 — 게시 준비
+
+- 생성일: 2026-10-07
+- 소스 커밋: `0a0ee0b2e2f4339195d4fe47f4eb68025ca4bada`
+- 대상: Windows x64 자체 포함 단일 `Bough-v0.1.0-beta.6-win-x64.exe`
+- 상태: 실행 파일 생성 완료, 게시에 필요한 커밋·태그 푸시 승인 대기
+
+선택 커밋 취소(Revert)를 추가했다. History 메뉴에서 고정 저장소·HEAD·대상을 확인하고 새 커밋을 만들며 병합 커밋은 기준 부모를 직접 선택한다. 기존 저장소 FIFO에서 실행 직전에 상태를 다시 검사한다. 충돌 시 기존 해결 창에서 저장·스테이징한 뒤 계속하거나 영향 확인 후 중단한다. 저장소 재진입에도 진행 상태를 읽으며 미저장 초안을 보호한다.
+
+전용 파일 히스토리, 커밋 파일의 기본 연결 프로그램 열기, 순차 백그라운드 History 미리보기와 파일 메뉴 대상 전달, 상세·이동 상태를 포함한다. 충돌 초안·늦은 저장소 응답 보호, Git 성공과 후속 조회 실패 구분, Stash 완료 처리 및 원격 영역 툴팁 제거도 반영했다. 원격 후속 조회 오류의 별도 진행창 반환·재시도 UI는 포함하지 않는다.
+
+다음 명령으로 배포 파일을 생성했다. 첫 생성 중 메뉴 클릭 연결 오류를 수정하고 같은 배포 생성을 다시 수행했다. 별도 테스트·UI 실행·하네스·diff check·리소스 대조는 수행하지 않았다.
+
+```powershell
+dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.6 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.6\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.6\win-x64\
+```
+
+실행 파일에 .NET 런타임·필수 JSON·기본 로그 설정·네이티브 라이브러리를 포함한다. Git은 별도로 설치하며 기존 설정·최근 저장소 목록은 유지한다. macOS/Linux 배포 파일은 제공하지 않는다.
+
 ## v0.1.0-beta.5
 
 - 배포일: 2026-10-03
