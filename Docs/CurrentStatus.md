@@ -2,6 +2,13 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
+## 2026-10-07 최신 beta.6 배포 파일 생성
+
+사용자 요청에 따라 Presenter 책임 분리까지 포함한 소스 `3493e25`로 Windows x64 자체 포함 단일 실행 파일을 다시 생성했다. 생성 중 드러난 충돌 완료 재조회의 이전 메서드 호출 한 건은 `ConflictLoadPresenter.LoadCoreAsync`로 연결했다. 기존 완료 요청의 오류 전달·busy 수명을 유지하며 별도 읽기 재시도나 변경 명령은 추가하지 않았다.
+
+`dotnet publish`가 종료 코드 0으로 완료됐고 `.codex-build/release-v0.1.0-beta.6/Bough-v0.1.0-beta.6-win-x64.exe`를 준비했다. 이번 생성은 요청된 배포 파일 제작이며 별도 빌드 검증·테스트·UI 실행·하네스·diff check·리소스 대조는 수행하지 않았다. README 다운로드는 아직 게시된 beta.5를 유지한다.
+
+앞서 푸시한 원격 main은 `ddb7e99`까지이며 이번 호출 연결 수정은 로컬 커밋이다. 최신 beta.6 파일은 GitHub에 아직 게시하지 않았다. 배포 노트와 준비 스크립트는 실제 생성 소스 `3493e25`를 가리킨다.
 ## 2026-10-07 ViewModel 조정 책임 정리
 
 원격 화면 세션의 실행 결과·조회·진행·취소·후속 상태 갱신을 `RemoteOperationExecutionPresenter`로 옮겼다. 기존 `RemoteOperationPresenter`의 FIFO 진입과 메인 완료 callback은 유지하고 세션 실행은 큐에 다시 진입하지 않는다. VM 안의 private `OperationExecutionResult`는 실행 Presenter로 이동했다.
@@ -12,7 +19,7 @@ Git Settings의 두 enum을 App `Internals/Enums.cs`로 이동하고 기존 별�
 
 기존 기능·바인딩·공개 명령 계약을 유지하는 소스 정리이며 새 범용 완료 계층·큐·재시도 UI·문자열·DI 등록은 추가하지 않았다. 기존 지역화 어댑터·일반 저장소 전환·충돌 선택 및 일괄 선택의 VM 조정은 남아 있다. 빌드·테스트·UI 실행·하네스·diff check·리소스 대조 등 추가 검증은 수행하지 않았다.
 
-아래 beta.6 파일은 소스 `8fadb94`로 이미 생성한 개선 전 파일이다. 이번 소스로 실행 파일을 다시 만들거나 푸시·게시하지 않았다.
+책임 분리 반영 시점에는 기존 beta.6 파일이 소스 `8fadb94`로 생성된 개선 전 파일이었다. 이후 실행 파일 생성 상태는 위 최신 배포 생성 기록을 따른다.
 
 ## 2026-10-07 선택 커밋 취소(Revert)와 배포 준비
 

@@ -3,16 +3,16 @@
 ## v0.1.0-beta.6 — 게시 준비
 
 - 생성일: 2026-10-07
-- 소스 커밋: `8fadb94ba3b0314fcd3fb59b4bcc90949a449252`
+- 소스 커밋: `3493e259c78c47810ebda0204094cf0855dd735a`
 - 대상: Windows x64 자체 포함 단일 `Bough-v0.1.0-beta.6-win-x64.exe`
 - 상태: 실행 파일 생성 완료, 게시에 필요한 커밋·태그 푸시 승인 대기
-- 후속 ViewModel 책임 정리는 소스에만 반영했으며 이 실행 파일에는 포함하지 않았다. 게시 전 해당 변경을 포함하려면 배포 파일을 새로 생성해야 한다.
+- 원격 실행·Revert 완료·충돌 파일 조회의 Presenter 분리 및 완료 재조회 호출 보완까지 포함한 최신 파일을 생성했다.
 
 선택 커밋 취소(Revert)를 추가했다. History 메뉴에서 고정 저장소·HEAD·대상을 확인하고 새 커밋을 만들며 병합 커밋은 기준 부모를 직접 선택한다. 기존 저장소 FIFO에서 실행 직전에 상태를 다시 검사한다. 충돌 시 기존 해결 창에서 저장·스테이징한 뒤 계속하거나 영향 확인 후 중단한다. 저장소 재진입에도 진행 상태를 읽으며 미저장 초안을 보호한다.
 
 전용 파일 히스토리, 커밋 파일의 기본 연결 프로그램 열기, 순차 백그라운드 History 미리보기와 파일 메뉴 대상 전달, 상세·이동 상태를 포함한다. 충돌 초안·늦은 저장소 응답 보호, Git 성공과 후속 조회 실패 구분, Stash 완료 처리 및 원격 영역 툴팁 제거도 반영했다. 원격 후속 조회 오류의 별도 진행창 반환·재시도 UI는 포함하지 않는다.
 
-다음 명령으로 배포 파일을 생성했다. 첫 생성 중 메뉴 클릭 연결 오류를 수정하고 같은 배포 생성을 다시 수행했다. 별도 테스트·UI 실행·하네스·diff check·리소스 대조는 수행하지 않았다.
+다음 명령으로 배포 파일을 생성했다. 이전 생성의 메뉴 클릭 연결 수정에 이어, 최신 Presenter 분리 소스로 다시 생성했다. 이번 생성에서 드러난 충돌 완료 재조회 호출을 새 Load Presenter로 연결한 뒤 생성을 완료했다. 별도 테스트·UI 실행·하네스·diff check·리소스 대조는 수행하지 않았다.
 
 ```powershell
 dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.6 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.6\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.6\win-x64\
