@@ -18,7 +18,7 @@ namespace Bough.App.Presenters
         public async Task CompleteAsync(GitRepository updated, RemoteOperationStateSnapshot snapshot,
             bool worktreeMayChange, int repositoryRequestVersion)
         {
-            if (_model.TryAdoptRemoteRepository(updated, repositoryRequestVersion) == false)
+            if (_model.TryAdoptRepository(updated, repositoryRequestVersion) == false)
             {
                 return;
             }
@@ -33,7 +33,7 @@ namespace Bough.App.Presenters
                 {
                     _model.RemoteOperations.ApplyOperationStateSnapshot(snapshot);
                 }
-                _model.MarkRemoteHistoryReferencesDirty(updated);
+                _model.MarkHistoryReferencesDirty(updated);
                 _ = _model.ObserveRepositoryAreaAsync(() => _model.References.SetRepositoryAsync(updated), request, null);
                 if (_model.IsHistoryView)
                 {

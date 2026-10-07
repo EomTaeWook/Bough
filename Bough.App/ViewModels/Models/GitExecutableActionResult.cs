@@ -1,3 +1,4 @@
+using Bough.App.Internals;
 using System;
 
 namespace Bough.App.ViewModels.Models

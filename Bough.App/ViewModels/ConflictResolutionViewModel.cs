@@ -3,7 +3,6 @@ using Bough.App.Interfaces;
 using Bough.App.Localization;
 using Bough.App.Presenters;
 using Bough.Core.Conflicts;
-using Bough.Core.Conflicts.Exceptions;
 using Bough.Core.Git;
 using Bough.Core.Internals;
 using Avalonia.Threading;
@@ -26,7 +25,7 @@ namespace Bough.App.ViewModels
         private LocalizedText _statusMessageLocalization;
         private LocalizedText _currentChoiceTextLocalization;
         private LocalizedText _currentFilePathLocalization;
-        private void SetLocalizedStatusMessage(LocalizedText text)
+        internal void SetLocalizedStatusMessage(LocalizedText text)
         {
             StatusMessage = text.GetText(_stringHelper);
             _statusMessageLocalization = text;
@@ -44,12 +43,11 @@ namespace Bough.App.ViewModels
             _currentFilePathLocalization = text;
         }
 
-        private readonly GitRepositoryService _repositoryService;
         private readonly GitOperationQueue _operationQueue;
-        private readonly ConflictParser _parser;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly ConflictStagePresenter _stagePresenter;
+        private readonly ConflictLoadPresenter _loadPresenter;
 
         private readonly StringComparison _pathComparison;
         private readonly Dictionary<int, ResolutionChoiceType> _choices;
@@ -82,12 +80,11 @@ namespace Bough.App.ViewModels
 
         public ConflictResolutionViewModel(GitRepositoryService repositoryService, GitOperationQueue operationQueue, ConflictParser parser, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
         {
-            _repositoryService = repositoryService;
             _operationQueue = operationQueue;
-            _parser = parser;
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
             _stagePresenter = new ConflictStagePresenter(repositoryService, operationQueue, this);
+            _loadPresenter = new ConflictLoadPresenter(repositoryService, parser, stringHelper, this);
             _pathComparison = StringComparison.Ordinal;
             if (OperatingSystem.IsWindows())
             {
@@ -128,7 +125,14 @@ namespace Bough.App.ViewModels
         public bool HasStageResult { get { return StageResult != null; } }
         public bool HasGeneralStatus { get { return StageResult == null; } }
         public ConflictStageResult StageResult { get { return _stageResult; } }
-        internal GitRepository StageRepository { get { return _repository; } }
+        internal int ConflictRequestVersion { get { return _requestVersion; } }
+        internal int ConflictLoadVersion
+        {
+            get { return _loadVersion; }
+            set { _loadVersion = value; }
+        }
+        internal bool IsRevertOperationInProgress { get { return _isRevertInProgress; } }
+        internal GitRepository CurrentRepository { get { return _repository; } }
         internal GitConflictFile StageConflict { get { return _currentConflict; } }
         public string QueueStatusText { get { return _queueStatusText; } }
         public bool HasQueueStatus { get { return _queueStatusText.Length > 0; } }
@@ -390,7 +394,7 @@ namespace Bough.App.ViewModels
         public bool IsBusy
         {
             get { return _isBusy; }
-            private set
+            internal set
             {
                 if (SetProperty(ref _isBusy, value) == true)
                 {
@@ -658,108 +662,15 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(SelectedFile));
         }
 
-        private async Task LoadConflictAsync(ConflictFileItem file)
+        private Task LoadConflictAsync(ConflictFileItem file)
         {
-            await RunBusyAsync(async delegate
-            {
-                await LoadConflictCoreAsync(file);
-            });
+            return _loadPresenter.LoadAsync(file);
         }
 
-        private async Task LoadConflictCoreAsync(ConflictFileItem file)
+        internal void ApplyConflictDocument(GitConflictFile conflict, ConflictDocument document, string initialResult,
+            bool isRebaseConflict, string currentSourceLabel, string incomingSourceLabel, string incomingIndexSource)
         {
-            if (_repository == null)
-            {
-                return;
-            }
-
-            GitRepository repository = _repository;
-            int loadVersion = ++_loadVersion;
-            string draftText = ResultText;
-            bool isRebaseConflict = await _repositoryService.IsRebaseInProgressAsync(repository);
-            if (loadVersion != _loadVersion)
-            {
-                return;
-            }
-            if (ReferenceEquals(_repository, repository) == false)
-            {
-                return;
-            }
-            if (_selectedFile?.RelativePath != file.RelativePath)
-            {
-                return;
-            }
-
-            bool isRevertConflict = _isRevertInProgress;
-            string currentChangeLabel = _stringHelper.GetString("CurrentChange");
-            string incomingChangeLabel = _stringHelper.GetString("IncomingChange");
-            string currentSourceLabel = repository.CurrentBranch;
-            string incomingSourceLabel = incomingChangeLabel;
-            if (isRebaseConflict)
-            {
-                currentChangeLabel = _stringHelper.GetString("RebaseTargetChange");
-                incomingChangeLabel = _stringHelper.GetString("RebaseReplayChange");
-                currentSourceLabel = _stringHelper.GetString("RebaseTargetSource");
-                incomingSourceLabel = _stringHelper.GetString("RebaseReplaySource");
-            }
-
-            string incomingIndexSource = _stringHelper.GetString("ConflictIncomingIndexStage3");
-            if (isRebaseConflict == false)
-            {
-                if (isRevertConflict)
-                {
-                    incomingChangeLabel = _stringHelper.GetString("RevertIncomingChange");
-                    incomingSourceLabel = incomingChangeLabel;
-                    incomingIndexSource = _stringHelper.GetString("RevertIncomingIndexSource");
-                }
-            }
-            GitConflictFile conflict = await _repositoryService.LoadConflictAsync(repository, file.RelativePath,
-                currentSourceLabel, incomingSourceLabel, incomingIndexSource);
-            if (loadVersion != _loadVersion)
-            {
-                return;
-            }
-            if (ReferenceEquals(_repository, repository) == false)
-            {
-                return;
-            }
-            if (_selectedFile?.RelativePath != file.RelativePath)
-            {
-                return;
-            }
-            if (conflict.WorkingText.Contains('\0') == true)
-            {
-                throw new GitException("ConflictBinaryFileCannotEdit", null, file.RelativePath);
-            }
-
-            (ConflictDocument Document, string InitialResult) parsed = await Task.Run(() =>
-            {
-                ConflictDocument document = _parser.Parse(conflict.WorkingText, currentChangeLabel, incomingChangeLabel);
-                string initialResult = document.Render(new Dictionary<int, ResolutionChoiceType>());
-                return (document, initialResult);
-            });
-            if (loadVersion != _loadVersion)
-            {
-                return;
-            }
-            if (ReferenceEquals(_repository, repository) == false)
-            {
-                return;
-            }
-            if (_selectedFile?.RelativePath != file.RelativePath)
-            {
-                return;
-            }
-            if (draftText != ResultText)
-            {
-                return;
-            }
-            if (parsed.Document.Hunks.Count == 0)
-            {
-                throw new Bough.Core.Conflicts.Exceptions.ConflictParseException("ConflictTextMarkersMissing", file.RelativePath);
-            }
-
-            _document = parsed.Document;
+            _document = document;
             _currentConflict = conflict;
             _stagePresenter.Invalidate();
             _isRebaseConflict = isRebaseConflict;
@@ -801,8 +712,8 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(OursSource));
             OnPropertyChanged(nameof(TheirsSource));
             BaseText = conflict.BaseText;
-            _renderedResultText = parsed.InitialResult;
-            ResultText = parsed.InitialResult;
+            _renderedResultText = initialResult;
+            ResultText = initialResult;
             _loadedResultText = ResultText;
             OnPropertyChanged(nameof(HasUnsavedConflictEdits));
             HasDocument = true;
@@ -989,34 +900,6 @@ namespace Bough.App.ViewModels
             if (ownsView)
             {
                 IsBusy = false;
-            }
-        }
-        private async Task RunBusyAsync(Func<Task> action)
-        {
-            if (IsBusy == true)
-            {
-                return;
-            }
-            int request = _requestVersion;
-            GitRepository repository = _repository;
-            IsBusy = true;
-            try
-            {
-                await action();
-            }
-            catch (Exception exception)
-            {
-                if (request == _requestVersion)
-                {
-                    SetLocalizedStatusMessage(new LocalizedText(exception));
-                }
-            }
-            finally
-            {
-                if (ReferenceEquals(_repository, repository) == true)
-                {
-                    IsBusy = false;
-                }
             }
         }
 

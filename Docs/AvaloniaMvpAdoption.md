@@ -27,7 +27,7 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 
 현재 주요 입력 경로는 `View → ViewModel의 명령·연결 또는 Presenter → Core 서비스 → 결과 적용 → ViewModel 바인딩 상태 → View`다. 기능마다 이행 수준이 다르므로 모든 ViewModel이 이미 상태만 소유한다고 가정하지 않는다.
 
-공통 명령·인터페이스·저장·구성 클래스를 ViewModel에서 사용해도 해당 역할의 폴더와 네임스페이스에 둔다. 이번 분리는 파일 위치와 참조의 정리이며, 비동기 실행 책임을 추가로 Presenter에 옮겼다는 의미는 아니다.
+공통 명령·인터페이스·저장·구성 클래스를 ViewModel에서 사용해도 해당 역할의 폴더와 네임스페이스에 둔다. 앞선 공통 클래스의 파일 위치 정리와 아래 기능별 비동기 실행 책임 이행은 구분한다. enum은 App의 `Internals/Enums.cs`에 두며 Git Settings의 `GitExecutableActionKind`·`GitSettingsDisplayTarget`도 같은 위치를 사용한다.
 
 ## 시작과 수명
 
@@ -45,7 +45,7 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 - `GitOperationQueue`의 내부 `RepositoryOperationQueue`가 각 저장소의 대기·실행 상태를 소유한다. 그래프 레인을 뜻하는 이름과 구분하며 저장소별 순차 실행과 서로 다른 저장소의 독립 실행을 유지한다.
 - 추적 중지·무시는 `LocalChangesMutationPresenter`가 확인과 큐 실행을 조정한다. Core의 `GitStopTrackingPlan`은 파일·인덱스 스냅샷과 `.gitignore` 변경 계획을 함께 보관하며 `GitWorkingTreeService`·`GitIgnoreService`가 확인 후 재검사, 규칙 추가와 인덱스 제거를 맡는다. 작업 파일을 보존하고 `.gitignore`는 자동 스테이징하지 않는다. 규칙 추가 후 추적 중지 중 오류가 나면 부분 변경을 알리고 화면을 갱신한다.
 - 병합 커밋 기본 메시지는 `GitWorkingTreeService`가 `rev-parse --git-path MERGE_MSG`로 실제 메타데이터 위치를 구하고 `MERGE_HEAD`가 남아 있을 때 읽는다. 일반 저장소·연결된 worktree의 `.git` 경로를 화면에서 추측하지 않는다. `GitWorktreeStatus.MergeCommitMessage`가 Git 원문을 상태 스냅샷에 담고 `LocalChangesViewModel`은 자동 입력의 출처를 보관해 사용자 초안·Amend·편집한 메시지를 보호한다. 파일 조회는 Core, 입력 상태는 ViewModel, 실제 커밋은 기존 Mutation Presenter와 저장소 큐의 책임이다. 기존 `--cleanup=verbatim` 정책을 유지한다.
-- `ConflictResolutionViewModel`이 충돌 파일과 편집 상태를 소유하고 `ConflictStagePresenter`가 저장·스테이징을 조정한다. `MainWindowRemoteCompletionPresenter`는 원격 작업 완료의 스냅샷 적용과 영향 영역 갱신을 맡는다. 미저장 충돌 편집 확인과 외부 활성화 뒤 갱신은 메인 창의 연결 책임이다.
+- `ConflictResolutionViewModel`이 충돌 파일과 편집 상태를 소유한다. `ConflictLoadPresenter`가 파일 조회·Rebase/Revert 출처 분류·Core 파싱과 최초 렌더 요청을 조정하고, `ConflictStagePresenter`가 저장·스테이징을 조정한다. `MainWindowRemoteCompletionPresenter`는 원격 작업 완료의 스냅샷 적용과 영향 영역 갱신을 맡는다. 미저장 충돌 편집 확인과 외부 활성화 뒤 갱신은 메인 창의 연결 책임이다.
 - 충돌 일괄 선택은 현재 파일의 미선택 구간만 변경한다. ViewModel이 선택 개수와 처음 반영된 구간을 표시 상태에 적용하고, View는 파일 상단의 일괄 선택과 비교 아래의 현재 구간 선택, 최종 결과의 저장·스테이징을 구분해 배치한다. 파일 저장과 큐 실행은 기존 Presenter 경계를 유지한다.
 - 원격 실패의 `GitRemoteOperationException`은 Core의 오류 식별자·인수와 기존 민감 정보 제거를 거친 Git 진단을 분리한다. `RemoteOperationsViewModel`은 짧은 지역화 상태와 상세 진단을 별도 바인딩 상태로 보관하고, View는 진단이 있을 때만 기본으로 접힌 영역을 표시한다. `PullWithProgressAsync`는 완료 결과 목록 없이 작업을 끝내며 `GitPullProgress`는 단계와 전송 상태만 전달한다. 진행 창용 커밋·변경 파일 요약 조회는 수행하지 않는다. 진행 단계·경과 시간은 실행 중에만 보이며 완료 뒤의 Pull 전략을 자동 변경하지 않는다.
 - History의 기본 상세 탭은 Commit·Changes다. 사용자 요청으로 커밋 우클릭의 File Tree와 파일 우클릭의 파일 트리에서 보기 항목을 제거했다. 기존 `IsFileTreeView` 보조 화면과 `HistoryFileTreePresenter` 조회 구현은 내부에 남아 있으며 현재 UI 진입 메뉴는 제공하지 않는다. `Services/HistoryGraphBuilder`가 커밋 그래프 행을 계산하고 `ViewModels/Models`의 항목이 표시 상태를 보관한다.
@@ -116,6 +116,14 @@ Git 변경 성공과 후속 조회·화면 반영 성공을 구분한다. Presen
 충돌 저장·스테이징은 `GitRepositoryService`의 Git 검증·파싱·쓰기와 `ConflictStagePresenter`의 큐·요청 버전·stale 재조회로 분리했다. `ConflictResolutionViewModel`은 원본 결과 상태를 보관하고 `ConflictWindow`가 표시 언어로 변환한다. 실패나 늦은 결과가 사용자 편집 내용을 덮지 않게 하는 기존 계약을 유지한다.
 
 Local Changes·Stash의 변경 명령과 Git Settings의 Git 경로 확인·저장, History 목록·상세·명령, Git 참조 조회·변경, 원격 작업 실행과 MainWindow 원격 완료 갱신에도 기능별 Presenter를 연결했다. 저장소 복제의 목적지별 큐 진입과 Core 실행은 `CloneRepositoryPresenter`로 연결했다. 기존 ViewModel은 바인딩 상태와 일부 레거시 조정을 계속 소유한다. 남은 이행 범위와 실제 검증 상태는 [구현 현황](CurrentStatus.md)에서 관리한다. 현재 작업자 소유권과 세션 전달 방식은 [AGENTS.md](../AGENTS.md)를 따른다.
+
+## ViewModel 조정 책임 추가 이행
+
+- `RemoteOperationExecutionPresenter`는 원격 화면 세션의 조회·Fetch/Pull/Push 실행·진행·취소·후속 상태 조회와 요청 버전을 소유한다. 실행 내부의 `OperationExecutionResult`도 이 Presenter의 private 타입이다. `RemoteOperationsViewModel`은 상태 적용·표시·기존 명령 진입을 유지한다. 기존 `RemoteOperationPresenter`는 고정된 실행 창 요청의 저장소 FIFO 진입·실행 전 검증·메인 완료 연결을 맡으며, 세션 Presenter는 큐에 다시 진입하지 않는다.
+- `MainWindowRevertPresenter`는 Revert 상태 조회·계속·중단과 완료 후 영향 영역 갱신 순서를 맡는다. 기존 `HistoryActionPresenter`의 Core 호출·FIFO·UI 완료 경계를 재사용한다. MainWindow 화면 모델은 현재 저장소·Revert 상태·로딩·완료 안내를 적용하고, View의 중단 확인과 충돌 창 수명은 유지한다.
+- `ConflictLoadPresenter`는 기존 파일 선택 수명·저장소·본문을 고정하고 서비스 조회 및 Core 파싱·최초 렌더 결과를 기다린 뒤 현재 결과만 적용한다. 화면 모델의 `ApplyConflictDocument`는 문서·파일·출처·선택·편집 baseline을 바인딩 상태에 적용한다. 저장·스테이징과 공유하는 기존 요청 수명 및 미저장 초안 보호를 유지한다.
+
+세 흐름은 기존 비동기 본문을 Presenter로 옮긴 범위다. 새 범용 완료 모델·작업 큐·재시도 UI·DI 등록·문자열은 추가하지 않았다. 기존 지역화 어댑터와 충돌 파일 선택·일괄 선택 등 남은 VM 조정까지 순수 MVP로 이행한 것은 아니다. 이번 변경의 빌드·테스트·UI 실행 등 추가 검증은 수행하지 않았다.
 
 ## 완료 기준
 

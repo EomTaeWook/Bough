@@ -80,4 +80,19 @@ namespace Bough.App.Internals
         Pop,
         Drop
     }
+
+    public enum GitExecutableActionKind
+    {
+        Verified,
+        Saved
+    }
+
+    public enum GitSettingsDisplayTarget
+    {
+        Appearance,
+        Language,
+        Status,
+        Account,
+        AccountSummary
+    }
 }

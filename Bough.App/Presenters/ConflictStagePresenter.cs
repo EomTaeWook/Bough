@@ -40,7 +40,7 @@ namespace Bough.App.Presenters
 
         public async Task<ConflictStageResult> SaveAndStageAsync(string operationName)
         {
-            GitRepository repository = _model.StageRepository;
+            GitRepository repository = _model.CurrentRepository;
             GitConflictFile conflict = _model.StageConflict;
             if (_completion == null)
             {
@@ -141,7 +141,7 @@ namespace Bough.App.Presenters
             {
                 return false;
             }
-            if (ReferenceEquals(_model.StageRepository, repository) == false)
+            if (ReferenceEquals(_model.CurrentRepository, repository) == false)
             {
                 return false;
             }

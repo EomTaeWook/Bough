@@ -2,6 +2,18 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
+## 2026-10-07 ViewModel 조정 책임 정리
+
+원격 화면 세션의 실행 결과·조회·진행·취소·후속 상태 갱신을 `RemoteOperationExecutionPresenter`로 옮겼다. 기존 `RemoteOperationPresenter`의 FIFO 진입과 메인 완료 callback은 유지하고 세션 실행은 큐에 다시 진입하지 않는다. VM 안의 private `OperationExecutionResult`는 실행 Presenter로 이동했다.
+
+MainWindow의 Revert 상태 조회·계속·중단·영향 영역 갱신 순서는 `MainWindowRevertPresenter`가 조정한다. 기존 HistoryActionPresenter·고정 상태 fingerprint·저장소/요청 검사와 동일 결과 상태 재사용을 유지한다. 충돌 파일 조회·출처 분류·Core 파싱/렌더 요청은 `ConflictLoadPresenter`로 옮기고, 화면 모델에는 문서·선택·본문·baseline 적용을 남겼다. 저장 FIFO와 미저장 초안 보호는 유지한다.
+
+Git Settings의 두 enum을 App `Internals/Enums.cs`로 이동하고 기존 별도 파일을 제거했다. 관련 결과 모델·Presenter는 해당 네임스페이스를 사용한다. 기존 담당 세션이 착수하지 않아 총괄이 직접 반영했다.
+
+기존 기능·바인딩·공개 명령 계약을 유지하는 소스 정리이며 새 범용 완료 계층·큐·재시도 UI·문자열·DI 등록은 추가하지 않았다. 기존 지역화 어댑터·일반 저장소 전환·충돌 선택 및 일괄 선택의 VM 조정은 남아 있다. 빌드·테스트·UI 실행·하네스·diff check·리소스 대조 등 추가 검증은 수행하지 않았다.
+
+아래 beta.6 파일은 소스 `8fadb94`로 이미 생성한 개선 전 파일이다. 이번 소스로 실행 파일을 다시 만들거나 푸시·게시하지 않았다.
+
 ## 2026-10-07 선택 커밋 취소(Revert)와 배포 준비
 
 History 커밋 메뉴에서 선택 커밋의 변경을 취소하는 새 커밋을 만드는 Revert를 연결했다. Core는 일반·루트 커밋과 명시적인 병합 기준 부모, 시작 전 작업 상태 확인, 실행 직전 고정 저장소·브랜치·HEAD 확인을 담당한다. 기존 HistoryActionPresenter와 저장소별 FIFO를 사용하며 새 공통 변경 결과·큐·재시도 UI는 추가하지 않는다.
