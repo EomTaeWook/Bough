@@ -2,13 +2,21 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
+## 2026-10-07 beta.6 게시 완료
+
+사용자 게시 요청에 따라 생성 소스 `3493e25`와 배포 기록을 원격 main에 반영하고 Windows x64 단일 실행 파일을 GitHub 사전 릴리스 `v0.1.0-beta.6`으로 게시했다. Revert·전용 파일 히스토리·외부 Open·순차 미리보기·충돌 초안 보호와 최신 Presenter 책임 분리 및 완료 재조회 호출 보완을 포함한다.
+
+한영 README의 다운로드·릴리스 링크와 릴리스 기록을 beta.6으로 갱신했다. 기존 설정·최근 저장소 목록 정책과 이전 릴리스는 유지한다. 게시와 업로드만 진행했으며 별도 테스트·UI 실행·하네스·diff check·리소스 대조는 수행하지 않았다.
+릴리스: [v0.1.0-beta.6](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.6) · [Windows x64 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.6/Bough-v0.1.0-beta.6-win-x64.exe)
+
 ## 2026-10-07 최신 beta.6 배포 파일 생성
 
 사용자 요청에 따라 Presenter 책임 분리까지 포함한 소스 `3493e25`로 Windows x64 자체 포함 단일 실행 파일을 다시 생성했다. 생성 중 드러난 충돌 완료 재조회의 이전 메서드 호출 한 건은 `ConflictLoadPresenter.LoadCoreAsync`로 연결했다. 기존 완료 요청의 오류 전달·busy 수명을 유지하며 별도 읽기 재시도나 변경 명령은 추가하지 않았다.
 
-`dotnet publish`가 종료 코드 0으로 완료됐고 `.codex-build/release-v0.1.0-beta.6/Bough-v0.1.0-beta.6-win-x64.exe`를 준비했다. 이번 생성은 요청된 배포 파일 제작이며 별도 빌드 검증·테스트·UI 실행·하네스·diff check·리소스 대조는 수행하지 않았다. README 다운로드는 아직 게시된 beta.5를 유지한다.
+`dotnet publish`가 종료 코드 0으로 완료됐고 `.codex-build/release-v0.1.0-beta.6/Bough-v0.1.0-beta.6-win-x64.exe`를 준비했다. 이번 생성은 요청된 배포 파일 제작이며 별도 빌드 검증·테스트·UI 실행·하네스·diff check·리소스 대조는 수행하지 않았다. 생성 시점에는 README 다운로드가 게시된 beta.5를 가리켰으며 이후 게시 상태는 위 완료 기록을 따른다.
 
-앞서 푸시한 원격 main은 `ddb7e99`까지이며 이번 호출 연결 수정은 로컬 커밋이다. 최신 beta.6 파일은 GitHub에 아직 게시하지 않았다. 배포 노트와 준비 스크립트는 실제 생성 소스 `3493e25`를 가리킨다.
+생성 당시 원격 main은 `ddb7e99`까지였으며 호출 연결 수정과 최신 beta.6 파일은 아직 게시 전이었다. 배포 노트와 준비 스크립트는 실제 생성 소스 `3493e25`를 가리킨다.
+
 ## 2026-10-07 ViewModel 조정 책임 정리
 
 원격 화면 세션의 실행 결과·조회·진행·취소·후속 상태 갱신을 `RemoteOperationExecutionPresenter`로 옮겼다. 기존 `RemoteOperationPresenter`의 FIFO 진입과 메인 완료 callback은 유지하고 세션 실행은 큐에 다시 진입하지 않는다. VM 안의 private `OperationExecutionResult`는 실행 Presenter로 이동했다.

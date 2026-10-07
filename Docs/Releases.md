@@ -1,11 +1,13 @@
 # 릴리스
 
-## v0.1.0-beta.6 — 게시 준비
+## v0.1.0-beta.6
 
-- 생성일: 2026-10-07
+- 생성·배포일: 2026-10-07
 - 소스 커밋: `3493e259c78c47810ebda0204094cf0855dd735a`
 - 대상: Windows x64 자체 포함 단일 `Bough-v0.1.0-beta.6-win-x64.exe`
-- 상태: 실행 파일 생성 완료, 게시에 필요한 커밋·태그 푸시 승인 대기
+- 상태: GitHub 사전 릴리스 게시 완료
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.6)
+- [Windows x64 단일 실행파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.6/Bough-v0.1.0-beta.6-win-x64.exe)
 - 원격 실행·Revert 완료·충돌 파일 조회의 Presenter 분리 및 완료 재조회 호출 보완까지 포함한 최신 파일을 생성했다.
 
 선택 커밋 취소(Revert)를 추가했다. History 메뉴에서 고정 저장소·HEAD·대상을 확인하고 새 커밋을 만들며 병합 커밋은 기준 부모를 직접 선택한다. 기존 저장소 FIFO에서 실행 직전에 상태를 다시 검사한다. 충돌 시 기존 해결 창에서 저장·스테이징한 뒤 계속하거나 영향 확인 후 중단한다. 저장소 재진입에도 진행 상태를 읽으며 미저장 초안을 보호한다.
