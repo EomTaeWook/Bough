@@ -472,6 +472,63 @@ namespace Bough.App.Views
             }
         }
 
+        private async void RevertCommitClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not HistoryViewModel viewModel)
+            {
+                return;
+            }
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
+            if (_menuCommitHash == null)
+            {
+                return;
+            }
+            string hash = _menuCommitHash;
+            string root = _menuRepositoryRoot;
+            GitRepository repository = viewModel.CurrentRepository;
+            try
+            {
+                GitRevertPreview preview = await viewModel.GetRevertPreviewAsync(root, hash);
+                if (ReferenceEquals(DataContext, viewModel) == false)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.CurrentRepository, repository) == false)
+                {
+                    return;
+                }
+                GitRevertChoice choice = await GitActionDialogs.RequestRevertAsync(owner, preview, viewModel.Strings);
+                if (choice == null)
+                {
+                    return;
+                }
+                if (ReferenceEquals(DataContext, viewModel) == false)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.CurrentRepository, repository) == false)
+                {
+                    return;
+                }
+                await viewModel.RevertAsync(root, preview, choice.MainlineParent);
+            }
+            catch (Exception exception)
+            {
+                if (ReferenceEquals(DataContext, viewModel) == false)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.CurrentRepository, repository) == false)
+                {
+                    return;
+                }
+                viewModel.ReportActionError(exception);
+            }
+        }
+
         private async void ResetCommitClicked(object sender, RoutedEventArgs eventArgs)
         {
             if (DataContext is not HistoryViewModel viewModel)
