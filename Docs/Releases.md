@@ -1,5 +1,25 @@
 # 릴리스
 
+## v0.1.0-beta.7
+
+- 생성일: 2026-10-09
+- 소스 커밋: `2be15111c7d3dae917a026d0218d69d1d669c570`
+- 대상: Windows x64 자체 포함 단일 `Bough-v0.1.0-beta.7-win-x64.exe`
+- 상태: 로컬 배포 파일 생성 완료, GitHub 게시·푸시 미실시
+- 생성 위치: `.codex-build/release-v0.1.0-beta.7/Bough-v0.1.0-beta.7-win-x64.exe`
+
+beta.6 이후 수정한 Unstaged 범위 선택 스테이징, Pull의 로컬 변경 보호 중단 안내, 삭제/수정 등 마커 없는 충돌의 파일 전체 비교를 포함한다. 충돌 일괄 처리는 모든 파일의 남은 구간을 적용·저장·스테이징하며 기존 개별 선택을 보존한다. 분리할 수 없는 수동 편집은 제외 이유를 표시하고 파일별 완료·실패·제외 결과를 유지한다. 병합 커밋·Rebase·Revert 계속은 직접 실행한다.
+
+Local Changes·Stash 미리보기 수명과 취소, 작성자 설정 초안, 현재 언어 오류 표시, 참조 변경 완료와 원격 필수 조회 처리를 보완했다. 같은 원격 실행의 진행 막대 중복 표시와 Clone 준비도 정리했다. 충돌 저장과 필요한 완료 조회는 같은 기존 FIFO에서 기다리며 새 범용 완료 계층·큐·재시도 UI는 추가하지 않았다.
+
+아래 `dotnet publish`가 종료 코드 0으로 완료됐다. 출력 `Bough.exe`를 버전이 포함된 파일명으로 복사했으며 .NET 런타임·네이티브 라이브러리·필수 JSON·기본 로그 설정을 포함한다. Git은 별도로 설치하고 기존 사용자 설정·최근 저장소 목록을 유지한다.
+
+```powershell
+dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.7 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.7\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.7\win-x64\
+```
+
+별도 빌드 검증·테스트·Git 재현·UI 실행·캡처·하네스·diff check·리소스 대조·정적 검증은 수행하지 않았다. 배포 파일 생성과 실제 화면·Git 동작 확인을 구분한다. README의 다운로드는 게시된 beta.6을 유지하며 이번 파일의 GitHub 업로드·태그·푸시는 진행하지 않았다.
+
 ## v0.1.0-beta.6
 
 - 생성·배포일: 2026-10-07
