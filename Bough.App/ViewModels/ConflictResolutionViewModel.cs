@@ -76,6 +76,8 @@ namespace Bough.App.ViewModels
         private bool _isRebaseConflict;
         private bool _isRevertInProgress;
         private bool _isRevertConflict;
+        private bool _isResultFileDeleted;
+        private bool _loadedResultFileDeleted;
         private int _activeSaveCount;
 
         public ConflictResolutionViewModel(GitRepositoryService repositoryService, GitOperationQueue operationQueue, ConflictParser parser, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
@@ -136,7 +138,65 @@ namespace Bough.App.ViewModels
         internal GitConflictFile StageConflict { get { return _currentConflict; } }
         public string QueueStatusText { get { return _queueStatusText; } }
         public bool HasQueueStatus { get { return _queueStatusText.Length > 0; } }
-        public bool HasUnsavedConflictEdits { get { return HasDocument && ResultText != _loadedResultText; } }
+        public bool HasUnsavedConflictEdits
+        {
+            get { return HasDocument && (ResultText != _loadedResultText || IsResultFileDeleted != _loadedResultFileDeleted); }
+        }
+        public string OursFileStatusText
+        {
+            get
+            {
+                if (_currentConflict == null)
+                {
+                    return string.Empty;
+                }
+                if (_currentConflict.HasOurs)
+                {
+                    return string.Empty;
+                }
+                return _stringHelper.GetString("WorktreeStatusDeleted");
+            }
+        }
+        public string TheirsFileStatusText
+        {
+            get
+            {
+                if (_currentConflict == null)
+                {
+                    return string.Empty;
+                }
+                if (_currentConflict.HasTheirs)
+                {
+                    return string.Empty;
+                }
+                return _stringHelper.GetString("WorktreeStatusDeleted");
+            }
+        }
+        public string ResultFileStatusText
+        {
+            get
+            {
+                if (IsResultFileDeleted)
+                {
+                    return _stringHelper.GetString("WorktreeStatusDeleted");
+                }
+                return string.Empty;
+            }
+        }
+        public bool IsResultFileDeleted
+        {
+            get { return _isResultFileDeleted; }
+            private set
+            {
+                if (SetProperty(ref _isResultFileDeleted, value) == false)
+                {
+                    return;
+                }
+                SetStageResult(null);
+                OnPropertyChanged(nameof(ResultFileStatusText));
+                OnPropertyChanged(nameof(HasUnsavedConflictEdits));
+            }
+        }
         public string FilesToResolveText { get { return _stringHelper.GetString("FilesToResolve"); } }
         public string WindowTitle { get { return _stringHelper.GetString("ConflictWindowTitle"); } }
         public string DiscardResolutionTitle { get { return _stringHelper.GetString("DiscardResolutionTitle"); } }
@@ -346,6 +406,7 @@ namespace Bough.App.ViewModels
             {
                 if (SetProperty(ref _resultText, value) == true)
                 {
+                    IsResultFileDeleted = false;
                     SetStageResult(null);
                     OnPropertyChanged(nameof(HasUnsavedConflictEdits));
                 }
@@ -451,6 +512,7 @@ namespace Bough.App.ViewModels
             GitRepository repository = _repository;
             int request = ++_loadVersion;
             string draftText = ResultText;
+            bool draftDeleted = IsResultFileDeleted;
             if (HasUnsavedConflictEdits)
             {
                 if (ConfirmFileChangeAsync == null)
@@ -468,6 +530,11 @@ namespace Bough.App.ViewModels
                     return;
                 }
                 if (draftText != ResultText)
+                {
+                    OnPropertyChanged(nameof(SelectedFile));
+                    return;
+                }
+                if (draftDeleted != IsResultFileDeleted)
                 {
                     OnPropertyChanged(nameof(SelectedFile));
                     return;
@@ -672,6 +739,8 @@ namespace Bough.App.ViewModels
         {
             _document = document;
             _currentConflict = conflict;
+            OnPropertyChanged(nameof(OursFileStatusText));
+            OnPropertyChanged(nameof(TheirsFileStatusText));
             _stagePresenter.Invalidate();
             _isRebaseConflict = isRebaseConflict;
             _isRevertConflict = _isRevertInProgress;
@@ -714,7 +783,9 @@ namespace Bough.App.ViewModels
             BaseText = conflict.BaseText;
             _renderedResultText = initialResult;
             ResultText = initialResult;
+            IsResultFileDeleted = document.IsWholeFileConflict && conflict.WorkingFileExists == false;
             _loadedResultText = ResultText;
+            _loadedResultFileDeleted = IsResultFileDeleted;
             OnPropertyChanged(nameof(HasUnsavedConflictEdits));
             HasDocument = true;
             ShowCurrentHunk();
@@ -736,10 +807,32 @@ namespace Bough.App.ViewModels
             _choices[hunk.Id] = choice;
             _renderedResultText = _document.Render(_choices);
             ResultText = _renderedResultText;
+            IsResultFileDeleted = IsDeletedChoice(choice);
             CurrentChoiceText = GetChoiceName(choice);
             int resolvedCount = _choices.Values.Count(selectedChoice => selectedChoice != ResolutionChoiceType.Unresolved);
             SetLocalizedStatusMessage(new LocalizedText("ConflictsSelectedNotice", resolvedCount, _document.Hunks.Count));
             NotifyBatchState();
+        }
+
+        private bool IsDeletedChoice(ResolutionChoiceType choice)
+        {
+            if (_document.IsWholeFileConflict == false)
+            {
+                return false;
+            }
+            switch (choice)
+            {
+                case ResolutionChoiceType.Ours:
+                    return _currentConflict.HasOurs == false;
+                case ResolutionChoiceType.Theirs:
+                    return _currentConflict.HasTheirs == false;
+                case ResolutionChoiceType.Both:
+                    return _currentConflict.HasOurs == false && _currentConflict.HasTheirs == false;
+                case ResolutionChoiceType.Remove:
+                    return _currentConflict.HasOurs == false || _currentConflict.HasTheirs == false;
+                default:
+                    return false;
+            }
         }
 
         public async Task ApplyRemainingAsync(ResolutionChoiceType choice, Func<Task<bool>> confirmReplaceEdits)
@@ -758,6 +851,7 @@ namespace Bough.App.ViewModels
             int loadVersion = _loadVersion;
             int requestVersion = _requestVersion;
             string resultBeforeConfirmation = ResultText;
+            bool deletedBeforeConfirmation = IsResultFileDeleted;
             if (resultBeforeConfirmation != _renderedResultText)
             {
                 bool replaceEdits = await confirmReplaceEdits();
@@ -782,6 +876,10 @@ namespace Bough.App.ViewModels
                     return;
                 }
                 if (ResultText != resultBeforeConfirmation)
+                {
+                    return;
+                }
+                if (IsResultFileDeleted != deletedBeforeConfirmation)
                 {
                     return;
                 }
@@ -812,6 +910,10 @@ namespace Bough.App.ViewModels
             }
             _renderedResultText = document.Render(_choices);
             ResultText = _renderedResultText;
+            if (firstAppliedIndex >= 0)
+            {
+                IsResultFileDeleted = IsDeletedChoice(choice);
+            }
             ShowCurrentHunk();
             int resolvedCount = _choices.Values.Count(selectedChoice => selectedChoice != ResolutionChoiceType.Unresolved);
             SetLocalizedStatusMessage(new LocalizedText("ConflictsSelectedNotice", resolvedCount, document.Hunks.Count));
@@ -871,7 +973,7 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(HasGeneralStatus));
         }
 
-        internal void MarkStageSaved(GitConflictFile conflict, string resultText)
+        internal void MarkStageSaved(GitConflictFile conflict, string resultText, bool deleteFile)
         {
             if (ReferenceEquals(_currentConflict, conflict) == false)
             {
@@ -879,6 +981,7 @@ namespace Bough.App.ViewModels
             }
             // The saved snapshot becomes the baseline; later edits stay in ResultText.
             _loadedResultText = resultText;
+            _loadedResultFileDeleted = deleteFile;
             OnPropertyChanged(nameof(HasUnsavedConflictEdits));
         }
 
@@ -950,6 +1053,8 @@ namespace Bough.App.ViewModels
         {
             _document = null;
             _currentConflict = null;
+            OnPropertyChanged(nameof(OursFileStatusText));
+            OnPropertyChanged(nameof(TheirsFileStatusText));
             _stagePresenter.Invalidate();
             _isRebaseConflict = false;
             _isRevertConflict = false;
@@ -963,7 +1068,9 @@ namespace Bough.App.ViewModels
             TheirsText = string.Empty;
             BaseText = string.Empty;
             ResultText = string.Empty;
+            IsResultFileDeleted = false;
             _loadedResultText = string.Empty;
+            _loadedResultFileDeleted = false;
             _renderedResultText = string.Empty;
             OnPropertyChanged(nameof(HasUnsavedConflictEdits));
             SetLocalizedCurrentChoiceText(new LocalizedText("NoChoiceYet"));

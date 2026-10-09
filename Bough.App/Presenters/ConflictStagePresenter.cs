@@ -58,12 +58,13 @@ namespace Bough.App.Presenters
 
             int request = _requestVersion;
             string resultText = _model.ResultText;
+            bool deleteFile = _model.IsResultFileDeleted;
             string path = conflict.RelativePath;
             ConflictStageResult result;
             try
             {
                 return await _operationQueue.EnqueueAsync(repository.RootPath, $"{operationName} · {path}",
-                    token => UiQueuedOperation.RunAsync(() => ExecuteAsync(repository, conflict, resultText, request, token)));
+                    token => UiQueuedOperation.RunAsync(() => ExecuteAsync(repository, conflict, resultText, deleteFile, request, token)));
             }
             catch (OperationCanceledException exception)
             {
@@ -93,7 +94,7 @@ namespace Bough.App.Presenters
         }
 
         private async Task<ConflictStageResult> ExecuteAsync(GitRepository repository, GitConflictFile conflict,
-            string resultText, int request, CancellationToken cancellationToken)
+            string resultText, bool deleteFile, int request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             bool ownsView = IsCurrent(repository, conflict, request);
@@ -101,7 +102,7 @@ namespace Bough.App.Presenters
             ConflictStageResult result;
             try
             {
-                GitConflictStageResult stage = await _repositoryService.SaveAndStageAsync(repository, conflict, resultText, cancellationToken);
+                GitConflictStageResult stage = await _repositoryService.SaveAndStageAsync(repository, conflict, resultText, deleteFile, cancellationToken);
                 result = CreateResult(repository, conflict.RelativePath, stage);
             }
             catch (OperationCanceledException exception)
@@ -122,7 +123,7 @@ namespace Bough.App.Presenters
             }
             if (result.Succeeded)
             {
-                _model.MarkStageSaved(conflict, resultText);
+                _model.MarkStageSaved(conflict, resultText, deleteFile);
                 try
                 {
                     await _completion.CompleteConflictStageAsync(repository, conflict.RelativePath);

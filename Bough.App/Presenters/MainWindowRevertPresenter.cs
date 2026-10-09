@@ -143,11 +143,12 @@ namespace Bough.App.Presenters
             {
                 return null;
             }
+            bool confirmedDeletion = _model.Conflicts.IsResultFileDeleted;
             try
             {
                 GitRevertResult result = await _actions.AbortRevertAsync(repository, state,
                     _strings.GetString("MainRevertAbortAction"),
-                    completion => ApplyRevertResultAsync(repository, completion, request, confirmedPath, confirmedDraft));
+                    completion => ApplyRevertResultAsync(repository, completion, request, confirmedPath, confirmedDraft, confirmedDeletion));
                 _model.ReportRevertResult(repository, result, request, state.TargetHash);
                 return result;
             }
@@ -163,7 +164,7 @@ namespace Bough.App.Presenters
         }
 
         private async Task ApplyRevertResultAsync(GitRepository original, GitRevertResult result, int request,
-            string confirmedPath, string confirmedDraft)
+            string confirmedPath, string confirmedDraft, bool confirmedDeletion = false)
         {
             if (_pathComparer.Equals(result.RepositoryRoot, original.RootPath) == false)
             {
@@ -209,7 +210,10 @@ namespace Bough.App.Presenters
                         {
                             if (_model.Conflicts.ResultText == confirmedDraft)
                             {
-                                _model.Conflicts.DiscardClosedWindowEdits();
+                                if (_model.Conflicts.IsResultFileDeleted == confirmedDeletion)
+                                {
+                                    _model.Conflicts.DiscardClosedWindowEdits();
+                                }
                             }
                         }
                     }

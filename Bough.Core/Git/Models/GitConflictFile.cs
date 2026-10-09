@@ -2,7 +2,8 @@ namespace Bough.Core.Git.Models
 {
     public class GitConflictFile
     {
-        public GitConflictFile(string relativePath, string workingText, string baseText, string oursText, string theirsText, string oursSource, string theirsSource, string originalContentHash, bool hasUtf8Bom)
+        public GitConflictFile(string relativePath, string workingText, string baseText, string oursText, string theirsText, string oursSource, string theirsSource, string originalContentHash, bool hasUtf8Bom,
+            bool hasOurs = true, bool hasTheirs = true, bool workingFileExists = true)
         {
             RelativePath = relativePath;
             WorkingText = workingText;
@@ -13,6 +14,9 @@ namespace Bough.Core.Git.Models
             TheirsSource = theirsSource;
             OriginalContentHash = originalContentHash;
             HasUtf8Bom = hasUtf8Bom;
+            HasOurs = hasOurs;
+            HasTheirs = hasTheirs;
+            WorkingFileExists = workingFileExists;
         }
 
         public string RelativePath { get; }
@@ -32,5 +36,11 @@ namespace Bough.Core.Git.Models
         public string OriginalContentHash { get; }
 
         public bool HasUtf8Bom { get; }
+
+        public bool HasOurs { get; }
+
+        public bool HasTheirs { get; }
+
+        public bool WorkingFileExists { get; }
     }
 }

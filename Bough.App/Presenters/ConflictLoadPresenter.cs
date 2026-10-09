@@ -67,6 +67,7 @@ namespace Bough.App.Presenters
             GitRepository repository = _model.CurrentRepository;
             int loadVersion = ++_model.ConflictLoadVersion;
             string draftText = _model.ResultText;
+            bool draftDeleted = _model.IsResultFileDeleted;
             bool isRebaseConflict = await _repositoryService.IsRebaseInProgressAsync(repository);
             if (loadVersion != _model.ConflictLoadVersion)
             {
@@ -118,14 +119,15 @@ namespace Bough.App.Presenters
             {
                 return;
             }
-            if (conflict.WorkingText.Contains('\0') == true)
+            if (conflict.WorkingText.Contains('\0') || conflict.OursText.Contains('\0') || conflict.TheirsText.Contains('\0'))
             {
                 throw new GitException("ConflictBinaryFileCannotEdit", null, file.RelativePath);
             }
 
             (ConflictDocument Document, string InitialResult) parsed = await Task.Run(() =>
             {
-                ConflictDocument document = _parser.Parse(conflict.WorkingText, currentChangeLabel, incomingChangeLabel);
+                ConflictDocument document = _parser.ParseFile(conflict.WorkingText, currentChangeLabel, conflict.OursText,
+                    incomingChangeLabel, conflict.TheirsText, conflict.BaseText);
                 string initialResult = document.Render(new Dictionary<int, ResolutionChoiceType>());
                 return (document, initialResult);
             });
@@ -145,11 +147,10 @@ namespace Bough.App.Presenters
             {
                 return;
             }
-            if (parsed.Document.Hunks.Count == 0)
+            if (draftDeleted != _model.IsResultFileDeleted)
             {
-                throw new Bough.Core.Conflicts.Exceptions.ConflictParseException("ConflictTextMarkersMissing", file.RelativePath);
+                return;
             }
-
             _model.ApplyConflictDocument(conflict, parsed.Document, parsed.InitialResult,
                 isRebaseConflict, currentSourceLabel, incomingSourceLabel, incomingIndexSource);
         }

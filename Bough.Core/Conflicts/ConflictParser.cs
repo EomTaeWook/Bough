@@ -10,6 +10,20 @@ namespace Bough.Core.Conflicts
 {
     public class ConflictParser
     {
+        public ConflictDocument ParseFile(string workingText, string currentChangeLabel, string oursText,
+            string incomingChangeLabel, string theirsText, string baseText)
+        {
+            ConflictDocument document = Parse(workingText, currentChangeLabel, incomingChangeLabel);
+            if (document.Hunks.Count > 0)
+            {
+                return document;
+            }
+
+            ConflictHunk hunk = new(0, 1, currentChangeLabel, oursText, baseText.Length > 0,
+                string.Empty, baseText, incomingChangeLabel, theirsText, workingText);
+            return new ConflictDocument(new ConflictSection[] { hunk }, true);
+        }
+
         public ConflictDocument Parse(string text, string currentChangeLabel, string incomingChangeLabel)
         {
             ArgumentNullException.ThrowIfNull(text);

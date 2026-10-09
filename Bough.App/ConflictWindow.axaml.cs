@@ -48,6 +48,7 @@ namespace Bough.App
                 }
 
                 string draftText = _viewModel.ResultText;
+                bool draftDeleted = _viewModel.IsResultFileDeleted;
                 _confirmationPending = true;
                 bool discard;
                 try
@@ -62,6 +63,10 @@ namespace Bough.App
                     _confirmationPending = false;
                 }
                 if (draftText != _viewModel.ResultText)
+                {
+                    return;
+                }
+                if (draftDeleted != _viewModel.IsResultFileDeleted)
                 {
                     return;
                 }
