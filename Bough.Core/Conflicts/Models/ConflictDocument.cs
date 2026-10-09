@@ -15,13 +15,16 @@ namespace Bough.Core.Conflicts.Models
         private readonly IReadOnlyList<ConflictSection> _sectionView;
         private readonly IReadOnlyList<ConflictHunk> _hunkView;
 
-        public ConflictDocument(IEnumerable<ConflictSection> sections)
+        public ConflictDocument(IEnumerable<ConflictSection> sections, bool isWholeFileConflict = false)
         {
             _sections = [.. sections];
             _hunks = [.. _sections.OfType<ConflictHunk>()];
             _sectionView = new ReadOnlyQueueView<ConflictSection>(_sections);
             _hunkView = new ReadOnlyQueueView<ConflictHunk>(_hunks);
+            IsWholeFileConflict = isWholeFileConflict;
         }
+
+        public bool IsWholeFileConflict { get; }
 
         public IReadOnlyList<ConflictSection> Sections
         {

@@ -144,7 +144,10 @@
             <Grid RowDefinitions="60,Auto">
               <Border Grid.Row="0" Background="{DynamicResource BoughBrushDiffAddedSurface}" CornerRadius="9,9,0,0" Padding="12,8">
                 <StackPanel Spacing="4">
-                  <TextBlock Text="{Binding CurrentChangeLabel}" Foreground="{DynamicResource BoughBrushDiffAdded}" FontWeight="SemiBold" />
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding CurrentChangeLabel}" Foreground="{DynamicResource BoughBrushDiffAdded}" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding OursFileStatusText}" Foreground="{DynamicResource BoughBrushError}" FontWeight="SemiBold" />
+                  </StackPanel>
                   <TextBlock Text="{Binding OursSource}" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12"
                              TextTrimming="CharacterEllipsis" />
                 </StackPanel>
@@ -160,7 +163,10 @@
             <Grid RowDefinitions="60,Auto">
               <Border Grid.Row="0" Background="{DynamicResource BoughBrushDiffHunkSurface}" CornerRadius="9,9,0,0" Padding="12,8">
                 <StackPanel Spacing="4">
-                  <TextBlock Text="{Binding IncomingChangeLabel}" Foreground="{DynamicResource BoughBrushDiffHunk}" FontWeight="SemiBold" />
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding IncomingChangeLabel}" Foreground="{DynamicResource BoughBrushDiffHunk}" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding TheirsFileStatusText}" Foreground="{DynamicResource BoughBrushError}" FontWeight="SemiBold" />
+                  </StackPanel>
                   <TextBlock Text="{Binding TheirsSource}" Foreground="{DynamicResource BoughBrushDiffHunk}" FontSize="12"
                              TextTrimming="CharacterEllipsis" />
                 </StackPanel>
@@ -194,6 +200,8 @@
                   <TextBlock Text="{Binding FinalFileText}" FontSize="14" FontWeight="SemiBold" />
                   <TextBlock Text="{Binding ConflictSelectionSummaryText}" FontSize="12"
                              Foreground="{DynamicResource BoughBrushAccent}" VerticalAlignment="Center" />
+                  <TextBlock Text="{Binding ResultFileStatusText}" Foreground="{DynamicResource BoughBrushError}"
+                             FontWeight="SemiBold" VerticalAlignment="Center" />
                 </StackPanel>
                 <TextBlock Text="{Binding FinalFileHintText}"
                            Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" TextWrapping="Wrap" />
@@ -202,7 +210,7 @@
                       IsEnabled="{Binding CanSaveAndStage}" Click="SaveAndStageClicked" VerticalAlignment="Center" MinWidth="80" />
             </Grid>
             <Border Grid.Row="1" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="8">
-              <TextBox Classes="code" Text="{Binding ResultText, Mode=TwoWay}"
+              <TextBox Classes="code" Text="{Binding ResultText, Mode=TwoWay}" IsReadOnly="{Binding IsResultFileDeleted}"
                        AcceptsReturn="True" TextWrapping="NoWrap"
                        ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" />
             </Border>

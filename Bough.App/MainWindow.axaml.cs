@@ -128,6 +128,7 @@ namespace Bough.App
                 eventArgs.Cancel = true;
                 ConflictWindow window = _conflictWindow;
                 string draftText = _viewModel.Conflicts.ResultText;
+                bool draftDeleted = _viewModel.Conflicts.IsResultFileDeleted;
                 _activationSuppressionDepth++;
                 bool discard;
                 try
@@ -147,6 +148,10 @@ namespace Bough.App
                     return;
                 }
                 if (draftText != _viewModel.Conflicts.ResultText)
+                {
+                    return;
+                }
+                if (draftDeleted != _viewModel.Conflicts.IsResultFileDeleted)
                 {
                     return;
                 }
@@ -406,6 +411,7 @@ namespace Bough.App
             ConflictWindow window = _conflictWindow;
             string path = _viewModel.Conflicts.CurrentFilePath;
             string draft = _viewModel.Conflicts.ResultText;
+            bool draftDeleted = _viewModel.Conflicts.IsResultFileDeleted;
             bool confirmed;
             _revertAbortConfirmationPending = true;
             _activationSuppressionDepth++;
@@ -447,6 +453,10 @@ namespace Bough.App
                 return;
             }
             if (_viewModel.Conflicts.ResultText != draft)
+            {
+                return;
+            }
+            if (_viewModel.Conflicts.IsResultFileDeleted != draftDeleted)
             {
                 return;
             }
@@ -515,6 +525,7 @@ namespace Bough.App
             if (_viewModel.Conflicts.HasUnsavedConflictEdits == true)
             {
                 string draftText = _viewModel.Conflicts.ResultText;
+                bool draftDeleted = _viewModel.Conflicts.IsResultFileDeleted;
                 _activationSuppressionDepth++;
                 bool discard;
                 try
@@ -534,6 +545,10 @@ namespace Bough.App
                     return false;
                 }
                 if (draftText != _viewModel.Conflicts.ResultText)
+                {
+                    return false;
+                }
+                if (draftDeleted != _viewModel.Conflicts.IsResultFileDeleted)
                 {
                     return false;
                 }

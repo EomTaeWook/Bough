@@ -80,7 +80,9 @@ namespace Bough.Core.Git
             string currentSourceLabel, string incomingChangeLabel, string incomingIndexStageLabel, CancellationToken cancellationToken = default)
         {
             string fullPath = ResolvePath(repository.RootPath, relativePath);
-            byte[] originalBytes = await File.ReadAllBytesAsync(fullPath, cancellationToken);
+            byte[] originalBytes = await ReadConflictBytesAsync(fullPath, cancellationToken);
+            bool workingFileExists = originalBytes != null;
+            originalBytes ??= Array.Empty<byte>();
             bool hasUtf8Bom = originalBytes.Length >= 3 &&
                 originalBytes[0] == 0xEF &&
                 originalBytes[1] == 0xBB &&
@@ -101,13 +103,33 @@ namespace Bough.Core.Git
             {
                 throw new GitException("RepositoryConflictInvalidUtf8", exception, relativePath);
             }
-            string baseText = await ReadStageAsync(repository, 1, relativePath, cancellationToken);
-            string oursText = await ReadStageAsync(repository, 2, relativePath, cancellationToken);
-            string theirsText = await ReadStageAsync(repository, 3, relativePath, cancellationToken);
+            GitCommandResult stageResult = await _runner.RunAsync(repository.RootPath,
+                new string[] { "ls-files", "--unmerged", "-z", "--", relativePath }, false, cancellationToken);
+            HashSet<string> stages = stageResult.Output.Split('\0', StringSplitOptions.RemoveEmptyEntries)
+                .Select(entry => entry[..entry.IndexOf('\t')].Split(' ')[2])
+                .ToHashSet(StringComparer.Ordinal);
+            bool hasOurs = stages.Contains("2");
+            bool hasTheirs = stages.Contains("3");
+            string baseText = string.Empty;
+            string oursText = string.Empty;
+            string theirsText = string.Empty;
+            if (stages.Contains("1"))
+            {
+                baseText = await ReadStageAsync(repository, 1, relativePath, cancellationToken);
+            }
+            if (hasOurs)
+            {
+                oursText = await ReadStageAsync(repository, 2, relativePath, cancellationToken);
+            }
+            if (hasTheirs)
+            {
+                theirsText = await ReadStageAsync(repository, 3, relativePath, cancellationToken);
+            }
             string oursSource = await DescribeRevisionAsync(repository, "HEAD", currentSourceLabel, cancellationToken);
             string theirsSource = await DescribeIncomingRevisionAsync(repository, incomingChangeLabel, incomingIndexStageLabel, cancellationToken);
 
-            return new GitConflictFile(relativePath, workingText, baseText, oursText, theirsText, oursSource, theirsSource, Convert.ToHexString(SHA256.HashData(originalBytes)), hasUtf8Bom);
+            return new GitConflictFile(relativePath, workingText, baseText, oursText, theirsText, oursSource, theirsSource,
+                Convert.ToHexString(SHA256.HashData(originalBytes)), hasUtf8Bom, hasOurs, hasTheirs, workingFileExists);
         }
 
         public async Task<bool> IsRebaseInProgressAsync(GitRepository repository, CancellationToken cancellationToken = default)
@@ -153,8 +175,14 @@ namespace Bough.Core.Git
             return await _runner.RunAsync(current.RootPath, _continueRebaseArguments, true, cancellationToken);
         }
 
-        public async Task<GitConflictStageResult> SaveAndStageAsync(GitRepository repository, GitConflictFile conflict,
+        public Task<GitConflictStageResult> SaveAndStageAsync(GitRepository repository, GitConflictFile conflict,
             string resolvedText, CancellationToken cancellationToken = default)
+        {
+            return SaveAndStageAsync(repository, conflict, resolvedText, false, cancellationToken);
+        }
+
+        public async Task<GitConflictStageResult> SaveAndStageAsync(GitRepository repository, GitConflictFile conflict,
+            string resolvedText, bool deleteFile, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             IReadOnlyList<string> conflictPaths = await GetConflictPathsAsync(repository, cancellationToken);
@@ -170,21 +198,7 @@ namespace Bough.Core.Git
             }
 
             string fullPath = ResolvePath(repository.RootPath, conflict.RelativePath);
-            byte[] currentBytes;
-            try
-            {
-                currentBytes = await File.ReadAllBytesAsync(fullPath, cancellationToken);
-            }
-            catch (FileNotFoundException exception)
-            {
-                return new GitConflictStageResult(GitConflictStageOutcome.FileChanged, exception);
-            }
-            catch (DirectoryNotFoundException exception)
-            {
-                return new GitConflictStageResult(GitConflictStageOutcome.FileChanged, exception);
-            }
-            string currentHash = Convert.ToHexString(SHA256.HashData(currentBytes));
-            if (currentHash != conflict.OriginalContentHash)
+            if (await IsConflictFileUnchangedAsync(fullPath, conflict, cancellationToken) == false)
             {
                 return new GitConflictStageResult(GitConflictStageOutcome.FileChanged);
             }
@@ -204,26 +218,21 @@ namespace Bough.Core.Git
                 return new GitConflictStageResult(GitConflictStageOutcome.UnresolvedMarkers);
             }
 
-            try
-            {
-                currentBytes = await File.ReadAllBytesAsync(fullPath, cancellationToken);
-            }
-            catch (FileNotFoundException exception)
-            {
-                return new GitConflictStageResult(GitConflictStageOutcome.FileChanged, exception);
-            }
-            catch (DirectoryNotFoundException exception)
-            {
-                return new GitConflictStageResult(GitConflictStageOutcome.FileChanged, exception);
-            }
-            currentHash = Convert.ToHexString(SHA256.HashData(currentBytes));
-            if (currentHash != conflict.OriginalContentHash)
+            if (await IsConflictFileUnchangedAsync(fullPath, conflict, cancellationToken) == false)
             {
                 return new GitConflictStageResult(GitConflictStageOutcome.FileChanged);
             }
 
-            UTF8Encoding encoding = new(conflict.HasUtf8Bom, true);
-            await File.WriteAllTextAsync(fullPath, resolvedText, encoding, cancellationToken);
+            if (deleteFile)
+            {
+                File.Delete(fullPath);
+            }
+            else
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
+                UTF8Encoding encoding = new(conflict.HasUtf8Bom, true);
+                await File.WriteAllTextAsync(fullPath, resolvedText, encoding, cancellationToken);
+            }
             await _runner.RunAsync(repository.RootPath, new string[] { "add", "--", conflict.RelativePath }, false, cancellationToken);
             return new GitConflictStageResult(GitConflictStageOutcome.Succeeded);
         }
@@ -231,14 +240,39 @@ namespace Bough.Core.Git
         private async Task<string> ReadStageAsync(GitRepository repository, int stage, string relativePath, CancellationToken cancellationToken)
         {
             string gitPath = relativePath.Replace('\\', '/');
-            GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "show", $":{stage}:{gitPath}" }, true, cancellationToken);
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "show", $":{stage}:{gitPath}" }, false, cancellationToken);
+            return result.Output;
+        }
 
-            if (result.ExitCode == 0)
+        private static async Task<byte[]> ReadConflictBytesAsync(string fullPath, CancellationToken cancellationToken)
+        {
+            try
             {
-                return result.Output;
+                return await File.ReadAllBytesAsync(fullPath, cancellationToken);
             }
+            catch (FileNotFoundException)
+            {
+                return null;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return null;
+            }
+        }
 
-            return string.Empty;
+        private static async Task<bool> IsConflictFileUnchangedAsync(string fullPath, GitConflictFile conflict,
+            CancellationToken cancellationToken)
+        {
+            byte[] currentBytes = await ReadConflictBytesAsync(fullPath, cancellationToken);
+            if (currentBytes == null)
+            {
+                return conflict.WorkingFileExists == false;
+            }
+            if (conflict.WorkingFileExists == false)
+            {
+                return false;
+            }
+            return Convert.ToHexString(SHA256.HashData(currentBytes)) == conflict.OriginalContentHash;
         }
 
         private async Task<string> DescribeIncomingRevisionAsync(GitRepository repository, string incomingChangeLabel,
