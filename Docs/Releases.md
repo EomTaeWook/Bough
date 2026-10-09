@@ -5,7 +5,7 @@
 - 생성일: 2026-10-09
 - 소스 커밋: `2be15111c7d3dae917a026d0218d69d1d669c570`
 - 대상: Windows x64 자체 포함 단일 `Bough-v0.1.0-beta.7-win-x64.exe`
-- 상태: 로컬 배포 파일 생성 완료, GitHub 게시·푸시 미실시
+- 상태: 로컬 배포 파일 생성·소스 main 푸시 완료, GitHub 릴리스 미게시
 - 생성 위치: `.codex-build/release-v0.1.0-beta.7/Bough-v0.1.0-beta.7-win-x64.exe`
 
 beta.6 이후 수정한 Unstaged 범위 선택 스테이징, Pull의 로컬 변경 보호 중단 안내, 삭제/수정 등 마커 없는 충돌의 파일 전체 비교를 포함한다. 충돌 일괄 처리는 모든 파일의 남은 구간을 적용·저장·스테이징하며 기존 개별 선택을 보존한다. 분리할 수 없는 수동 편집은 제외 이유를 표시하고 파일별 완료·실패·제외 결과를 유지한다. 병합 커밋·Rebase·Revert 계속은 직접 실행한다.
@@ -18,7 +18,7 @@ Local Changes·Stash 미리보기 수명과 취소, 작성자 설정 초안, 현
 dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.7 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.7\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.7\win-x64\
 ```
 
-별도 빌드 검증·테스트·Git 재현·UI 실행·캡처·하네스·diff check·리소스 대조·정적 검증은 수행하지 않았다. 배포 파일 생성과 실제 화면·Git 동작 확인을 구분한다. README의 다운로드는 게시된 beta.6을 유지하며 이번 파일의 GitHub 업로드·태그·푸시는 진행하지 않았다.
+별도 빌드 검증·테스트·Git 재현·UI 실행·캡처·하네스·diff check·리소스 대조·정적 검증은 수행하지 않았다. 배포 파일 생성과 실제 화면·Git 동작 확인을 구분한다. 소스는 후속 사용자 요청으로 main에 푸시했다. README의 다운로드는 게시된 beta.6을 유지하며 이번 실행 파일의 GitHub 릴리스 업로드·태그 생성은 진행하지 않았다.
 
 ## v0.1.0-beta.6
 
