@@ -1,5 +1,27 @@
 # 릴리스
 
+## v0.1.0-beta.7 게시 완료
+
+- 생성·배포일: 2026-10-09
+- 소스 커밋: `57051ce8fd32c0a33869a3f73f19d2f8cdba3587`
+- 대상: Windows x64 자체 포함 단일 `Bough-v0.1.0-beta.7-win-x64.exe`
+- 상태: GitHub 사전 릴리스 게시 완료
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.7)
+- [Windows x64 단일 실행 파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.7/Bough-v0.1.0-beta.7-win-x64.exe)
+- 생성 위치: `.codex-build/release-v0.1.0-beta.7-current/Bough-v0.1.0-beta.7-win-x64.exe`
+
+GitHub의 이전 게시본 beta.6 다음 버전으로 사용자가 beta.7을 지정했다. 현재 소스에서 실제 버전을 beta.7로 지정해 새로 생성했으며 기존 로컬 beta.7·beta.8 파일은 보관했다. 기존 파일의 이름만 바꾸거나 이전 beta.7 파일을 업로드하지 않았다.
+
+설정의 정식 릴리스 앱 업데이트와 누적 수정이 포함된다. 앱 내부 업데이트는 공식 정식 릴리스만 후보로 사용하며 이 베타·사전 릴리스·초안은 제외한다. Unstaged 범위 선택 스테이징, Pull 보호 중단 안내, 마커 없는 삭제/수정 충돌, 기존 선택을 보존하는 전체 충돌 파일 일괄 적용·저장·스테이징과 미리보기·설정·참조·원격 완료 처리 보완을 함께 포함한다.
+
+아래 요청된 `dotnet publish`가 종료 코드 0으로 완료됐다. .NET 런타임·네이티브 라이브러리·필수 데이터·기본 로그 설정을 단일 exe에 포함하며 Git은 별도로 설치한다. 기존 사용자 설정·저장소 목록·앱 프로세스는 변경하지 않았다.
+
+```powershell
+dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.7 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.7-current\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.7-current\win-x64\
+```
+
+소스 커밋을 가리키는 beta.7 태그를 원격에 푸시하고 exe를 사전 릴리스로 업로드·게시했다. 이번 요청에서는 main 브랜치를 푸시하지 않았으며 한영 README와 게시 기록은 로컬 커밋으로 보관한다. 별도 테스트·UI 실행·업데이트 설치/복원·Git 재현·하네스·정적 검증·diff check·리소스/해시/출력 대조는 수행하지 않았다.
+
 ## v0.1.0-beta.8
 
 - 생성일: 2026-10-09
@@ -18,9 +40,9 @@ beta.7의 범위 스테이징·Pull 보호 중단 안내·삭제/수정 충돌�
 dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.8 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.8\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.8\win-x64\
 ```
 
-이번 요청은 로컬 베타 배포 파일 생성이다. 소스 푸시·태그 생성·GitHub 업로드는 하지 않았으며 README의 게시된 beta.6 다운로드 링크를 유지한다.
+이 단계는 로컬 베타 배포 파일 생성이었다. 당시 소스 푸시·태그 생성·GitHub 업로드는 하지 않았으며 README의 게시된 beta.6 다운로드 링크를 유지했다. 이후 사용자가 게시 버전을 beta.7로 지정해 현재 소스로 다시 생성·게시했으며 이 로컬 beta.8 파일은 미게시 상태로 보관한다.
 
-## v0.1.0-beta.7
+## v0.1.0-beta.7 최초 로컬 생성 (미게시)
 
 - 생성일: 2026-10-09
 - 소스 커밋: `2be15111c7d3dae917a026d0218d69d1d669c570`
@@ -38,7 +60,7 @@ Local Changes·Stash 미리보기 수명과 취소, 작성자 설정 초안, 현
 dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.7 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.7\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.7\win-x64\
 ```
 
-별도 빌드 검증·테스트·Git 재현·UI 실행·캡처·하네스·diff check·리소스 대조·정적 검증은 수행하지 않았다. 배포 파일 생성과 실제 화면·Git 동작 확인을 구분한다. 소스는 후속 사용자 요청으로 main에 푸시했다. README의 다운로드는 게시된 beta.6을 유지하며 이번 실행 파일의 GitHub 릴리스 업로드·태그 생성은 진행하지 않았다.
+별도 빌드 검증·테스트·Git 재현·UI 실행·캡처·하네스·diff check·리소스 대조·정적 검증은 수행하지 않았다. 배포 파일 생성과 실제 화면·Git 동작 확인을 구분한다. 이 최초 생성의 소스는 후속 사용자 요청으로 main에 푸시했다. 당시 README의 다운로드는 beta.6을 유지했으며 이 최초 실행 파일은 게시하지 않았다. 위 beta.7 게시 기록의 새 파일에는 앱 업데이트까지 포함된다.
 
 ## v0.1.0-beta.6
 

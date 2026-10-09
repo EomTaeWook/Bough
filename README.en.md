@@ -8,7 +8,7 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-[Download Bough v0.1.0-beta.6 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.6/Bough-v0.1.0-beta.6-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.6)
+[Download Bough v0.1.0-beta.7 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.7/Bough-v0.1.0-beta.7-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.7)
 
 Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. Windows x64 is the current release platform. Running on macOS has not yet been verified.
 
@@ -70,7 +70,7 @@ Bough is designed to show the source of each conflicting change and preview the 
 
 Features and workflows are still being refined.
 
-Application updating is implemented in the latest source and is not included in the beta.6 download above. See [implementation status](Docs/CurrentStatus.md) for execution checks and release generation status.
+Application updating is included in the beta.7 download above. In-app update candidates are limited to stable releases; actual download, replacement, and recovery have not been exercised. See [implementation status](Docs/CurrentStatus.md) for implementation and release status.
 
 Additional screens and workflows are described in the [design notes](Design/README.md) (Korean).
 
@@ -106,7 +106,7 @@ dotnet run --project Bough.App/Bough.App.csproj
 
 ### Work with repositories
 
-Bough adds and opens the repository when cloning finishes. The list's remove button appears on hover or keyboard focus. For individual conflict resolution, choose sections, inspect or edit the final file, and select **Save and Stage**. In the latest source, batch actions apply one choice to all unselected sections across conflicted files, then save and stage them immediately. Existing choices are preserved; inseparable manual edits are excluded with a reason. Merge commits, rebase continue, and revert continue remain explicit actions. Text conflict resolution currently targets UTF-8 files. The beta.6 download above does not include this batch saving change.
+Bough adds and opens the repository when cloning finishes. The list's remove button appears on hover or keyboard focus. For individual conflict resolution, choose sections, inspect or edit the final file, and select **Save and Stage**. In beta.7, batch actions apply one choice to all unselected sections across conflicted files, then save and stage them immediately. Existing choices are preserved; inseparable manual edits are excluded with a reason. Merge commits, rebase continue, and revert continue remain explicit actions. Text conflict resolution currently targets UTF-8 files.
 
 When cloning fails, Bough shows the cause identified from Git diagnostics, such as authentication, repository access, connection, storage space, or file writing. Destination status is reported separately. If the folder is empty, you can retry using the same path after resolving the clone error. When the cause cannot be identified, Bough shows a general failure message and the exit code.
 
