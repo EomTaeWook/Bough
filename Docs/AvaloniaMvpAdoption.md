@@ -11,12 +11,13 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 | 프로젝트·영역 | 현재 책임 |
 | --- | --- |
 | `Bough.Core` | Git 프로세스 실행, 저장소·작업 트리·참조·원격·복제 서비스, 저장소별 작업 큐와 충돌 파싱. Avalonia와 표시 언어에 의존하지 않는다. |
+| `Bough.Core/Updates` | 공식 정식 릴리스 조회·버전 비교·다운로드·해시 확인, 정상 종료 승인 뒤 설치·복원·재실행과 해당 요청 파일 정리. UI·Git 인증 계정과 별도 책임이다. |
 | `Bough.Core/Interfaces` | `ITerminalLauncher`의 공통 실행 계약. OS 구현이나 앱의 화면 계약을 넣지 않는다. |
 | `Bough.App/Presenters` | 기능별 요청 조정, 큐 진입, 실행 시점의 조건 검사와 결과 전달. |
 | `Bough.App/ViewModels` | 화면의 바인딩 상태·선택·로딩·명령 연결과 남아 있는 화면 조정, 공통 `ViewModelBase`. 기존 일부 표시 문구 생성도 여기 남아 있다. |
 | `Bough.App/ViewModels/Models` | 커밋·파일·참조·저장소·계정 목록 항목과 화면 결과 모델. 항목의 속성 변경 알림도 여기 둔다. |
 | `Bough.App/Commands` | `RelayCommand`, `AsyncRelayCommand`, `QueuedAsyncRelayCommand`의 `ICommand` 어댑터와 활성화 알림. |
-| `Bough.App/Interfaces` | `IStashMutationCompletion`, `IConflictStageCompletion`의 화면 간 완료·갱신 계약. |
+| `Bough.App/Interfaces` | `IStashMutationCompletion`, `IConflictStageCompletion`의 화면 간 완료·갱신 계약과 `IApplicationUpdateRestart`의 명시 업데이트 정상 종료 계약. |
 | `Bough.App/Services`, `Threading` | `HistoryGraphBuilder`의 그래프 행 계산과 `UiQueuedOperation`의 UI 스레드 연결. Git 실행·FIFO 큐와 별도 책임이다. |
 | `Bough.App/Composition` | `MainWindowChildren`의 자식 화면 구성과 의존성 연결. |
 | `Bough.App/Persistence` | `RepositoryListStore`·`RepositoryListState`의 최근 저장소 저장·읽기와 `LanguageSettingsStore`의 앱 언어 저장·읽기. |
@@ -60,6 +61,14 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 `ConflictStagePresenter`는 고정 본문 저장, 저장 기준 적용, 필요한 완료 또는 stale 조회와 현재 결과 적용까지 같은 FIFO callback에서 기다린다. `MainWindowRemoteCompletionPresenter`는 메인의 필수 참조·활성 History·작업 트리·진행 상태 조회를 기다리고 현재 원본 조회 오류를 기존 팝업 완료 callback에 전달한다. 기존 화면 조회의 기본 표시 동작은 유지하며 `propagateReadError`를 사용하는 완료 호출만 이번 오류를 받는다. 원격 팝업은 기존 `RefreshFailed` 상태로 Git 성공과 후속 조회 실패를 구분하고 성공 자동 닫기를 막는다. 별도의 공통 완료 결과나 재시도 UI는 추가하지 않는다.
 
 작성자 조회는 필드별 편집 버전으로 조회 중 초안을 보호하고 작성자 저장 뒤의 조회는 다른 작성자 초안을 교체하지 않는다. Local Changes·Stash의 오류 원본은 기존 `LocalizedText`로 보관하며 `GitSettingsDisplayResult`도 최신 실패를 원본 예외로 유지한다. View가 현재 언어로 표시하고 기존 문자열 바인딩은 유지한다. Git 변경 후 저장소 읽기에 실패했을 때는 기존 오류 코드와 dirty 통지를 사용하며 이전 저장소 객체를 새 결과로 채택하지 않는다.
+
+## 정식 릴리스 앱 업데이트
+
+`AppUpdatePresenter`는 설정의 사용자 조회·다운로드·취소·재시작 입력과 요청 수명, 진행·코드형 오류 적용을 조정한다. `AppUpdateViewModel`은 현재·최신 버전, byte 진행과 원본 `LocalizedText` 상태를 보관하며 `AppUpdateView`가 언어·표시·브라우저 열기를 연결한다. 부모 `GitSettingsViewModel`에는 앱 업데이트 상태를 연결하고 HTTP·교체 구현을 넣지 않는다.
+
+`ApplicationUpdateService`는 고정한 공식 정식 릴리스 조회·비교와 다운로드·SHA-256 확인을 수행하고 검증된 요청 자원만 반환한다. `ApplicationUpdateRestartPresenter`는 실제 전체 Git 큐와 앱 작업을 확인한 뒤 기존 Main 정상 닫기·초안 확인을 소비한다. `ApplicationUpdateInstaller`가 준비 사본과 임시 보조 프로세스, UI 수명 종료 후 승인·실제 원래 프로세스 종료 뒤 교체·복원을 맡는다. `App.axaml.cs`는 서비스를 주입하고 `Program`은 정상 시작과 전용 helper 진입을 연결한다.
+
+설정 View가 분리돼도 재시작 await 중 다운로드를 먼저 삭제하지 않는다. 정상 닫기 수락 전에는 UI가 원래 다운로드를 소유하며 수락 뒤 설치 담당으로 넘긴다. 거절·실패로 끝난 요청은 현재 화면에서 재입력할 수 있고 끝난 화면은 await 종료 후 자기 자원만 정리한다. HTTP 읽기는 Git 변경 FIFO에 넣지 않으며 별도 영구 updater·범용 완료 계층·작업 큐를 추가하지 않는다. 구현과 실행 확인 상태는 [구현 현황](CurrentStatus.md), 기능 계약은 [앱 업데이트](../Design/ApplicationUpdate.md)를 따른다.
 
 ## 터미널 연결
 

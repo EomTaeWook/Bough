@@ -1,4 +1,9 @@
 using System;
+using System.Reflection;
+using System.Threading.Tasks;
+using Bough.App.Interfaces;
+using Bough.Core.Updates;
+using Bough.Core.Updates.Models;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -18,6 +23,7 @@ namespace Bough.App
     public partial class App : Application
     {
         private ServiceContainer _serviceContainer;
+        private ApplicationUpdateRestartPresenter _updateRestart;
 
         internal StringHelper Strings { get; private set; }
 
@@ -38,6 +44,13 @@ namespace Bough.App
                 AppearanceThemeService appearanceTheme = new(this);
                 _serviceContainer.RegisterType(appearanceTheme);
                 _serviceContainer.RegisterType(GitExecutableSettings.Default);
+                _serviceContainer.RegisterType(CreateUpdateEnvironment());
+                _serviceContainer.RegisterType<ApplicationUpdateService, ApplicationUpdateService>(LifeScope.Singleton);
+                _serviceContainer.RegisterType<ApplicationUpdateInstaller, ApplicationUpdateInstaller>(LifeScope.Singleton);
+                _serviceContainer.RegisterType<ApplicationUpdateRestartPresenter, ApplicationUpdateRestartPresenter>(LifeScope.Singleton);
+                _serviceContainer.RegisterType<IApplicationUpdateRestart>(
+                    provider => (ApplicationUpdateRestartPresenter)provider.GetService(typeof(ApplicationUpdateRestartPresenter)),
+                    LifeScope.Singleton);
                 _serviceContainer.RegisterType<GitOperationQueue, GitOperationQueue>(LifeScope.Singleton);
                 _serviceContainer.RegisterType<GitHistoryService, GitHistoryService>(LifeScope.Singleton);
                 _serviceContainer.RegisterType<GitReferenceService, GitReferenceService>(LifeScope.Singleton);
@@ -74,11 +87,56 @@ namespace Bough.App
                 GitSettingsService settingsService = serviceProvider.GetService<GitSettingsService>();
                 MainWindowViewModel viewModel = serviceProvider.GetService<MainWindowViewModel>();
                 Func<RemoteOperationsViewModel> createRemoteOperationSession = () => serviceProvider.GetService<RemoteOperationsViewModel>();
-                desktop.MainWindow = new MainWindow(viewModel, stringHelper, errorLocalizer, operationQueue, clonePresenter, settingsService,
+                MainWindow mainWindow = new(viewModel, stringHelper, errorLocalizer, operationQueue, clonePresenter, settingsService,
                     createRemoteOperationSession);
+                _updateRestart = serviceProvider.GetService<ApplicationUpdateRestartPresenter>();
+                _updateRestart.BindWindow(mainWindow);
+                if (Program.UpdateStartupErrorCode != null)
+                {
+                    viewModel.ReportApplicationUpdateStartupFailure(Program.UpdateStartupErrorCode);
+                }
+                desktop.MainWindow = mainWindow;
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        internal async Task CompleteUpdateShutdownAsync()
+        {
+            if (_updateRestart == null)
+            {
+                return;
+            }
+            try
+            {
+                await _updateRestart.CompleteShutdownAsync().ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // The helper will not replace without authorization. Keep the original executable.
+                // Do not route updater network/path data to the global exception logger.
+            }
+        }
+
+        private static ApplicationUpdateEnvironment CreateUpdateEnvironment()
+        {
+            Assembly assembly = typeof(App).Assembly;
+            AssemblyInformationalVersionAttribute version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            string current = string.Empty;
+            if (version != null)
+            {
+                current = version.InformationalVersion;
+            }
+            bool published = false;
+            foreach (AssemblyMetadataAttribute metadata in assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+            {
+                if (metadata.Key == "BoughPublishedSingleFile")
+                {
+                    published = metadata.Value == "true";
+                }
+            }
+            string executable = Environment.ProcessPath ?? string.Empty;
+            return new ApplicationUpdateEnvironment(current, executable, published);
         }
 
         private void RegisterTerminalLauncher()

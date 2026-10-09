@@ -66,8 +66,11 @@ Bough is designed to show the source of each conflicting change and preview the 
 - **History and references:** Browse the commit graph, file changes, and file history; revert a selected commit; create, switch, delete, and rename branches; create, delete, and rename tags.
 - **Remotes and stashes:** Fetch, Pull, and Push; configure the default Pull strategy or choose one for a single Pull; save, apply, and delete stashes.
 - **Conflict resolution:** Inspect merge, rebase, or revert changes; choose sections, edit and save individual files, or apply, save, and stage the remaining sections across all conflicted files.
+- **Application updates:** Check official stable releases from Settings, download with progress and cancellation, then replace the single executable and restart after a normal shutdown. Beta and prerelease versions are excluded.
 
 Features and workflows are still being refined.
+
+Application updating is implemented in the latest source and is not included in the beta.6 download above. See [implementation status](Docs/CurrentStatus.md) for execution checks and release generation status.
 
 Additional screens and workflows are described in the [design notes](Design/README.md) (Korean).
 

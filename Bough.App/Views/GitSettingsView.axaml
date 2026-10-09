@@ -3,6 +3,7 @@
              xmlns:vm="using:Bough.App.ViewModels"
              xmlns:models="using:Bough.App.ViewModels.Models"
              xmlns:git="using:Bough.Core.Git.Models"
+             xmlns:views="using:Bough.App.Views"
              x:Class="Bough.App.Views.GitSettingsView"
              x:DataType="vm:GitSettingsViewModel"
              Background="{DynamicResource BoughBrushCanvas}">
@@ -33,6 +34,8 @@
 
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
       <StackPanel Margin="12" Spacing="16" MaxWidth="700" HorizontalAlignment="Left">
+        <views:AppUpdateView DataContext="{Binding AppUpdate}" />
+        <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
         <StackPanel Spacing="8">
           <TextBlock Text="{Binding LanguageHeading}" FontSize="14" FontWeight="Bold"
                      Foreground="{DynamicResource BoughBrushTextMuted}" />

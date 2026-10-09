@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using Bough.App.Controls;
 using Bough.App.Appearance;
 using Bough.App.Commands;
+using Bough.App.Interfaces;
 using Bough.App.Localization;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
 using Bough.Core.Internals;
+using Bough.Core.Updates;
 using Bough.App.Internals;
 using Bough.App.Presenters;
 using Bough.App.ViewModels.Models;
@@ -58,11 +60,12 @@ namespace Bough.App.ViewModels
         private int _globalNameEditVersion;
         private int _globalEmailEditVersion;
 
-        public GitSettingsViewModel(GitSettingsService settingsService, GitHubAccountService gitHubAccountService, StringHelper stringHelper, AppearanceThemeService appearanceTheme, GitErrorLocalizer errorLocalizer, GitOperationQueue operationQueue, LanguageSelectionPresenter languagePresenter)
+        public GitSettingsViewModel(GitSettingsService settingsService, GitHubAccountService gitHubAccountService, StringHelper stringHelper, AppearanceThemeService appearanceTheme, GitErrorLocalizer errorLocalizer, GitOperationQueue operationQueue, LanguageSelectionPresenter languagePresenter, ApplicationUpdateService applicationUpdateService, IApplicationUpdateRestart applicationUpdateRestart)
         {
             _settingsService = settingsService;
             _gitHubAccountService = gitHubAccountService;
             _stringHelper = stringHelper;
+            AppUpdate = new AppUpdateViewModel(stringHelper, applicationUpdateService, applicationUpdateRestart);
             _errorLocalizer = errorLocalizer;
             _appearanceTheme = appearanceTheme;
             _languagePresenter = languagePresenter;
@@ -90,6 +93,7 @@ namespace Bough.App.ViewModels
         }
 
         public ReadOnlyObservableCollection<GitRemote> Remotes { get; }
+        public AppUpdateViewModel AppUpdate { get; }
         public GitRepository CurrentRepository { get { return _repository; } }
         public string AccountRepositoryText { get { return _accountRepositoryText; } }
         public ReadOnlyObservableCollection<GitHubRemoteAccountItem> GitHubRemotes { get; }

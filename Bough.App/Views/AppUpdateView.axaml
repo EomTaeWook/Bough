@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Bough.App.ViewModels"
+             x:Class="Bough.App.Views.AppUpdateView"
+             x:DataType="vm:AppUpdateViewModel">
+  <StackPanel Spacing="8">
+    <TextBlock x:Name="Heading" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource BoughBrushTextMuted}" />
+    <TextBlock x:Name="Description" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+      <TextBlock x:Name="CurrentVersionLabel" Foreground="{DynamicResource BoughBrushText}" />
+      <SelectableTextBlock x:Name="CurrentVersionValue" Grid.Column="1" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushText}" />
+      <TextBlock x:Name="LatestVersionLabel" Grid.Row="1" Foreground="{DynamicResource BoughBrushText}" />
+      <SelectableTextBlock x:Name="LatestVersionValue" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushText}" />
+    </Grid>
+    <TextBlock x:Name="StatusText" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" />
+    <TextBlock x:Name="ErrorText" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushError}" />
+    <StackPanel IsVisible="{Binding IsDownloading}" Spacing="8">
+      <ProgressBar x:Name="DownloadProgress" Minimum="0" Maximum="100" />
+      <TextBlock x:Name="DownloadText" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" />
+    </StackPanel>
+    <WrapPanel>
+      <Button x:Name="CheckButton" MinHeight="32" MinWidth="80" Margin="0,0,8,8" IsEnabled="{Binding CanCheck}" Click="CheckClicked" />
+      <Button x:Name="UpdateButton" MinHeight="32" MinWidth="80" Margin="0,0,8,8" IsEnabled="{Binding CanUpdate}" Click="UpdateClicked" />
+      <Button x:Name="CancelButton" MinHeight="32" MinWidth="80" Margin="0,0,0,8" IsVisible="{Binding CanCancel}" Click="CancelClicked" />
+    </WrapPanel>
+    <Button x:Name="ReleaseButton" MinHeight="32" HorizontalAlignment="Left" Click="ReleaseClicked" />
+  </StackPanel>
+</UserControl>

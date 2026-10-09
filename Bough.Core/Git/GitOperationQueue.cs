@@ -115,6 +115,30 @@ namespace Bough.Core.Git
             return request.Task;
         }
 
+        // Read all repository lanes for a normal application update shutdown.
+        // This does not cancel, drain, or change the FIFO admission policy.
+        public bool HasActiveOperations
+        {
+            get
+            {
+                lock (_sync)
+                {
+                    foreach (RepositoryOperationQueue queue in _repositoryQueues.Values)
+                    {
+                        if (queue.Running != null)
+                        {
+                            return true;
+                        }
+                        if (queue.PendingCount > 0)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+
         public GitOperationQueueState GetState(string repositoryRoot)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);

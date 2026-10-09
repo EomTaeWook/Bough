@@ -6556,5 +6556,263 @@
     "Name": "ConflictBatchStageRefreshFailed",
     "Kor": "파일별 저장 결과는 유지됩니다. 완료 상태를 다시 읽지 못했습니다: {0}",
     "Eng": "Per-file save results are preserved. The completion state could not be refreshed: {0}"
+  },
+  {
+    "Id": 3193,
+    "Name": "AppUpdateHeading",
+    "Kor": "앱 업데이트",
+    "Eng": "Application update"
+  },
+  {
+    "Id": 3194,
+    "Name": "AppUpdateDescription",
+    "Kor": "GitHub에 게시된 Bough 정식 릴리스만 확인합니다. 자동으로 조회하거나 설치하지 않습니다.",
+    "Eng": "Checks only official Bough releases published on GitHub. Updates are not checked or installed automatically."
+  },
+  {
+    "Id": 3195,
+    "Name": "AppUpdateCurrentVersionLabel",
+    "Kor": "현재 버전",
+    "Eng": "Current version"
+  },
+  {
+    "Id": 3196,
+    "Name": "AppUpdateLatestVersionLabel",
+    "Kor": "최신 정식 버전",
+    "Eng": "Latest official version"
+  },
+  {
+    "Id": 3197,
+    "Name": "AppUpdateVersionUnknown",
+    "Kor": "확인되지 않음",
+    "Eng": "Not available"
+  },
+  {
+    "Id": 3198,
+    "Name": "AppUpdateNotChecked",
+    "Kor": "업데이트 확인을 눌러 최신 정식 릴리스를 조회하세요.",
+    "Eng": "Click Check for updates to look for the latest official release."
+  },
+  {
+    "Id": 3199,
+    "Name": "AppUpdateCheckAction",
+    "Kor": "업데이트 확인",
+    "Eng": "Check for updates"
+  },
+  {
+    "Id": 3200,
+    "Name": "AppUpdateChecking",
+    "Kor": "최신 정식 릴리스를 확인하고 있습니다.",
+    "Eng": "Checking the latest official release."
+  },
+  {
+    "Id": 3201,
+    "Name": "AppUpdateNoOfficialRelease",
+    "Kor": "게시된 정식 릴리스가 없습니다.",
+    "Eng": "No official release has been published."
+  },
+  {
+    "Id": 3202,
+    "Name": "AppUpdateUpToDate",
+    "Kor": "현재 버전보다 새로운 정식 릴리스가 없습니다.",
+    "Eng": "No newer official release is available."
+  },
+  {
+    "Id": 3203,
+    "Name": "AppUpdateAvailable",
+    "Kor": "새 정식 버전 {0}을 사용할 수 있습니다.",
+    "Eng": "Official version {0} is available."
+  },
+  {
+    "Id": 3204,
+    "Name": "AppUpdateCheckFailed",
+    "Kor": "업데이트 확인에 실패했습니다: {0}",
+    "Eng": "Could not check for updates: {0}"
+  },
+  {
+    "Id": 3205,
+    "Name": "AppUpdateRestartAction",
+    "Kor": "업데이트 후 재시작",
+    "Eng": "Update and restart"
+  },
+  {
+    "Id": 3206,
+    "Name": "AppUpdateDownloadingKnown",
+    "Kor": "다운로드 중: {0} / {1} MiB",
+    "Eng": "Downloading: {0} / {1} MiB"
+  },
+  {
+    "Id": 3207,
+    "Name": "AppUpdateDownloadingUnknown",
+    "Kor": "다운로드 중: {0} MiB",
+    "Eng": "Downloading: {0} MiB"
+  },
+  {
+    "Id": 3208,
+    "Name": "AppUpdateCancelAction",
+    "Kor": "취소",
+    "Eng": "Cancel"
+  },
+  {
+    "Id": 3209,
+    "Name": "AppUpdateCancelled",
+    "Kor": "업데이트 작업을 취소했습니다. 현재 앱은 변경되지 않았습니다.",
+    "Eng": "The update was cancelled. The current application was not changed."
+  },
+  {
+    "Id": 3210,
+    "Name": "AppUpdateDownloadFailed",
+    "Kor": "업데이트 다운로드 또는 확인에 실패했습니다: {0}",
+    "Eng": "The update download or verification failed: {0}"
+  },
+  {
+    "Id": 3211,
+    "Name": "AppUpdateReady",
+    "Kor": "버전 {0}의 다운로드와 확인이 완료되었습니다.",
+    "Eng": "Version {0} has been downloaded and verified."
+  },
+  {
+    "Id": 3212,
+    "Name": "AppUpdateRestartPreparing",
+    "Kor": "앱의 정상 종료와 업데이트 후 재시작을 준비하고 있습니다.",
+    "Eng": "Preparing to close the application normally and restart after updating."
+  },
+  {
+    "Id": 3213,
+    "Name": "AppUpdateRestartCancelled",
+    "Kor": "앱 종료가 취소되어 업데이트를 적용하지 않았습니다.",
+    "Eng": "Application shutdown was cancelled. The update was not applied."
+  },
+  {
+    "Id": 3214,
+    "Name": "AppUpdateRestartFailed",
+    "Kor": "업데이트 후 재시작을 준비하지 못했습니다: {0}",
+    "Eng": "Could not prepare the update and restart: {0}"
+  },
+  {
+    "Id": 3215,
+    "Name": "AppUpdateRestartScheduled",
+    "Kor": "앱이 정상 종료된 뒤 업데이트를 적용하고 다시 실행합니다.",
+    "Eng": "The update will be applied and the application restarted after normal shutdown."
+  },
+  {
+    "Id": 3216,
+    "Name": "AppUpdateReleaseAction",
+    "Kor": "정식 릴리스 페이지 열기",
+    "Eng": "Open official release page"
+  },
+  {
+    "Id": 3217,
+    "Name": "AppUpdateInstallUnsupported",
+    "Kor": "현재 실행 환경에서는 자동 업데이트를 적용할 수 없습니다. 정식 릴리스 페이지를 확인하세요.",
+    "Eng": "Automatic updating is not supported in this running environment. See the official release page."
+  },
+  {
+    "Id": 3218,
+    "Name": "AppUpdateCoreDeploymentRequired",
+    "Kor": "자동 업데이트는 배포된 Windows x64 단일 실행 파일에서만 사용할 수 있습니다. 릴리스 페이지에서 새 버전을 다운로드하세요.",
+    "Eng": "Automatic updates are available only in the published Windows x64 single executable. Download the new version from the release page."
+  },
+  {
+    "Id": 3219,
+    "Name": "AppUpdateCoreCurrentVersionInvalid",
+    "Kor": "현재 앱의 배포 버전을 확인할 수 없습니다. 릴리스 페이지에서 새 버전을 확인하세요.",
+    "Eng": "The current application version could not be identified. Check the release page for a new version."
+  },
+  {
+    "Id": 3220,
+    "Name": "AppUpdateCoreQueryFailed",
+    "Kor": "정식 릴리스 조회 요청이 실패했습니다(HTTP {0}). 잠시 후 다시 확인하세요.",
+    "Eng": "The stable release request failed (HTTP {0}). Try again later."
+  },
+  {
+    "Id": 3221,
+    "Name": "AppUpdateCoreQueryUnavailable",
+    "Kor": "정식 릴리스 정보를 가져오지 못했습니다. 네트워크 연결을 확인하세요.",
+    "Eng": "Could not retrieve the stable release information. Check your network connection."
+  },
+  {
+    "Id": 3222,
+    "Name": "AppUpdateCoreReleaseInvalid",
+    "Kor": "공식 정식 릴리스 정보를 확인할 수 없어 자동 업데이트를 중단했습니다.",
+    "Eng": "Automatic updating was stopped because the official stable release information could not be verified."
+  },
+  {
+    "Id": 3223,
+    "Name": "AppUpdateCoreAssetUnavailable",
+    "Kor": "이 정식 릴리스에서 Windows x64 단일 실행 파일을 찾을 수 없습니다. 릴리스 페이지를 확인하세요.",
+    "Eng": "The Windows x64 single executable is unavailable in this stable release. Check the release page."
+  },
+  {
+    "Id": 3224,
+    "Name": "AppUpdateCoreDigestMissing",
+    "Kor": "공식 SHA-256 정보가 없어 자동으로 교체할 수 없습니다. 릴리스 페이지를 확인하세요.",
+    "Eng": "Automatic replacement is unavailable because the official SHA-256 digest is missing. Check the release page."
+  },
+  {
+    "Id": 3225,
+    "Name": "AppUpdateCoreDownloadIncomplete",
+    "Kor": "업데이트 파일이 완전히 다운로드되지 않았습니다. 현재 실행 파일은 변경하지 않았습니다.",
+    "Eng": "The update file was not downloaded completely. The current executable has not been changed."
+  },
+  {
+    "Id": 3226,
+    "Name": "AppUpdateCoreDownloadUnavailable",
+    "Kor": "업데이트를 다운로드하지 못했습니다. 네트워크 연결과 임시 폴더의 접근 권한·여유 공간을 확인하세요.",
+    "Eng": "Could not download the update. Check your connection, temporary folder permissions, and available disk space."
+  },
+  {
+    "Id": 3227,
+    "Name": "AppUpdateCoreDigestMismatch",
+    "Kor": "다운로드한 파일의 SHA-256이 공식 정보와 일치하지 않습니다. 자동 교체하지 않습니다. 릴리스 페이지를 확인하세요.",
+    "Eng": "The downloaded file's SHA-256 does not match the official digest. It will not be installed automatically. Check the release page."
+  },
+  {
+    "Id": 3228,
+    "Name": "AppUpdateCorePrepareFailed",
+    "Kor": "업데이트 재시작을 준비하지 못했습니다. 현재 앱과 실행 파일은 유지됩니다.",
+    "Eng": "Could not prepare the update restart. The current application and executable are retained."
+  },
+  {
+    "Id": 3229,
+    "Name": "AppUpdateCoreGitBusy",
+    "Kor": "앱 작업이나 Git 실행·대기 작업이 남아 있습니다. 작업이 끝난 뒤 업데이트 후 재시작을 다시 선택하세요.",
+    "Eng": "Application work or running or queued Git operations remain. Select update and restart again after they finish."
+  },
+  {
+    "Id": 3230,
+    "Name": "AppUpdateCoreCloseUnavailable",
+    "Kor": "현재 메인 창에 정상 종료를 요청할 수 없습니다. 앱을 다시 연 뒤 업데이트를 시도하세요.",
+    "Eng": "A normal shutdown cannot be requested from the current main window. Reopen the application before trying to update."
+  },
+  {
+    "Id": 3231,
+    "Name": "AppUpdateCoreReplaceFailed",
+    "Kor": "업데이트 파일을 교체하지 못해 기존 앱을 다시 열었습니다. 실행 파일의 접근 권한과 다른 실행 중인 Bough를 확인하세요.",
+    "Eng": "The update could not replace the executable, so the previous application was reopened. Check file permissions and other running instances of Bough."
+  },
+  {
+    "Id": 3232,
+    "Name": "AppUpdateCoreRollbackFailed",
+    "Kor": "업데이트 실패 후 기존 실행 파일 복원을 완료하지 못했습니다. 설치 폴더에 보존된 백업과 접근 권한을 확인하세요.",
+    "Eng": "Restoring the previous executable after the update failure could not be completed. Check the preserved backup and permissions in the installation folder."
+  },
+  {
+    "Id": 3233,
+    "Name": "AppUpdateDownloadRequestFailed",
+    "Kor": "업데이트 다운로드 요청이 실패했습니다(HTTP {0}). 잠시 후 다시 시도하세요.",
+    "Eng": "The update download request failed (HTTP {0}). Try again later."
+  },
+  {
+    "Id": 3234,
+    "Name": "AppUpdateLaunchFailed",
+    "Kor": "새 버전을 실행하지 못해 기존 실행 파일을 복원했습니다. 기존 앱을 계속 사용할 수 있습니다.",
+    "Eng": "The new version could not be started, so the previous executable was restored. You can continue using the previous application."
+  },
+  {
+    "Id": 3235,
+    "Name": "AppUpdateReleaseOpenFailed",
+    "Kor": "정식 릴리스 페이지를 열지 못했습니다. 잠시 후 다시 시도하세요.",
+    "Eng": "Could not open the official release page. Please try again shortly."
   }
 ]

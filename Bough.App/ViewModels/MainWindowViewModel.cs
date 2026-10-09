@@ -35,6 +35,7 @@ namespace Bough.App.ViewModels
         private GitRepository _repository;
         private string _repositoryName;
         private string _repositoryMeta;
+        private LocalizedText _applicationUpdateStartupError;
         private string _statusMessage;
         private string _mainStatusMessage;
         private string _visibleGitSettingsStatusMessage = string.Empty;
@@ -377,6 +378,10 @@ namespace Bough.App.ViewModels
                 AddSidebarStatusMessage(messages, References.BranchSwitchFailureMessage);
                 AddSidebarStatusMessage(messages, References.PendingBranchSwitchMessage);
                 AddSidebarStatusMessage(messages, GitOperationQueueStatusText);
+                if (_applicationUpdateStartupError != null)
+                {
+                    AddSidebarStatusMessage(messages, _applicationUpdateStartupError.GetText(_stringHelper));
+                }
                 AddSidebarStatusMessage(messages, MainStatusMessage);
                 if (IsLocalChangesView == true)
                 {
@@ -599,6 +604,12 @@ namespace Bough.App.ViewModels
                     NotifyCommandStates();
                 }
             }
+        }
+
+        internal void ReportApplicationUpdateStartupFailure(string errorCode)
+        {
+            _applicationUpdateStartupError = new LocalizedText(errorCode);
+            NotifySidebarStatusChanged();
         }
 
         public void RegisterClonedRepository(string path)

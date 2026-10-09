@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -15,6 +16,7 @@ using Bough.App.Views;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
 using Bough.Core.Internals;
+using Bough.Core.Updates;
 
 namespace Bough.App
 {
@@ -24,6 +26,10 @@ namespace Bough.App
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly CloneRepositoryPresenter _clonePresenter;
+        private readonly GitOperationQueue _updateOperationQueue;
+        private TaskCompletionSource<bool> _updateCloseRequest;
+        private CancellationToken _updateCloseCancellation;
+        internal bool UpdateCloseApproved { get; private set; }
         private ConflictWindow _conflictWindow;
         private bool _closeConfirmed;
         private bool _revertAbortConfirmationPending;
@@ -88,6 +94,7 @@ namespace Bough.App
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
             _clonePresenter = clonePresenter;
+            _updateOperationQueue = operationQueue;
             _viewModel = viewModel;
             DataContext = _viewModel;
             RepositoryPickerPanel.DataContext = _viewModel;
@@ -110,57 +117,10 @@ namespace Bough.App
             _viewModel.RemoteOperations.PropertyChanged += OnRemoteOperationsPropertyChanged;
             _viewModel.GitSettings.PropertyChanged += OnGitSettingsPropertyChanged;
             UpdateSettingsAndRemoteAvailability();
-            Closing += async (sender, eventArgs) =>
+            Closing += OnMainWindowClosing;
+            Closed += delegate
             {
-                if (_closeConfirmed == true)
-                {
-                    return;
-                }
-                if (_conflictWindow == null)
-                {
-                    return;
-                }
-                if (_viewModel.Conflicts.HasUnsavedConflictEdits == false)
-                {
-                    return;
-                }
-
-                eventArgs.Cancel = true;
-                ConflictWindow window = _conflictWindow;
-                string draftText = _viewModel.Conflicts.ResultText;
-                bool draftDeleted = _viewModel.Conflicts.IsResultFileDeleted;
-                _activationSuppressionDepth++;
-                bool discard;
-                try
-                {
-                    discard = await GitActionDialogs.ConfirmAsync(this,
-                        _stringHelper.GetString("DiscardResolutionTitle"),
-                        _stringHelper.GetString("DiscardResolutionCloseAppMessage"),
-                        _stringHelper.GetString("DiscardResolutionConfirm"), _stringHelper);
-                }
-                finally
-                {
-                    _activationSuppressionDepth--;
-                    CompleteInternalDialog();
-                }
-                if (ReferenceEquals(_conflictWindow, window) == false)
-                {
-                    return;
-                }
-                if (draftText != _viewModel.Conflicts.ResultText)
-                {
-                    return;
-                }
-                if (draftDeleted != _viewModel.Conflicts.IsResultFileDeleted)
-                {
-                    return;
-                }
-                if (discard == true)
-                {
-                    _closeConfirmed = true;
-                    _conflictWindow.CloseAfterConfirmation();
-                    Close();
-                }
+                _updateCloseRequest?.TrySetResult(true);
             };
             Opened += async delegate
             {
@@ -194,6 +154,192 @@ namespace Bough.App
             };
         }
 
+        internal void EnsureUpdateCanClose()
+        {
+            if (_updateOperationQueue.HasActiveOperations)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_viewModel.IsBusy)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_viewModel.Conflicts.IsBusy)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_viewModel.Conflicts.IsBatchStaging)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_viewModel.LocalChanges.IsBusy)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_viewModel.LocalChanges.Stashes.IsBusy)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_viewModel.GitSettings.IsBusy)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_viewModel.References.IsBusy)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_viewModel.RemoteOperations.IsBusy)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_viewModel.History.IsLoading)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_stashDialogOpen)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_remoteDialogOpen)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_activationSuppressionDepth > 0)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+            if (_revertAbortConfirmationPending)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
+        }
+
+        internal async Task<bool> RequestUpdateCloseAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureUpdateCanClose();
+            if (_updateCloseRequest != null)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreCloseUnavailable", null, Array.Empty<object>());
+            }
+            TaskCompletionSource<bool> request = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            _updateCloseRequest = request;
+            _updateCloseCancellation = cancellationToken;
+            UpdateCloseApproved = false;
+            using CancellationTokenRegistration registration = cancellationToken.Register(() =>
+            {
+                // View teardown after accepted normal close must not revoke an installation handoff.
+                if (UpdateCloseApproved == false)
+                {
+                    request.TrySetCanceled(cancellationToken);
+                }
+            });
+            try
+            {
+                Close();
+                return await request.Task.ConfigureAwait(false);
+            }
+            finally
+            {
+                if (ReferenceEquals(_updateCloseRequest, request))
+                {
+                    _updateCloseRequest = null;
+                    _updateCloseCancellation = default;
+                }
+            }
+        }
+
+        private async void OnMainWindowClosing(object sender, WindowClosingEventArgs eventArgs)
+        {
+            TaskCompletionSource<bool> updateRequest = _updateCloseRequest;
+            if (updateRequest != null)
+            {
+                try
+                {
+                    _updateCloseCancellation.ThrowIfCancellationRequested();
+                    EnsureUpdateCanClose();
+                }
+                catch (Exception exception)
+                {
+                    eventArgs.Cancel = true;
+                    updateRequest.TrySetException(exception);
+                    return;
+                }
+            }
+            if (_closeConfirmed)
+            {
+                UpdateCloseApproved = updateRequest != null;
+                return;
+            }
+            if (_conflictWindow == null)
+            {
+                UpdateCloseApproved = updateRequest != null;
+                return;
+            }
+            if (_viewModel.Conflicts.HasUnsavedConflictEdits == false)
+            {
+                UpdateCloseApproved = updateRequest != null;
+                return;
+            }
+            eventArgs.Cancel = true;
+            ConflictWindow window = _conflictWindow;
+            string draftText = _viewModel.Conflicts.ResultText;
+            bool draftDeleted = _viewModel.Conflicts.IsResultFileDeleted;
+            _activationSuppressionDepth++;
+            bool discard;
+            try
+            {
+                discard = await GitActionDialogs.ConfirmAsync(this,
+                    _stringHelper.GetString("DiscardResolutionTitle"),
+                    _stringHelper.GetString("DiscardResolutionCloseAppMessage"),
+                    _stringHelper.GetString("DiscardResolutionConfirm"), _stringHelper);
+            }
+            finally
+            {
+                _activationSuppressionDepth--;
+                CompleteInternalDialog();
+            }
+            if (ReferenceEquals(_conflictWindow, window) == false)
+            {
+                updateRequest?.TrySetResult(false);
+                return;
+            }
+            if (draftText != _viewModel.Conflicts.ResultText)
+            {
+                updateRequest?.TrySetResult(false);
+                return;
+            }
+            if (draftDeleted != _viewModel.Conflicts.IsResultFileDeleted)
+            {
+                updateRequest?.TrySetResult(false);
+                return;
+            }
+            if (discard == false)
+            {
+                updateRequest?.TrySetResult(false);
+                return;
+            }
+            if (updateRequest != null)
+            {
+                if (ReferenceEquals(_updateCloseRequest, updateRequest) == false)
+                {
+                    return;
+                }
+                try
+                {
+                    _updateCloseCancellation.ThrowIfCancellationRequested();
+                    EnsureUpdateCanClose();
+                }
+                catch (Exception exception)
+                {
+                    updateRequest.TrySetException(exception);
+                    return;
+                }
+            }
+            _closeConfirmed = true;
+            _conflictWindow.CloseAfterConfirmation();
+            Close();
+        }
         private async Task RefreshAfterActivationAsync()
         {
             int version = ++_activationVersion;
