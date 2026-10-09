@@ -1057,6 +1057,18 @@ namespace Bough.App.Views
             }
             catch (Exception exception)
             {
+                if (ReferenceEquals(DataContext, viewModel) == false)
+                {
+                    return;
+                }
+                try
+                {
+                    viewModel.RequireFileActionRepository(context);
+                }
+                catch (GitException)
+                {
+                    return;
+                }
                 viewModel.ReportActionError(exception);
             }
         }

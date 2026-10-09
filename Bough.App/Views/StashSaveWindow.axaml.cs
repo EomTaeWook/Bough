@@ -72,23 +72,32 @@ namespace Bough.App.Views
             }
 
             List<string> errors = [];
-            if (_state.SaveException != null)
+            if (_state.SaveResult != null)
             {
-                errors.Add(new LocalizedText(_state.SaveException).GetText(_viewModel.Strings));
+                string saveError = _state.SaveResult.GetErrorText(_viewModel.Strings);
+                if (string.IsNullOrEmpty(saveError) == false)
+                {
+                    errors.Add(saveError);
+                }
             }
             else if (string.IsNullOrEmpty(_state.SaveErrorText) == false)
             {
                 errors.Add(_state.SaveErrorText);
             }
+            if (_state.SaveException != null)
+            {
+                errors.Add(new LocalizedText(_state.SaveException).GetText(_viewModel.Strings));
+            }
             foreach (StashSaveRefreshFailure failure in _state.RefreshFailures)
             {
+                string refreshError = failure.Result.GetErrorText(_viewModel.Strings);
+                if (string.IsNullOrEmpty(refreshError) == false)
+                {
+                    errors.Add(refreshError);
+                }
                 if (failure.Exception != null)
                 {
                     errors.Add(new LocalizedText(failure.Exception).GetText(_viewModel.Strings));
-                }
-                else
-                {
-                    errors.Add(failure.Result.ErrorText);
                 }
             }
             if (errors.Count == 0)

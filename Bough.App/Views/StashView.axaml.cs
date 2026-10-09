@@ -9,10 +9,37 @@ namespace Bough.App.Views
 {
     public partial class StashView : UserControl
     {
+        private StashViewModel _previewSource;
+        private bool _previewAttached;
+
         public StashView()
         {
             InitializeComponent();
             LanguageChangeBinding.Bind(this, () => (DataContext as StashViewModel)?.Strings);
+            DataContextChanged += delegate { BindPreview(); };
+            AttachedToVisualTree += delegate { _previewAttached = true; BindPreview(); };
+            DetachedFromVisualTree += delegate { _previewAttached = false; UnbindPreview(); };
+        }
+
+        private void BindPreview()
+        {
+            StashViewModel next = DataContext as StashViewModel;
+            if (object.ReferenceEquals(next, _previewSource) == false)
+            {
+                UnbindPreview();
+            }
+            if (_previewAttached == false)
+            {
+                return;
+            }
+            _previewSource = next;
+            _previewSource?.ResumePreview();
+        }
+
+        private void UnbindPreview()
+        {
+            _previewSource?.SuspendPreview();
+            _previewSource = null;
         }
 
         private async void ApplyClicked(object sender, RoutedEventArgs eventArgs)

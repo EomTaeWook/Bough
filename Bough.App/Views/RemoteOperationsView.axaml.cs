@@ -261,7 +261,7 @@ namespace Bough.App.Views
                 return;
             }
             await ShowOperationAsync(viewModel, RemoteOperationKind.Fetch, false, StringHelper.GetString("RemoteFetchAction"), viewModel.SelectedRemote,
-                session => session.FetchAsync(false), true, false);
+                (session, token) => session.FetchAsync(false), true, false);
         }
 
         private async void FetchAllClicked(object sender, RoutedEventArgs eventArgs)
@@ -275,7 +275,7 @@ namespace Bough.App.Views
                 return;
             }
             await ShowOperationAsync(viewModel, RemoteOperationKind.Fetch, true, StringHelper.GetString("RemoteFetchAllAction"), StringHelper.GetString("RemoteAllRemotes"),
-                session => session.FetchAsync(true), true, false);
+                (session, token) => session.FetchAsync(true), true, false);
         }
 
         private async void PullClicked(object sender, RoutedEventArgs eventArgs)
@@ -421,7 +421,7 @@ namespace Bough.App.Views
             }
             await ShowOperationAsync(viewModel, RemoteOperationKind.Pull, false, StringHelper.Format("RemotePullOperationTitle", strategyName),
                 $"{target.Remote}/{target.Branch} → {viewModel.CurrentBranchText}",
-                session => session.PullAsync(strategy, target.Remote, target.Branch), true, true);
+                (session, token) => session.PullAsync(strategy, target.Remote, target.Branch), true, true);
         }
 
         private async Task RunPushAsync(RemoteOperationsViewModel viewModel, bool chooseTarget)
@@ -483,19 +483,20 @@ namespace Bough.App.Views
                 }
             }
             await ShowOperationAsync(viewModel, RemoteOperationKind.Push, false, StringHelper.GetString("RemotePushAction"),
-                $"{viewModel.CurrentBranchText} → {target.Remote}/{target.Branch}", async session =>
+                $"{viewModel.CurrentBranchText} → {target.Remote}/{target.Branch}", async (session, token) =>
             {
-                if (await session.PrepareUpstreamPushAsync(target.Remote, target.Branch) == false)
+                if (await session.PrepareUpstreamPushAsync(target.Remote, target.Branch, token) == false)
                 {
                     return false;
                 }
+                token.ThrowIfCancellationRequested();
                 return await session.PushAsync(target.Remote, target.Branch, confirmed);
             }, false, false);
         }
 
         private async Task ShowOperationAsync(RemoteOperationsViewModel viewModel, RemoteOperationKind kind, bool fetchAll,
             string operationName, string target,
-            Func<RemoteOperationsViewModel, Task<bool>> operation, bool closeOnSuccess, bool worktreeMayChange)
+            Func<RemoteOperationsViewModel, CancellationToken, Task<bool>> operation, bool closeOnSuccess, bool worktreeMayChange)
         {
             if (TopLevel.GetTopLevel(this) is not Window owner)
             {
@@ -531,7 +532,7 @@ namespace Bough.App.Views
                 repositoryRequestVersion, requestedBranch, requestedRemote, requestedPrune, OperationFinishedAsync);
             using CancellationTokenSource cancellation = new();
             Func<Task<bool>> observedOperation = () => presenter.ExecuteAsync(kind, fetchAll, operationName, target,
-                operation, worktreeMayChange, cancellation.Token);
+                activeSession => operation(activeSession, cancellation.Token), worktreeMayChange, cancellation.Token);
             RemoteOperationWindow dialog = new(session, operationName, target, observedOperation, closeOnSuccess, StringHelper, ErrorLocalizer, cancellation, OperationQueue, requestedRepository.RootPath);
             bool popupOpen = false;
             void UpdatePopupProgress()

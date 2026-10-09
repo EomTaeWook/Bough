@@ -43,6 +43,8 @@ namespace Bough.App.Views
         private StashSaveWindow _stashWindow;
         private LocalChangesViewModel _confirmationSource;
         private LocalChangesViewModel _fileSectionsSource;
+        private LocalChangesViewModel _previewSource;
+        private bool _previewAttached;
         private GitRepository _contextStagedRepository;
         private GitWorktreeFile _contextStagedFile;
         private GitRepository _contextUnstagedRepository;
@@ -73,10 +75,31 @@ namespace Bough.App.Views
             UnstagedList.AddHandler(InputElement.PointerPressedEvent, UnstagedPointerPressed, RoutingStrategies.Tunnel, true);
             UnstagedList.AddHandler(InputElement.ContextRequestedEvent, UnstagedContextRequested, RoutingStrategies.Tunnel, true);
             SizeChanged += LocalChangesSizeChanged;
-            DataContextChanged += delegate { BindConfirmations(); BindFileSections(); BindContextMenuLabels(); };
+            DataContextChanged += delegate { BindConfirmations(); BindFileSections(); BindContextMenuLabels(); BindPreview(); };
             Bough.App.Localization.LanguageChangeBinding.Bind(this, () => (DataContext as LocalChangesViewModel)?.Strings, RefreshLocalizedMenuLabels);
-            AttachedToVisualTree += delegate { BindConfirmations(); BindFileSections(); BindContextMenuLabels(); };
-            DetachedFromVisualTree += delegate { UnbindConfirmations(); UnbindFileSections(); };
+            AttachedToVisualTree += delegate { _previewAttached = true; BindConfirmations(); BindFileSections(); BindContextMenuLabels(); BindPreview(); };
+            DetachedFromVisualTree += delegate { _previewAttached = false; UnbindConfirmations(); UnbindFileSections(); UnbindPreview(); };
+        }
+
+        private void BindPreview()
+        {
+            LocalChangesViewModel next = DataContext as LocalChangesViewModel;
+            if (ReferenceEquals(next, _previewSource) == false)
+            {
+                UnbindPreview();
+            }
+            if (_previewAttached == false)
+            {
+                return;
+            }
+            _previewSource = next;
+            _previewSource?.ResumePreview();
+        }
+
+        private void UnbindPreview()
+        {
+            _previewSource?.SuspendPreview();
+            _previewSource = null;
         }
 
         private void PreviewNumberGutterPressed(object sender, PointerPressedEventArgs eventArgs)

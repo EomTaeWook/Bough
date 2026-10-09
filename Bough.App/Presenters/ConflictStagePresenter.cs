@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Internals;
 using Bough.App.Interfaces;
+using Bough.App.Threading;
 using Bough.App.ViewModels;
 using Bough.App.ViewModels.Models;
 using Bough.Core.Git;
@@ -61,8 +62,8 @@ namespace Bough.App.Presenters
             ConflictStageResult result;
             try
             {
-                result = await _operationQueue.EnqueueAsync(repository.RootPath, $"{operationName} · {path}",
-                    token => ExecuteAsync(repository, conflict, resultText, request, token));
+                return await _operationQueue.EnqueueAsync(repository.RootPath, $"{operationName} · {path}",
+                    token => UiQueuedOperation.RunAsync(() => ExecuteAsync(repository, conflict, resultText, request, token)));
             }
             catch (OperationCanceledException exception)
             {
@@ -76,33 +77,6 @@ namespace Bough.App.Presenters
             if (IsCurrent(repository, conflict, request) == false)
             {
                 return result;
-            }
-            if (result.Succeeded)
-            {
-                _model.MarkStageSaved(conflict, resultText);
-                try
-                {
-                    await _completion.CompleteConflictStageAsync(repository, path);
-                }
-                catch (Exception exception)
-                {
-                    result = new ConflictStageResult(repository, path, ConflictStageOutcome.RefreshFailed, exception: exception);
-                }
-            }
-
-            bool staleConflict = result.Outcome == ConflictStageOutcome.NoLongerConflicted ||
-                result.Outcome == ConflictStageOutcome.FileChanged;
-            if (staleConflict)
-            {
-                try
-                {
-                    await _completion.RefreshConflictStateAsync(repository);
-                }
-                catch (Exception exception)
-                {
-                    result = new ConflictStageResult(repository, path, result.Outcome,
-                        exception: result.Exception, refreshException: exception);
-                }
             }
             if (IsCurrent(repository, conflict, request))
             {
@@ -124,15 +98,60 @@ namespace Bough.App.Presenters
             cancellationToken.ThrowIfCancellationRequested();
             bool ownsView = IsCurrent(repository, conflict, request);
             _model.BeginStageRequest(ownsView);
+            ConflictStageResult result;
             try
             {
                 GitConflictStageResult stage = await _repositoryService.SaveAndStageAsync(repository, conflict, resultText, cancellationToken);
-                return CreateResult(repository, conflict.RelativePath, stage);
+                result = CreateResult(repository, conflict.RelativePath, stage);
+            }
+            catch (OperationCanceledException exception)
+            {
+                result = new ConflictStageResult(repository, conflict.RelativePath, ConflictStageOutcome.Canceled, exception: exception);
+            }
+            catch (Exception exception)
+            {
+                result = new ConflictStageResult(repository, conflict.RelativePath, ConflictStageOutcome.Failed, exception: exception);
             }
             finally
             {
                 _model.EndStageRequest(IsCurrent(repository, conflict, request));
             }
+            if (IsCurrent(repository, conflict, request) == false)
+            {
+                return result;
+            }
+            if (result.Succeeded)
+            {
+                _model.MarkStageSaved(conflict, resultText);
+                try
+                {
+                    await _completion.CompleteConflictStageAsync(repository, conflict.RelativePath);
+                }
+                catch (Exception exception)
+                {
+                    result = new ConflictStageResult(repository, conflict.RelativePath, ConflictStageOutcome.RefreshFailed, exception: exception);
+                }
+            }
+
+            bool staleConflict = result.Outcome == ConflictStageOutcome.NoLongerConflicted ||
+                result.Outcome == ConflictStageOutcome.FileChanged;
+            if (staleConflict)
+            {
+                try
+                {
+                    await _completion.RefreshConflictStateAsync(repository);
+                }
+                catch (Exception exception)
+                {
+                    result = new ConflictStageResult(repository, conflict.RelativePath, result.Outcome,
+                        exception: result.Exception, refreshException: exception);
+                }
+            }
+            if (IsCurrent(repository, conflict, request))
+            {
+                _model.SetStageResult(result);
+            }
+            return result;
         }
 
         private bool IsCurrent(GitRepository repository, GitConflictFile conflict, int request)

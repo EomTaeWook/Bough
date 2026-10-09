@@ -212,7 +212,7 @@ namespace Bough.App.ViewModels
             }
         }
 
-        public async Task SetRepositoryAsync(GitRepository repository)
+        public async Task SetRepositoryAsync(GitRepository repository, bool propagateReadError = false)
         {
             BindRepository(repository);
             if (repository == null)
@@ -220,7 +220,7 @@ namespace Bough.App.ViewModels
                 return;
             }
 
-            await RefreshCoreAsync();
+            await RefreshCoreAsync(propagateReadError);
         }
 
         public void BindRepository(GitRepository repository)
@@ -269,7 +269,7 @@ namespace Bough.App.ViewModels
             await RefreshCoreAsync();
         }
 
-        private async Task<bool> RefreshCoreAsync()
+        private async Task<bool> RefreshCoreAsync(bool propagateReadError = false)
         {
             GitRepository repository = _repository;
             if (repository == null)
@@ -297,6 +297,10 @@ namespace Bough.App.ViewModels
                 if (result.Error != null)
                 {
                     StatusMessage = _errorLocalizer.GetDisplayMessage(result.Error);
+                    if (propagateReadError)
+                    {
+                        ExceptionDispatchInfo.Capture(result.Error).Throw();
+                    }
                     return false;
                 }
                 if (result.Snapshot == null)
@@ -1201,56 +1205,18 @@ namespace Bough.App.ViewModels
             }
 
             GitRepository repository = _repository;
-            try
-            {
-                string operationName = $"{_stringHelper.GetString("ReferenceCreateTag")} {name}";
-                return await _mutationPresenter.CreateTagAsync(repository, name, operationName,
-                    () => ApplyTagResultAsync(repository, name));
-            }
-            catch (OperationCanceledException)
-            {
-                return false;
-            }
-            catch (Exception exception)
-            {
-                if (IsCurrentRepository(repository.RootPath))
-                {
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
-                }
-                return false;
-            }
-        }
-
-        private async Task<bool> ApplyTagResultAsync(GitRepository repository, string name)
-        {
-            if (_repository == null)
-            {
-                return true;
-            }
-            StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-            if (string.Equals(_repository.RootPath, repository.RootPath, comparison) == false)
-            {
-                return true;
-            }
-
-            bool refreshed = await RefreshCoreAsync();
+            string operationName = $"{_stringHelper.GetString("ReferenceCreateTag")} {name}";
             string success = _stringHelper.Format("ReferenceLocalTagCreated", name.Trim());
-            if (refreshed)
-            {
-                StatusMessage = success;
-            }
-            else
-            {
-                StatusMessage = _stringHelper.Format("ReferenceTagRefreshFailed", success, StatusMessage);
-            }
-            RepositoryChanged?.Invoke(repository);
-            return true;
+            return await QueueBranchDeletionAsync(repository, success,
+                applyResult => _mutationPresenter.CreateTagAsync(repository, name, operationName, applyResult),
+                "ReferenceTagRefreshFailed");
         }
 
         private async Task<bool> RunBranchChangeAsync(Func<GitRepository, string, ReferenceBranchRunner, Task<bool>> execute,
             string successMessage, string targetBranch)
         {
             GitRepository requestedRepository = _repository;
+            int bindingVersion = _referenceBindingVersion;
             if (requestedRepository == null)
             {
                 StatusMessage = _stringHelper.GetString("ReferenceSwitchRepositoryRequired");
@@ -1261,7 +1227,7 @@ namespace Bough.App.ViewModels
             {
                 string operationName = _stringHelper.Format("ReferenceSwitchOperationRunning", targetBranch);
                 return await execute(requestedRepository, operationName,
-                    action => RunBranchChangeCoreAsync(action, successMessage, targetBranch, requestedRepository));
+                    action => RunBranchChangeCoreAsync(action, successMessage, targetBranch, requestedRepository, bindingVersion));
             }
             catch (OperationCanceledException)
             {
@@ -1269,20 +1235,50 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                if (IsCurrentRepository(requestedRepository.RootPath))
+                bool mutationSucceeded = false;
+                Exception error = exception;
+                if (exception is GitException gitException)
                 {
-                    BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", targetBranch, CurrentBranchDisplay, _errorLocalizer.GetDisplayMessage(exception));
-                    StatusMessage = BranchSwitchFailureMessage;
+                    if (gitException.ErrorCode == GitCommitActionService.StateReadFailedCode)
+                    {
+                        mutationSucceeded = true;
+                        error = gitException.InnerException ?? gitException;
+                        ReferenceRefreshRequired?.Invoke(requestedRepository.RootPath);
+                    }
                 }
+                if (IsCurrentRepository(requestedRepository.RootPath) == false)
+                {
+                    return mutationSucceeded;
+                }
+                if (bindingVersion != _referenceBindingVersion)
+                {
+                    return mutationSucceeded;
+                }
+                if (mutationSucceeded)
+                {
+                    BranchSwitchFailureMessage = _stringHelper.Format("MutationCompletedReadFailed", _errorLocalizer.GetDisplayMessage(error));
+                    StatusMessage = BranchSwitchFailureMessage;
+                    return true;
+                }
+                BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", targetBranch, CurrentBranchDisplay, _errorLocalizer.GetDisplayMessage(error));
+                StatusMessage = BranchSwitchFailureMessage;
                 return false;
             }
         }
 
-        private async Task<bool> RunBranchChangeCoreAsync(Func<Task<GitRepository>> action, string successMessage, string targetBranch, GitRepository original)
+        private async Task<bool> RunBranchChangeCoreAsync(Func<Task<GitRepository>> action, string successMessage, string targetBranch,
+            GitRepository original, int bindingVersion)
         {
             if (IsCurrentRepository(original.RootPath) == false)
             {
                 await action();
+                ReferenceRefreshRequired?.Invoke(original.RootPath);
+                return true;
+            }
+            if (bindingVersion != _referenceBindingVersion)
+            {
+                await action();
+                ReferenceRefreshRequired?.Invoke(original.RootPath);
                 return true;
             }
             if (_branchChangeInProgress)
@@ -1294,6 +1290,8 @@ namespace Bough.App.ViewModels
 
             StringComparison pathComparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
             int operation = ++_branchChangeVersion;
+            bool mutationSucceeded = false;
+            bool snapshotPublished = false;
             _branchChangeInProgress = true;
             _branchChangeTarget = targetBranch;
             _snapshotPresenter.Invalidate();
@@ -1303,48 +1301,102 @@ namespace Bough.App.ViewModels
             try
             {
                 GitRepository updated = await action();
+                mutationSucceeded = true;
                 if (operation != _branchChangeVersion)
                 {
-                    return false;
+                    return true;
+                }
+                if (bindingVersion != _referenceBindingVersion)
+                {
+                    return true;
                 }
                 if (_repository == null)
                 {
-                    return false;
+                    return true;
                 }
                 if (string.Equals(_repository.RootPath, original.RootPath, pathComparison) == false)
                 {
-                    return false;
+                    return true;
                 }
                 _repository = updated;
-                bool refreshed = await RefreshCoreAsync();
+                Task<bool> refresh = RefreshCoreAsync();
+                int snapshotRequest = _snapshotPresenter.RequestVersion;
+                bool refreshed = await refresh;
                 if (operation != _branchChangeVersion)
                 {
-                    return false;
+                    return true;
+                }
+                if (bindingVersion != _referenceBindingVersion)
+                {
+                    return true;
                 }
                 if (_repository == null)
                 {
-                    return false;
+                    return true;
                 }
                 if (string.Equals(_repository.RootPath, original.RootPath, pathComparison) == false)
                 {
-                    return false;
+                    return true;
+                }
+                if (snapshotRequest != _snapshotPresenter.RequestVersion)
+                {
+                    return true;
                 }
                 if (refreshed == true)
                 {
                     BranchSwitchFailureMessage = string.Empty;
                     StatusMessage = successMessage;
+                    RepositoryChanged?.Invoke(_repository);
+                    snapshotPublished = true;
                 }
                 else
                 {
                     BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchRefreshFailed", targetBranch, StatusMessage);
                     StatusMessage = BranchSwitchFailureMessage;
                 }
-                RepositoryChanged?.Invoke(updated);
                 return true;
             }
             catch (Exception exception)
             {
+                Exception error = exception;
+                if (exception is GitException gitException)
+                {
+                    if (gitException.ErrorCode == GitCommitActionService.StateReadFailedCode)
+                    {
+                        mutationSucceeded = true;
+                        error = gitException.InnerException ?? gitException;
+                    }
+                }
                 if (operation != _branchChangeVersion)
+                {
+                    return mutationSucceeded;
+                }
+                if (bindingVersion != _referenceBindingVersion)
+                {
+                    return mutationSucceeded;
+                }
+                if (_repository == null)
+                {
+                    return mutationSucceeded;
+                }
+                if (string.Equals(_repository.RootPath, original.RootPath, pathComparison) == false)
+                {
+                    return mutationSucceeded;
+                }
+                if (mutationSucceeded)
+                {
+                    BranchSwitchFailureMessage = _stringHelper.Format("MutationCompletedReadFailed", _errorLocalizer.GetDisplayMessage(error));
+                    StatusMessage = BranchSwitchFailureMessage;
+                    return true;
+                }
+                Task<bool> refresh = RefreshCoreAsync();
+                int snapshotRequest = _snapshotPresenter.RequestVersion;
+                bool refreshed = await refresh;
+                if (operation != _branchChangeVersion)
+                {
+                    return false;
+                }
+                if (bindingVersion != _referenceBindingVersion)
                 {
                     return false;
                 }
@@ -1356,16 +1408,7 @@ namespace Bough.App.ViewModels
                 {
                     return false;
                 }
-                bool refreshed = await RefreshCoreAsync();
-                if (operation != _branchChangeVersion)
-                {
-                    return false;
-                }
-                if (_repository == null)
-                {
-                    return false;
-                }
-                if (string.Equals(_repository.RootPath, original.RootPath, pathComparison) == false)
+                if (snapshotRequest != _snapshotPresenter.RequestVersion)
                 {
                     return false;
                 }
@@ -1374,7 +1417,7 @@ namespace Bough.App.ViewModels
                 {
                     currentBranch = _stringHelper.GetString("ReferenceSwitchCurrentUnknown");
                 }
-                BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", targetBranch, currentBranch, _errorLocalizer.GetDisplayMessage(exception));
+                BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", targetBranch, currentBranch, _errorLocalizer.GetDisplayMessage(error));
                 StatusMessage = BranchSwitchFailureMessage;
                 return false;
             }
@@ -1385,6 +1428,13 @@ namespace Bough.App.ViewModels
                     _branchChangeInProgress = false;
                     _branchChangeTarget = null;
                     IsBusy = _snapshotPresenter.HasActiveLoad;
+                }
+                if (mutationSucceeded)
+                {
+                    if (snapshotPublished == false)
+                    {
+                        ReferenceRefreshRequired?.Invoke(original.RootPath);
+                    }
                 }
             }
         }

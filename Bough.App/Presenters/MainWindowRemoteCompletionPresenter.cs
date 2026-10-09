@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Runtime.ExceptionServices;
 using Bough.App.ViewModels;
 using Bough.App.ViewModels.Models;
 using Bough.Core.Git.Models;
@@ -34,28 +35,61 @@ namespace Bough.App.Presenters
                     _model.RemoteOperations.ApplyOperationStateSnapshot(snapshot);
                 }
                 _model.MarkHistoryReferencesDirty(updated);
-                _ = _model.ObserveRepositoryAreaAsync(() => _model.References.SetRepositoryAsync(updated), request, null);
+                Task references = _model.References.SetRepositoryAsync(updated, propagateReadError: true);
+                Task history = Task.CompletedTask;
                 if (_model.IsHistoryView)
                 {
-                    _ = _model.ObserveRepositoryAreaAsync(() => _model.LoadHistoryAsync(updated, request), request, null);
+                    if (_model.IsCurrentRepositoryRequest(updated, request) == false)
+                    {
+                        return;
+                    }
+                    history = _model.LoadHistoryAsync(updated, request);
                 }
-                if (worktreeMayChange == false)
+                Task rebase = Task.CompletedTask;
+                Task revert = Task.CompletedTask;
+                if (worktreeMayChange)
                 {
-                    return;
+                    if (_model.IsCurrentRepositoryRequest(updated, request) == false)
+                    {
+                        return;
+                    }
+                    rebase = _model.RefreshRebaseStateAsync(updated, request);
+                    revert = _model.RefreshRevertStateAsync(updated, request);
+                }
+                Exception readError = null;
+                try
+                {
+                    await Task.WhenAll(references, history, rebase, revert);
+                }
+                catch (Exception exception)
+                {
+                    readError = exception;
                 }
                 if (_model.IsCurrentRepositoryRequest(updated, request) == false)
                 {
                     return;
                 }
-                await _model.RefreshRebaseStateAsync(updated, request);
-                if (_model.IsCurrentRepositoryRequest(updated, request) == false)
+                if (worktreeMayChange)
                 {
-                    return;
+                    try
+                    {
+                        await _model.RefreshLocalChangesAndConflictsAsync(updated, request, propagateReadError: true);
+                    }
+                    catch (Exception exception)
+                    {
+                        if (readError == null)
+                        {
+                            readError = exception;
+                        }
+                    }
+                    if (_model.IsCurrentRepositoryRequest(updated, request) == false)
+                    {
+                        return;
+                    }
                 }
-                await _model.RefreshLocalChangesAndConflictsAsync(updated, request);
-                if (_model.IsCurrentRepositoryRequest(updated, request) == false)
+                if (readError != null)
                 {
-                    return;
+                    ExceptionDispatchInfo.Capture(readError).Throw();
                 }
             }
             catch (Exception exception)
@@ -65,6 +99,7 @@ namespace Bough.App.Presenters
                     return;
                 }
                 _model.ReportRemoteCompletionFailure(exception, updated, request);
+                throw;
             }
         }
     }

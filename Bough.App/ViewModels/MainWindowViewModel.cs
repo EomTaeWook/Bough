@@ -828,7 +828,7 @@ namespace Bough.App.ViewModels
             }
         }
 
-        internal async Task RefreshLocalChangesAndConflictsAsync(GitRepository repository, int request)
+        internal async Task RefreshLocalChangesAndConflictsAsync(GitRepository repository, int request, bool propagateReadError = false)
         {
             if (request != _repositoryRequestVersion)
             {
@@ -838,13 +838,19 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
-            await LocalChanges.LoadWorktreeAsync(repository);
+            await LocalChanges.LoadWorktreeAsync(repository, propagateReadError);
             if (request != _repositoryRequestVersion)
             {
                 return;
             }
             if (ReferenceEquals(_repository, repository) == false)
             {
+                return;
+            }
+            if (propagateReadError)
+            {
+                IReadOnlyList<string> paths = LocalChanges.ConflictFiles.Select(file => file.Path).ToArray();
+                await ApplyConflictPathsAsync(repository, paths);
                 return;
             }
             await RefreshConflictsFromLocalChangesAsync(repository);
@@ -1019,6 +1025,28 @@ namespace Bough.App.ViewModels
             // Revert can remain pending even when the mutation's repository read failed.
             // This reads its state only; it never adopts the original object or binds children.
             _ = ObserveRepositoryAreaAsync(() => RefreshRevertStateAsync(repository, request, true), request, null);
+            GitRepository referenceRepository = References.CurrentRepository;
+            if (referenceRepository == null)
+            {
+                return;
+            }
+            if (_pathComparer.Equals(referenceRepository.RootPath, repositoryRoot) == false)
+            {
+                return;
+            }
+            if (request != _repositoryRequestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
+            if (ReferenceEquals(References.CurrentRepository, referenceRepository) == false)
+            {
+                return;
+            }
+            _ = ObserveRepositoryAreaAsync(References.RefreshAsync, request, null);
         }
 
         private async void OnHistoryRepositoryChanged(GitRepository updated)
@@ -1503,6 +1531,7 @@ namespace Bough.App.ViewModels
             int request = _repositoryRequestVersion;
             GitWorktreeStatus status = result.WorktreeStatus;
             string refreshError = string.Empty;
+            List<LocalizedText> errors = new(result.Errors);
             try
             {
                 if (status == null)
@@ -1532,13 +1561,17 @@ namespace Bough.App.ViewModels
             catch (Exception exception)
             {
                 refreshError = _errorLocalizer.GetDisplayMessage(exception);
+                if (errors.Any(error => error.GetText(_stringHelper) == refreshError) == false)
+                {
+                    errors.Add(new LocalizedText(exception));
+                }
             }
             if (IsCurrentStashSaveCompletion(repository, request) == false)
             {
                 return result;
             }
 
-            string errorText = result.ErrorText;
+            string errorText = result.GetErrorText(_stringHelper);
             if (string.IsNullOrWhiteSpace(refreshError) == false)
             {
                 if (string.IsNullOrWhiteSpace(errorText) == true)
@@ -1551,7 +1584,7 @@ namespace Bough.App.ViewModels
                 }
             }
             StashMutationResult completion = new StashMutationResult(result.Repository, result.Kind, result.Succeeded,
-                result.WorktreeMayHaveChanged, result.StashesMayHaveChanged, status, errorText);
+                result.WorktreeMayHaveChanged, result.StashesMayHaveChanged, status, errorText, errors);
             if (string.IsNullOrWhiteSpace(completion.ErrorText) == false)
             {
                 StatusMessage = completion.ErrorText;
@@ -1862,7 +1895,7 @@ namespace Bough.App.ViewModels
                 return;
             }
             int request = _repositoryRequestVersion;
-            await LocalChanges.LoadWorktreeAsync(repository);
+            await LocalChanges.LoadWorktreeAsync(repository, propagateReadError: true);
             if (request != _repositoryRequestVersion)
             {
                 return;
@@ -1934,7 +1967,7 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(CanAbortRevert));
         }
 
-        private Task RefreshRevertStateAsync(GitRepository repository, int request, bool applyConflicts = false)
+        internal Task RefreshRevertStateAsync(GitRepository repository, int request, bool applyConflicts = false)
         {
             return _revertPresenter.RefreshStateAsync(repository, request, applyConflicts);
         }

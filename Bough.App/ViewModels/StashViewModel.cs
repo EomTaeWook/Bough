@@ -17,6 +17,7 @@ namespace Bough.App.ViewModels
     {
         private LocalizedText _statusTextLocalization;
         private LocalizedText _errorTextLocalization;
+        private IReadOnlyList<LocalizedText> _mutationErrors = Array.Empty<LocalizedText>();
         private void SetLocalizedStatusText(LocalizedText text)
         {
             StatusText = text.GetText(_stringHelper);
@@ -32,6 +33,7 @@ namespace Bough.App.ViewModels
         private readonly GitStashService _stashService;
         private readonly GitWorkingTreeService _workingTreeService;
         private readonly StashMutationPresenter _mutationPresenter;
+        private readonly StashPreviewPresenter _previewPresenter;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly ObservableCollection<GitStashEntry> _stashes;
@@ -50,7 +52,6 @@ namespace Bough.App.ViewModels
         private bool _isBusy;
         private bool _isMutating;
         private int _requestVersion;
-        private int _previewVersion;
 
         public StashViewModel(GitStashService stashService, GitWorkingTreeService workingTreeService, GitOperationQueue operationQueue,
             StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
@@ -82,6 +83,7 @@ namespace Bough.App.ViewModels
             _stashService = stashService;
             _workingTreeService = workingTreeService;
             _mutationPresenter = new StashMutationPresenter(stashService, workingTreeService, operationQueue);
+            _previewPresenter = new StashPreviewPresenter(this, stashService);
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
             _stashes = [];
@@ -219,13 +221,13 @@ namespace Bough.App.ViewModels
                 }
 
                 CancelDrop();
-                _previewVersion++;
+                _previewPresenter.Invalidate();
                 _previewFiles.Clear();
                 PreviewDiff = string.Empty;
                 NotifyCommandStates();
                 if (value != null)
                 {
-                    _ = LoadPreviewAsync(value, _previewVersion);
+                    _previewPresenter.Request(value);
                 }
             }
         }
@@ -240,6 +242,10 @@ namespace Bough.App.ViewModels
         {
             get
             {
+                if (_mutationErrors.Count > 0)
+                {
+                    return string.Join(Environment.NewLine, _mutationErrors.Select(error => error.GetText(_stringHelper)));
+                }
                 if (_errorTextLocalization != null)
                 {
                     return _errorTextLocalization.GetText(_stringHelper);
@@ -249,6 +255,7 @@ namespace Bough.App.ViewModels
             private set
             {
                 _errorTextLocalization = null;
+                _mutationErrors = Array.Empty<LocalizedText>();
                 if (SetProperty(ref _errorText, value) == true)
                 {
                     OnPropertyChanged(nameof(HasError));
@@ -284,7 +291,7 @@ namespace Bough.App.ViewModels
         public void Clear()
         {
             _requestVersion++;
-            _previewVersion++;
+            _previewPresenter.Invalidate();
             _repository = null;
             _workingStatus = null;
             SelectedStash = null;
@@ -304,7 +311,7 @@ namespace Bough.App.ViewModels
         public void InvalidatePendingRequests()
         {
             _requestVersion++;
-            _previewVersion++;
+            _previewPresenter.Invalidate();
             if (_isMutating == false)
             {
                 IsBusy = false;
@@ -327,6 +334,7 @@ namespace Bough.App.ViewModels
         {
             SetWorktreeStatus(repository, status);
             _requestVersion++;
+            _previewPresenter.Invalidate();
             await RefreshCoreAsync(repository, _requestVersion, status);
         }
 
@@ -356,6 +364,10 @@ namespace Bough.App.ViewModels
             {
                 if (_repository.RootPath == repository.RootPath)
                 {
+                    if (ReferenceEquals(_repository, repository) == false)
+                    {
+                        _previewPresenter.Invalidate();
+                    }
                     _repository = repository;
                     NotifyCommandStates();
                     return;
@@ -383,6 +395,7 @@ namespace Bough.App.ViewModels
 
         private async Task RefreshCoreAsync(GitRepository repository, int requestVersion, GitWorktreeStatus knownStatus)
         {
+            _previewPresenter.Invalidate();
             IsBusy = true;
             ErrorText = string.Empty;
             try
@@ -426,44 +439,27 @@ namespace Bough.App.ViewModels
             }
         }
 
-        private async Task LoadPreviewAsync(GitStashEntry entry, int previewVersion)
+        public GitRepository CurrentRepository { get { return _repository; } }
+
+        internal int RequestVersion { get { return _requestVersion; } }
+
+        public void SuspendPreview() { _previewPresenter.Suspend(); }
+
+        public void ResumePreview() { _previewPresenter.Resume(); }
+
+        internal void ApplyPreviewDisplay(GitStashPreview preview)
         {
-            GitRepository repository = _repository;
-            int requestVersion = _requestVersion;
-            if (repository == null)
+            _previewFiles.Clear();
+            foreach (string file in preview.Files)
             {
-                return;
+                _previewFiles.Add(file);
             }
+            PreviewDiff = preview.Diff;
+        }
 
-            try
-            {
-                GitStashPreview preview = await _stashService.GetPreviewAsync(repository, entry);
-                if (previewVersion != _previewVersion)
-                {
-                    return;
-                }
-                if (requestVersion != _requestVersion)
-                {
-                    return;
-                }
-
-                foreach (string file in preview.Files)
-                {
-                    _previewFiles.Add(file);
-                }
-
-                PreviewDiff = preview.Diff;
-            }
-            catch (Exception exception)
-            {
-                if (previewVersion == _previewVersion)
-                {
-                    if (requestVersion == _requestVersion)
-                    {
-                        SetLocalizedErrorText(new LocalizedText(exception));
-                    }
-                }
-            }
+        internal void ApplyPreviewError(Exception exception)
+        {
+            SetLocalizedErrorText(new LocalizedText(exception));
         }
 
         private void UpdateTargets()
@@ -578,6 +574,7 @@ namespace Bough.App.ViewModels
             {
                 _requestVersion++;
                 ErrorText = string.Empty;
+                _previewPresenter.Invalidate();
                 IsBusy = true;
             }
             return _requestVersion;
@@ -592,7 +589,7 @@ namespace Bough.App.ViewModels
             return requestVersion == _requestVersion;
         }
 
-        internal void ApplySavedRefreshError(GitRepository repository, int requestVersion, string errorText)
+        internal void ApplySavedRefreshError(GitRepository repository, int requestVersion, IReadOnlyList<LocalizedText> errors)
         {
             if (IsCurrentRepository(repository) == false)
             {
@@ -602,7 +599,7 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
-            ErrorText = errorText;
+            SetMutationErrors(errors);
         }
 
         internal void EndSavedRefresh(GitRepository repository, int requestVersion)
@@ -651,6 +648,7 @@ namespace Bough.App.ViewModels
                 if (IsCurrentRepository(repository) == true)
                 {
                     _requestVersion++;
+                    _previewPresenter.Invalidate();
                 }
             }
 
@@ -729,12 +727,20 @@ namespace Bough.App.ViewModels
             return _errorLocalizer.GetDisplayMessage(exception);
         }
 
-        internal void ApplyMutationError(GitRepository repository, string errorText)
+        internal void ApplyMutationError(GitRepository repository, IReadOnlyList<LocalizedText> errors)
         {
             if (IsCurrentRepository(repository) == true)
             {
-                ErrorText = errorText;
+                SetMutationErrors(errors);
             }
+        }
+
+        private void SetMutationErrors(IReadOnlyList<LocalizedText> errors)
+        {
+            ErrorText = string.Join(Environment.NewLine, errors.Select(error => error.GetText(_stringHelper)));
+            _mutationErrors = Array.AsReadOnly(errors.ToArray());
+            OnPropertyChanged(nameof(ErrorText));
+            OnPropertyChanged(nameof(HasError));
         }
 
         internal void EndMutation(GitRepository repository, bool active)

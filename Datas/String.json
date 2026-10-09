@@ -6502,5 +6502,11 @@
     "Name": "HistoryRevertAborted",
     "Kor": "진행 중인 커밋 취소를 중단했습니다.",
     "Eng": "The pending revert was aborted."
+  },
+  {
+    "Id": 3184,
+    "Name": "LocalMutationErrorWithOperation",
+    "Kor": "{0}: {1}",
+    "Eng": "{0}: {1}"
   }
 ]

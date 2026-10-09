@@ -43,6 +43,7 @@ namespace Bough.App.ViewModels
         private string _statusMessage;
         private GitExecutableActionResult _gitPathResult;
         private GitSettingsDisplayResult _displayResult;
+        private GitSettingsDisplayResult _statusResult;
         private string _accountStatusText = string.Empty;
         private string _appearanceStatus = string.Empty;
         private string _languageStatus = string.Empty;
@@ -52,6 +53,10 @@ namespace Bough.App.ViewModels
         private CancellationTokenSource _accountCancellation;
         private bool _isBusy;
         private int _requestVersion;
+        private int _localNameEditVersion;
+        private int _localEmailEditVersion;
+        private int _globalNameEditVersion;
+        private int _globalEmailEditVersion;
 
         public GitSettingsViewModel(GitSettingsService settingsService, GitHubAccountService gitHubAccountService, StringHelper stringHelper, AppearanceThemeService appearanceTheme, GitErrorLocalizer errorLocalizer, GitOperationQueue operationQueue, LanguageSelectionPresenter languagePresenter)
         {
@@ -80,8 +85,8 @@ namespace Bough.App.ViewModels
             TestGitCommand = new AsyncRelayCommand(TestGitAsync, CanRun);
             SaveGitPathCommand = new AsyncRelayCommand(SaveGitPathAsync, CanRun);
             RefreshCommand = new AsyncRelayCommand(RefreshAsync, CanUseRepository);
-            SaveLocalAuthorCommand = new QueuedAsyncRelayCommand(SaveLocalAuthorAsync, CanQueueRepositoryMutation, exception => StatusMessage = _errorLocalizer.GetDisplayMessage(exception));
-            SaveGlobalAuthorCommand = new QueuedAsyncRelayCommand(SaveGlobalAuthorAsync, CanQueueRepositoryMutation, exception => StatusMessage = _errorLocalizer.GetDisplayMessage(exception));
+            SaveLocalAuthorCommand = new QueuedAsyncRelayCommand(SaveLocalAuthorAsync, CanQueueRepositoryMutation, exception => ShowDisplayError(GitSettingsDisplayTarget.Status, exception));
+            SaveGlobalAuthorCommand = new QueuedAsyncRelayCommand(SaveGlobalAuthorAsync, CanQueueRepositoryMutation, exception => ShowDisplayError(GitSettingsDisplayTarget.Status, exception));
         }
 
         public ReadOnlyObservableCollection<GitRemote> Remotes { get; }
@@ -233,12 +238,40 @@ namespace Bough.App.ViewModels
                 _gitExecutablePresenter.Invalidate();
                 GitPathResult = null;
                 GitVersion = string.Empty;
+                DisplayResult = null;
                 StatusMessage = string.Empty;
             }
         }
         public string GitVersion { get { return _gitVersion; } private set { SetProperty(ref _gitVersion, value); } }
-        public GitExecutableActionResult GitPathResult { get { return _gitPathResult; } private set { SetProperty(ref _gitPathResult, value); } }
-        public GitSettingsDisplayResult DisplayResult { get { return _displayResult; } private set { SetProperty(ref _displayResult, value); } }
+        public GitExecutableActionResult GitPathResult
+        {
+            get { return _gitPathResult; }
+            private set
+            {
+                if (value != null)
+                {
+                    _statusResult = null;
+                }
+                SetProperty(ref _gitPathResult, value);
+            }
+        }
+        public GitSettingsDisplayResult DisplayResult
+        {
+            get { return _displayResult; }
+            private set
+            {
+                if (value == null)
+                {
+                    _statusResult = null;
+                }
+                else if (value.Target == GitSettingsDisplayTarget.Status)
+                {
+                    _statusResult = value;
+                }
+                SetProperty(ref _displayResult, value);
+            }
+        }
+        public GitSettingsDisplayResult StatusResult { get { return _statusResult; } }
         internal StringHelper Strings { get { return _stringHelper; } }
         internal GitErrorLocalizer Errors { get { return _errorLocalizer; } }
 
@@ -254,6 +287,15 @@ namespace Bough.App.ViewModels
 
         public void SetDisplayMessage(GitSettingsDisplayResult result, string message)
         {
+            if (result.Target == GitSettingsDisplayTarget.Status)
+            {
+                if (ReferenceEquals(StatusResult, result) == false)
+                {
+                    return;
+                }
+                StatusMessage = message;
+                return;
+            }
             if (ReferenceEquals(DisplayResult, result) == false)
             {
                 return;
@@ -307,10 +349,50 @@ namespace Bough.App.ViewModels
         {
             DisplayResult = new GitSettingsDisplayResult(GitSettingsDisplayTarget.Account, string.Empty, Array.Empty<object>(), error, account);
         }
-        public string LocalName { get { return _localName; } set { SetProperty(ref _localName, value); } }
-        public string LocalEmail { get { return _localEmail; } set { SetProperty(ref _localEmail, value); } }
-        public string GlobalName { get { return _globalName; } set { SetProperty(ref _globalName, value); } }
-        public string GlobalEmail { get { return _globalEmail; } set { SetProperty(ref _globalEmail, value); } }
+        public string LocalName
+        {
+            get { return _localName; }
+            set
+            {
+                if (SetProperty(ref _localName, value))
+                {
+                    _localNameEditVersion++;
+                }
+            }
+        }
+        public string LocalEmail
+        {
+            get { return _localEmail; }
+            set
+            {
+                if (SetProperty(ref _localEmail, value))
+                {
+                    _localEmailEditVersion++;
+                }
+            }
+        }
+        public string GlobalName
+        {
+            get { return _globalName; }
+            set
+            {
+                if (SetProperty(ref _globalName, value))
+                {
+                    _globalNameEditVersion++;
+                }
+            }
+        }
+        public string GlobalEmail
+        {
+            get { return _globalEmail; }
+            set
+            {
+                if (SetProperty(ref _globalEmail, value))
+                {
+                    _globalEmailEditVersion++;
+                }
+            }
+        }
         public string AuthorStatus { get { return _authorStatus; } private set { SetProperty(ref _authorStatus, value); } }
         public string StatusMessage { get { return _statusMessage; } private set { SetProperty(ref _statusMessage, value); } }
 
@@ -337,6 +419,7 @@ namespace Bough.App.ViewModels
             _accountCancellation?.Cancel();
             _repository = repository;
             OnPropertyChanged(nameof(CurrentRepository));
+            DisplayResult = null;
             StatusMessage = string.Empty;
             SaveLocalAuthorCommand.NotifyCanExecuteChanged();
             SaveGlobalAuthorCommand.NotifyCanExecuteChanged();
@@ -550,7 +633,7 @@ namespace Bough.App.ViewModels
             }
         }
 
-        private async Task<bool> RefreshCoreAsync(bool reportSuccess)
+        private async Task<bool> RefreshCoreAsync(bool reportSuccess, string savedCode = null)
         {
             GitRepository repository = _repository;
             if (repository == null)
@@ -559,6 +642,10 @@ namespace Bough.App.ViewModels
             }
 
             int request = ++_requestVersion;
+            int localNameEditVersion = _localNameEditVersion;
+            int localEmailEditVersion = _localEmailEditVersion;
+            int globalNameEditVersion = _globalNameEditVersion;
+            int globalEmailEditVersion = _globalEmailEditVersion;
             _accountCancellation?.Cancel();
             CancellationTokenSource cancellation = new();
             _accountCancellation = cancellation;
@@ -572,10 +659,29 @@ namespace Bough.App.ViewModels
                     return false;
                 }
 
-                LocalName = snapshot.LocalName;
-                LocalEmail = snapshot.LocalEmail;
-                GlobalName = snapshot.GlobalName;
-                GlobalEmail = snapshot.GlobalEmail;
+                if (ReferenceEquals(repository, _repository) == false)
+                {
+                    return false;
+                }
+                if (savedCode == null)
+                {
+                    if (localNameEditVersion == _localNameEditVersion)
+                    {
+                        LocalName = snapshot.LocalName;
+                    }
+                    if (localEmailEditVersion == _localEmailEditVersion)
+                    {
+                        LocalEmail = snapshot.LocalEmail;
+                    }
+                    if (globalNameEditVersion == _globalNameEditVersion)
+                    {
+                        GlobalName = snapshot.GlobalName;
+                    }
+                    if (globalEmailEditVersion == _globalEmailEditVersion)
+                    {
+                        GlobalEmail = snapshot.GlobalEmail;
+                    }
+                }
                 _remotes.Clear();
                 foreach (GitRemote remote in snapshot.Remotes) { _remotes.Add(remote); }
                 if (reportSuccess)
@@ -588,9 +694,21 @@ namespace Bough.App.ViewModels
             }
             catch (Exception exception)
             {
-                if (request == _requestVersion)
+                if (request != _requestVersion)
                 {
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                    return false;
+                }
+                if (ReferenceEquals(repository, _repository) == false)
+                {
+                    return false;
+                }
+                if (savedCode == null)
+                {
+                    ShowDisplayError(GitSettingsDisplayTarget.Status, exception);
+                }
+                else
+                {
+                    DisplayResult = new GitSettingsDisplayResult(GitSettingsDisplayTarget.Status, savedCode, Array.Empty<object>(), null, null, exception);
                 }
                 return false;
             }
@@ -796,7 +914,12 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
-            string successMessage = _stringHelper.GetString(global ? "GlobalAuthorSaved" : "LocalAuthorSaved");
+            string savedCode = "LocalAuthorSaved";
+            if (global)
+            {
+                savedCode = "GlobalAuthorSaved";
+            }
+            string successMessage = _stringHelper.GetString(savedCode);
             string queueRoot = repository.RootPath;
             if (global)
             {
@@ -817,17 +940,20 @@ namespace Bough.App.ViewModels
                         {
                             return;
                         }
-                        bool refreshed = await RefreshCoreAsync(false);
+                        GitRepository binding = _repository;
+                        int refreshVersion = _requestVersion + 1;
+                        bool refreshed = await RefreshCoreAsync(false, savedCode);
+                        if (ReferenceEquals(binding, _repository) == false)
+                        {
+                            return;
+                        }
+                        if (refreshVersion != _requestVersion)
+                        {
+                            return;
+                        }
                         if (refreshed)
                         {
-                            if (global)
-                            {
-                                ShowDisplayResult(GitSettingsDisplayTarget.Status, "GlobalAuthorSaved");
-                            }
-                            else
-                            {
-                                ShowDisplayResult(GitSettingsDisplayTarget.Status, "LocalAuthorSaved");
-                            }
+                            ShowDisplayResult(GitSettingsDisplayTarget.Status, savedCode);
                         }
                     }
                     finally

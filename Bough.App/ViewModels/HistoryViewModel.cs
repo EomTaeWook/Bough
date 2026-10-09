@@ -700,38 +700,72 @@ namespace Bough.App.ViewModels
         {
             string successMessage = _stringHelper.Format("HistoryBranchCreated", branchName);
             return await RunActionAsync(repositoryRoot, successMessage,
-                (repository, applyResult, readFailure) => _actionPresenter.CreateBranchAsync(repository, commitHash, branchName, switchToBranch, successMessage, applyResult));
+                (repository, applyResult, readFailure) => _actionPresenter.CreateBranchAsync(repository, commitHash, branchName, switchToBranch, successMessage, applyResult, readFailure));
         }
 
         public async Task<bool> CreateTagAsync(string repositoryRoot, string commitHash, string tagName, string successMessage)
         {
             GitRepository repository = null;
+            int repositoryVersion = _actionRepositoryVersion;
+            int request = ++_actionRequest;
+            bool mutationSucceeded = false;
             try
             {
                 repository = RequireRepository(repositoryRoot);
                 return await _actionPresenter.CreateTagAsync(repository, commitHash, tagName, successMessage,
-                    () => ApplyTagResultAsync(repository, commitHash, tagName, successMessage));
-            }
-            catch (OperationCanceledException)
-            {
-                return false;
+                    () =>
+                    {
+                        mutationSucceeded = true;
+                        return ApplyTagResultAsync(repository, commitHash, tagName, successMessage, repositoryVersion, request);
+                    });
             }
             catch (Exception exception)
             {
+                if (repositoryVersion != _actionRepositoryVersion)
+                {
+                    return mutationSucceeded;
+                }
+                if (request != _actionRequest)
+                {
+                    return mutationSucceeded;
+                }
                 if (repository == null)
                 {
                     ReportActionError(exception);
                     return false;
                 }
-                if (_repository?.RootPath == repository.RootPath)
+                if (_repository == null)
                 {
-                    ReportActionError(exception);
+                    return mutationSucceeded;
                 }
+                if (_repository.RootPath != repository.RootPath)
+                {
+                    return mutationSucceeded;
+                }
+                if (mutationSucceeded)
+                {
+                    SetLocalizedErrorText(new LocalizedText("MutationCompletedReadFailed", new LocalizedText(exception)));
+                    ActionMessage?.Invoke(ErrorText);
+                    return true;
+                }
+                if (exception is OperationCanceledException)
+                {
+                    return false;
+                }
+                ReportActionError(exception);
                 return false;
+            }
+            finally
+            {
+                if (mutationSucceeded)
+                {
+                    ReferenceRefreshRequired?.Invoke(repositoryRoot);
+                }
             }
         }
 
-        private Task<bool> ApplyTagResultAsync(GitRepository repository, string commitHash, string tagName, string successMessage)
+        private Task<bool> ApplyTagResultAsync(GitRepository repository, string commitHash, string tagName, string successMessage,
+            int repositoryVersion, int request)
         {
             GitRepository current = _repository;
             if (current == null)
@@ -742,6 +776,14 @@ namespace Bough.App.ViewModels
             {
                 return Task.FromResult(true);
             }
+            if (repositoryVersion != _actionRepositoryVersion)
+            {
+                return Task.FromResult(true);
+            }
+            if (request != _actionRequest)
+            {
+                return Task.FromResult(true);
+            }
 
             HistoryCommitItem item = Commits.FirstOrDefault(commit => commit.Hash == commitHash);
             item?.AddTagReference(tagName.Trim());
@@ -749,7 +791,6 @@ namespace Bough.App.ViewModels
             {
                 OnPropertyChanged(nameof(ReferencesText));
             }
-            RepositoryChanged?.Invoke(current);
             ActionMessage?.Invoke(successMessage);
             return Task.FromResult(true);
         }

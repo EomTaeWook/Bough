@@ -58,7 +58,7 @@ namespace Bough.Core.Git
                 await _runner.RunAsync(repository.RootPath, new string[] { "branch", branchName, target }, false, cancellationToken);
             }
 
-            GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
+            GitRepository updated = await ReadHistoryActionRepositoryAsync(repository.RootPath, cancellationToken);
             if (switchToBranch)
             {
                 if (updated.CurrentBranch != branchName)
@@ -103,7 +103,7 @@ namespace Bough.Core.Git
 
             await VerifyBranchNameAsync(repository, localName, cancellationToken);
             await _runner.RunAsync(repository.RootPath, new string[] { "switch", "--track", "-c", localName, branch.FullName }, false, cancellationToken);
-            GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
+            GitRepository updated = await ReadHistoryActionRepositoryAsync(repository.RootPath, cancellationToken);
             if (updated.CurrentBranch != localName)
             {
                 throw new GitException("ReferenceSwitchUnexpectedCurrent", null, localName, updated.CurrentBranch);

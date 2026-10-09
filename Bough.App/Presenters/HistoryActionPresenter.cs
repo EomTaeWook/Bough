@@ -97,10 +97,10 @@ namespace Bough.App.Presenters
         }
 
         public Task<bool> CreateBranchAsync(GitRepository repository, string commitHash, string branchName, bool switchToBranch,
-            string operationName, Func<GitRepository, Task<bool>> applyResult)
+            string operationName, Func<GitRepository, Task<bool>> applyResult, Action<GitException> readFailure = null)
         {
             return RunRepositoryActionAsync(repository, operationName,
-                () => _actionService.CreateBranchAsync(repository, branchName, commitHash, switchToBranch), applyResult);
+                () => _actionService.CreateBranchAsync(repository, branchName, commitHash, switchToBranch), applyResult, readFailure);
         }
 
         public Task<bool> CreateTagAsync(GitRepository repository, string commitHash, string tagName, string operationName,

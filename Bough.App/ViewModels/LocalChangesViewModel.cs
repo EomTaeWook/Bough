@@ -38,13 +38,14 @@ namespace Bough.App.ViewModels
 
         private readonly GitWorkingTreeService _workingTreeService;
         private readonly LocalChangesMutationPresenter _mutationPresenter;
+        private readonly LocalChangesPreviewPresenter _previewPresenter;
         private readonly StringHelper _stringHelper;
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly ObservableCollection<GitWorktreeFile> _unstagedFiles;
         private readonly ObservableCollection<GitWorktreeFile> _stagedFiles;
         private readonly ObservableCollection<GitWorktreeFile> _conflictFiles;
         private readonly List<GitWorktreeFile> _selectedUnstagedFiles;
-        private readonly Dictionary<string, string> _queuedMutationErrors;
+        private readonly Dictionary<string, LocalizedText> _queuedMutationErrors;
         private GitRepository _repository;
         private GitWorktreeStatus _workingStatus;
         private Task _worktreeLoadTask = Task.CompletedTask;
@@ -63,7 +64,6 @@ namespace Bough.App.ViewModels
         private bool _isLoadingAmend;
         private bool _isBusy;
         private int _requestVersion;
-        private int _previewVersion;
         private int _amendVersion;
 
         public LocalChangesViewModel(GitWorkingTreeService workingTreeService, GitStashService stashService, GitOperationQueue operationQueue,
@@ -90,6 +90,7 @@ namespace Bough.App.ViewModels
 
             _workingTreeService = workingTreeService;
             _mutationPresenter = new LocalChangesMutationPresenter(workingTreeService, operationQueue);
+            _previewPresenter = new LocalChangesPreviewPresenter(this, workingTreeService);
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
             Stashes = new StashViewModel(stashService, workingTreeService, operationQueue, stringHelper, errorLocalizer);
@@ -103,7 +104,7 @@ namespace Bough.App.ViewModels
             {
                 repositoryComparer = StringComparer.OrdinalIgnoreCase;
             }
-            _queuedMutationErrors = new Dictionary<string, string>(repositoryComparer);
+            _queuedMutationErrors = new Dictionary<string, LocalizedText>(repositoryComparer);
             UnstagedFiles = new ReadOnlyObservableCollection<GitWorktreeFile>(_unstagedFiles);
             StagedFiles = new ReadOnlyObservableCollection<GitWorktreeFile>(_stagedFiles);
             ConflictFiles = new ReadOnlyObservableCollection<GitWorktreeFile>(_conflictFiles);
@@ -215,18 +216,23 @@ namespace Bough.App.ViewModels
 
         public string GetDiscardSelectionText(IReadOnlyList<GitWorktreeFile> files)
         {
+            return GetDiscardSelectionLocalization(files).GetText(_stringHelper);
+        }
+
+        private static LocalizedText GetDiscardSelectionLocalization(IReadOnlyList<GitWorktreeFile> files)
+        {
             int untrackedCount = files.Count(file => file.IsUntracked);
             int trackedCount = files.Count - untrackedCount;
             if (untrackedCount == 0)
             {
-                return _stringHelper.Format("DiscardTrackedSelectionCount", trackedCount);
+                return new LocalizedText("DiscardTrackedSelectionCount", trackedCount);
             }
             if (trackedCount == 0)
             {
-                return _stringHelper.Format("DeleteUntrackedSelectionCount", untrackedCount);
+                return new LocalizedText("DeleteUntrackedSelectionCount", untrackedCount);
             }
 
-            return _stringHelper.Format("DiscardMixedSelectionCount", trackedCount, untrackedCount);
+            return new LocalizedText("DiscardMixedSelectionCount", trackedCount, untrackedCount);
         }
 
         public string GetDiscardContextMenuText(IReadOnlyList<GitWorktreeFile> files)
@@ -514,7 +520,12 @@ namespace Bough.App.ViewModels
                 {
                     SelectedStagedFile = null;
                     SelectedConflictFile = null;
-                    _ = LoadPreviewAsync(value, false);
+                    _previewPresenter.Request(value, false);
+                }
+                else
+                {
+                    _previewPresenter.Invalidate();
+                    ClearPreviewDisplay();
                 }
 
                 NotifyCommandStates();
@@ -572,7 +583,12 @@ namespace Bough.App.ViewModels
                 {
                     SelectedUnstagedFile = null;
                     SelectedConflictFile = null;
-                    _ = LoadPreviewAsync(value, true);
+                    _previewPresenter.Request(value, true);
+                }
+                else
+                {
+                    _previewPresenter.Invalidate();
+                    ClearPreviewDisplay();
                 }
 
                 NotifyCommandStates();
@@ -593,7 +609,12 @@ namespace Bough.App.ViewModels
                 {
                     SelectedUnstagedFile = null;
                     SelectedStagedFile = null;
-                    _ = LoadPreviewAsync(value, false);
+                    _previewPresenter.Request(value, false);
+                }
+                else
+                {
+                    _previewPresenter.Invalidate();
+                    ClearPreviewDisplay();
                 }
 
                 NotifyCommandStates();
@@ -622,7 +643,7 @@ namespace Bough.App.ViewModels
         {
             Stashes.Clear();
             _requestVersion++;
-            _previewVersion++;
+            _previewPresenter.Invalidate();
             _amendVersion++;
             _repository = null;
             _workingStatus = null;
@@ -653,7 +674,7 @@ namespace Bough.App.ViewModels
         public void InvalidatePendingRequests()
         {
             _requestVersion++;
-            _previewVersion++;
+            _previewPresenter.Invalidate();
             _amendVersion++;
             Stashes.InvalidatePendingRequests();
             SetAmendLoading(false);
@@ -666,6 +687,11 @@ namespace Bough.App.ViewModels
         }
 
         public Task LoadWorktreeAsync(GitRepository repository)
+        {
+            return LoadWorktreeAsync(repository, false);
+        }
+
+        public Task LoadWorktreeAsync(GitRepository repository, bool propagateReadError)
         {
             if (repository == null)
             {
@@ -680,14 +706,15 @@ namespace Bough.App.ViewModels
 
             _repository = repository;
             Stashes.BindRepository(repository);
+            _previewPresenter.Invalidate();
             _workingStatus = null;
             OnPropertyChanged(nameof(HasRepository));
-            if (_queuedMutationErrors.TryGetValue(repository.RootPath, out string queuedError) == true)
+            if (_queuedMutationErrors.TryGetValue(repository.RootPath, out LocalizedText queuedError) == true)
             {
-                ErrorText = queuedError;
+                SetLocalizedErrorText(queuedError);
             }
             _requestVersion++;
-            _worktreeLoadTask = RefreshCoreAsync(repository, _requestVersion);
+            _worktreeLoadTask = RefreshCoreAsync(repository, _requestVersion, propagateReadError: propagateReadError);
             return _worktreeLoadTask;
         }
 
@@ -778,7 +805,7 @@ namespace Bough.App.ViewModels
             }
 
             _requestVersion++;
-            _previewVersion++;
+            _previewPresenter.Invalidate();
             IsBusy = true;
             ErrorText = string.Empty;
             try
@@ -820,7 +847,7 @@ namespace Bough.App.ViewModels
         internal int BeginStashSaveWorktreeRefresh()
         {
             int requestVersion = ++_requestVersion;
-            _previewVersion++;
+            _previewPresenter.Invalidate();
             IsBusy = true;
             ErrorText = string.Empty;
             return requestVersion;
@@ -857,8 +884,10 @@ namespace Bough.App.ViewModels
             IsBusy = false;
         }
 
-        private async Task RefreshCoreAsync(GitRepository repository, int requestVersion, string preferredPath = null, bool preferStaged = false)
+        private async Task RefreshCoreAsync(GitRepository repository, int requestVersion, string preferredPath = null, bool preferStaged = false, bool propagateReadError = false)
         {
+            GitRepository binding = _repository;
+            _previewPresenter.Invalidate();
             IsBusy = true;
             if (_queuedMutationErrors.ContainsKey(repository.RootPath) == false)
             {
@@ -872,17 +901,31 @@ namespace Bough.App.ViewModels
                     return;
                 }
 
-                ApplyWorktreeStatus(status, preferredPath, preferStaged);
-                if (_queuedMutationErrors.TryGetValue(repository.RootPath, out string queuedError) == true)
+                if (ReferenceEquals(binding, _repository) == false)
                 {
-                    ErrorText = queuedError;
+                    return;
+                }
+
+                ApplyWorktreeStatus(status, preferredPath, preferStaged);
+                if (_queuedMutationErrors.TryGetValue(repository.RootPath, out LocalizedText queuedError) == true)
+                {
+                    SetLocalizedErrorText(queuedError);
                 }
             }
             catch (Exception exception)
             {
-                if (requestVersion == _requestVersion)
+                if (requestVersion != _requestVersion)
                 {
-                    SetLocalizedErrorText(new LocalizedText(exception));
+                    return;
+                }
+                if (ReferenceEquals(binding, _repository) == false)
+                {
+                    return;
+                }
+                SetLocalizedErrorText(new LocalizedText(exception));
+                if (propagateReadError == true)
+                {
+                    throw;
                 }
             }
             finally
@@ -894,47 +937,62 @@ namespace Bough.App.ViewModels
             }
         }
 
-        private async Task LoadPreviewAsync(GitWorktreeFile file, bool staged)
+        public void SuspendPreview() { _previewPresenter.Suspend(); }
+
+        public void ResumePreview() { _previewPresenter.Resume(); }
+
+        internal void RequestSelectedPreview()
         {
-            GitRepository repository = _repository;
-            if (repository == null)
+            if (SelectedStagedFile != null)
             {
+                _previewPresenter.Request(SelectedStagedFile, true);
                 return;
             }
+            GitWorktreeFile file = SelectedUnstagedFile ?? SelectedConflictFile;
+            if (file != null)
+            {
+                _previewPresenter.Request(file, false);
+            }
+        }
 
-            _previewVersion++;
-            int previewVersion = _previewVersion;
-            int requestVersion = _requestVersion;
+        internal bool IsPreviewSelection(GitWorktreeFile file, bool staged)
+        {
+            if (staged)
+            {
+                return ReferenceEquals(file, SelectedStagedFile);
+            }
+            if (ReferenceEquals(file, SelectedUnstagedFile))
+            {
+                return true;
+            }
+            return ReferenceEquals(file, SelectedConflictFile);
+        }
+
+        private void ClearPreviewDisplay()
+        {
+            PreviewText = string.Empty;
+            PreviewIsUnifiedDiff = false;
+            SetLocalizedPreviewDescription(new LocalizedText("LocalPreviewPrompt"));
+        }
+
+        internal void BeginPreviewDisplay()
+        {
             PreviewText = string.Empty;
             PreviewIsUnifiedDiff = false;
             SetLocalizedPreviewDescription(new LocalizedText("LocalPreviewLoading"));
-            try
-            {
-                GitFilePreview preview = await _workingTreeService.GetPreviewAsync(repository, file, staged);
-                if (previewVersion != _previewVersion)
-                {
-                    return;
-                }
-                if (requestVersion != _requestVersion)
-                {
-                    return;
-                }
+        }
 
-                PreviewIsUnifiedDiff = file.IsUntracked == false;
-                PreviewText = preview.Text;
-                SetLocalizedPreviewDescription(new LocalizedText(preview.DescriptionCode, preview.DescriptionArguments.ToArray()));
-            }
-            catch (Exception exception)
-            {
-                if (previewVersion == _previewVersion)
-                {
-                    if (requestVersion == _requestVersion)
-                    {
-                        SetLocalizedErrorText(new LocalizedText(exception));
-                        SetLocalizedPreviewDescription(new LocalizedText("LocalPreviewFailed"));
-                    }
-                }
-            }
+        internal void ApplyPreviewDisplay(GitWorktreeFile file, GitFilePreview preview)
+        {
+            PreviewIsUnifiedDiff = file.IsUntracked == false;
+            PreviewText = preview.Text;
+            SetLocalizedPreviewDescription(new LocalizedText(preview.DescriptionCode, preview.DescriptionArguments.ToArray()));
+        }
+
+        internal void ApplyPreviewError(Exception exception)
+        {
+            SetLocalizedErrorText(new LocalizedText(exception));
+            SetLocalizedPreviewDescription(new LocalizedText("LocalPreviewFailed"));
         }
 
         private Task StageSelectedAsync()
@@ -969,7 +1027,7 @@ namespace Bough.App.ViewModels
                 return Task.CompletedTask;
             }
 
-            return _mutationPresenter.UnstageSelectedAsync(this, repository, file, UnstageSelectedText);
+            return _mutationPresenter.UnstageSelectedAsync(this, repository, file, new LocalizedText("UnstageSelected"));
         }
 
         private Task DiscardSelectedAsync()
@@ -1033,7 +1091,7 @@ namespace Bough.App.ViewModels
             }
 
             GitWorktreeFile[] targets = files.ToArray();
-            return QueueMutationAsync(repository, GetDiscardSelectionText(targets), cancellationToken => DiscardCoreAsync(repository, targets, cancellationToken));
+            return QueueMutationAsync(repository, GetDiscardSelectionLocalization(targets), cancellationToken => DiscardCoreAsync(repository, targets, cancellationToken));
         }
 
         private Task DiscardCoreAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, CancellationToken cancellationToken)
@@ -1189,7 +1247,7 @@ namespace Bough.App.ViewModels
             }
 
             GitWorktreeFile[] targets = files.ToArray();
-            return QueueMutationAsync(repository, GetStopTrackingSelectionText(targets.Length), cancellationToken => StopTrackingCoreAsync(repository, targets, cancellationToken));
+            return QueueMutationAsync(repository, new LocalizedText("StopTrackingSelectionCount", targets.Length), cancellationToken => StopTrackingCoreAsync(repository, targets, cancellationToken));
         }
 
         private Task StopTrackingCoreAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, CancellationToken cancellationToken)
@@ -1253,7 +1311,7 @@ namespace Bough.App.ViewModels
             }
 
             GitWorktreeFile[] targets = files.ToArray();
-            return QueueMutationAsync(repository, IgnoreMenuText, cancellationToken => IgnoreCoreAsync(repository, targets, location, cancellationToken));
+            return QueueMutationAsync(repository, new LocalizedText("IgnoreMenu"), cancellationToken => IgnoreCoreAsync(repository, targets, location, cancellationToken));
         }
 
         private bool ValidateUnstagedMenuFiles(GitRepository repository, IReadOnlyList<GitWorktreeFile> files)
@@ -1320,10 +1378,10 @@ namespace Bough.App.ViewModels
 
         private Task RunStageOperationAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, string selectedPath, string preferredPath)
         {
-            string operationName = StageAllText;
+            LocalizedText operationName = new("StageAll");
             if (selectedPath != null)
             {
-                operationName = StageSelectedText;
+                operationName = new LocalizedText("StageSelected");
             }
 
             return _mutationPresenter.StageAsync(this, repository, expectedFiles, selectedPath, preferredPath, operationName);
@@ -1339,7 +1397,7 @@ namespace Bough.App.ViewModels
 
             GitWorktreeFile[] expectedFiles = _stagedFiles.ToArray();
             string preferredPath = SelectedStagedFile?.Path;
-            return _mutationPresenter.UnstageAllAsync(this, repository, expectedFiles, preferredPath, UnstageAllText);
+            return _mutationPresenter.UnstageAllAsync(this, repository, expectedFiles, preferredPath, new LocalizedText("UnstageAll"));
         }
 
         private Task CommitAsync()
@@ -1353,7 +1411,7 @@ namespace Bough.App.ViewModels
             string message = CommitMessage;
             bool amend = Amend;
             GitWorktreeFile[] expectedFiles = _stagedFiles.ToArray();
-            return _mutationPresenter.CommitAsync(this, repository, message, amend, expectedFiles, CommitButtonText);
+            return _mutationPresenter.CommitAsync(this, repository, message, amend, expectedFiles, new LocalizedText("CommitButton"));
         }
 
         internal void ClearCommittedDraft(GitRepository repository, string message, bool amend)
@@ -1441,7 +1499,7 @@ namespace Bough.App.ViewModels
             IsBusy = false;
         }
 
-        private Task QueueMutationAsync(GitRepository repository, string operationName, Func<CancellationToken, Task> operation)
+        private Task QueueMutationAsync(GitRepository repository, LocalizedText operationName, Func<CancellationToken, Task> operation)
         {
             return _mutationPresenter.EnqueueAsync(this, repository, operationName, operation);
         }
@@ -1451,9 +1509,14 @@ namespace Bough.App.ViewModels
             _queuedMutationErrors.Remove(repository.RootPath);
         }
 
-        internal void RememberMutationError(GitRepository repository, string operationName, Exception exception)
+        internal void RememberMutationError(GitRepository repository, LocalizedText operationName, Exception exception)
         {
-            RememberMutationError(repository, $"{operationName}: {_errorLocalizer.GetDisplayMessage(exception)}");
+            LocalizedText error = new("LocalMutationErrorWithOperation", operationName, GetLocalizedMutationError(exception));
+            _queuedMutationErrors[repository.RootPath] = error;
+            if (IsCurrentRepository(repository))
+            {
+                SetLocalizedErrorText(error);
+            }
         }
 
         internal string GetMutationErrorText(Exception exception)
@@ -1461,13 +1524,22 @@ namespace Bough.App.ViewModels
             return _errorLocalizer.GetDisplayMessage(exception);
         }
 
-        private void RememberMutationError(GitRepository repository, string message)
+        private static LocalizedText GetLocalizedMutationError(Exception exception)
         {
-            _queuedMutationErrors[repository.RootPath] = message;
-            if (IsCurrentRepository(repository) == true)
+            if (exception is GitException gitException)
             {
-                ErrorText = message;
+                if (gitException.ErrorCode == "WorkingStopTrackingPartialFailure")
+                {
+                    return new LocalizedText(gitException.ErrorCode, new LocalizedText(gitException.InnerException));
+                }
+                if (gitException.ErrorCode == "DiscardBatchPartialFailure")
+                {
+                    object[] arguments = gitException.Arguments.ToArray();
+                    arguments[arguments.Length - 1] = new LocalizedText(gitException.InnerException);
+                    return new LocalizedText(gitException.ErrorCode, arguments);
+                }
             }
+            return new LocalizedText(exception);
         }
 
         private void ShowMutationCommandError(Exception exception)

@@ -353,7 +353,7 @@ namespace Bough.Core.Git
             }
 
             await _runner.RunAsync(repository.RootPath, new string[] { "switch", "-c", branchName, commitResult.Output.Trim() }, false, cancellationToken);
-            GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
+            GitRepository updated = await ReadCreatedBranchRepositoryAsync(repository.RootPath, cancellationToken);
             if (updated.CurrentBranch != branchName)
             {
                 throw new GitException("ReferenceSwitchUnexpectedCurrent", null, branchName, updated.CurrentBranch);
@@ -373,7 +373,19 @@ namespace Bough.Core.Git
             }
 
             await _runner.RunAsync(repository.RootPath, new string[] { "switch", "--track", "-c", localName, remoteBranch.FullName }, false, cancellationToken);
-            return await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
+            return await ReadCreatedBranchRepositoryAsync(repository.RootPath, cancellationToken);
+        }
+
+        private async Task<GitRepository> ReadCreatedBranchRepositoryAsync(string repositoryRoot, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await _repositoryService.OpenAsync(repositoryRoot, cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                throw new GitException(GitCommitActionService.StateReadFailedCode, exception, Array.Empty<object>());
+            }
         }
 
         public async Task<GitReferenceRenameResult> RenameLocalBranchAsync(GitRepository repository,

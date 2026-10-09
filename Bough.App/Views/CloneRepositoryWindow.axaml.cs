@@ -80,22 +80,18 @@ namespace Bough.App.Views
             string remote = RemoteInput.Text;
             string destinationPath = DestinationInput.Text;
             DestinationOutcomeText.Text = string.Empty;
-            try
-            {
-                _destination = _presenter.ValidateDestination(remote, destinationPath);
-            }
-            catch (Exception exception)
-            {
-                StatusText.Text = GetSafeFailureMessage(exception);
-                return;
-            }
-
-            StatusText.Text = _strings.GetString("CloneQueued");
-            SetRunning(true);
+            _destination = null;
             _cloneProcessStarted = false;
-            _cancellation = new CancellationTokenSource();
+            CancellationTokenSource cancellation = new();
+            _cancellation = cancellation;
+            SetRunning(true);
+            StatusText.Text = _strings.GetString("CloneQueued");
             Progress<int> progress = new(percentage =>
             {
+                if (ReferenceEquals(_cancellation, cancellation) == false)
+                {
+                    return;
+                }
                 if (_running == false)
                 {
                     return;
@@ -104,66 +100,88 @@ namespace Bough.App.Views
             });
             try
             {
+                _destination = await _presenter.ValidateDestinationAsync(remote, destinationPath, cancellation.Token);
+                cancellation.Token.ThrowIfCancellationRequested();
                 string destination = await _presenter.CloneAsync(remote, _destination,
                     _strings.GetString("CloneAction"), progress, () =>
                     {
                         _cloneProcessStarted = true;
                         Dispatcher.UIThread.Post(() =>
                         {
-                            if (_running == true)
+                            if (ReferenceEquals(_cancellation, cancellation) == false)
                             {
-                                StatusText.Text = _strings.GetString("CloneRunning");
+                                return;
                             }
+                            if (_running == false)
+                            {
+                                return;
+                            }
+                            StatusText.Text = _strings.GetString("CloneRunning");
                         });
-                    }, _cancellation.Token);
+                    }, cancellation.Token);
+                if (ReferenceEquals(_cancellation, cancellation) == false)
+                {
+                    return;
+                }
                 StatusText.Text = _strings.GetString("CloneSucceeded");
                 SetRunning(false);
                 Close(destination);
-                return;
             }
             catch (OperationCanceledException)
             {
+                if (ReferenceEquals(_cancellation, cancellation) == false)
+                {
+                    return;
+                }
                 StatusText.Text = _strings.GetString("CloneCancelled");
+                await ShowDestinationOutcomeAsync(cancellation);
             }
             catch (Exception exception)
             {
+                if (ReferenceEquals(_cancellation, cancellation) == false)
+                {
+                    return;
+                }
                 StatusText.Text = GetSafeFailureMessage(exception);
+                await ShowDestinationOutcomeAsync(cancellation);
             }
             finally
             {
-                _cancellation.Dispose();
-                _cancellation = null;
-                SetRunning(false);
+                if (ReferenceEquals(_cancellation, cancellation))
+                {
+                    _cancellation = null;
+                    SetRunning(false);
+                }
+                cancellation.Dispose();
             }
+        }
+
+        private async Task ShowDestinationOutcomeAsync(CancellationTokenSource cancellation)
+        {
             if (_cloneProcessStarted == false)
             {
                 return;
             }
-            // Keep retry disabled until this attempt's destination has been inspected.
-            // The probe only reads metadata/one entry; it never deletes or changes files.
-            StartButton.IsEnabled = false;
-            try
+            string destination = _destination;
+            GitCloneDestinationState state = await _presenter.GetDestinationStateAsync(destination);
+            if (ReferenceEquals(_cancellation, cancellation) == false)
             {
-                GitCloneDestinationState state = await _presenter.GetDestinationStateAsync(_destination);
-                string key = "CloneDestinationInspectionFailed";
-                switch (state)
-                {
-                    case GitCloneDestinationState.Absent:
-                        key = "CloneDestinationMissingAfterAttempt";
-                        break;
-                    case GitCloneDestinationState.EmptyDirectory:
-                        key = "CloneDestinationEmptyAfterAttempt";
-                        break;
-                    case GitCloneDestinationState.ContainsContent:
-                        key = "CloneDestinationContentsAfterAttempt";
-                        break;
-                }
-                DestinationOutcomeText.Text = _strings.Format(key, _destination);
+                return;
             }
-            finally
+            string key = "CloneDestinationInspectionFailed";
+            switch (state)
             {
-                StartButton.IsEnabled = true;
+                case GitCloneDestinationState.Absent:
+                    key = "CloneDestinationMissingAfterAttempt";
+                    break;
+                case GitCloneDestinationState.EmptyDirectory:
+                    key = "CloneDestinationEmptyAfterAttempt";
+                    break;
+                case GitCloneDestinationState.ContainsContent:
+                    key = "CloneDestinationContentsAfterAttempt";
+                    break;
             }
+            DestinationOutcomeText.Text = _strings.Format(key, destination);
         }
 
         private string GetSafeFailureMessage(Exception exception)

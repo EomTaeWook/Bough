@@ -19,17 +19,24 @@ namespace Bough.App.Presenters
             _operationQueue = operationQueue;
         }
 
-        public string ValidateDestination(string remote, string destinationPath)
+        public Task<string> ValidateDestinationAsync(string remote, string destinationPath, CancellationToken cancellationToken)
         {
-            return _cloneService.ValidateDestination(remote, destinationPath);
+            return Task.Run(() =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                string destination = _cloneService.ValidateDestination(remote, destinationPath);
+                cancellationToken.ThrowIfCancellationRequested();
+                return destination;
+            }, cancellationToken);
         }
 
-        public Task<string> CloneAsync(string remote, string destinationPath,
+        public async Task<string> CloneAsync(string remote, string destinationPath,
             string operationName, IProgress<int> progress, Action started, CancellationToken cancellationToken)
         {
-            string destination = _cloneService.ValidateDestination(remote, destinationPath);
-            return _operationQueue.EnqueueAsync(destination, operationName,
-                token => _cloneService.CloneAsync(remote, destination, progress, token, started),
+            string destination = await ValidateDestinationAsync(remote, destinationPath, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            return await _operationQueue.EnqueueAsync(destination, operationName,
+                token => Task.Run(() => _cloneService.CloneAsync(remote, destination, progress, token, started), token),
                 cancellationToken);
         }
 

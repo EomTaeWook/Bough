@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Internals;
+using Bough.App.Localization;
 using Bough.App.Threading;
 using Bough.App.ViewModels;
 using Bough.App.ViewModels.Models;
@@ -34,8 +35,9 @@ namespace Bough.App.Presenters
             catch (Exception exception)
             {
                 string errorText = screen.GetMutationErrorText(exception);
-                screen.ApplyMutationError(repository, errorText);
-                return new StashMutationResult(repository, kind, false, false, false, null, errorText);
+                LocalizedText[] errors = [new LocalizedText(exception)];
+                screen.ApplyMutationError(repository, errors);
+                return new StashMutationResult(repository, kind, false, false, false, null, errorText, errors);
             }
         }
 
@@ -80,12 +82,14 @@ namespace Bough.App.Presenters
                 }
 
                 string errorText = string.Empty;
+                IReadOnlyList<LocalizedText> errors = Array.Empty<LocalizedText>();
                 if (failure != null)
                 {
                     errorText = screen.GetMutationErrorText(failure);
+                    errors = new LocalizedText[] { new LocalizedText(failure) };
                 }
-                screen.ApplySavedRefreshError(repository, requestVersion, errorText);
-                return new StashMutationResult(repository, savedResult.Kind, savedResult.Succeeded, savedResult.WorktreeMayHaveChanged, savedResult.StashesMayHaveChanged, status, errorText);
+                screen.ApplySavedRefreshError(repository, requestVersion, errors);
+                return new StashMutationResult(repository, savedResult.Kind, savedResult.Succeeded, savedResult.WorktreeMayHaveChanged, savedResult.StashesMayHaveChanged, status, errorText, errors);
             }
             finally
             {
@@ -219,13 +223,15 @@ namespace Bough.App.Presenters
             }
 
             string failureText = string.Empty;
+            IReadOnlyList<LocalizedText> failureErrors = Array.Empty<LocalizedText>();
             if (failure != null)
             {
                 failureText = screen.GetMutationErrorText(failure);
-                screen.ApplyMutationError(repository, failureText);
+                failureErrors = new LocalizedText[] { new LocalizedText(failure) };
+                screen.ApplyMutationError(repository, failureErrors);
             }
 
-            return new StashMutationResult(repository, kind, succeeded, worktreeMayHaveChanged, stashesMayHaveChanged, status, failureText);
+            return new StashMutationResult(repository, kind, succeeded, worktreeMayHaveChanged, stashesMayHaveChanged, status, failureText, failureErrors);
         }
     }
 }

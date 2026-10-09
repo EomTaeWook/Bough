@@ -17,6 +17,7 @@ namespace Bough.App.ViewModels.Models
         public bool IsRefreshing { get; private set; }
 
         public string SaveErrorText { get; private set; } = string.Empty;
+        public StashMutationResult SaveResult { get; private set; }
 
         public Exception SaveException { get; private set; }
 
@@ -91,6 +92,7 @@ namespace Bough.App.ViewModels.Models
                 _batchSaved = false;
                 _batchFailed = false;
                 SaveErrorText = string.Empty;
+                SaveResult = null;
                 SaveException = null;
             }
             PendingSaves++;
@@ -109,6 +111,7 @@ namespace Bough.App.ViewModels.Models
             {
                 _batchFailed = true;
                 SaveErrorText = result.ErrorText;
+                SaveResult = result;
                 SaveException = exception;
                 return;
             }
@@ -120,7 +123,7 @@ namespace Bough.App.ViewModels.Models
                 _refreshFailures.Add(new StashSaveRefreshFailure(result, exception));
                 return;
             }
-            if (string.IsNullOrEmpty(result.ErrorText) == false)
+            if (result.HasError)
             {
                 _refreshFailures.Add(new StashSaveRefreshFailure(result, null));
             }
@@ -151,7 +154,7 @@ namespace Bough.App.ViewModels.Models
                 _refreshFailures.Add(new StashSaveRefreshFailure(result, exception));
                 return;
             }
-            if (string.IsNullOrEmpty(result.ErrorText) == false)
+            if (result.HasError)
             {
                 _refreshFailures.Add(new StashSaveRefreshFailure(result, null));
             }

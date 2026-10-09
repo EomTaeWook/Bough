@@ -86,8 +86,8 @@ namespace Bough.Core.Git
         public async Task<GitStashPreview> GetPreviewAsync(GitRepository repository, GitStashEntry entry, CancellationToken cancellationToken = default)
         {
             await VerifySelectedAsync(repository, entry, cancellationToken);
-            GitCommandResult filesResult = await _runner.RunAsync(repository.RootPath, new string[] { "stash", "show", "--include-untracked", "--name-only", "-z", entry.Name }, false, cancellationToken);
-            GitCommandResult diffResult = await _runner.RunAsync(repository.RootPath, new string[] { "stash", "show", "--include-untracked", "--patch", "--no-ext-diff", "--no-color", entry.Name }, false, cancellationToken);
+            GitCommandResult filesResult = await _runner.RunAsync(repository.RootPath, new string[] { "stash", "show", "--include-untracked", "--name-only", "-z", entry.CommitHash }, false, cancellationToken);
+            GitCommandResult diffResult = await _runner.RunAsync(repository.RootPath, new string[] { "stash", "show", "--include-untracked", "--patch", "--no-ext-diff", "--no-color", entry.CommitHash }, false, cancellationToken);
             string[] parts = filesResult.Output.Split('\0');
             if (parts[parts.Length - 1].Length != 0)
             {

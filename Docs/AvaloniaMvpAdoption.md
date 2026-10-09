@@ -53,6 +53,14 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 
 - 선택 기반 하단 미리보기는 `HistoryPreviewPresenter`가 `HistoryPreviewRequest`의 저장소·상세 세대·비교 부모·경로·선택을 고정하고 실행 중인 조회 하나와 최신 대기 요청 하나를 조정한다. Core의 `GetFileContentAsync` 호출 전체를 백그라운드에서 실행해 Git 준비·프로세스 시작·내용 해석이 UI 입력을 붙잡지 않도록 한다. `HistoryViewModel`은 로딩·내용·사유 바인딩을 적용하고 `HistoryView`가 낮은 UI 우선순위와 파일 메뉴 수명으로 표시 시점을 조정한다. 메뉴가 열린 동안 표시를 기다리며 닫힌 뒤에도 현재 요청인지 재확인한다. 취소된 byte 조회는 Git 프로세스 종료까지 비동기로 기다린 뒤 최신 조회를 진행한다. View 분리와 재연결은 Presenter의 `Suspend`/`Resume`으로 처리하고 완료된 표시를 다시 읽지 않는다. 읽기 미리보기와 변경 명령의 FIFO 큐, 외부 Open의 요청 수명은 구분한다.
 
+## 조회 수명과 완료 경계
+
+`LocalChangesPreviewPresenter`와 `StashPreviewPresenter`는 각 화면의 실행 중인 미리보기 조회 하나와 최신 대기 요청 하나를 소유한다. 선택·저장소·목록 수명이 바뀌면 이전 조회를 취소하고 종료를 기다린 뒤 최신 요청을 시작한다. Core 조회는 백그라운드에서 수행하고 현재 결과만 바인딩에 적용한다. Stash 내용 조회는 접수한 항목의 객체 OID를 사용한다. View의 분리·재연결도 Presenter의 조회 수명에 연결하며 변경 명령의 FIFO와 별도로 처리한다.
+
+`ConflictStagePresenter`는 고정 본문 저장, 저장 기준 적용, 필요한 완료 또는 stale 조회와 현재 결과 적용까지 같은 FIFO callback에서 기다린다. `MainWindowRemoteCompletionPresenter`는 메인의 필수 참조·활성 History·작업 트리·진행 상태 조회를 기다리고 현재 원본 조회 오류를 기존 팝업 완료 callback에 전달한다. 기존 화면 조회의 기본 표시 동작은 유지하며 `propagateReadError`를 사용하는 완료 호출만 이번 오류를 받는다. 원격 팝업은 기존 `RefreshFailed` 상태로 Git 성공과 후속 조회 실패를 구분하고 성공 자동 닫기를 막는다. 별도의 공통 완료 결과나 재시도 UI는 추가하지 않는다.
+
+작성자 조회는 필드별 편집 버전으로 조회 중 초안을 보호하고 작성자 저장 뒤의 조회는 다른 작성자 초안을 교체하지 않는다. Local Changes·Stash의 오류 원본은 기존 `LocalizedText`로 보관하며 `GitSettingsDisplayResult`도 최신 실패를 원본 예외로 유지한다. View가 현재 언어로 표시하고 기존 문자열 바인딩은 유지한다. Git 변경 후 저장소 읽기에 실패했을 때는 기존 오류 코드와 dirty 통지를 사용하며 이전 저장소 객체를 새 결과로 채택하지 않는다.
+
 ## 터미널 연결
 
 `Composition/MainWindowChildren`과 Console 호출부는 `Core/Interfaces/ITerminalLauncher`를 생성자 주입받는다. `App.axaml.cs`가 시작 시 OS를 판별해 `WindowsTerminalLauncher`·`MacOsTerminalLauncher`·`LinuxTerminalLauncher` 중 하나를 Singleton으로 등록하며, 지원하지 않는 OS에는 오류를 반환하는 구현을 등록한다. 공통 추상 `TerminalLauncher`는 저장소 확인·프로세스 실행·Git 경로 연결만 맡고 OS 분기를 갖지 않는다.

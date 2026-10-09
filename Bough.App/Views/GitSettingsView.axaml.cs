@@ -374,7 +374,15 @@ namespace Bough.App.Views
 
         private static void ShowDisplayResult(GitSettingsViewModel viewModel)
         {
-            GitSettingsDisplayResult result = viewModel.DisplayResult;
+            ShowDisplayResult(viewModel, viewModel.StatusResult);
+            if (ReferenceEquals(viewModel.StatusResult, viewModel.DisplayResult) == false)
+            {
+                ShowDisplayResult(viewModel, viewModel.DisplayResult);
+            }
+        }
+
+        private static void ShowDisplayResult(GitSettingsViewModel viewModel, GitSettingsDisplayResult result)
+        {
             if (result == null)
             {
                 return;
@@ -407,6 +415,10 @@ namespace Bough.App.Views
                 }
             }
 
+            if (result.RefreshError != null)
+            {
+                message = string.Join(Environment.NewLine, message, viewModel.Errors.GetDisplayMessage(result.RefreshError));
+            }
             viewModel.SetDisplayMessage(result, message);
         }
 

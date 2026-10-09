@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Bough.App.Interfaces;
+using Bough.App.Localization;
 using Bough.App.ViewModels;
 using Bough.App.ViewModels.Models;
 using Bough.Core.Git;
@@ -79,7 +82,7 @@ namespace Bough.App.Presenters
             }
         }
 
-        private static async Task<StashMutationResult> CompleteAsync(IStashMutationCompletion completion, StashMutationResult result)
+        private async Task<StashMutationResult> CompleteAsync(IStashMutationCompletion completion, StashMutationResult result)
         {
             if (result == null)
             {
@@ -95,19 +98,33 @@ namespace Bough.App.Presenters
             {
                 throw new GitException("StashSaveCompletionResultMissing", null, Array.Empty<object>());
             }
-            string errorText = completed.ErrorText;
-            if (string.IsNullOrEmpty(result.ErrorText) == false)
+            List<LocalizedText> errors = result.Errors.ToList();
+            foreach (LocalizedText error in completed.Errors)
             {
-                errorText = result.ErrorText;
+                if (errors.Contains(error) == false)
+                {
+                    errors.Add(error);
+                }
+            }
+            if (result.Errors.Count == 0)
+            {
+                if (string.IsNullOrEmpty(result.ErrorText) == false)
+                {
+                    errors.Add(new LocalizedText(new GitException(result.ErrorText)));
+                }
+            }
+            if (completed.Errors.Count == 0)
+            {
                 if (string.IsNullOrEmpty(completed.ErrorText) == false)
                 {
                     if (completed.ErrorText != result.ErrorText)
                     {
-                        errorText = string.Join(Environment.NewLine, result.ErrorText, completed.ErrorText);
+                        errors.Add(new LocalizedText(new GitException(completed.ErrorText)));
                     }
                 }
             }
-            return new StashMutationResult(result.Repository, result.Kind, result.Succeeded, result.WorktreeMayHaveChanged, result.StashesMayHaveChanged, completed.WorktreeStatus ?? result.WorktreeStatus, errorText);
+            string errorText = string.Join(Environment.NewLine, errors.Select(error => error.GetText(_screen.Strings)));
+            return new StashMutationResult(result.Repository, result.Kind, result.Succeeded, result.WorktreeMayHaveChanged, result.StashesMayHaveChanged, completed.WorktreeStatus ?? result.WorktreeStatus, errorText, errors);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Threading;
+using Bough.App.Localization;
 using Bough.App.ViewModels;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
@@ -90,7 +91,7 @@ namespace Bough.App.Presenters
             }
         }
 
-        public Task StageAsync(LocalChangesViewModel screen, GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, string selectedPath, string preferredPath, string operationName)
+        public Task StageAsync(LocalChangesViewModel screen, GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, string selectedPath, string preferredPath, LocalizedText operationName)
         {
             return EnqueueAsync(screen, repository, operationName, cancellationToken => RunOperationAsync(screen, repository, async token =>
             {
@@ -126,7 +127,7 @@ namespace Bough.App.Presenters
             }, preferredPath, true, cancellationToken));
         }
 
-        public Task UnstageSelectedAsync(LocalChangesViewModel screen, GitRepository repository, GitWorktreeFile file, string operationName)
+        public Task UnstageSelectedAsync(LocalChangesViewModel screen, GitRepository repository, GitWorktreeFile file, LocalizedText operationName)
         {
             return EnqueueAsync(screen, repository, operationName, cancellationToken => RunOperationAsync(screen, repository, async token =>
             {
@@ -142,7 +143,7 @@ namespace Bough.App.Presenters
             }, file.Path, false, cancellationToken));
         }
 
-        public Task UnstageAllAsync(LocalChangesViewModel screen, GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, string preferredPath, string operationName)
+        public Task UnstageAllAsync(LocalChangesViewModel screen, GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, string preferredPath, LocalizedText operationName)
         {
             return EnqueueAsync(screen, repository, operationName, cancellationToken => RunOperationAsync(screen, repository, async token =>
             {
@@ -153,7 +154,7 @@ namespace Bough.App.Presenters
             }, preferredPath, false, cancellationToken));
         }
 
-        public Task CommitAsync(LocalChangesViewModel screen, GitRepository repository, string message, bool amend, IReadOnlyList<GitWorktreeFile> expectedFiles, string operationName)
+        public Task CommitAsync(LocalChangesViewModel screen, GitRepository repository, string message, bool amend, IReadOnlyList<GitWorktreeFile> expectedFiles, LocalizedText operationName)
         {
             return EnqueueAsync(screen, repository, operationName, async cancellationToken =>
             {
@@ -193,7 +194,7 @@ namespace Bough.App.Presenters
                 await screen.RefreshAfterMutationAsync(repository, null, false);
                 if (result.HasError == true)
                 {
-                    throw new GitException("DiscardBatchPartialFailure", result.Error, result.CompletedPaths.Count, string.Join("\n", result.CompletedPaths), result.RemainingPaths.Count, string.Join("\n", result.RemainingPaths), screen.GetMutationErrorText(result.Error));
+                    throw new GitException("DiscardBatchPartialFailure", result.Error, result.CompletedPaths.Count, string.Join("\n", result.CompletedPaths), result.RemainingPaths.Count, string.Join("\n", result.RemainingPaths), result.Error);
                 }
             }
             finally
@@ -231,7 +232,7 @@ namespace Bough.App.Presenters
                 {
                     if (gitException.ErrorCode == "WorkingStopTrackingPartialFailure")
                     {
-                        throw new GitException(gitException.ErrorCode, gitException.InnerException, screen.GetMutationErrorText(gitException.InnerException));
+                        throw new GitException(gitException.ErrorCode, gitException.InnerException, gitException.InnerException);
                     }
                 }
 
@@ -271,12 +272,12 @@ namespace Bough.App.Presenters
             }
         }
 
-        public async Task EnqueueAsync(LocalChangesViewModel screen, GitRepository repository, string operationName, Func<CancellationToken, Task> operation)
+        public async Task EnqueueAsync(LocalChangesViewModel screen, GitRepository repository, LocalizedText operationName, Func<CancellationToken, Task> operation)
         {
             bool resultRecorded = false;
             try
             {
-                await _operationQueue.EnqueueAsync(repository.RootPath, operationName,
+                await _operationQueue.EnqueueAsync(repository.RootPath, operationName.GetText(screen.Strings),
                     cancellationToken => UiQueuedOperation.RunAsync(async () =>
                     {
                         screen.ClearQueuedMutationError(repository);

@@ -39,14 +39,14 @@ namespace Bough.App.Presenters
             get { return _model.IsBusy && _cancellation != null && _cancellation.IsCancellationRequested == false; }
         }
 
-        public async Task SetRepositoryAsync(GitRepository repository)
+        public async Task SetRepositoryAsync(GitRepository repository, CancellationToken cancellationToken = default)
         {
             _model.BindRepository(repository);
             if (repository == null)
             {
                 return;
             }
-            await RefreshAsync();
+            await RefreshAsync(cancellationToken);
         }
 
         public async Task<bool> ExecuteRequestAsync(RemoteOperationRequest request)
@@ -139,8 +139,9 @@ namespace Bough.App.Presenters
             return true;
         }
 
-        public async Task RefreshAsync()
+        public async Task RefreshAsync(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             GitRepository repository = _model.CurrentRepository;
             if (repository == null)
             {
@@ -151,7 +152,7 @@ namespace Bough.App.Presenters
                 return;
             }
             _loadCancellation?.Cancel();
-            using CancellationTokenSource cancellation = new();
+            using CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _loadCancellation = cancellation;
             int request = ++_requestVersion;
             _model.IsLoading = true;
@@ -159,6 +160,7 @@ namespace Bough.App.Presenters
             try
             {
                 GitRemoteState state = await _service.GetStateAsync(repository, cancellation.Token);
+                cancellation.Token.ThrowIfCancellationRequested();
                 if (request != _requestVersion)
                 {
                     return;
@@ -175,6 +177,7 @@ namespace Bough.App.Presenters
             }
             catch (OperationCanceledException)
             {
+                cancellationToken.ThrowIfCancellationRequested();
             }
             catch (Exception exception)
             {
@@ -299,8 +302,9 @@ namespace Bough.App.Presenters
             });
         }
 
-        public async Task<bool> PrepareUpstreamPushAsync(string remote, string branch)
+        public async Task<bool> PrepareUpstreamPushAsync(string remote, string branch, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             GitRepository repository = _model.CurrentRepository;
             GitRemoteState previous = _model.RemoteState;
             if (repository == null)
@@ -329,7 +333,7 @@ namespace Bough.App.Presenters
             }
 
             _loadCancellation?.Cancel();
-            using CancellationTokenSource cancellation = new();
+            using CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _loadCancellation = cancellation;
             int request = ++_requestVersion;
             _model.IsLoading = true;
@@ -338,6 +342,7 @@ namespace Bough.App.Presenters
             try
             {
                 GitRemoteState latest = await _service.GetStateAsync(repository, cancellation.Token);
+                cancellation.Token.ThrowIfCancellationRequested();
                 if (request != _requestVersion)
                 {
                     return false;
@@ -374,6 +379,7 @@ namespace Bough.App.Presenters
             }
             catch (OperationCanceledException)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 return false;
             }
             catch (Exception exception)
@@ -399,6 +405,15 @@ namespace Bough.App.Presenters
 
         public void Cancel()
         {
+            if (_loadCancellation != null)
+            {
+                if (_loadCancellation.IsCancellationRequested == false)
+                {
+                    _loadCancellation.Cancel();
+                    _model.SetLocalizedStatusText(new LocalizedText("RemoteCancelRequested"));
+                    _model.NotifyState();
+                }
+            }
             if (_model.IsBusy == false)
             {
                 return;
@@ -413,6 +428,18 @@ namespace Bough.App.Presenters
             }
             _model.SetLocalizedStatusText(new LocalizedText("RemoteCancelRequested"));
             _cancellation.Cancel();
+            _model.NotifyState();
+        }
+
+        internal void ReportCompletionFailure(Exception exception)
+        {
+            LocalizedText error = new(exception);
+            string completedMessage = _model.StatusText;
+            _model.SetLocalizedStatusText(new LocalizedText("RemoteStateRefreshFailed", completedMessage, error));
+            if (_model.LastOperationOutcome == RemoteOperationOutcome.Succeeded)
+            {
+                _model.LastOperationOutcome = RemoteOperationOutcome.RefreshFailed;
+            }
             _model.NotifyState();
         }
 

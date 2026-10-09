@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Localization;
 using Bough.App.Presenters;
@@ -277,9 +278,9 @@ namespace Bough.App.ViewModels
                 NotifyState();
             }
         }
-        public Task SetRepositoryAsync(GitRepository repository)
+        public Task SetRepositoryAsync(GitRepository repository, CancellationToken cancellationToken = default)
         {
-            return _executionPresenter.SetRepositoryAsync(repository);
+            return _executionPresenter.SetRepositoryAsync(repository, cancellationToken);
         }
 
         public void BindRepository(GitRepository repository)
@@ -359,14 +360,19 @@ namespace Bough.App.ViewModels
             return _executionPresenter.PushAsync(remote, branch, targetConfirmed);
         }
 
-        public Task<bool> PrepareUpstreamPushAsync(string remote, string branch)
+        public Task<bool> PrepareUpstreamPushAsync(string remote, string branch, CancellationToken cancellationToken = default)
         {
-            return _executionPresenter.PrepareUpstreamPushAsync(remote, branch);
+            return _executionPresenter.PrepareUpstreamPushAsync(remote, branch, cancellationToken);
         }
 
         public void Cancel()
         {
             _executionPresenter.Cancel();
+        }
+
+        internal void ReportCompletionFailure(Exception exception)
+        {
+            _executionPresenter.ReportCompletionFailure(exception);
         }
 
         internal void NotifyState()

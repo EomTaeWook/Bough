@@ -50,14 +50,15 @@ namespace Bough.App.Presenters
             return _queue.EnqueueAsync(_repository.RootPath, $"{operationName} · {target}", async token =>
             {
                 token.ThrowIfCancellationRequested();
-                await _session.SetRepositoryAsync(_repository);
+                await _session.SetRepositoryAsync(_repository, token);
                 token.ThrowIfCancellationRequested();
                 _session.SelectedRemote = _remote;
                 _session.Prune = _prune;
                 ValidateSession(kind, fetchAll);
+                bool succeeded = false;
                 try
                 {
-                    return await operation(_session);
+                    succeeded = await operation(_session);
                 }
                 finally
                 {
@@ -68,12 +69,21 @@ namespace Bough.App.Presenters
                         {
                             if (_operationFinished != null)
                             {
-                                await _operationFinished(completedRepository, _session.LatestOperationStateSnapshot,
-                                    worktreeMayChange, _repositoryRequestVersion);
+                                try
+                                {
+                                    await _operationFinished(completedRepository, _session.LatestOperationStateSnapshot,
+                                        worktreeMayChange, _repositoryRequestVersion);
+                                }
+                                catch (Exception exception)
+                                {
+                                    _session.ReportCompletionFailure(exception);
+                                    succeeded = false;
+                                }
                             }
                         }
                     }
                 }
+                return succeeded;
             }, cancellationToken: cancellationToken);
         }
 
