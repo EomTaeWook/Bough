@@ -82,6 +82,8 @@ Bough는 충돌한 변경의 출처를 분명히 표시하고, 사용자가 선�
 
 프로젝트는 개발 중입니다. 현재 기능과 확인되지 않은 동작은 [구현 현황](Docs/CurrentStatus.md)에 구분해 기록합니다. 개발 문서와 기획 문서는 각각 [Docs](Docs/README.md), [Design](Design/README.md)에서 볼 수 있습니다.
 
+Bough는 Eidolon 같은 데스크톱 응용프로그램의 아키텍처 기준 사례입니다. 다른 앱에서 사용할 책임·작업 수명과 프로젝트별 매핑은 [응용프로그램 아키텍처](Docs/DesktopApplicationArchitecture.md)에 정리했습니다.
+
 ## 실행
 
 ### 배포 파일 실행

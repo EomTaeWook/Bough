@@ -82,6 +82,8 @@ Additional screens and workflows are described in the [design notes](Design/READ
 
 The project is under active development. [Implementation status](Docs/CurrentStatus.md) (Korean) separates available features from checks still pending. See [development docs](Docs/README.md) and [design notes](Design/README.md) for more detail.
 
+Bough is an architecture reference for desktop applications such as Eidolon. See [desktop application architecture](Docs/DesktopApplicationArchitecture.md) (Korean) for responsibilities, task lifetimes, and the mappings each project must define.
+
 ## Run
 
 ### Run the release

@@ -6,8 +6,10 @@
 
 | 문서 | 내용 |
 | --- | --- |
+| [데스크톱 응용프로그램 기준](DesktopApplicationArchitecture.md) | Eidolon 등 다른 앱이 Bough를 참고할 공통 책임·작업 수명과 프로젝트별 매핑 |
+| [재사용 아키텍처 적용](ReusableArchitectureAdoption.md) | 공통 원본의 채택 범위, Bough의 실제 경계·프로젝트 차이와 미결 |
 | [코딩 컨벤션](CodingConvention.md) | C#·AXAML·Markdown 서식, 역할별 폴더·네임스페이스, 책임·DI·작업 큐, 아이콘·글씨·테마와 작업 정책 |
-| [데이터 변환 도구 사용법](<데이터 변환 도구 사용법.md>) | `Excel/String.xlsx`에서 JSON·C#을 생성하는 순서와 검증 |
+| [데이터 변환 도구 사용법](<데이터 변환 도구 사용법.md>) | `Excel/String.xlsx` 원본·ID 보존, JSON·C# 생성과 현재 제한 병합 계약 |
 | [현재 아키텍처와 Avalonia MVP 적용](AvaloniaMvpAdoption.md) | 프로젝트·역할별 폴더 구성, DI 수명·화면 조정·표현·배포의 현재 구조와 남은 MVP 이행 |
 | [구현 현황](CurrentStatus.md) | 반영된 기능, 진행 중인 작업과 남은 검증 |
 | [기능 진입과 완료 처리 검토](FeatureConnectionReview.md) | 파일 히스토리 보완과 메뉴 무반응·숨은 오류·완료 연결의 남은 항목 |

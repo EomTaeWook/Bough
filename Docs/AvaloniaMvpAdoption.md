@@ -2,6 +2,8 @@
 
 > 책임 원칙: 아래 적용 범위의 Domain·Presenter·Presentation Model·View 분리
 > Bough 규칙: [코딩 컨벤션](CodingConvention.md), [구현 작업 지시](ImplementationPlan.md)
+> 재사용 원본의 선택·프로젝트 차이: [재사용 아키텍처 적용](ReusableArchitectureAdoption.md)
+> 다른 데스크톱 앱의 기준 사례와 매핑: [응용프로그램 아키텍처](DesktopApplicationArchitecture.md)
 > 현재 작업 배분과 검증 방침: [AGENTS.md](../AGENTS.md)
 
 ## 현재 구성
@@ -98,7 +100,11 @@ Windows x64 Release는 .NET 런타임·네이티브 라이브러리·필수 JSON
 
 ## 적용 범위
 
-재사용 문서의 Domain, Presenter, Presentation Model, View 분리를 Bough의 Avalonia 화면에 적용한다. Unity의 Scene, `MonoBehaviour`, 프레임 반복, 프리팹과 풀 규칙은 이 데스크톱 앱의 구현 계약이 아니다. 기존 MVVM 타입의 이름만 Presenter로 바꾸지 않는다. 한 기능을 수정할 때 책임을 실제로 옮기고 기존 바인딩과 사용자 동작을 유지한다.
+재사용 문서의 Domain, Presenter, Presentation Model, View 분리를 Bough의 Avalonia 화면에 적용한다. Unity·서버 전용 내용은 해당 구조가 없으면 무시한다. 원본의 채택 범위와 프로젝트 차이는 [적용 문서](ReusableArchitectureAdoption.md)를 따른다. 기존 MVVM 타입의 이름만 Presenter로 바꾸지 않는다. 한 기능을 수정할 때 책임을 실제로 옮기고 기존 바인딩과 사용자 동작을 유지한다.
+
+같은 실행 경계의 단계는 기존 직접 호출·Task 반환으로 연결하고 실제 다른 화면 소유 상태에 확정 결과를 전달할 때만 기존 이벤트·완료 callback을 사용한다. 수신자는 자신의 상태와 표시를 갱신하며 원래 Git 변경을 다시 실행하지 않는다. 요청 대상·실행 기대값·저장 권위자는 소유자 하나를 유지한다. 구현 스타일과 데이터·DI의 공통 계약은 [코딩 컨벤션](CodingConvention.md)이 소유한다.
+
+View는 최초 현재 모델 표시와 입력·언어·상태 구독을 연결한다. 분리·DataContext 변경·창 종료는 새 표시 입력과 구독을 중단하고 Presenter의 해당 수명을 종료한다. 늦은 성공·실패를 다음 화면에 적용하지 않는다. 외부 Open 파일과 업데이트에 인계한 검증 파일처럼 별도 소비자가 소유하는 자원은 화면 분리만으로 먼저 정리하지 않으며 각 기능의 확정 수명을 따른다.
 
 | 역할 | Bough의 경계 | 소유할 일 |
 | --- | --- | --- |
@@ -147,5 +153,5 @@ Local Changes·Stash의 변경 명령과 Git Settings의 Git 경로 확인·저�
 - 변경한 흐름에서 View가 Git 서비스나 파일 저장을 직접 실행하지 않고, Core가 Avalonia·화면 문자열에 의존하지 않는다.
 - Presenter의 사용자 요청과 서비스 결과 적용 경로, 화면 상태의 소유자가 코드에서 구분된다.
 - 기존 큐 순서, 저장소 전환 중 늦은 응답 폐기, 충돌 편집 내용 보존, 오류 표시 위치와 다국어 표시가 유지된다.
-- 현재는 사용자 지시에 따라 빌드·테스트·UI 실행·캡처·`git diff --check`·리소스 대조 등 추가 검증을 수행하지 않는다. 구현과 문서 갱신은 계속하며 검증 미실시를 보고한다. 아래 절차는 사용자가 검증 재개를 명시적으로 요청할 때만 적용한다.
-- 검증이 재개되면 변경한 프로젝트를 빌드하고 `git diff --check`와 문서 링크를 확인한다. 사용자 동작에 영향이 있는 기능은 가능한 환경에서 대표 시나리오를 확인하고, 확인하지 못한 UI 동작은 [구현 현황](CurrentStatus.md)에 구분해 적는다.
+- 작업 검증 권한은 [AGENTS.md](../AGENTS.md#현재-검증-방침)가 소유한다. 현재 추가 검증을 수행하지 않으며 구현·문서 반영과 검증 미실시를 구분해 보고한다. 문서 읽기나 타입 연결을 실제 동작 확인으로 기록하지 않는다.
+- 사용자가 특정 검증을 허용하면 승인한 대상·종류만 수행한다. 빌드·테스트·UI·전수 검수로 임의 확대하거나 검증을 승인된 커밋·푸시의 자동 선행 조건으로 추가하지 않는다.
