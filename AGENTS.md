@@ -20,8 +20,8 @@
 
 - 담당 기능: **Local Changes, Stash, Git Settings**.
 - 담당 파일: 각 기능의 View·ViewModel·Presenter·화면 모델, 관련 확인·입력 창과 Core 서비스. Local Changes의 diff 미리보기 컨트롤도 포함한다.
-- 설정 범위: Git 실행 파일·작성자·인증 계정·테마·기본 Pull 방식·앱 언어 설정.
-- 연결 경계: MainWindow·원격 실행 파일은 작업자 3 소유다. 화면 갱신·상태·설정 변경 이벤트와 API 의존은 총괄을 통해 전달한다.
+- 설정 범위: Git 실행 파일·작성자·인증 계정·테마·기본 Pull 방식·앱 언어 설정과 정식 릴리스 앱 업데이트 화면.
+- 연결 경계: MainWindow·원격 실행 파일과 앱 업데이트의 Core·시작·종료·exe 교체 연결은 작업자 3 소유다. 화면 갱신·상태·설정 변경 이벤트와 API 의존은 총괄을 통해 전달한다.
 - 세션 정보: 이 PC의 작업자 1 세션 ID는 `AGENTS.local.md`의 작업자 1 행을 사용한다. 로컬 세션 ID를 공유 문서에 복사하거나 커밋하지 않는다.
 - 세부 구현 계약: [작업자 1 구현 지시](Docs/ImplementationPlan.md#작업자-1-local-changes-stash-git-settings)를 따른다. 작업자는 구현 후 인계하며 직접 커밋·푸시하지 않는다.
 

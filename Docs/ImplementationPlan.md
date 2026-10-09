@@ -26,6 +26,7 @@
 - Save 완료에 상태가 없으면 `Task<GitWorktreeStatus> RefreshStashSaveWorktreeAsync(GitRepository repository)`로 고정 저장소의 상태를 한 번 조회·적용하고 동일 스냅샷을 반환한다. 저장소·조회 요청 대체로 적용하지 않으면 null을 반환하고, 현재 조회·적용 실패는 예외를 전달한다. 이전 큐 작업 오류를 이번 조회 실패로 사용하지 않는다. Core 조회와 Presenter의 요청·적용 책임을 유지하며 Apply/Pop용 기존 API는 보존한다. 실제 구현·인계 상태는 CurrentStatus를 따른다.
 - Core의 성공한 stash push·commit/amend는 후속 목록·HEAD 조회 오류 때문에 변경 실패로 바꾸지 않는다. 기존 결과와 작은 커밋 결과에 원래 성공과 `ReadError`를 보존하고 Presenter가 소비한다. SHA를 얻지 못한 커밋도 완료 사실을 전달하며 기존 새로 고침으로 필요한 읽기를 다시 수행한다. 이번 수정에서는 별도 완료 계층이나 재시도 UI를 만들지 않는다.
 - Git Settings: Git 실행 파일·작성자·인증 계정·테마·Bough 기본 Pull 방식과 앱 언어의 즉시 적용·저장. GitHub 계정 인증과 커밋 작성자를 구분하며 `credential.helper` 출처·값 목록은 노출하지 않는다.
+- 앱 업데이트 설정: 현재 버전·정식 릴리스 확인·다운로드 진행과 취소·업데이트 후 재시작 입력을 연결한다. 조회·다운로드 조정은 목적별 Presenter, 상태는 바인딩 모델에 두고 작업자 3의 실제 Core·종료 API를 소비한다. [정식 릴리스 업데이트](../Design/ApplicationUpdate.md)를 따르며 HTTP·exe 교체를 기존 큰 GitSettings ViewModel에 넣지 않는다.
 - 표시 계약은 [화면과 동작](../Design/GitClientWorkflow.md), [원격과 Stash](../Design/RemoteAndStash.md), [GitHub 계정](../Design/GitHubAccountSwitching.md), [테마](../Design/AppearanceTheme.md)를 따른다.
 - MainWindow와 원격 실행 파일은 수정하지 않고 갱신·상태·설정 변경 이벤트 계약을 총괄에게 전달한다.
 
@@ -60,6 +61,15 @@
 - Revert 진행 상태를 저장소 진입·갱신·변경 완료에서 읽어 계속·중단 진입을 제공한다. 충돌은 기존 해결 창으로 연결하고 미해결 파일이 있으면 계속을 막는다. 작업자 2의 실제 Core/Presenter 계약을 소비하며 새 범용 결과·공통 읽기 API는 추가하지 않는다. 중단 영향 확인과 기존 미저장 초안/창 수명 및 독립 저장소·요청 guard를 유지한다.
 - [복제](../Design/RepositoryClone.md)의 단일 목적지, 시작 신호, 고정 오류 분류와 현재 목적지 상태 안내. 실패 이유와 폴더 상태를 구분하고 원문 stderr를 노출하지 않는다.
 - [단일 파일 배포 정책](ReleasePolicy.md)에 따른 필수 리소스 포함과 로더·시작 연결. 릴리스 파일 생성·게시와 README 편집은 총괄이 맡는다.
+- 앱 업데이트 Core·시작·종료 연결: 공식 GitHub의 정식 릴리스만 조회하고 현재 버전과 비교해 Windows x64 asset을 다운로드·확인한다. 임시 보조 프로세스로 정상 종료 뒤 고정 경로 exe를 교체·재실행하며 기존 닫기·초안·Git 진행 작업을 보호한다. 실제 API·모델을 먼저 총괄에 인계해 설정 담당이 연결하게 한다. [정식 릴리스 업데이트](../Design/ApplicationUpdate.md)를 따른다.
+
+## 이번 작업: 정식 릴리스 앱 업데이트
+
+설정에 현재 버전·업데이트 확인·다운로드와 업데이트 후 재시작을 추가한다. 베타·사전 릴리스·초안을 제외하고 높은 정식 버전만 후보로 사용한다. 정식 릴리스가 아직 없으면 이를 안내한다. 사용자 작업 저장소가 아닌 공식 Bough 릴리스를 기준으로 한다.
+
+작업자 1은 설정 화면·상태·Presenter·한영 문구를, 작업자 3은 Core 조회·다운로드·교체와 앱 정상 종료·DI·재실행을 맡는다. 새 하위 에이전트 없이 기존 담당 세션으로 지시한다. 소유권 밖의 파일과 공유 Excel·JSON은 직접 편집하지 않으며 실제 API·문자열·종료 요청 의존은 총괄이 조정한다.
+
+추가 검증 중단 방침을 유지하고 이번 지시는 구현·인계 범위다. 설치 실행·테스트·UI·빌드·하네스·diff check·리소스 대조·릴리스 생성·게시·직접 커밋·푸시를 포함하지 않는다. 현재 완료한 작업의 푸시와 새 업데이트 구현의 완료 상태를 구분한다.
 
 ## 이번 개선 범위: ViewModel 책임 분리
 
