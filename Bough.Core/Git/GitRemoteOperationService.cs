@@ -297,6 +297,11 @@ namespace Bough.Core.Git
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, arguments, true, cancellationToken);
             if (result.ExitCode != 0)
             {
+                if (IsTrackedLocalChangesOverwrite(result.Error))
+                {
+                    string details = await SanitizeErrorAsync(repository, remote, result, cancellationToken);
+                    throw new GitRemoteOperationException("RemotePullLocalChangesWouldBeOverwritten", details, Array.Empty<object>());
+                }
                 if (strategy == GitPullStrategy.FastForwardOnly)
                 {
                     if (result.Error.Contains("Not possible to fast-forward", StringComparison.OrdinalIgnoreCase))
@@ -308,6 +313,19 @@ namespace Bough.Core.Git
 
                 throw await CreateCommandFailureAsync("RemotePullApplyFailed", repository, remote, branch, result, cancellationToken);
             }
+        }
+
+        private static bool IsTrackedLocalChangesOverwrite(string diagnostic)
+        {
+            if (string.IsNullOrWhiteSpace(diagnostic))
+            {
+                return false;
+            }
+            if (diagnostic.Contains("Your local changes to the following files would be overwritten by merge", StringComparison.OrdinalIgnoreCase) == false)
+            {
+                return false;
+            }
+            return diagnostic.Contains("Please commit your changes or stash them before you merge.", StringComparison.OrdinalIgnoreCase);
         }
 
         private static GitRemoteMessage ParseTransferProgress(string line)

@@ -91,18 +91,18 @@ namespace Bough.App.Presenters
             }
         }
 
-        public Task StageAsync(LocalChangesViewModel screen, GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, string selectedPath, string preferredPath, LocalizedText operationName)
+        public Task StageAsync(LocalChangesViewModel screen, GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, IReadOnlyList<string> selectedPaths, string preferredPath, LocalizedText operationName)
         {
             return EnqueueAsync(screen, repository, operationName, cancellationToken => RunOperationAsync(screen, repository, async token =>
             {
                 GitStagePlan plan;
-                if (selectedPath == null)
+                if (selectedPaths == null)
                 {
                     plan = await _workingTreeService.PrepareStageAllAsync(repository, token);
                 }
                 else
                 {
-                    plan = await _workingTreeService.PrepareStageSelectedAsync(repository, selectedPath, token);
+                    plan = await _workingTreeService.PrepareStageSelectionAsync(repository, selectedPaths, token);
                 }
 
                 _workingTreeService.ValidateSelectedFiles(expectedFiles, plan.Files, false);

@@ -6508,5 +6508,11 @@
     "Name": "LocalMutationErrorWithOperation",
     "Kor": "{0}: {1}",
     "Eng": "{0}: {1}"
+  },
+  {
+    "Id": 3185,
+    "Name": "RemotePullLocalChangesWouldBeOverwritten",
+    "Kor": "로컬 변경을 덮어쓸 수 있어 병합이 시작되지 않았습니다. 변경을 커밋하거나 Stash에 보관한 뒤 다시 Pull하세요.",
+    "Eng": "The merge did not start because it would overwrite local changes. Commit or stash your changes, then pull again."
   }
 ]

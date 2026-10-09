@@ -561,7 +561,20 @@ namespace Bough.Core.Git
                 throw new GitException("WorkingSelectedPathRequired", null, Array.Empty<object>());
             }
 
-            return await PrepareStagePlanAsync(repository, selectedPath, cancellationToken);
+            return await PrepareStageSelectionAsync(repository, new string[] { selectedPath }, cancellationToken);
+        }
+
+        public Task<GitStagePlan> PrepareStageSelectionAsync(GitRepository repository, IReadOnlyList<string> selectedPaths, CancellationToken cancellationToken = default)
+        {
+            if (selectedPaths == null)
+            {
+                throw new GitException("WorkingSelectedPathRequired", null, Array.Empty<object>());
+            }
+            if (selectedPaths.Count == 0)
+            {
+                throw new GitException("WorkingSelectedPathRequired", null, Array.Empty<object>());
+            }
+            return PrepareStagePlanAsync(repository, selectedPaths.ToArray(), cancellationToken);
         }
 
         public async Task<GitStagePlan> PrepareStageAllAsync(GitRepository repository, CancellationToken cancellationToken = default)
@@ -576,24 +589,43 @@ namespace Bough.Core.Git
                 throw new ArgumentNullException(nameof(plan));
             }
 
-            GitStagePlan current = await PrepareStagePlanAsync(repository, plan.SelectedPath, cancellationToken);
+            GitStagePlan current = await PrepareStagePlanAsync(repository, plan.SelectedPaths, cancellationToken);
             if (StagePlansMatch(plan, current) == false)
             {
                 throw new GitException("WorkingStageStateChanged", null, Array.Empty<object>());
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            if (plan.SelectedPath != null)
+            if (plan.SelectedPaths != null)
             {
-                await StageAsync(repository, current.Files[0], cancellationToken);
-                return;
+                if (plan.SelectedPaths.Count == 1)
+                {
+                    await StageAsync(repository, current.Files[0], cancellationToken);
+                    return;
+                }
             }
 
             await StageFilesAsync(repository, current.Files, cancellationToken);
         }
 
-        private async Task<GitStagePlan> PrepareStagePlanAsync(GitRepository repository, string selectedPath, CancellationToken cancellationToken)
+        private async Task<GitStagePlan> PrepareStagePlanAsync(GitRepository repository, IReadOnlyList<string> selectedPaths, CancellationToken cancellationToken)
         {
+            HashSet<string> remainingPaths = null;
+            if (selectedPaths != null)
+            {
+                if (selectedPaths.Count == 0)
+                {
+                    throw new GitException("WorkingSelectedPathRequired", null, Array.Empty<object>());
+                }
+                foreach (string path in selectedPaths)
+                {
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        throw new GitException("WorkingSelectedPathRequired", null, Array.Empty<object>());
+                    }
+                }
+                remainingPaths = new HashSet<string>(selectedPaths, StringComparer.Ordinal);
+            }
             GitWorktreeStatus status = await GetStatusAsync(repository, cancellationToken);
             List<GitWorktreeFile> files = [];
             List<GitLargeFileCandidate> largeFiles = [];
@@ -609,9 +641,9 @@ namespace Bough.Core.Git
                     continue;
                 }
 
-                if (selectedPath != null)
+                if (remainingPaths != null)
                 {
-                    if (file.Path != selectedPath)
+                    if (remainingPaths.Remove(file.Path) == false)
                     {
                         continue;
                     }
@@ -652,14 +684,17 @@ namespace Bough.Core.Git
                 }
             }
 
-            if (selectedPath != null && files.Count == 0)
+            if (remainingPaths != null)
             {
-                throw new GitException("WorkingStageFileUnavailable", null, selectedPath);
+                if (remainingPaths.Count > 0)
+                {
+                    throw new GitException("WorkingStageFileUnavailable", null, remainingPaths.First());
+                }
             }
 
             files.Sort((left, right) => StringComparer.Ordinal.Compare(left.Path, right.Path));
             largeFiles.Sort((left, right) => StringComparer.Ordinal.Compare(left.Path, right.Path));
-            return new GitStagePlan(selectedPath, files, largeFiles);
+            return new GitStagePlan(files, largeFiles, selectedPaths);
         }
 
         private static bool StagePlansMatch(GitStagePlan expected, GitStagePlan actual)

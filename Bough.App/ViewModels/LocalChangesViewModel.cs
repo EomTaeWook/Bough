@@ -212,7 +212,7 @@ namespace Bough.App.ViewModels
 
         public string DiscardSelectedText { get { return _stringHelper.GetString("DiscardSelected"); } }
 
-        public string DiscardSelectionText { get { return GetDiscardSelectionText(GetDiscardSelection()); } }
+        public string DiscardSelectionText { get { return GetDiscardSelectionText(GetUnstagedSelection()); } }
 
         public string GetDiscardSelectionText(IReadOnlyList<GitWorktreeFile> files)
         {
@@ -551,10 +551,11 @@ namespace Bough.App.ViewModels
             }
 
             OnPropertyChanged(nameof(DiscardSelectionText));
+            StageSelectedCommand.NotifyCanExecuteChanged();
             DiscardSelectedCommand.NotifyCanExecuteChanged();
         }
 
-        private List<GitWorktreeFile> GetDiscardSelection()
+        private List<GitWorktreeFile> GetUnstagedSelection()
         {
             if (_selectedUnstagedFiles.Count > 0)
             {
@@ -998,17 +999,27 @@ namespace Bough.App.ViewModels
         private Task StageSelectedAsync()
         {
             GitRepository repository = _repository;
-            GitWorktreeFile file = SelectedUnstagedFile;
             if (repository == null)
             {
                 return Task.CompletedTask;
             }
-            if (file == null)
+            GitWorktreeFile[] files = GetUnstagedSelection().ToArray();
+            if (files.Length == 0)
             {
                 return Task.CompletedTask;
             }
 
-            return RunStageOperationAsync(repository, [file], file.Path, file.Path);
+            string[] selectedPaths = files.Select(file => file.Path).ToArray();
+            string preferredPath = files[0].Path;
+            GitWorktreeFile primary = SelectedUnstagedFile;
+            if (primary != null)
+            {
+                if (selectedPaths.Contains(primary.Path, StringComparer.Ordinal))
+                {
+                    preferredPath = primary.Path;
+                }
+            }
+            return RunStageOperationAsync(repository, files, selectedPaths, preferredPath);
         }
 
         private Task UnstageSelectedAsync()
@@ -1032,7 +1043,7 @@ namespace Bough.App.ViewModels
 
         private Task DiscardSelectedAsync()
         {
-            return DiscardPathsAsync(GetDiscardSelection().Select(file => file.Path).ToList());
+            return DiscardPathsAsync(GetUnstagedSelection().Select(file => file.Path).ToList());
         }
 
         public Task DiscardPathsAsync(IReadOnlyList<string> paths)
@@ -1376,15 +1387,15 @@ namespace Bough.App.ViewModels
             return RunStageOperationAsync(repository, _unstagedFiles.ToArray(), null, SelectedUnstagedFile?.Path);
         }
 
-        private Task RunStageOperationAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, string selectedPath, string preferredPath)
+        private Task RunStageOperationAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, IReadOnlyList<string> selectedPaths, string preferredPath)
         {
             LocalizedText operationName = new("StageAll");
-            if (selectedPath != null)
+            if (selectedPaths != null)
             {
                 operationName = new LocalizedText("StageSelected");
             }
 
-            return _mutationPresenter.StageAsync(this, repository, expectedFiles, selectedPath, preferredPath, operationName);
+            return _mutationPresenter.StageAsync(this, repository, expectedFiles, selectedPaths, preferredPath, operationName);
         }
 
         private Task UnstageAllAsync()
@@ -1687,7 +1698,7 @@ namespace Bough.App.ViewModels
                 return false;
             }
 
-            return SelectedUnstagedFile != null;
+            return GetUnstagedSelection().Count > 0;
         }
 
         private bool CanDiscardSelected()
@@ -1697,7 +1708,7 @@ namespace Bough.App.ViewModels
                 return false;
             }
 
-            List<GitWorktreeFile> files = GetDiscardSelection();
+            List<GitWorktreeFile> files = GetUnstagedSelection();
             if (files.Count == 0)
             {
                 return false;
