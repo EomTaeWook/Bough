@@ -100,6 +100,7 @@ namespace Bough.App
             RemoteOperationsPanel.CreateOperationSession = createRemoteOperationSession;
             RemoteOperationsPanel.GetRepositoryRequestVersion = () => _viewModel.RepositoryRequestVersion;
             RemoteOperationsPanel.OperationFinishedAsync = _viewModel.HandleRemoteOperationFinishedAsync;
+            RemoteOperationsPanel.PopupProgressChanged = _viewModel.UpdateRemotePopupProgress;
             _viewModel.ConflictWindowRequested += OpenConflictWindow;
             _viewModel.ConflictResolutionCompleted += CloseCompletedConflictWindow;
             LocalChangesPanel.StashDialogOpening += OnStashDialogOpening;

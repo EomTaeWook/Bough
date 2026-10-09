@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Automation;
@@ -58,6 +59,8 @@ namespace Bough.App.Views
         public Func<RemoteOperationsViewModel> CreateOperationSession { get; set; }
         public Func<int> GetRepositoryRequestVersion { get; set; }
         public Func<GitRepository, RemoteOperationStateSnapshot, bool, int, Task> OperationFinishedAsync { get; set; }
+
+        public Action<GitRepository, RemoteOperationsViewModel, int, bool> PopupProgressChanged { get; set; }
 
         public event Action InternalDialogOpening;
         public event Action InternalDialogClosed;
@@ -530,6 +533,46 @@ namespace Bough.App.Views
             Func<Task<bool>> observedOperation = () => presenter.ExecuteAsync(kind, fetchAll, operationName, target,
                 operation, worktreeMayChange, cancellation.Token);
             RemoteOperationWindow dialog = new(session, operationName, target, observedOperation, closeOnSuccess, StringHelper, ErrorLocalizer, cancellation, OperationQueue, requestedRepository.RootPath);
+            bool popupOpen = false;
+            void UpdatePopupProgress()
+            {
+                if (Dispatcher.UIThread.CheckAccess() == false)
+                {
+                    Dispatcher.UIThread.Post(UpdatePopupProgress);
+                    return;
+                }
+                if (popupOpen == false)
+                {
+                    return;
+                }
+                bool isShowingProgress = dialog.IsVisible;
+                if (session.IsBusy == false)
+                {
+                    isShowingProgress = false;
+                }
+                PopupProgressChanged?.Invoke(requestedRepository, session, repositoryRequestVersion, isShowingProgress);
+            }
+            PropertyChangedEventHandler sessionChanged = (sender, eventArgs) =>
+            {
+                if (eventArgs.PropertyName != nameof(RemoteOperationsViewModel.IsBusy))
+                {
+                    return;
+                }
+                UpdatePopupProgress();
+            };
+            EventHandler popupOpened = (sender, eventArgs) =>
+            {
+                popupOpen = true;
+                UpdatePopupProgress();
+            };
+            EventHandler popupClosed = (sender, eventArgs) =>
+            {
+                popupOpen = false;
+                PopupProgressChanged?.Invoke(requestedRepository, session, repositoryRequestVersion, false);
+            };
+            session.PropertyChanged += sessionChanged;
+            dialog.Opened += popupOpened;
+            dialog.Closed += popupClosed;
             InternalDialogOpening?.Invoke();
             try
             {
@@ -537,6 +580,11 @@ namespace Bough.App.Views
             }
             finally
             {
+                popupOpen = false;
+                session.PropertyChanged -= sessionChanged;
+                dialog.Opened -= popupOpened;
+                dialog.Closed -= popupClosed;
+                PopupProgressChanged?.Invoke(requestedRepository, session, repositoryRequestVersion, false);
                 InternalDialogClosed?.Invoke();
             }
         }
