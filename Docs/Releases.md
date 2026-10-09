@@ -1,5 +1,25 @@
 # 릴리스
 
+## v0.1.0-beta.8
+
+- 생성일: 2026-10-09
+- 소스 커밋: `15c65a070b0cde5d6fcc3cb80778b10be3a69719`
+- 대상: Windows x64 자체 포함 단일 `Bough-v0.1.0-beta.8-win-x64.exe`
+- 상태: 로컬 배포 파일 생성 완료, GitHub 릴리스 미게시
+- 생성 위치: `.codex-build/release-v0.1.0-beta.8/Bough-v0.1.0-beta.8-win-x64.exe`
+
+beta.7의 범위 스테이징·Pull 보호 중단 안내·삭제/수정 충돌과 전체 파일 일괄 처리 등 수정에 정식 릴리스 기반 앱 업데이트를 추가했다. 설정에서 현재 버전과 공식 정식 릴리스를 확인하고 다운로드 진행·취소·정상 종료 뒤 단일 exe 교체·복원·재시작을 연결한다. 이 배포는 베타이며 앱 내부 업데이트 후보는 계속 정식 릴리스만 사용한다. 베타·사전 릴리스·초안은 후보에서 제외한다.
+
+현재 커밋의 재사용 규칙·응용프로그램 아키텍처 문서 정리도 포함한다. 배포 형식·사용자 설정·최근 저장소 목록·로그 저장 정책을 유지하며 Git은 별도로 설치한다.
+
+아래 요청된 `dotnet publish`가 종료 코드 0으로 완료됐다. 출력 `Bough.exe`를 버전이 포함된 이름으로 복사했으며 배포 파일 생성 이후 앱 실행·실제 조회/다운로드·exe 교체·테스트·UI·하네스·정적 분석·diff check·리소스/해시/출력 대조를 수행하지 않았다. 생성 완료를 업데이트의 실제 설치·복원 동작 확인으로 보고하지 않는다.
+
+```powershell
+dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.8 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.8\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.8\win-x64\
+```
+
+이번 요청은 로컬 베타 배포 파일 생성이다. 소스 푸시·태그 생성·GitHub 업로드는 하지 않았으며 README의 게시된 beta.6 다운로드 링크를 유지한다.
+
 ## v0.1.0-beta.7
 
 - 생성일: 2026-10-09
