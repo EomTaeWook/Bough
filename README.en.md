@@ -18,7 +18,7 @@ Run the downloaded single `.exe` file. No archive extraction or separate .NET in
 
 ![Bough conflict window showing both changes, individual and batch choices, and the final file preview](Docs/images/conflict.png)
 
-This screen shows a reproduced text merge conflict. Compare the origins of both changes, resolve individual sections or apply one choice to the remaining sections in the current file, and edit the final result.
+This screen shows a reproduced text merge conflict. Compare both sources, resolve individual sections, or edit the final file. The latest batch action applies, saves, and stages the remaining sections across all conflicted files while preserving existing choices. The screenshot predates this batch change.
 
 ### History
 
@@ -56,7 +56,7 @@ Bough is designed to show the source of each conflicting change and preview the 
 - **Clear change origins:** Distinguish the branches, commits, and other context behind each change.
 - **Readable conflict comparison:** See conflicting sections alongside surrounding code.
 - **Immediate result preview:** See how each choice changes the final file.
-- **Review before applying:** Check the result before saving the file and continuing your Git work.
+- **Conflict resolution and batch saving:** Edit and save individual results, or preserve existing choices and apply, save, and stage the remaining sections in one action.
 - **Clear repository navigation:** See and switch the current repository without relying on a row of tabs.
 
 ## Features
@@ -65,7 +65,7 @@ Bough is designed to show the source of each conflicting change and preview the 
 - **Local changes:** Inspect changed files and diffs with line numbers, stage and unstage, commit, discard changes, stop tracking files, and ignore untracked files.
 - **History and references:** Browse the commit graph, file changes, and file history; revert a selected commit; create, switch, delete, and rename branches; create, delete, and rename tags.
 - **Remotes and stashes:** Fetch, Pull, and Push; configure the default Pull strategy or choose one for a single Pull; save, apply, and delete stashes.
-- **Conflict resolution:** Inspect merge, rebase, or revert changes, choose individual sections or apply one choice to the remaining sections, edit and preview the result, then save and stage it or continue the pending operation.
+- **Conflict resolution:** Inspect merge, rebase, or revert changes; choose sections, edit and save individual files, or apply, save, and stage the remaining sections across all conflicted files.
 
 Features and workflows are still being refined.
 
@@ -101,7 +101,7 @@ dotnet run --project Bough.App/Bough.App.csproj
 
 ### Work with repositories
 
-Bough adds and opens the repository when cloning finishes. The list's remove button appears on hover or keyboard focus. If the repository has unresolved conflicts, choose a change for each section, inspect or edit the final file, and select **Save and Stage**. Text conflict resolution currently targets UTF-8 files.
+Bough adds and opens the repository when cloning finishes. The list's remove button appears on hover or keyboard focus. For individual conflict resolution, choose sections, inspect or edit the final file, and select **Save and Stage**. In the latest source, batch actions apply one choice to all unselected sections across conflicted files, then save and stage them immediately. Existing choices are preserved; inseparable manual edits are excluded with a reason. Merge commits, rebase continue, and revert continue remain explicit actions. Text conflict resolution currently targets UTF-8 files. The beta.6 download above does not include this batch saving change.
 
 When cloning fails, Bough shows the cause identified from Git diagnostics, such as authentication, repository access, connection, storage space, or file writing. Destination status is reported separately. If the folder is empty, you can retry using the same path after resolving the clone error. When the cause cannot be identified, Bough shows a general failure message and the exit code.
 

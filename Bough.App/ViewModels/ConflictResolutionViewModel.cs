@@ -70,6 +70,8 @@ namespace Bough.App.ViewModels
         private string _statusMessage;
         private string _currentChoiceText;
         private ConflictStageResult _stageResult;
+        private ConflictBatchStageResult _batchStageResult;
+        private bool _isBatchStaging;
         private string _queueStatusText = string.Empty;
         private bool _hasDocument;
         private bool _isBusy;
@@ -85,7 +87,7 @@ namespace Bough.App.ViewModels
             _operationQueue = operationQueue;
             _stringHelper = stringHelper;
             _errorLocalizer = errorLocalizer;
-            _stagePresenter = new ConflictStagePresenter(repositoryService, operationQueue, this);
+            _stagePresenter = new ConflictStagePresenter(repositoryService, operationQueue, parser, this);
             _loadPresenter = new ConflictLoadPresenter(repositoryService, parser, stringHelper, this);
             _pathComparison = StringComparison.Ordinal;
             if (OperatingSystem.IsWindows())
@@ -127,6 +129,10 @@ namespace Bough.App.ViewModels
         public bool HasStageResult { get { return StageResult != null; } }
         public bool HasGeneralStatus { get { return StageResult == null; } }
         public ConflictStageResult StageResult { get { return _stageResult; } }
+        public ConflictBatchStageResult BatchStageResult { get { return _batchStageResult; } }
+        public bool HasBatchStageResult { get { return _batchStageResult != null; } }
+        public bool HasBatchStageIssues { get { return _batchStageResult != null && _batchStageResult.HasIssues; } }
+        public bool IsBatchStaging { get { return _isBatchStaging; } }
         internal int ConflictRequestVersion { get { return _requestVersion; } }
         internal int ConflictLoadVersion
         {
@@ -274,11 +280,11 @@ namespace Bough.App.ViewModels
             }
         }
         public string RemoveBothLabel { get { return _stringHelper.GetString("RemoveBoth"); } }
-        public string ConflictBatchCurrentFileText { get { return _stringHelper.Format("ConflictBatchCurrentFileLabel", RemainingHunkCount); } }
-        public string ConflictBatchTooltip { get { return _stringHelper.GetString("ConflictBatchTooltip"); } }
+        public string ConflictBatchCurrentFileText { get { return _stringHelper.Format("ConflictBatchAllFilesScope", ConflictFiles.Count); } }
+        public string ConflictBatchTooltip { get { return _stringHelper.GetString("ConflictBatchStageTooltip"); } }
         public string ConflictBatchReplaceEditsTitle { get { return _stringHelper.GetString("ConflictBatchReplaceEditsTitle"); } }
         public string ConflictBatchReplaceEditsMessage { get { return _stringHelper.GetString("ConflictBatchReplaceEditsMessage"); } }
-        public string ConflictBatchApplyButtonText { get { return _stringHelper.GetString("ConflictBatchApplyButton"); } }
+        public string ConflictBatchApplyButtonText { get { return _stringHelper.GetString("ConflictBatchStageAction"); } }
         public string ConflictSelectionSummaryText
         {
             get
@@ -301,7 +307,7 @@ namespace Bough.App.ViewModels
         {
             get
             {
-                if (_document == null)
+                if (_repository == null)
                 {
                     return false;
                 }
@@ -309,11 +315,11 @@ namespace Bough.App.ViewModels
                 {
                     return false;
                 }
-                if (ConflictFiles.Count == 0)
+                if (IsBatchStaging)
                 {
                     return false;
                 }
-                return RemainingHunkCount > 0;
+                return ConflictFiles.Count > 0;
             }
         }
 
@@ -590,6 +596,7 @@ namespace Bough.App.ViewModels
             }
 
             _repository = repository;
+            _stagePresenter.InvalidateBatch();
             if (repository == null)
             {
                 SetQueueStatusText(string.Empty);
@@ -835,88 +842,81 @@ namespace Bough.App.ViewModels
             }
         }
 
-        public async Task ApplyRemainingAsync(ResolutionChoiceType choice, Func<Task<bool>> confirmReplaceEdits)
+        public Task<ConflictBatchStageResult> ApplyRemainingAndStageAsync(ResolutionChoiceType choice, string operationName)
         {
-            if (confirmReplaceEdits == null)
+            return _stagePresenter.ApplyRemainingAndStageAsync(choice, operationName);
+        }
+
+        internal ConflictBatchFileSnapshot CaptureBatchFile()
+        {
+            if (_currentConflict == null)
             {
-                throw new ArgumentNullException(nameof(confirmReplaceEdits));
+                return null;
             }
-            if (CanApplyRemaining == false)
+            if (_document == null)
+            {
+                return null;
+            }
+            return new ConflictBatchFileSnapshot(_currentConflict, _document, _choices, ResultText,
+                _renderedResultText, IsResultFileDeleted);
+        }
+
+        internal void ApplyBatchStageBaseline(ConflictBatchFileSnapshot snapshot,
+            IReadOnlyDictionary<int, ResolutionChoiceType> choices, string savedText, bool deleteFile)
+        {
+            if (ReferenceEquals(_currentConflict, snapshot.Conflict) == false)
             {
                 return;
             }
-
-            ConflictDocument document = _document;
-            GitConflictFile conflict = _currentConflict;
-            int loadVersion = _loadVersion;
-            int requestVersion = _requestVersion;
-            string resultBeforeConfirmation = ResultText;
-            bool deletedBeforeConfirmation = IsResultFileDeleted;
-            if (resultBeforeConfirmation != _renderedResultText)
+            MarkStageSaved(snapshot.Conflict, savedText, deleteFile);
+            if (ResultText != snapshot.ResultText)
             {
-                bool replaceEdits = await confirmReplaceEdits();
-                if (replaceEdits == false)
+                return;
+            }
+            if (IsResultFileDeleted != snapshot.DeleteFile)
+            {
+                return;
+            }
+            if (_choices.Count != snapshot.Choices.Count)
+            {
+                return;
+            }
+            foreach (KeyValuePair<int, ResolutionChoiceType> choice in snapshot.Choices)
+            {
+                if (_choices.TryGetValue(choice.Key, out ResolutionChoiceType current) == false)
                 {
                     return;
                 }
-                if (loadVersion != _loadVersion)
-                {
-                    return;
-                }
-                if (requestVersion != _requestVersion)
-                {
-                    return;
-                }
-                if (ReferenceEquals(_document, document) == false)
-                {
-                    return;
-                }
-                if (ReferenceEquals(_currentConflict, conflict) == false)
-                {
-                    return;
-                }
-                if (ResultText != resultBeforeConfirmation)
-                {
-                    return;
-                }
-                if (IsResultFileDeleted != deletedBeforeConfirmation)
-                {
-                    return;
-                }
-                if (CanApplyRemaining == false)
+                if (current != choice.Value)
                 {
                     return;
                 }
             }
-
-            int firstAppliedIndex = -1;
-            for (int index = 0; index < document.Hunks.Count; index++)
+            _choices.Clear();
+            foreach (KeyValuePair<int, ResolutionChoiceType> choice in choices)
             {
-                ConflictHunk hunk = document.Hunks[index];
-                if (_choices.ContainsKey(hunk.Id))
-                {
-                    continue;
-                }
-                _choices.Add(hunk.Id, choice);
-                if (firstAppliedIndex < 0)
-                {
-                    firstAppliedIndex = index;
-                }
+                _choices.Add(choice.Key, choice.Value);
             }
-
-            if (firstAppliedIndex >= 0)
-            {
-                _currentHunkIndex = firstAppliedIndex;
-            }
-            _renderedResultText = document.Render(_choices);
-            ResultText = _renderedResultText;
-            if (firstAppliedIndex >= 0)
-            {
-                IsResultFileDeleted = IsDeletedChoice(choice);
-            }
+            _renderedResultText = savedText;
+            ResultText = savedText;
+            IsResultFileDeleted = deleteFile;
             ShowCurrentHunk();
-            int resolvedCount = _choices.Values.Count(selectedChoice => selectedChoice != ResolutionChoiceType.Unresolved);
-            SetLocalizedStatusMessage(new LocalizedText("ConflictsSelectedNotice", resolvedCount, document.Hunks.Count));
+        }
+
+        internal void SetBatchStageResult(ConflictBatchStageResult result)
+        {
+            if (SetProperty(ref _batchStageResult, result, nameof(BatchStageResult)) == false)
+            {
+                return;
+            }
+            OnPropertyChanged(nameof(HasBatchStageResult));
+            OnPropertyChanged(nameof(HasBatchStageIssues));
+        }
+
+        internal void SetBatchStaging(bool value)
+        {
+            SetProperty(ref _isBatchStaging, value, nameof(IsBatchStaging));
+            NotifyBatchState();
         }
 
         private void PreviousHunk()
@@ -1002,7 +1002,7 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(IsSaving));
             if (ownsView)
             {
-                IsBusy = false;
+                IsBusy = IsBatchStaging;
             }
         }
 

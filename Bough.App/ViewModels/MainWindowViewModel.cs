@@ -1842,6 +1842,14 @@ namespace Bough.App.ViewModels
                     return;
                 }
                 SetStatusMessage(_stringHelper.GetString("NoUnresolvedConflicts"), false);
+                if (Conflicts.IsBatchStaging)
+                {
+                    return;
+                }
+                if (Conflicts.HasBatchStageIssues)
+                {
+                    return;
+                }
                 if (hadConflicts)
                 {
                     ConflictResolutionCompleted?.Invoke();

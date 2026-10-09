@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -138,6 +139,11 @@ namespace Bough.App
 
         private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
         {
+            if (eventArgs.PropertyName == nameof(ConflictResolutionViewModel.BatchStageResult))
+            {
+                UpdateBatchStageStatus();
+                return;
+            }
             if (eventArgs.PropertyName == nameof(ConflictResolutionViewModel.StageResult))
             {
                 UpdateStageStatus();
@@ -147,6 +153,7 @@ namespace Bough.App
 
         private void UpdateStageStatus()
         {
+            UpdateBatchStageStatus();
             if (_viewModel == null)
             {
                 return;
@@ -163,6 +170,37 @@ namespace Bough.App
                 message = $"{message} {_errors.GetDisplayMessage(result.RefreshException)}";
             }
             StageStatusBlock.Text = message;
+        }
+
+        private void UpdateBatchStageStatus()
+        {
+            if (_viewModel == null)
+            {
+                return;
+            }
+            ConflictBatchStageResult result = _viewModel.BatchStageResult;
+            if (result == null)
+            {
+                BatchStageStatusBlock.Text = string.Empty;
+                return;
+            }
+            List<string> lines = new()
+            {
+                _strings.Format("ConflictBatchStageSummary", result.StagedCount, result.FailedCount, result.Excluded.Count)
+            };
+            foreach (ConflictStageResult file in result.Files)
+            {
+                lines.Add(_strings.Format("ConflictBatchStageFileResult", file.Path, GetStageMessage(file)));
+            }
+            foreach (KeyValuePair<string, LocalizedText> file in result.Excluded)
+            {
+                lines.Add(_strings.Format("ConflictBatchStageFileResult", file.Key, file.Value.GetText(_strings)));
+            }
+            if (result.RefreshException != null)
+            {
+                lines.Add(_strings.Format("ConflictBatchStageRefreshFailed", _errors.GetDisplayMessage(result.RefreshException)));
+            }
+            BatchStageStatusBlock.Text = string.Join(Environment.NewLine, lines);
         }
 
         private string GetStageMessage(ConflictStageResult result)
@@ -232,10 +270,7 @@ namespace Bough.App
                 return;
             }
 
-            await _viewModel.ApplyRemainingAsync(choice, () => GitActionDialogs.ConfirmAsync(this,
-                _viewModel.ConflictBatchReplaceEditsTitle,
-                _viewModel.ConflictBatchReplaceEditsMessage,
-                _viewModel.ConflictBatchApplyButtonText, _viewModel.Strings));
+            await _viewModel.ApplyRemainingAndStageAsync(choice, _viewModel.ConflictBatchApplyButtonText);
         }
     }
 }

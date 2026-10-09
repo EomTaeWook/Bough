@@ -6514,5 +6514,47 @@
     "Name": "RemotePullLocalChangesWouldBeOverwritten",
     "Kor": "로컬 변경을 덮어쓸 수 있어 병합이 시작되지 않았습니다. 변경을 커밋하거나 Stash에 보관한 뒤 다시 Pull하세요.",
     "Eng": "The merge did not start because it would overwrite local changes. Commit or stash your changes, then pull again."
+  },
+  {
+    "Id": 3186,
+    "Name": "ConflictBatchStageAction",
+    "Kor": "모든 파일의 남은 구간 적용·저장·스테이징",
+    "Eng": "Apply, save and stage remaining sections in all files"
+  },
+  {
+    "Id": 3187,
+    "Name": "ConflictBatchAllFilesScope",
+    "Kor": "충돌 파일 {0}개 · 기존 선택 보존",
+    "Eng": "{0} conflicted files · existing choices are preserved"
+  },
+  {
+    "Id": 3188,
+    "Name": "ConflictBatchStageTooltip",
+    "Kor": "모든 충돌 파일의 아직 선택하지 않은 구간에만 같은 선택을 적용하고 파일을 저장·스테이징합니다. 이미 고른 구간은 보존합니다. 분리할 수 없는 수동 편집 파일은 제외하며, 병합 커밋·리베이스·Revert 계속은 자동 실행하지 않습니다.",
+    "Eng": "Apply the same choice only to unselected sections in all conflicted files, then save and stage the files. Existing choices are preserved. Files with inseparable manual edits are excluded. Merge commits, rebase continue and revert continue are not run automatically."
+  },
+  {
+    "Id": 3189,
+    "Name": "ConflictBatchStageSummary",
+    "Kor": "저장·스테이징 {0}개 · 실패 {1}개 · 제외 {2}개",
+    "Eng": "Saved and staged: {0} · Failed: {1} · Excluded: {2}"
+  },
+  {
+    "Id": 3190,
+    "Name": "ConflictBatchStageManualExcluded",
+    "Kor": "수동 편집을 보존하기 위해 제외했습니다. 이 파일은 파일별 저장·스테이징을 사용하세요.",
+    "Eng": "Excluded to preserve manual edits. Use the individual save and stage action for this file."
+  },
+  {
+    "Id": 3191,
+    "Name": "ConflictBatchStageFileResult",
+    "Kor": "{0}: {1}",
+    "Eng": "{0}: {1}"
+  },
+  {
+    "Id": 3192,
+    "Name": "ConflictBatchStageRefreshFailed",
+    "Kor": "파일별 저장 결과는 유지됩니다. 완료 상태를 다시 읽지 못했습니다: {0}",
+    "Eng": "Per-file save results are preserved. The completion state could not be refreshed: {0}"
   }
 ]

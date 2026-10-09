@@ -119,9 +119,9 @@
         <Border Grid.Row="1" Background="{DynamicResource BoughBrushRaised}"
                 BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1"
                 Padding="12" ToolTip.Tip="{Binding ConflictBatchTooltip}">
-          <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <TextBlock Text="{Binding ConflictBatchApplyButtonText}" FontWeight="SemiBold" />
+          <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+            <StackPanel Spacing="4">
+              <TextBlock Text="{Binding ConflictBatchApplyButtonText}" FontWeight="SemiBold" TextWrapping="Wrap" />
               <TextBlock Text="{Binding ConflictBatchCurrentFileText}" Foreground="{DynamicResource BoughBrushTextMuted}" />
             </StackPanel>
             <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
@@ -135,6 +135,11 @@
               <Button Content="{Binding RemoveBothLabel}" IsEnabled="{Binding CanApplyRemaining}"
                       Click="ApplyRemainingRemove" />
             </StackPanel>
+            <ScrollViewer Grid.Row="2" MaxHeight="80" IsVisible="{Binding HasBatchStageResult}"
+                          HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+              <TextBlock x:Name="BatchStageStatusBlock" TextWrapping="Wrap"
+                         Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" />
+            </ScrollViewer>
           </Grid>
         </Border>
 

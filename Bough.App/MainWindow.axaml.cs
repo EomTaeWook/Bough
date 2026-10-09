@@ -508,6 +508,14 @@ namespace Bough.App
             {
                 return;
             }
+            if (_viewModel.Conflicts.IsBatchStaging)
+            {
+                return;
+            }
+            if (_viewModel.Conflicts.HasBatchStageIssues)
+            {
+                return;
+            }
             _conflictWindow.CloseAfterConfirmation();
             _conflictWindow = null;
             _wasDeactivated = false;
