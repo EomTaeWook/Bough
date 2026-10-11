@@ -23,7 +23,8 @@ Unity·서버 전용 규칙은 해당 구조가 없으면 적용하지 않는다
 
 | 개념 | Bough 소유자·경로 | 연결 기준 |
 | --- | --- | --- |
-| Domain / Gateway | `Bough.Core/Git`, `Conflicts`, `Updates` | Git·파일·HTTP·파싱·입력 및 현재 상태 판정. Avalonia·표시 언어에 의존하지 않는다. |
+| Domain / Gateway | `Bough.Core/Git`, `Conflicts` | Git·저장소 파일·충돌 파싱·입력 및 현재 상태 판정. Avalonia·표시 언어에 의존하지 않는다. |
+| 앱 배포 인프라 | `Bough.App/Infrastructure/Updates`, `Infrastructure/Models/Updates` | 앱 버전 파싱·비교, 공식 릴리스 HTTP 조회·다운로드·digest 확인·설치·복원·재실행. Core·Domain이 앱 제품 버전이나 업데이트를 참조하지 않는다. |
 | Presenter | `Bough.App/Presenters` | 사용자 요청, 기존 FIFO 또는 독립 읽기 수명, 취소·결과 적용 순서. 완성된 UI 문장을 만들지 않는다. |
 | Presentation Model | `Bough.App/ViewModels`, `ViewModels/Models` | 기존 바인딩, 원본 값·선택·진행·코드형 오류 상태. VM이라는 기존 이름을 유지한다. |
 | View / UIActions | AXAML·코드비하인드·기존 ICommand와 입력 메서드 | 지역화·서식·초점·스크롤·OS 표시 연결. 새로운 UIActions 계층을 의무화하지 않는다. |
@@ -39,6 +40,7 @@ Unity·서버 전용 규칙은 해당 구조가 없으면 적용하지 않는다
 - 직접 관리하는 일반 C# 타입을 파일 길이 때문에 `partial`로 나누지 않는다. Avalonia 생성 선언과 결합하는 `App`·Window·UserControl 코드비하인드의 기존 `partial`은 프레임워크 연결 경계로 유지한다. 생성 파일은 편집하지 않는다. 기존 수동 분할의 정리는 이후 승인된 구현 범위에서 책임·호출부를 함께 조정한다.
 - 서비스는 기존 Dignus DI 등록·생성자 주입을 사용한다. 화면별 모델과 고정 입력을 받아 만드는 Presenter의 구성 수명은 기존 App·Composition 경계에 매핑한다. 단일 사용 서비스도 서비스 생성·정적 접근을 소비자에 숨기지 않는다. 현 코드의 남은 직접 구성은 단계적 이행 대상으로 구분한다.
 - Git·파일·업데이트는 기존 구조화된 결과·오류와 원래 예외, Git 성공과 후속 조회 실패의 구분을 유지한다.
+- 앱 업데이트는 배포 인프라로 매핑하며 업무 Domain이나 Core의 공통 기능으로 분류하지 않는다. Bough는 App 안의 Infrastructure에 실제 서비스·모델을 두고 기존 구성·표시·정상 종료 흐름에 연결한다. 다른 앱도 자신의 배포 소유자에 매핑하며 이 책임 이동을 위해 새 프로젝트·전달 Wrapper·큐를 의무화하지 않는다.
 - Unity 이벤트 전용 흐름을 강제하지 않는다. 같은 실행 경계에서는 기존 직접 호출·Task 반환을 사용하고 실제 다른 화면 상태를 갱신할 때만 확정된 결과를 기존 이벤트·완료 callback으로 전달한다. 같은 Git 변경을 수신자가 다시 실행하지 않는다.
 - 문자열 모델은 Bough의 `LocalizedText` 키·인수 계약을 유지한다. 최종 번역·단위·서식은 View가 소유하며 기존 번역 문자열 속성은 해당 기능 수정 때 원본 상태로 이행한다. Git 출력·파일 본문·SHA·사용자 입력은 번역하지 않는 데이터다.
 - 설정·최근 저장소·인증의 기존 저장 소유자와 파일 위치를 유지한다. 앱 업데이트의 helper는 동일 실행 파일과 요청별 검증 사본만 소비하며 사용자 설정을 따로 초기화하거나 복제하지 않는다.

@@ -6,7 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Bough.App.Localization;
 using Bough.App.ViewModels;
-using Bough.Core.Updates;
+using Bough.App.Infrastructure.Updates;
 
 namespace Bough.App.Views
 {

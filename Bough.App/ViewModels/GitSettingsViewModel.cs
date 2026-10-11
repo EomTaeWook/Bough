@@ -12,7 +12,7 @@ using Bough.App.Localization;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
 using Bough.Core.Internals;
-using Bough.Core.Updates;
+using Bough.App.Infrastructure.Updates;
 using Bough.App.Internals;
 using Bough.App.Presenters;
 using Bough.App.ViewModels.Models;

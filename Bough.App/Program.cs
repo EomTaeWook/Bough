@@ -4,7 +4,7 @@ using Dignus.Log.Model;
 using System;
 using System.IO;
 using System.Globalization;
-using Bough.Core.Updates;
+using Bough.App.Infrastructure.Updates;
 
 namespace Bough.App
 {

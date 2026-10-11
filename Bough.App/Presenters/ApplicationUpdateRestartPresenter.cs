@@ -2,8 +2,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Interfaces;
-using Bough.Core.Updates;
-using Bough.Core.Updates.Models;
+using Bough.App.Infrastructure.Updates;
+using Bough.App.Infrastructure.Models.Updates;
 
 namespace Bough.App.Presenters
 {

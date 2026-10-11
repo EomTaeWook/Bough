@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
 using Bough.Core.Git;
+using Bough.App.Infrastructure.Updates;
 using DataContainer.Generated;
 using Dignus.DependencyInjection.Attributes;
 
@@ -22,6 +24,14 @@ namespace Bough.App.Localization
         public string GetDisplayMessage(Exception exception)
         {
             ArgumentNullException.ThrowIfNull(exception);
+            if (exception is ApplicationUpdateException updateException)
+            {
+                if (string.IsNullOrWhiteSpace(updateException.ErrorCode) == true)
+                {
+                    return FormatErrorCode("AppUpdateCorePrepareFailed", Array.Empty<object>());
+                }
+                return FormatErrorCode(updateException.ErrorCode, updateException.Arguments);
+            }
             if (exception is UnauthorizedAccessException || exception is SecurityException)
             {
                 return _stringHelper.GetString("GitFileAccessDenied");
@@ -43,14 +53,19 @@ namespace Bough.App.Localization
                 return gitException.Message;
             }
 
-            string fallback = GetEnglishFallback(gitException.ErrorCode);
-            string template = _stringHelper.GetString(gitException.ErrorCode);
+            return FormatErrorCode(gitException.ErrorCode, gitException.Arguments);
+        }
+
+        private string FormatErrorCode(string errorCode, IReadOnlyList<object> values)
+        {
+            string fallback = GetEnglishFallback(errorCode);
+            string template = _stringHelper.GetString(errorCode);
             if (string.IsNullOrWhiteSpace(template))
             {
                 template = fallback;
             }
 
-            object[] arguments = gitException.Arguments.ToArray();
+            object[] arguments = values.ToArray();
             try
             {
                 return string.Format(CultureInfo.CurrentCulture, template, arguments);
@@ -84,6 +99,10 @@ namespace Bough.App.Localization
                 return "Git exited without an error message (code {0}).";
             }
 
+            if (errorCode.StartsWith("AppUpdate", StringComparison.Ordinal) == true)
+            {
+                return errorCode;
+            }
             return "Git operation failed.";
         }
     }

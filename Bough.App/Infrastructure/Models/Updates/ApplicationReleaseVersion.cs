@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace Bough.Core.Updates.Models
+namespace Bough.App.Infrastructure.Models.Updates
 {
     public class ApplicationReleaseVersion : IComparable<ApplicationReleaseVersion>
     {
@@ -117,85 +117,5 @@ namespace Bough.Core.Updates.Models
             }
             return -1;
         }
-    }
-
-    public class ApplicationUpdateEnvironment
-    {
-        public ApplicationUpdateEnvironment(string version, string executablePath, bool publishedSingleFile)
-        {
-            Version = version;
-            ExecutablePath = executablePath;
-            PublishedSingleFile = publishedSingleFile;
-        }
-
-        public string Version { get; }
-        public string ExecutablePath { get; }
-        public bool PublishedSingleFile { get; }
-    }
-
-    public class ApplicationUpdateRelease
-    {
-        internal ApplicationUpdateRelease(string version, string tag, Uri page, Uri asset, string digest, long size)
-        {
-            Version = version;
-            Tag = tag;
-            ReleasePage = page;
-            AssetUrl = asset;
-            Sha256 = digest;
-            Size = size;
-        }
-
-        public string Version { get; }
-        public string Tag { get; }
-        public Uri ReleasePage { get; }
-        internal Uri AssetUrl { get; }
-        public string Sha256 { get; }
-        public long Size { get; }
-        public bool HasDigest { get { return Sha256 != null; } }
-    }
-
-    public class ApplicationUpdateCheck
-    {
-        internal ApplicationUpdateCheck(string currentVersion, ApplicationUpdateRelease release, bool hasUpdate, string installBlockedCode)
-        {
-            CurrentVersion = currentVersion;
-            Release = release;
-            HasUpdate = hasUpdate;
-            InstallBlockedCode = installBlockedCode;
-        }
-
-        public string CurrentVersion { get; }
-        public ApplicationUpdateRelease Release { get; }
-        public bool HasStableRelease { get { return Release != null; } }
-        public bool HasUpdate { get; }
-        public string InstallBlockedCode { get; }
-        public bool CanInstall { get { return HasUpdate && InstallBlockedCode == null; } }
-    }
-
-    public class ApplicationUpdateProgress
-    {
-        internal ApplicationUpdateProgress(long bytesReceived, long totalBytes)
-        {
-            BytesReceived = bytesReceived;
-            TotalBytes = totalBytes;
-        }
-
-        public long BytesReceived { get; }
-        public long TotalBytes { get; }
-        public double Percentage { get { return BytesReceived * 100.0 / TotalBytes; } }
-    }
-
-    public class VerifiedApplicationUpdate
-    {
-        internal VerifiedApplicationUpdate(ApplicationUpdateRelease release, string directory, string path)
-        {
-            Release = release;
-            Directory = directory;
-            FilePath = path;
-        }
-
-        public ApplicationUpdateRelease Release { get; }
-        internal string Directory { get; }
-        internal string FilePath { get; }
     }
 }

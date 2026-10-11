@@ -17,7 +17,7 @@ using Bough.App.Views;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
 using Bough.Core.Internals;
-using Bough.Core.Updates;
+using Bough.App.Infrastructure.Updates;
 
 namespace Bough.App
 {

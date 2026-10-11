@@ -37,8 +37,12 @@ Windows x64 단일 실행 파일 asset을 선택해 전용 임시 위치에 다�
 
 ## 구현과 인계
 
+앱 버전·릴리스 조회·다운로드·설치·복원·재실행은 `Bough.App/Infrastructure/Updates`의 배포 인프라 책임이다. 버전 비교 타입과 릴리스·조회·진행·검증 다운로드·설치 모델은 `Bough.App/Infrastructure/Models/Updates`에 타입별 파일로 둔다. Git·충돌을 소유하는 `Bough.Core`와 업무 Domain은 앱 제품 버전·업데이트 타입·공식 릴리스 주소·설치 정책을 참조하지 않는다.
+
+설정의 입력·표시·요청 수명은 기존 View·ViewModel·AppUpdatePresenter, 구성·시작·정상 종료는 App·Program과 재시작 Presenter가 연결한다. 원본 코드·인수를 가진 독립 ApplicationUpdateException을 기존 표시 경계에서 지역화하며 GitException을 상속하지 않는다. 기존 AppUpdateCore 접두사 키는 호환용 식별자로 유지하며 책임 경로나 예외 상속을 뜻하지 않는다.
+
 - 작업자 1: 설정의 업데이트 영역·바인딩 상태·Presenter·문구와 입력 연결. 큰 GitSettings ViewModel 안에 HTTP·파일 교체 로직을 넣지 않는다.
-- 작업자 3: 정식 릴리스 API·버전 비교·다운로드·검증·교체의 Core 책임과 App 시작·DI·정상 종료·재실행 연결.
+- 작업자 3: 정식 릴리스 API·버전 비교·다운로드·검증·교체의 App 배포 인프라 책임과 시작·DI·정상 종료·재실행 연결.
 - 총괄: 실제 구현한 API와 종료 요청 계약을 조정하고 최종 한영 문자열을 Excel·JSON에 병합한다. 문서와 릴리스 게시를 관리한다.
 
 작업자 3이 실제 API·모델을 먼저 인계하고 작업자 1이 해당 계약을 소비한다. 미인계 타입이나 임의의 대체 API를 호출하지 않는다. HTTP 읽기를 Git 변경 FIFO에 넣거나 새 범용 완료 계층·작업 큐를 추가하지 않는다.

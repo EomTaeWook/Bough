@@ -15,6 +15,7 @@
 
 ## 앱 내부 업데이트를 제공하는 경우
 
+- 앱 제품 버전 파싱·비교, 릴리스 조회·다운로드·설치·복원·재실행은 배포 인프라가 소유한다. 업무 Core·Domain에 업데이트 모델·제품 버전·릴리스 주소·설치 정책을 넣지 않는다. Bough는 `Bough.App/Infrastructure/Updates`와 `Infrastructure/Models/Updates`에 매핑하고 기존 App·Program·Presenter의 구성·정상 종료 흐름에 연결한다.
 - 업데이트 후보의 배포 채널과 공식 원본을 명시한다. Bough는 공식 GitHub의 게시된 정식 릴리스만 사용하며 초안·사전 릴리스는 제외한다.
 - 릴리스 태그와 실행 파일의 실제 버전을 일치시키고 내부 업데이트가 선택하는 플랫폼·아키텍처별 파일명을 사용한다. Bough의 Windows x64 asset은 `Bough-{tag}-win-x64.exe` 또는 `Bough.exe`다.
 - 게시된 asset의 SHA-256 digest로 다운로드 길이·내용을 확인한 뒤에만 자동 교체한다. 공식 digest가 없거나 일치하지 않으면 자동 교체를 차단하고 릴리스 페이지를 안내한다.

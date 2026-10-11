@@ -8,9 +8,9 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Bough.Core.Updates.Models;
+using Bough.App.Infrastructure.Models.Updates;
 
-namespace Bough.Core.Updates
+namespace Bough.App.Infrastructure.Updates
 {
     public class ApplicationUpdateService
     {

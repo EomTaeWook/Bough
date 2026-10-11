@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Bough.App.Interfaces;
 using Bough.App.Localization;
 using Bough.App.Presenters;
-using Bough.Core.Updates;
+using Bough.App.Infrastructure.Updates;
 
 namespace Bough.App.ViewModels
 {

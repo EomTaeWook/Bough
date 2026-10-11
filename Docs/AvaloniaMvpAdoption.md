@@ -13,7 +13,8 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 | 프로젝트·영역 | 현재 책임 |
 | --- | --- |
 | `Bough.Core` | Git 프로세스 실행, 저장소·작업 트리·참조·원격·복제 서비스, 저장소별 작업 큐와 충돌 파싱. Avalonia와 표시 언어에 의존하지 않는다. |
-| `Bough.Core/Updates` | 공식 정식 릴리스 조회·버전 비교·다운로드·해시 확인, 정상 종료 승인 뒤 설치·복원·재실행과 해당 요청 파일 정리. UI·Git 인증 계정과 별도 책임이다. |
+| `Bough.App/Infrastructure/Updates` | 앱 배포 인프라: 공식 정식 릴리스 조회·버전 비교·다운로드·해시 확인, 정상 종료 승인 뒤 설치·복원·재실행과 해당 요청 파일 정리. Git·충돌 Core는 앱 버전·업데이트를 참조하지 않는다. |
+| `Bough.App/Infrastructure/Models/Updates` | 배포 버전 파싱·비교 타입과 릴리스·조회·진행·검증 다운로드·설치 모델. 타입별 파일로 두며 화면 바인딩 상태와 구분한다. |
 | `Bough.Core/Interfaces` | `ITerminalLauncher`의 공통 실행 계약. OS 구현이나 앱의 화면 계약을 넣지 않는다. |
 | `Bough.App/Presenters` | 기능별 요청 조정, 큐 진입, 실행 시점의 조건 검사와 결과 전달. |
 | `Bough.App/ViewModels` | 화면의 바인딩 상태·선택·로딩·명령 연결과 남아 있는 화면 조정, 공통 `ViewModelBase`. 기존 일부 표시 문구 생성도 여기 남아 있다. |
@@ -109,12 +110,13 @@ View는 최초 현재 모델 표시와 입력·언어·상태 구독을 연결�
 | 역할 | Bough의 경계 | 소유할 일 |
 | --- | --- | --- |
 | Domain / Gateway / Storage | `Bough.Core/Git`, `Bough.Core/Conflicts`의 서비스와 결과 모델 | Git 명령, 충돌 파싱, 사전 검증, 파일·설정 저장, 안정적인 결과 코드와 원본 데이터 |
+| 앱 배포 인프라 | `Bough.App/Infrastructure/Updates`, `Infrastructure/Models/Updates` | 앱 버전·공식 릴리스·다운로드·설치·복원·재실행. Core·Domain에서 참조하지 않으며 기존 Presenter와 App·Program 구성·종료 경계가 소비한다. |
 | Presenter | `Bough.App`의 기능별 조정 객체. 복잡한 흐름은 ViewModel에서 분리 | 사용자 요청 수신, Git 작업 큐에 실행 요청, 서비스 결과 적용 순서, 요청 버전·취소·구독 수명 |
 | Presentation Model | `Bough.App/ViewModels`의 바인딩 상태와 `ViewModels/Models`의 화면 항목 | 선택, 로딩, 입력 가능 여부, 원본 결과·오류 코드와 인수 등 화면이 관찰할 상태 |
 | View | `Bough.App/Views`와 `MainWindow`·`ConflictWindow`의 AXAML 및 코드비하인드 | 바인딩, 입력 전달, 초점·스크롤·선택, 테마, 표시 문자열과 서식 |
 | Lifecycle Adapter | `App.axaml.cs`, 화면 생성·해제 경계 | DI 구성, View·Presenter·화면 상태 연결과 이벤트 구독 해제 |
 
-이행 목표의 기본 흐름은 `View → Presenter → Core 서비스 → Presenter → Presentation Model → View`다. `GitOperationQueue`는 저장소별 변경 명령을 직렬화하는 실행 경계이며 Domain 결과나 UI 상태를 소유하지 않는다. MainWindow는 저장소 전환과 화면 사이 갱신 순서를 조정하고 기능별 Git 규칙을 재구현하지 않는다.
+이행 목표의 기본 흐름은 `View → Presenter → 기능 소유 서비스 → Presenter → Presentation Model → View`다. Git·충돌 기능 소유 서비스는 Core에, 앱 업데이트 서비스는 App의 배포 인프라에 둔다. `GitOperationQueue`는 저장소별 변경 명령을 직렬화하는 실행 경계이며 Domain 결과나 UI 상태를 소유하지 않는다. MainWindow는 저장소 전환과 화면 사이 갱신 순서를 조정하고 기능별 Git 규칙을 재구현하지 않는다.
 
 ## 현재 구조와 이행 기준
 

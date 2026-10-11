@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Bough.Core.Updates.Models
+namespace Bough.App.Infrastructure.Models.Updates
 {
     public class ApplicationUpdateInstallPlan
     {

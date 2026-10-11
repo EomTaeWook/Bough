@@ -5,9 +5,9 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Bough.Core.Updates.Models;
+using Bough.App.Infrastructure.Models.Updates;
 
-namespace Bough.Core.Updates
+namespace Bough.App.Infrastructure.Updates
 {
     public class ApplicationUpdateInstaller
     {
@@ -45,7 +45,7 @@ namespace Bough.Core.Updates
                     File.Copy(update.FilePath, candidate, false);
                     File.Copy(installed, Path.Combine(directory, "helper.exe"), false);
                     cancellationToken.ThrowIfCancellationRequested();
-                    InstallManifest manifest = new();
+                    ApplicationUpdateInstallManifest manifest = new();
                     manifest.OriginalPid = original.Id;
                     manifest.OriginalStartTicks = original.StartTime.ToUniversalTime().Ticks;
                     manifest.InstallPath = installed;
@@ -192,7 +192,7 @@ namespace Bough.Core.Updates
         public static async Task<int> RunHelperAsync(string manifestPath)
         {
             string directory = null;
-            InstallManifest manifest = null;
+            ApplicationUpdateInstallManifest manifest = null;
             string backup = null;
             string incoming = null;
             bool replaced = false;
@@ -216,7 +216,7 @@ namespace Bough.Core.Updates
                 {
                     return 1;
                 }
-                manifest = JsonSerializer.Deserialize<InstallManifest>(await File.ReadAllTextAsync(manifestPath).ConfigureAwait(false));
+                manifest = JsonSerializer.Deserialize<ApplicationUpdateInstallManifest>(await File.ReadAllTextAsync(manifestPath).ConfigureAwait(false));
                 ValidateManifest(manifest, directory);
                 await VerifyHashAsync(helperPath, manifest.InstalledSha256, CancellationToken.None).ConfigureAwait(false);
                 using Process original = Process.GetProcessById(manifest.OriginalPid);
@@ -450,7 +450,7 @@ namespace Bough.Core.Updates
             }
         }
 
-        private static void ValidateManifest(InstallManifest manifest, string directory)
+        private static void ValidateManifest(ApplicationUpdateInstallManifest manifest, string directory)
         {
             if (manifest == null)
             {
@@ -499,7 +499,7 @@ namespace Bough.Core.Updates
             ValidatePlainFile(Path.Combine(directory, "verified.exe"));
         }
 
-        private static void StartInstalled(InstallManifest manifest, string directory, string failureCode)
+        private static void StartInstalled(ApplicationUpdateInstallManifest manifest, string directory, string failureCode)
         {
             ProcessStartInfo start = new(manifest.InstallPath);
             start.UseShellExecute = false;
@@ -532,20 +532,5 @@ namespace Bough.Core.Updates
             }
         }
 
-        private class InstallManifest
-        {
-            public InstallManifest()
-            {
-            }
-
-            public int OriginalPid { get; set; }
-            public long OriginalStartTicks { get; set; }
-            public string InstallPath { get; set; }
-            public string WorkingDirectory { get; set; }
-            public string InstalledSha256 { get; set; }
-            public string CandidateSha256 { get; set; }
-            public long CandidateSize { get; set; }
-            public string Nonce { get; set; }
-        }
     }
 }
