@@ -2,6 +2,14 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
+## 2026-10-11 자동 확인 실행 후발 변경 통합
+
+총괄이 작업자 3의 자동 Fetch 실행 Presenter·Runner·원격 서비스 후발 편집을 채택했다. 단일 consumer 수명, 원격 조회 버전 guard, 최초 조회 대기와 이후 busy 주기 생략, FIFO 실행 직전 재확인과 취소 종료 대기를 반영했다. 새 큐·결과 계층·문자열은 추가하지 않았다.
+
+HTTP·로컬 원격에는 SSH command를 주입하지 않으며 SSH인 경우만 기본 BatchMode를 사용한다. 사용자 지정 SSH 실행·variant·host-key 정책은 바꾸지 않는다. Windows 절대 로컬 원격 경로와 자동 tag following 비활성화를 기존 자동 Fetch 경계에 연결했다. 총괄은 후발 편집에서 제거한 참조 목록 갱신을 같은 기존 조회의 상태 문구 제어로 복구했다. 사용자 상태를 보존하고 현재 참조 조회 오류는 자동 확인에 원본으로 전달하며 History dirty·활성 조회를 유지한다.
+
+설정 저장 통합과 App 배포 인프라 이동은 그대로 유지한다. 기존 15키의 중복 병합은 하지 않는다. 필요한 소스·계약 읽기와 편집만 수행했고 빌드·테스트·UI·실제 Fetch·정적 검사·diff check·리소스 대조·푸시·릴리스 생성은 수행하지 않았다. 이번 인계 반영은 로컬 커밋으로 보관한다.
+
 ## 2026-10-11 자동 확인 설정 후발 변경 통합
 
 작업자 1의 후발 설정 편집을 총괄이 채택했다. 기존 `GitExecutableSettings`의 세 저장 경로에 공통 잠금을 적용하고, 목적별 `RemoteAutoFetchSettingsPresenter`가 백그라운드 저장·입력 await·화면 연결과 분리·늦은 결과를 조정한다. 저장 중에는 해당 설정 입력만 비활성화하며 기존 Git busy를 확대하지 않는다. 기존 App assembly Injectable 등록과 같은 GitSettingsService를 사용한다.

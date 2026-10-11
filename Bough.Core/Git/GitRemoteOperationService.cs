@@ -197,6 +197,7 @@ namespace Bough.Core.Git
         private async Task<GitFetchResult> FetchCoreAsync(GitRepository repository, GitRemoteState expected, string remoteName, bool fetchAll, bool prune, bool nonInteractive, CancellationToken cancellationToken)
         {
             GitRemoteState current = await VerifyStateAsync(repository, expected, cancellationToken);
+            bool useDefaultSshBatchMode = false;
             if (nonInteractive == true)
             {
                 if (current.HasUpstream == false)
@@ -215,7 +216,7 @@ namespace Bough.Core.Git
                 {
                     throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
                 }
-                await EnsureAutomaticFetchTransportAsync(repository, remoteName, cancellationToken);
+                useDefaultSshBatchMode = await EnsureAutomaticFetchTransportAsync(repository, remoteName, cancellationToken);
             }
             ArrayQueue<string> targets = [];
             if (fetchAll == true)
@@ -246,9 +247,9 @@ namespace Bough.Core.Git
                 GitCommandResult result;
                 if (nonInteractive == true)
                 {
-                    arguments = new string[] { "-c", "credential.interactive=false", "fetch", "--no-prune", "--no-prune-tags", "--recurse-submodules=no", "--refmap=", target,
+                    arguments = new string[] { "fetch", "--no-prune", "--no-prune-tags", "--no-tags", "--recurse-submodules=no", "--refmap=", target,
                         $"+refs/heads/{current.UpstreamBranch}:refs/remotes/{target}/{current.UpstreamBranch}" };
-                    result = await _runner.RunNonInteractiveAsync(repository.RootPath, arguments, cancellationToken);
+                    result = await _runner.RunNonInteractiveAsync(repository.RootPath, arguments, cancellationToken, useDefaultSshBatchMode);
                 }
                 else
                 {
@@ -285,7 +286,7 @@ namespace Bough.Core.Git
             return new GitFetchResult(updated.ToArray(), removed.ToArray(), succeeded.ToArray(), failed.ToArray());
         }
 
-        private async Task EnsureAutomaticFetchTransportAsync(GitRepository repository, string remoteName, CancellationToken cancellationToken)
+        private async Task<bool> EnsureAutomaticFetchTransportAsync(GitRepository repository, string remoteName, CancellationToken cancellationToken)
         {
             GitCommandResult remote = await _runner.RunAsync(repository.RootPath, new string[] { "remote", "get-url", remoteName }, false, cancellationToken);
             string address = remote.Output.Trim();
@@ -294,7 +295,7 @@ namespace Bough.Core.Git
             {
                 if (uri.Scheme == "http" || uri.Scheme == "https" || uri.IsFile == true)
                 {
-                    return;
+                    return false;
                 }
                 ssh = uri.Scheme == "ssh";
             }
@@ -304,10 +305,23 @@ namespace Bough.Core.Git
             }
             if (address.Contains("://", StringComparison.Ordinal) == false)
             {
-                int separator = address.IndexOf(':');
-                if (separator > 1 && address[..separator].Contains('/') == false && address[..separator].Contains('\\') == false)
+                if (Path.IsPathFullyQualified(address) == true)
                 {
-                    ssh = true;
+                    if (Directory.Exists(address) == true)
+                    {
+                        return false;
+                    }
+                }
+                int separator = address.IndexOf(':');
+                if (separator > 1)
+                {
+                    if (address[..separator].Contains('/') == false)
+                    {
+                        if (address[..separator].Contains('\\') == false)
+                        {
+                            ssh = true;
+                        }
+                    }
                 }
             }
             if (ssh == false)
@@ -316,11 +330,12 @@ namespace Bough.Core.Git
                 {
                     if (Directory.Exists(Path.GetFullPath(address, repository.RootPath)) == true)
                     {
-                        return;
+                        return false;
                     }
                 }
                 throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
             }
+            // Do not replace a user's SSH executable/command or host-key policy for automatic checking.
             if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GIT_SSH")) == false)
             {
                 throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
@@ -330,30 +345,42 @@ namespace Bough.Core.Git
                 throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
             }
             string variant = Environment.GetEnvironmentVariable("GIT_SSH_VARIANT");
-            if (string.IsNullOrWhiteSpace(variant) == false && variant != "ssh")
+            if (string.IsNullOrWhiteSpace(variant) == false)
             {
-                throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
+                if (variant != "ssh")
+                {
+                    throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
+                }
             }
             GitCommandResult command = await _runner.RunAsync(repository.RootPath, new string[] { "config", "--get", "core.sshCommand" }, true, cancellationToken);
-            if (command.ExitCode != 0 && command.ExitCode != 1)
+            if (command.ExitCode != 0)
             {
-                throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
+                if (command.ExitCode != 1)
+                {
+                    throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
+                }
             }
             if (string.IsNullOrWhiteSpace(command.Output) == false)
             {
                 throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
             }
             GitCommandResult configuredVariant = await _runner.RunAsync(repository.RootPath, new string[] { "config", "--get", "ssh.variant" }, true, cancellationToken);
-            if (configuredVariant.ExitCode != 0 && configuredVariant.ExitCode != 1)
+            if (configuredVariant.ExitCode != 0)
             {
-                throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
+                if (configuredVariant.ExitCode != 1)
+                {
+                    throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
+                }
             }
-            if (string.IsNullOrWhiteSpace(configuredVariant.Output) == false && configuredVariant.Output.Trim() != "ssh")
+            if (string.IsNullOrWhiteSpace(configuredVariant.Output) == false)
             {
-                throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
+                if (configuredVariant.Output.Trim() != "ssh")
+                {
+                    throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
+                }
             }
+            return true;
         }
-
         public async Task PullAsync(GitRepository repository, GitRemoteState expected, string remoteName, string branchName, GitPullStrategy strategy, CancellationToken cancellationToken = default)
         {
             await PullWithProgressAsync(repository, expected, remoteName, branchName, strategy, null, cancellationToken);

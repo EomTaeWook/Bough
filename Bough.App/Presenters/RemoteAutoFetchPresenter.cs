@@ -20,11 +20,13 @@ namespace Bough.App.Presenters
         private Task _consumer = Task.CompletedTask;
         private CancellationTokenSource _cancellation;
         private int _generation;
+        private bool _consumerRunning;
         private bool _started;
         private bool _paused;
         private bool _stopped;
 
-        public RemoteAutoFetchPresenter(MainWindowViewModel model, GitSettingsService settings, GitRemoteOperationService service, GitOperationQueue queue, StringHelper strings)
+        public RemoteAutoFetchPresenter(MainWindowViewModel model, GitSettingsService settings,
+            GitRemoteOperationService service, GitOperationQueue queue, StringHelper strings)
         {
             _model = model;
             _settings = settings;
@@ -35,7 +37,11 @@ namespace Bough.App.Presenters
 
         public void Start()
         {
-            if (_started == true || _stopped == true)
+            if (_started == true)
+            {
+                return;
+            }
+            if (_stopped == true)
             {
                 return;
             }
@@ -49,14 +55,24 @@ namespace Bough.App.Presenters
             _generation++;
             _cancellation?.Cancel();
             _model.RemoteOperations.AutoFetchError = null;
-            if (_started == false || _paused == true || _stopped == true)
+            if (_started == false)
             {
                 return;
             }
-            if (_consumer.IsCompleted == true)
+            if (_paused == true)
             {
-                _consumer = ConsumeAsync();
+                return;
             }
+            if (_stopped == true)
+            {
+                return;
+            }
+            if (_consumerRunning == true)
+            {
+                return;
+            }
+            _consumerRunning = true;
+            _consumer = ConsumeAsync();
         }
 
         public async Task PauseAsync()
@@ -97,7 +113,15 @@ namespace Bough.App.Presenters
 
         private bool IsCurrent(GitRepository repository, int request, int generation)
         {
-            if (_stopped == true || _paused == true || _settings.AutoFetchEnabled == false)
+            if (_stopped == true)
+            {
+                return false;
+            }
+            if (_paused == true)
+            {
+                return false;
+            }
+            if (_settings.AutoFetchEnabled == false)
             {
                 return false;
             }
@@ -108,79 +132,172 @@ namespace Bough.App.Presenters
             return _model.IsCurrentRepositoryRequest(repository, request);
         }
 
-        private async Task ConsumeAsync()
-        {
-            while (_stopped == false && _paused == false && _settings.AutoFetchEnabled == true)
-            {
-                GitRepository repository = _model.CurrentRepository;
-                if (repository == null)
-                {
-                    return;
-                }
-                int request = _model.RepositoryRequestVersion;
-                int generation = _generation;
-                using CancellationTokenSource cancellation = new();
-                _cancellation = cancellation;
-                try
-                {
-                    while (_model.IsRemoteLoading == true || _model.IsReferencesLoading == true || _model.IsLocalChangesLoading == true)
-                    {
-                        await Task.Delay(200, cancellation.Token);
-                    }
-                    using CancellationTokenSource checkCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token);
-                    checkCancellation.CancelAfter(TimeSpan.FromSeconds(60));
-                    try
-                    {
-                        await CheckAsync(repository, request, generation, checkCancellation.Token);
-                    }
-                    catch (OperationCanceledException) when (cancellation.IsCancellationRequested == true)
-                    {
-                        throw;
-                    }
-                    catch (OperationCanceledException exception) when (checkCancellation.IsCancellationRequested == true)
-                    {
-                        if (IsCurrent(repository, request, generation) == true)
-                        {
-                            _model.RemoteOperations.AutoFetchError = new GitException("RemoteAutoFetchTimedOut", exception, Array.Empty<object>());
-                        }
-                    }
-                    catch (Exception exception)
-                    {
-                        if (IsCurrent(repository, request, generation) == true)
-                        {
-                            _model.RemoteOperations.AutoFetchError = exception;
-                        }
-                    }
-                    await Task.Delay(TimeSpan.FromMinutes(_settings.AutoFetchIntervalMinutes), cancellation.Token);
-                }
-                catch (OperationCanceledException) when (cancellation.IsCancellationRequested == true)
-                {
-                }
-                finally
-                {
-                    if (ReferenceEquals(_cancellation, cancellation) == true)
-                    {
-                        _cancellation = null;
-                    }
-                }
-            }
-        }
-
-        private async Task CheckAsync(GitRepository repository, int request, int generation, CancellationToken cancellationToken)
+        private bool CanApply(GitRepository repository, int request, int generation, int readVersion)
         {
             if (IsCurrent(repository, request, generation) == false)
             {
-                return;
+                return false;
             }
-            if (_model.IsBusy == true || _model.RemoteOperations.IsBusy == true || _model.RemoteOperations.IsLoading == true)
+            if (readVersion != _model.RemoteOperations.ReadVersion)
+            {
+                return false;
+            }
+            if (ReferenceEquals(_model.RemoteOperations.CurrentRepository, repository) == false)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private async Task ConsumeAsync()
+        {
+            int scheduledGeneration = -1;
+            try
+            {
+                while (true)
+                {
+                    if (_stopped == true)
+                    {
+                        return;
+                    }
+                    if (_paused == true)
+                    {
+                        return;
+                    }
+                    if (_settings.AutoFetchEnabled == false)
+                    {
+                        return;
+                    }
+                    GitRepository repository = _model.CurrentRepository;
+                    if (repository == null)
+                    {
+                        return;
+                    }
+                    int request = _model.RepositoryRequestVersion;
+                    int generation = _generation;
+                    using CancellationTokenSource cancellation = new();
+                    _cancellation = cancellation;
+                    try
+                    {
+                        if (scheduledGeneration != generation)
+                        {
+                            while (HasInitialReads() == true)
+                            {
+                                await Task.Delay(200, cancellation.Token);
+                            }
+                            scheduledGeneration = generation;
+                        }
+                        int readVersion = _model.RemoteOperations.ReadVersion;
+                        using CancellationTokenSource checkCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token);
+                        checkCancellation.CancelAfter(TimeSpan.FromSeconds(60));
+                        try
+                        {
+                            await CheckAsync(repository, request, generation, readVersion, checkCancellation.Token);
+                        }
+                        catch (OperationCanceledException) when (cancellation.IsCancellationRequested == true)
+                        {
+                            throw;
+                        }
+                        catch (OperationCanceledException exception) when (checkCancellation.IsCancellationRequested == true)
+                        {
+                            if (CanApply(repository, request, generation, readVersion) == true)
+                            {
+                                _model.RemoteOperations.AutoFetchError = new GitException("RemoteAutoFetchTimedOut", exception, Array.Empty<object>());
+                            }
+                        }
+                        catch (Exception exception)
+                        {
+                            if (CanApply(repository, request, generation, readVersion) == true)
+                            {
+                                _model.RemoteOperations.AutoFetchError = exception;
+                            }
+                        }
+                        await Task.Delay(TimeSpan.FromMinutes(_settings.AutoFetchIntervalMinutes), cancellation.Token);
+                    }
+                    catch (OperationCanceledException) when (cancellation.IsCancellationRequested == true)
+                    {
+                        // Only this automatic lifetime is cancelled. User FIFO requests retain their tokens.
+                    }
+                    finally
+                    {
+                        if (ReferenceEquals(_cancellation, cancellation) == true)
+                        {
+                            _cancellation = null;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _consumerRunning = false;
+            }
+        }
+
+        private bool HasInitialReads()
+        {
+            return _model.IsRemoteLoading == true || _model.IsReferencesLoading == true || _model.IsLocalChangesLoading == true;
+        }
+
+        private bool IsBusy()
+        {
+            if (HasInitialReads() == true)
+            {
+                return true;
+            }
+            if (_model.IsBusy == true)
+            {
+                return true;
+            }
+            if (_model.RemoteOperations.IsBusy == true)
+            {
+                return true;
+            }
+            if (_model.RemoteOperations.IsLoading == true)
+            {
+                return true;
+            }
+            if (_model.References.IsBusy == true)
+            {
+                return true;
+            }
+            if (_model.LocalChanges.IsBusy == true)
+            {
+                return true;
+            }
+            if (_model.LocalChanges.Stashes.IsBusy == true)
+            {
+                return true;
+            }
+            if (_model.GitSettings.IsBusy == true)
+            {
+                return true;
+            }
+            if (_model.GitSettings.IsRemoteOperationBusy == true)
+            {
+                return true;
+            }
+            if (_model.History.IsLoading == true)
+            {
+                return true;
+            }
+            if (_model.Conflicts.IsBusy == true)
+            {
+                return true;
+            }
+            if (_model.Conflicts.IsBatchStaging == true)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private async Task CheckAsync(GitRepository repository, int request, int generation, int readVersion, CancellationToken cancellationToken)
+        {
+            if (CanApply(repository, request, generation, readVersion) == false)
             {
                 return;
             }
-            if (_model.References.IsBusy == true || _model.LocalChanges.IsBusy == true || _model.LocalChanges.Stashes.IsBusy == true)
-            {
-                return;
-            }
-            if (_model.GitSettings.IsBusy == true || _model.GitSettings.IsRemoteOperationBusy == true || _model.History.IsLoading == true)
+            if (IsBusy() == true)
             {
                 return;
             }
@@ -189,29 +306,55 @@ namespace Bough.App.Presenters
             {
                 return;
             }
-            if (knownState.HasUpstream == false || knownState.IsDetached == true)
+            if (knownState.HasUpstream == false)
+            {
+                return;
+            }
+            if (knownState.IsDetached == true)
             {
                 return;
             }
             GitOperationQueueState queueState = _queue.GetState(repository.RootPath);
-            if (queueState.IsRunning == true || queueState.PendingCount > 0)
+            if (queueState.IsRunning == true)
+            {
+                return;
+            }
+            if (queueState.PendingCount > 0)
             {
                 return;
             }
             await _queue.EnqueueAsync(repository.RootPath, _strings.GetString("AutoFetchOperationName"), token => UiQueuedOperation.RunAsync(async () =>
             {
                 token.ThrowIfCancellationRequested();
-                if (IsCurrent(repository, request, generation) == false)
+                if (CanApply(repository, request, generation, readVersion) == false)
                 {
                     return;
                 }
-                int readVersion = _model.RemoteOperations.ReadVersion;
+                if (IsBusy() == true)
+                {
+                    return;
+                }
+                // A user request accepted between admission and execution takes precedence over this tick.
+                if (_queue.GetState(repository.RootPath).PendingCount > 0)
+                {
+                    return;
+                }
                 GitRemoteState state = await Task.Run(() => _service.GetStateAsync(repository, token), token);
-                if (IsCurrent(repository, request, generation) == false)
+                token.ThrowIfCancellationRequested();
+                if (CanApply(repository, request, generation, readVersion) == false)
                 {
                     return;
                 }
-                if (state.HasUpstream == false || state.IsDetached == true)
+                if (IsBusy() == true)
+                {
+                    return;
+                }
+                if (state.HasUpstream == false)
+                {
+                    _model.RemoteOperations.ApplyAutoFetchState(repository, readVersion, state);
+                    return;
+                }
+                if (state.IsDetached == true)
                 {
                     _model.RemoteOperations.ApplyAutoFetchState(repository, readVersion, state);
                     return;
@@ -223,11 +366,12 @@ namespace Bough.App.Presenters
                 }
                 catch
                 {
-                    // A cancelled or failed final read can follow a successful ref update.
+                    // A ref update may have succeeded before cancellation or a final read failure.
                     _model.MarkHistoryReferencesDirty(repository);
                     throw;
                 }
-                if (result.UpdatedReferences.Count > 0 || result.RemovedReferences.Count > 0)
+                bool referencesChanged = result.UpdatedReferences.Count > 0 || result.RemovedReferences.Count > 0;
+                if (referencesChanged == true)
                 {
                     _model.MarkHistoryReferencesDirty(repository);
                 }
@@ -236,8 +380,10 @@ namespace Bough.App.Presenters
                     GitFetchFailure failure = result.FailedRemotes[0];
                     throw new GitRemoteOperationException("RemoteAutoFetchRequestFailed", failure.Error, failure.ExitCode);
                 }
+                token.ThrowIfCancellationRequested();
                 GitRemoteState refreshed = await Task.Run(() => _service.GetStateAsync(repository, token), token);
-                if (IsCurrent(repository, request, generation) == false)
+                token.ThrowIfCancellationRequested();
+                if (CanApply(repository, request, generation, readVersion) == false)
                 {
                     return;
                 }
@@ -245,18 +391,23 @@ namespace Bough.App.Presenters
                 {
                     return;
                 }
-                if (result.UpdatedReferences.Count == 0 && result.RemovedReferences.Count == 0)
+                if (referencesChanged == false)
                 {
                     return;
                 }
-                await _model.References.RefreshAsync();
-                if (IsCurrent(repository, request, generation) == false)
+                await _model.References.RefreshAsync(updateStatus: false);
+                token.ThrowIfCancellationRequested();
+                if (CanApply(repository, request, generation, readVersion) == false)
                 {
                     return;
                 }
                 if (_model.IsHistoryView == true)
                 {
                     await _model.LoadHistoryAsync(repository, request);
+                    if (CanApply(repository, request, generation, readVersion) == false)
+                    {
+                        return;
+                    }
                 }
             }), cancellationToken);
         }

@@ -269,7 +269,12 @@ namespace Bough.App.ViewModels
             await RefreshCoreAsync();
         }
 
-        private async Task<bool> RefreshCoreAsync(bool propagateReadError = false)
+        internal async Task RefreshAsync(bool updateStatus)
+        {
+            await RefreshCoreAsync(propagateReadError: true, updateStatus: updateStatus);
+        }
+
+        private async Task<bool> RefreshCoreAsync(bool propagateReadError = false, bool updateStatus = true)
         {
             GitRepository repository = _repository;
             if (repository == null)
@@ -278,7 +283,10 @@ namespace Bough.App.ViewModels
             }
 
             IsBusy = true;
-            StatusMessage = _stringHelper.GetString("ReferenceLoading");
+            if (updateStatus == true)
+            {
+                StatusMessage = _stringHelper.GetString("ReferenceLoading");
+            }
             ReferenceSnapshotResult result = await _snapshotPresenter.LoadAsync(repository);
             if (result.IsCurrent == false)
             {
@@ -296,7 +304,10 @@ namespace Bough.App.ViewModels
             {
                 if (result.Error != null)
                 {
-                    StatusMessage = _errorLocalizer.GetDisplayMessage(result.Error);
+                    if (updateStatus == true)
+                    {
+                        StatusMessage = _errorLocalizer.GetDisplayMessage(result.Error);
+                    }
                     if (propagateReadError)
                     {
                         ExceptionDispatchInfo.Capture(result.Error).Throw();
@@ -319,7 +330,10 @@ namespace Bough.App.ViewModels
                 foreach (GitSubmodule submodule in snapshot.Submodules) { _submodules.Add(submodule); }
                 NotifyEmptyStates();
                 BuildTree(selectedKey);
-                StatusMessage = string.Empty;
+                if (updateStatus == true)
+                {
+                    StatusMessage = string.Empty;
+                }
                 return true;
             }
             finally

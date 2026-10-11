@@ -36,12 +36,12 @@ namespace Bough.Core.Git
             return RunCoreAsync(_executableSettings.ExecutablePath, workingDirectory, arguments, standardErrorProgress, allowFailure, cancellationToken, processStarted);
         }
 
-        internal Task<GitCommandResult> RunNonInteractiveAsync(string workingDirectory, IEnumerable<string> arguments, CancellationToken cancellationToken)
+        internal Task<GitCommandResult> RunNonInteractiveAsync(string workingDirectory, IEnumerable<string> arguments, CancellationToken cancellationToken, bool useDefaultSshBatchMode = false)
         {
-            return RunCoreAsync(_executableSettings.ExecutablePath, workingDirectory, arguments, null, true, cancellationToken, null, nonInteractive: true);
+            return RunCoreAsync(_executableSettings.ExecutablePath, workingDirectory, arguments, null, true, cancellationToken, null, nonInteractive: true, useDefaultSshBatchMode: useDefaultSshBatchMode);
         }
 
-        private async Task<GitCommandResult> RunCoreAsync(string executablePath, string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure, CancellationToken cancellationToken, Action processStarted, string standardInput = null, bool nonInteractive = false)
+        private async Task<GitCommandResult> RunCoreAsync(string executablePath, string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure, CancellationToken cancellationToken, Action processStarted, string standardInput = null, bool nonInteractive = false, bool useDefaultSshBatchMode = false)
         {
             ProcessStartInfo startInfo = new()
             {
@@ -58,7 +58,7 @@ namespace Bough.Core.Git
             if (nonInteractive == true)
             {
                 startInfo.RedirectStandardInput = true;
-                startInfo.Environment["GIT_TERMINAL_PROMPT"] = "0";
+                startInfo.Environment["GIT_TERMINAL_PROMPT"] = "false";
                 startInfo.Environment["GCM_INTERACTIVE"] = "false";
                 startInfo.Environment["GCM_TRACE"] = "0";
                 startInfo.Environment["GIT_TRACE"] = "0";
@@ -67,8 +67,41 @@ namespace Bough.Core.Git
                 startInfo.Environment["GIT_ASKPASS"] = string.Empty;
                 startInfo.Environment["SSH_ASKPASS"] = string.Empty;
                 startInfo.Environment["SSH_ASKPASS_REQUIRE"] = "never";
-                startInfo.Environment["GIT_SSH_COMMAND"] = "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes";
-                startInfo.Environment["GIT_SSH_VARIANT"] = "ssh";
+                // Git/GCM options are scoped to this child process, never saved to Git settings.
+                startInfo.ArgumentList.Add("-c");
+                startInfo.ArgumentList.Add("credential.interactive=false");
+                startInfo.ArgumentList.Add("-c");
+                startInfo.ArgumentList.Add("core.askPass=");
+                if (useDefaultSshBatchMode == true)
+                {
+                    // Do not replace a wrapper introduced since Core checked the transport.
+                    if (startInfo.Environment.TryGetValue("GIT_SSH", out string sshExecutable) == true)
+                    {
+                        if (string.IsNullOrWhiteSpace(sshExecutable) == false)
+                        {
+                            throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
+                        }
+                    }
+                    if (startInfo.Environment.TryGetValue("GIT_SSH_COMMAND", out string sshCommand) == true)
+                    {
+                        if (string.IsNullOrWhiteSpace(sshCommand) == false)
+                        {
+                            throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
+                        }
+                    }
+                    if (startInfo.Environment.TryGetValue("GIT_SSH_VARIANT", out string sshVariant) == true)
+                    {
+                        if (string.IsNullOrWhiteSpace(sshVariant) == false)
+                        {
+                            if (sshVariant != "ssh")
+                            {
+                                throw new GitException("RemoteAutoFetchConfigurationUnavailable", null, Array.Empty<object>());
+                            }
+                        }
+                    }
+                    startInfo.Environment["GIT_SSH_COMMAND"] = "ssh -o BatchMode=yes";
+                    startInfo.Environment["GIT_SSH_VARIANT"] = "ssh";
+                }
             }
             if (standardInput != null)
             {
