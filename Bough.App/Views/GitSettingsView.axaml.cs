@@ -30,6 +30,14 @@ namespace Bough.App.Views
             (nameof(GitSettingsViewModel.AppearanceSystemLabel), "AppearanceSystem"),
             (nameof(GitSettingsViewModel.DefaultPullStrategyHeading), "DefaultPullStrategyHeading"),
             (nameof(GitSettingsViewModel.DefaultPullStrategyDescription), "DefaultPullStrategyDescription"),
+            (nameof(GitSettingsViewModel.AutoFetchHeading), "AutoFetchHeading"),
+            (nameof(GitSettingsViewModel.AutoFetchDescription), "AutoFetchDescription"),
+            (nameof(GitSettingsViewModel.AutoFetchEnabledLabel), "AutoFetchEnabledLabel"),
+            (nameof(GitSettingsViewModel.AutoFetchIntervalLabel), "AutoFetchIntervalLabel"),
+            (nameof(GitSettingsViewModel.AutoFetch1MinuteLabel), "AutoFetch1Minute"),
+            (nameof(GitSettingsViewModel.AutoFetch5MinuteLabel), "AutoFetch5Minutes"),
+            (nameof(GitSettingsViewModel.AutoFetch10MinuteLabel), "AutoFetch10Minutes"),
+            (nameof(GitSettingsViewModel.AutoFetch30MinuteLabel), "AutoFetch30Minutes"),
             (nameof(GitSettingsViewModel.PullStrategyFastForwardOnlyLabel), "PullStrategyFastForwardOnly"),
             (nameof(GitSettingsViewModel.PullStrategyMergeLabel), "PullStrategyMerge"),
             (nameof(GitSettingsViewModel.PullStrategyRebaseLabel), "PullStrategyRebase"),
@@ -84,6 +92,36 @@ namespace Bough.App.Views
             ShowGitPathResult(viewModel);
             ShowDisplayResult(viewModel);
             ShowAuthorStatus(viewModel);
+        }
+
+        private void AutoFetchEnabledClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not GitSettingsViewModel viewModel)
+            {
+                return;
+            }
+            if (sender is not CheckBox checkBox)
+            {
+                return;
+            }
+            viewModel.SelectAutoFetchSettings(checkBox.IsChecked == true, viewModel.AutoFetchIntervalMinutes);
+        }
+
+        private void AutoFetchIntervalClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not GitSettingsViewModel viewModel)
+            {
+                return;
+            }
+            if (sender is not RadioButton radioButton)
+            {
+                return;
+            }
+            if (int.TryParse(radioButton.Tag?.ToString(), out int intervalMinutes) == false)
+            {
+                return;
+            }
+            viewModel.SelectAutoFetchSettings(viewModel.AutoFetchEnabled, intervalMinutes);
         }
 
         private async void KoreanLanguageClicked(object sender, RoutedEventArgs eventArgs)

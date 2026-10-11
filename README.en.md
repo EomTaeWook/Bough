@@ -65,12 +65,15 @@ Bough is designed to show the source of each conflicting change and preview the 
 - **Local changes:** Inspect changed files and diffs with line numbers, stage and unstage, commit, discard changes, stop tracking files, and ignore untracked files.
 - **History and references:** Browse the commit graph, file changes, and file history; revert a selected commit; create, switch, delete, and rename branches; create, delete, and rename tags.
 - **Remotes and stashes:** Fetch, Pull, and Push; configure the default Pull strategy or choose one for a single Pull; save, apply, and delete stashes.
+- **Automatic remote checks:** Enable periodic checks in Settings and see new incoming commits for the open repository. Pull remains a manual action.
 - **Conflict resolution:** Inspect merge, rebase, or revert changes; choose sections, edit and save individual files, or apply, save, and stage the remaining sections across all conflicted files.
 - **Application updates:** Check official stable releases from Settings, download with progress and cancellation, then replace the single executable and restart after a normal shutdown. Beta and prerelease versions are excluded.
 
 Features and workflows are still being refined.
 
 Application updating is included in the beta.7 download above. In-app update candidates are limited to stable releases; actual download, replacement, and recovery have not been exercised. See [implementation status](Docs/CurrentStatus.md) for implementation and release status.
+
+Automatic remote checks are added in the latest source and are not included in the beta.7 download above. They are disabled by default, with a choice of 1, 5, 10, or 30 minutes.
 
 Additional screens and workflows are described in the [design notes](Design/README.md) (Korean).
 

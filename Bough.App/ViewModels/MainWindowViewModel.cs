@@ -29,6 +29,7 @@ namespace Bough.App.ViewModels
         private readonly GitErrorLocalizer _errorLocalizer;
         private readonly MainWindowRemoteCompletionPresenter _remoteCompletionPresenter;
         private readonly MainWindowRevertPresenter _revertPresenter;
+        private readonly RemoteAutoFetchPresenter _autoFetchPresenter;
         private readonly StringComparer _pathComparer;
         private readonly Dictionary<string, string> _autoOpenedConflicts;
         private readonly Dictionary<string, int> _historyReferenceVersions;
@@ -67,7 +68,7 @@ namespace Bough.App.ViewModels
         private int _tagCommitSelectionRequestVersion;
         private CancellationTokenSource _repositoryOpenCancellation;
 
-        public MainWindowViewModel(GitRepositoryService repositoryService, GitCommitActionService actionService, GitOperationQueue operationQueue, MainWindowChildren children, ConflictResolutionViewModel conflicts, RepositoryListViewModel repositoryList, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
+        public MainWindowViewModel(GitRepositoryService repositoryService, GitCommitActionService actionService, GitOperationQueue operationQueue, MainWindowChildren children, ConflictResolutionViewModel conflicts, RepositoryListViewModel repositoryList, StringHelper stringHelper, GitErrorLocalizer errorLocalizer, GitSettingsService settingsService, GitRemoteOperationService remoteService)
         {
             _repositoryService = repositoryService;
             _operationQueue = operationQueue;
@@ -89,6 +90,7 @@ namespace Bough.App.ViewModels
             LocalChanges = children.LocalChanges;
             References = children.References;
             RemoteOperations = children.RemoteOperations;
+            _autoFetchPresenter = new RemoteAutoFetchPresenter(this, settingsService, remoteService, operationQueue, stringHelper);
             GitSettings = children.GitSettings;
             Conflicts = conflicts;
             RepositoryList = repositoryList;
@@ -125,6 +127,26 @@ namespace Bough.App.ViewModels
 
         public event Action<string> ConflictWindowRequested;
         public event Action ConflictResolutionCompleted;
+
+        internal void StartAutoFetch()
+        {
+            _autoFetchPresenter.Start();
+        }
+
+        internal Task PauseAutoFetchAsync()
+        {
+            return _autoFetchPresenter.PauseAsync();
+        }
+
+        internal void ResumeAutoFetch()
+        {
+            _autoFetchPresenter.Resume();
+        }
+
+        internal void StopAutoFetch()
+        {
+            _autoFetchPresenter.Stop();
+        }
 
         public ConflictResolutionViewModel Conflicts { get; }
         public override void RefreshLocalization()
@@ -680,6 +702,7 @@ namespace Bough.App.ViewModels
             CancellationTokenSource cancellation = new();
             _repositoryOpenCancellation = cancellation;
             _repository = null;
+            _autoFetchPresenter.ContextChanged();
             ClearGitOperationQueueState();
             Conflicts.BindRepository(null);
             IsRebaseInProgress = false;
@@ -760,6 +783,7 @@ namespace Bough.App.ViewModels
             SetStatusMessage(opened.RootPath, false);
             RepositoryList.RememberOpened(opened.RootPath);
             StartRepositoryAreaLoads(opened, request, false);
+            _autoFetchPresenter.ContextChanged();
             try
             {
                 RepositoryList.Save();

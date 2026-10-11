@@ -10,6 +10,8 @@ namespace Bough.Core.Git
         private readonly string _filePath;
         private string _configuredPath;
         private GitPullStrategy _defaultPullStrategy;
+        private bool _autoFetchEnabled;
+        private int _autoFetchIntervalMinutes;
 
         public static GitExecutableSettings Default { get; } = new GitExecutableSettings();
 
@@ -24,10 +26,14 @@ namespace Bough.Core.Git
             GitExecutableState state = LoadState();
             _configuredPath = state.Path ?? string.Empty;
             _defaultPullStrategy = NormalizePullStrategy(state.DefaultPullStrategy);
+            _autoFetchEnabled = state.AutoFetchEnabled;
+            _autoFetchIntervalMinutes = NormalizeAutoFetchInterval(state.AutoFetchIntervalMinutes);
         }
 
         public string ConfiguredPath { get { return _configuredPath; } }
         public GitPullStrategy DefaultPullStrategy { get { return _defaultPullStrategy; } }
+        public bool AutoFetchEnabled { get { return _autoFetchEnabled; } }
+        public int AutoFetchIntervalMinutes { get { return _autoFetchIntervalMinutes; } }
         public string ExecutablePath
         {
             get
@@ -55,7 +61,7 @@ namespace Bough.Core.Git
                 throw new GitException("GitExecutableSettingsPathInvalid", null, _filePath);
             }
 
-            SaveState(directory, selectedPath, _defaultPullStrategy);
+            SaveState(directory, selectedPath, _defaultPullStrategy, _autoFetchEnabled, _autoFetchIntervalMinutes);
             _configuredPath = selectedPath;
         }
 
@@ -72,8 +78,33 @@ namespace Bough.Core.Git
                 throw new GitException("GitExecutableSettingsPathInvalid", null, _filePath);
             }
 
-            SaveState(directory, _configuredPath, strategy);
+            SaveState(directory, _configuredPath, strategy, _autoFetchEnabled, _autoFetchIntervalMinutes);
             _defaultPullStrategy = strategy;
+        }
+
+        public void SaveAutoFetchSettings(bool enabled, int intervalMinutes)
+        {
+            if (NormalizeAutoFetchInterval(intervalMinutes) != intervalMinutes)
+            {
+                throw new ArgumentOutOfRangeException(nameof(intervalMinutes), intervalMinutes, null);
+            }
+            string directory = Path.GetDirectoryName(_filePath);
+            if (directory == null)
+            {
+                throw new GitException("GitExecutableSettingsPathInvalid", null, _filePath);
+            }
+            SaveState(directory, _configuredPath, _defaultPullStrategy, enabled, intervalMinutes);
+            _autoFetchEnabled = enabled;
+            _autoFetchIntervalMinutes = intervalMinutes;
+        }
+
+        private static int NormalizeAutoFetchInterval(int intervalMinutes)
+        {
+            if (intervalMinutes == 1 || intervalMinutes == 5 || intervalMinutes == 10 || intervalMinutes == 30)
+            {
+                return intervalMinutes;
+            }
+            return 5;
         }
 
         private GitExecutableState LoadState()
@@ -107,10 +138,16 @@ namespace Bough.Core.Git
             }
         }
 
-        private void SaveState(string directory, string path, GitPullStrategy strategy)
+        private void SaveState(string directory, string path, GitPullStrategy strategy, bool autoFetchEnabled, int autoFetchIntervalMinutes)
         {
             Directory.CreateDirectory(directory);
-            GitExecutableState state = new() { Path = path, DefaultPullStrategy = strategy };
+            GitExecutableState state = new()
+            {
+                Path = path,
+                DefaultPullStrategy = strategy,
+                AutoFetchEnabled = autoFetchEnabled,
+                AutoFetchIntervalMinutes = autoFetchIntervalMinutes
+            };
             File.WriteAllText(_filePath, JsonSerializer.Serialize(state));
         }
 
@@ -128,6 +165,8 @@ namespace Bough.Core.Git
         {
             public string Path { get; set; }
             public GitPullStrategy DefaultPullStrategy { get; set; }
+            public bool AutoFetchEnabled { get; set; }
+            public int AutoFetchIntervalMinutes { get; set; }
         }
     }
 }

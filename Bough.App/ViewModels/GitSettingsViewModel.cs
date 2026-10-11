@@ -73,6 +73,7 @@ namespace Bough.App.ViewModels
             _gitExecutablePresenter = new GitExecutablePresenter(settingsService);
             _appearanceTheme.ThemeChanged += OnAppearanceThemeChanged;
             _settingsService.DefaultPullStrategyChanged += OnDefaultPullStrategyChanged;
+            _settingsService.AutoFetchSettingsChanged += OnAutoFetchSettingsChanged;
             _gitPathInput = settingsService.ConfiguredGitPath;
             _gitVersion = string.Empty;
             _localName = string.Empty;
@@ -112,6 +113,14 @@ namespace Bough.App.ViewModels
         public string AppearanceSystemLabel { get { return GetDisplayLabel(nameof(AppearanceSystemLabel)); } }
         public string DefaultPullStrategyHeading { get { return GetDisplayLabel(nameof(DefaultPullStrategyHeading)); } }
         public string DefaultPullStrategyDescription { get { return GetDisplayLabel(nameof(DefaultPullStrategyDescription)); } }
+        public string AutoFetchHeading { get { return GetDisplayLabel(nameof(AutoFetchHeading)); } }
+        public string AutoFetchDescription { get { return GetDisplayLabel(nameof(AutoFetchDescription)); } }
+        public string AutoFetchEnabledLabel { get { return GetDisplayLabel(nameof(AutoFetchEnabledLabel)); } }
+        public string AutoFetchIntervalLabel { get { return GetDisplayLabel(nameof(AutoFetchIntervalLabel)); } }
+        public string AutoFetch1MinuteLabel { get { return GetDisplayLabel(nameof(AutoFetch1MinuteLabel)); } }
+        public string AutoFetch5MinuteLabel { get { return GetDisplayLabel(nameof(AutoFetch5MinuteLabel)); } }
+        public string AutoFetch10MinuteLabel { get { return GetDisplayLabel(nameof(AutoFetch10MinuteLabel)); } }
+        public string AutoFetch30MinuteLabel { get { return GetDisplayLabel(nameof(AutoFetch30MinuteLabel)); } }
         public string PullStrategyFastForwardOnlyLabel { get { return GetDisplayLabel(nameof(PullStrategyFastForwardOnlyLabel)); } }
         public string PullStrategyMergeLabel { get { return GetDisplayLabel(nameof(PullStrategyMergeLabel)); } }
         public string PullStrategyRebaseLabel { get { return GetDisplayLabel(nameof(PullStrategyRebaseLabel)); } }
@@ -164,6 +173,12 @@ namespace Bough.App.ViewModels
         public bool IsFastForwardOnlyPull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.FastForwardOnly; } }
         public bool IsMergePull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.Merge; } }
         public bool IsRebasePull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.Rebase; } }
+        public bool AutoFetchEnabled { get { return _settingsService.AutoFetchEnabled; } }
+        public int AutoFetchIntervalMinutes { get { return _settingsService.AutoFetchIntervalMinutes; } }
+        public bool IsAutoFetch1Minute { get { return AutoFetchIntervalMinutes == 1; } }
+        public bool IsAutoFetch5Minutes { get { return AutoFetchIntervalMinutes == 5; } }
+        public bool IsAutoFetch10Minutes { get { return AutoFetchIntervalMinutes == 10; } }
+        public bool IsAutoFetch30Minutes { get { return AutoFetchIntervalMinutes == 30; } }
         public bool IsRemoteOperationBusy { get { return _remoteOperationBusy; } }
 
         public async Task SelectLanguageAsync(StringLanguage language)
@@ -215,6 +230,30 @@ namespace Bough.App.ViewModels
             {
                 ShowDisplayError(GitSettingsDisplayTarget.Status, exception);
             }
+        }
+
+        public void SelectAutoFetchSettings(bool enabled, int intervalMinutes)
+        {
+            try
+            {
+                _settingsService.SaveAutoFetchSettings(enabled, intervalMinutes);
+                ShowDisplayResult(GitSettingsDisplayTarget.Status, "AutoFetchSettingsSaved");
+            }
+            catch (Exception exception)
+            {
+                ShowDisplayError(GitSettingsDisplayTarget.Status, exception);
+            }
+            OnAutoFetchSettingsChanged();
+        }
+
+        private void OnAutoFetchSettingsChanged()
+        {
+            OnPropertyChanged(nameof(AutoFetchEnabled));
+            OnPropertyChanged(nameof(AutoFetchIntervalMinutes));
+            OnPropertyChanged(nameof(IsAutoFetch1Minute));
+            OnPropertyChanged(nameof(IsAutoFetch5Minutes));
+            OnPropertyChanged(nameof(IsAutoFetch10Minutes));
+            OnPropertyChanged(nameof(IsAutoFetch30Minutes));
         }
 
         private void OnDefaultPullStrategyChanged(GitPullStrategy strategy)

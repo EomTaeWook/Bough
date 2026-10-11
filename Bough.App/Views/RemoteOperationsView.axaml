@@ -82,8 +82,14 @@
       </Border>
     </StackPanel>
     <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
-      <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12"
-                 TextTrimming="CharacterEllipsis" />
+      <StackPanel Spacing="8">
+        <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock x:Name="IncomingCommitsLabel" IsVisible="{Binding HasIncomingCommits}"
+                   Foreground="{DynamicResource BoughBrushWarning}" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" />
+        <TextBlock x:Name="AutoFetchFailureLabel" IsVisible="{Binding HasAutoFetchError}"
+                   Foreground="{DynamicResource BoughBrushWarning}" FontSize="12" TextWrapping="Wrap" />
+      </StackPanel>
       <TextBlock Grid.Column="1" Text="{Binding PushAvailabilityText}" IsVisible="{Binding HasNoOutgoingPushCommits}"
                  Foreground="{DynamicResource BoughBrushWarning}" FontSize="12" MaxWidth="260" TextTrimming="CharacterEllipsis" />
     </Grid>

@@ -31,6 +31,19 @@ namespace Bough.Core.Git
         public string ConfiguredGitPath { get { return _executableSettings.ConfiguredPath; } }
         public GitPullStrategy DefaultPullStrategy { get { return _executableSettings.DefaultPullStrategy; } }
         public event Action<GitPullStrategy> DefaultPullStrategyChanged;
+        public bool AutoFetchEnabled { get { return _executableSettings.AutoFetchEnabled; } }
+        public int AutoFetchIntervalMinutes { get { return _executableSettings.AutoFetchIntervalMinutes; } }
+        public event Action AutoFetchSettingsChanged;
+
+        public void SaveAutoFetchSettings(bool enabled, int intervalMinutes)
+        {
+            if (AutoFetchEnabled == enabled && AutoFetchIntervalMinutes == intervalMinutes)
+            {
+                return;
+            }
+            _executableSettings.SaveAutoFetchSettings(enabled, intervalMinutes);
+            AutoFetchSettingsChanged?.Invoke();
+        }
 
         public void SaveDefaultPullStrategy(GitPullStrategy strategy)
         {

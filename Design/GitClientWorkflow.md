@@ -138,6 +138,7 @@ Bough의 상위 화면은 **Local Changes**, **History**로 나눈다. 저장소
 - **화면 모양**에서는 [화면 테마](AppearanceTheme.md)에 따라 **밝음 / 어두움 / 시스템 설정**을 고른다. 기본은 밝음이며 변경은 즉시 모든 창에 적용되고 앱을 다시 열어도 유지된다.
 - Git 실행 파일은 먼저 시스템 `PATH`에서 찾는다. 설정에서 실행 파일 경로를 직접 선택하고 **Test Git**으로 경로와 버전을 확인할 수 있다. 선택 결과와 오류를 보여 준다.
 - **Bough 기본 Pull 방식**은 빠른 전진만·병합·재배치 중에서 고른다. 모든 저장소의 기본 Pull 버튼에 적용되고, Pull 메뉴에서 고른 일회성 방식은 저장값을 바꾸지 않는다. Git CLI의 `pull.rebase`와 `pull.ff` 설정도 변경하지 않는다.
+- **원격 변경 자동 확인**은 기본 꺼짐이며 주기는 1·5·10·30분 중 선택한다. 현재 열린 저장소의 upstream 원격을 Fetch하고 Pull 근처에 받을 새 커밋 수를 표시한다. [자동 확인 기획](RemoteAutoFetch.md)을 따르며 Pull·병합·작업 파일 변경은 자동 실행하지 않는다.
 - 커밋 작성자의 `user.name`과 `user.email`은 현재 저장소 값과 전역 값을 구분해 표시한다. 저장 범위를 사용자가 선택한다. 값이 없으면 커밋 전에 안내한다. [Git config 문서](https://git-scm.com/docs/git-config)
 - **Accounts**는 원격 URL과 GitHub HTTPS 계정 선택, SSH 인증 방식의 차이를 안내한다. Git은 기존 credential helper와 SSH를 사용하지만 Git 설정에서 읽은 `credential.helper` 출처·값 목록을 Bough 설정 화면에 노출하지 않는다. Bough 설정 파일에 암호·토큰을 직접 저장하지 않는다. [Git credentials 문서](https://git-scm.com/docs/gitcredentials)
 - GitHub HTTPS 원격과 Git Credential Manager가 있으면 [GitHub 인증 계정 전환](GitHubAccountSwitching.md)에 따라 **현재 저장소에서 쓸 GitHub 계정**을 선택하거나 추가할 수 있게 한다. 커밋 작성자 설정과 인증 계정은 별도로 표시한다. GitLab 계정 연결과 SSH 키 전환 UI는 제공자별 방식이 정해진 뒤 추가한다. 계정 연결이 없어도 로컬 저장소 작업은 가능하다.

@@ -39,6 +39,7 @@
 - Save 완료에 상태가 없으면 `Task<GitWorktreeStatus> RefreshStashSaveWorktreeAsync(GitRepository repository)`로 고정 저장소의 상태를 한 번 조회·적용하고 동일 스냅샷을 반환한다. 저장소·조회 요청 대체로 적용하지 않으면 null을 반환하고, 현재 조회·적용 실패는 예외를 전달한다. 이전 큐 작업 오류를 이번 조회 실패로 사용하지 않는다. Core 조회와 Presenter의 요청·적용 책임을 유지하며 Apply/Pop용 기존 API는 보존한다. 실제 구현·인계 상태는 CurrentStatus를 따른다.
 - Core의 성공한 stash push·commit/amend는 후속 목록·HEAD 조회 오류 때문에 변경 실패로 바꾸지 않는다. 기존 결과와 작은 커밋 결과에 원래 성공과 `ReadError`를 보존하고 Presenter가 소비한다. SHA를 얻지 못한 커밋도 완료 사실을 전달하며 기존 새로 고침으로 필요한 읽기를 다시 수행한다. 이번 수정에서는 별도 완료 계층이나 재시도 UI를 만들지 않는다.
 - Git Settings: Git 실행 파일·작성자·인증 계정·테마·Bough 기본 Pull 방식과 앱 언어의 즉시 적용·저장. GitHub 계정 인증과 커밋 작성자를 구분하며 `credential.helper` 출처·값 목록은 노출하지 않는다.
+- 원격 자동 확인 설정: 기존 설정 파일의 꺼짐·주기 저장과 즉시 변경 알림, Settings 표시·입력·현재 언어·구독 해제를 소유한다. [자동 확인 계약](../Design/RemoteAutoFetch.md)에 따라 기본 꺼짐·5분과 1/5/10/30분 선택을 연결하고 실제 예약·Fetch는 작업자 3에게 인계한다.
 - 앱 업데이트 설정: 현재 버전·정식 릴리스 확인·다운로드 진행과 취소·업데이트 후 재시작 입력을 연결한다. 조회·다운로드 조정은 목적별 Presenter, 상태는 바인딩 모델에 두고 작업자 3의 실제 Core·종료 API를 소비한다. [정식 릴리스 업데이트](../Design/ApplicationUpdate.md)를 따르며 HTTP·exe 교체를 기존 큰 GitSettings ViewModel에 넣지 않는다.
 - 표시 계약은 [화면과 동작](../Design/GitClientWorkflow.md), [원격과 Stash](../Design/RemoteAndStash.md), [GitHub 계정](../Design/GitHubAccountSwitching.md), [테마](../Design/AppearanceTheme.md)를 따른다.
 - MainWindow와 원격 실행 파일은 수정하지 않고 갱신·상태·설정 변경 이벤트 계약을 총괄에게 전달한다.
@@ -67,6 +68,7 @@
 - 상단 저장소 선택·추가 메뉴·시작 화면의 열기·복제 진입, 화면 전환·영역별 조회·공통 사이드바 상태, 작업 완료 후 갱신 순서와 숨긴 History의 참조 변경 반영.
 - 태그 커밋 이동은 `History.SelectCommitAsync(repository, hash, GitHistoryScope.All)` 뒤 `History.ReportCommitSelectionResult(result)`로 연결한다. 저장소 인스턴스·저장소 요청·태그 선택 요청 버전을 각각 검사하며 현재 결과만 표시한다. History의 dirty 버전은 해당 갱신이 성공하고 버전이 일치한 경우에만 해제한다.
 - Fetch/Pull/Push의 FIFO·실행 직전 검증·진행·취소·완료 연결. 기본 Pull 실행은 작업자 1의 GitSettingsService 설정을 읽으며 일회성 메뉴는 저장값을 바꾸지 않는다.
+- 원격 자동 확인 실행: 작업자 1의 실제 설정 API를 소비하는 목적별 Presenter에서 단일 예약·취소·현재 저장소 수명을 맡는다. 현재 upstream 원격의 비대화형 Fetch와 필요한 상태 조회는 기존 FIFO를 사용하고 Pull 근처의 받을 커밋 표시는 기존 원격 상태를 사용한다. 자동 확인의 성공·실패·정상 닫기·업데이트 종료 연결은 [기능 기획](../Design/RemoteAutoFetch.md)을 따른다. Settings와 공유 리소스는 수정하지 않는다.
 - 원격 완료의 각 await 뒤와 자식 Load·Bind 시작 전에 기존 메인 요청·저장소 인스턴스를 독립 검사한다. 늦은 실패 표시도 같은 수명을 유지한다. 이번 가드 수정에서는 새 완료 결과 계층·조회 API·재시도 UI를 추가하지 않는다.
 - [충돌 창](../Design/ConflictEntry.md)의 진입·파일 선택·개별/일괄 선택·직접 편집·저장·스테이징·리베이스 계속. 화면에서 Git 도메인 검증을 재구현하지 않는다.
 - 충돌 저장 요청의 본문은 FIFO에서 고정해 처리하고 요청 이후 추가 편집한 초안은 자동 파일 이동·목록 초기화·창 닫기로 교체하지 않는다. 명시적 이동·닫기의 버리기 확인과 기존 완료 계약을 유지한다.

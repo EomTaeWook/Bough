@@ -46,12 +46,12 @@ namespace Bough.App.Presenters
             {
                 throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
             }
-            _window.EnsureUpdateCanClose();
             _requestPending = true;
             ApplicationUpdateInstallPlan plan = null;
             using CancellationTokenSource lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _windowLifetime.Token);
             try
             {
+                await _window.PrepareUpdateCloseAsync(lifetime.Token);
                 _preparation = _installer.PrepareAsync(update, lifetime.Token);
                 plan = await _preparation;
                 _pendingPlan = plan;
@@ -89,6 +89,7 @@ namespace Bough.App.Presenters
                 if (_shutdownAccepted == false)
                 {
                     _preparation = null;
+                    _window.ResumeAutoFetchAfterUpdate();
                 }
             }
         }

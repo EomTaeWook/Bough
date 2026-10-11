@@ -36,7 +36,12 @@ namespace Bough.Core.Git
             return RunCoreAsync(_executableSettings.ExecutablePath, workingDirectory, arguments, standardErrorProgress, allowFailure, cancellationToken, processStarted);
         }
 
-        private async Task<GitCommandResult> RunCoreAsync(string executablePath, string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure, CancellationToken cancellationToken, Action processStarted, string standardInput = null)
+        internal Task<GitCommandResult> RunNonInteractiveAsync(string workingDirectory, IEnumerable<string> arguments, CancellationToken cancellationToken)
+        {
+            return RunCoreAsync(_executableSettings.ExecutablePath, workingDirectory, arguments, null, true, cancellationToken, null, nonInteractive: true);
+        }
+
+        private async Task<GitCommandResult> RunCoreAsync(string executablePath, string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure, CancellationToken cancellationToken, Action processStarted, string standardInput = null, bool nonInteractive = false)
         {
             ProcessStartInfo startInfo = new()
             {
@@ -50,6 +55,21 @@ namespace Bough.Core.Git
                 CreateNoWindow = true
             };
 
+            if (nonInteractive == true)
+            {
+                startInfo.RedirectStandardInput = true;
+                startInfo.Environment["GIT_TERMINAL_PROMPT"] = "0";
+                startInfo.Environment["GCM_INTERACTIVE"] = "false";
+                startInfo.Environment["GCM_TRACE"] = "0";
+                startInfo.Environment["GIT_TRACE"] = "0";
+                startInfo.Environment["GIT_TRACE_CURL"] = "0";
+                startInfo.Environment["GIT_CURL_VERBOSE"] = "0";
+                startInfo.Environment["GIT_ASKPASS"] = string.Empty;
+                startInfo.Environment["SSH_ASKPASS"] = string.Empty;
+                startInfo.Environment["SSH_ASKPASS_REQUIRE"] = "never";
+                startInfo.Environment["GIT_SSH_COMMAND"] = "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes";
+                startInfo.Environment["GIT_SSH_VARIANT"] = "ssh";
+            }
             if (standardInput != null)
             {
                 startInfo.RedirectStandardInput = true;
@@ -80,6 +100,11 @@ namespace Bough.Core.Git
             try
             {
                 processStarted?.Invoke();
+
+                if (nonInteractive == true)
+                {
+                    process.StandardInput.Close();
+                }
 
                 Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
                 Task<string> errorTask;

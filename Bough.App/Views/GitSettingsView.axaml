@@ -98,6 +98,31 @@
         <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
 
         <StackPanel Spacing="8">
+          <TextBlock Text="{Binding AutoFetchHeading}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource BoughBrushTextMuted}" />
+          <TextBlock Text="{Binding AutoFetchDescription}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+          <CheckBox Content="{Binding AutoFetchEnabledLabel}" IsChecked="{Binding AutoFetchEnabled, Mode=OneWay}"
+                    Click="AutoFetchEnabledClicked" AutomationProperties.Name="{Binding AutoFetchEnabledLabel}"
+                    Foreground="{DynamicResource BoughBrushText}" />
+          <TextBlock Text="{Binding AutoFetchIntervalLabel}" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+          <WrapPanel Orientation="Horizontal">
+            <RadioButton Content="{Binding AutoFetch1MinuteLabel}" GroupName="AutoFetchInterval" Tag="1"
+                         IsChecked="{Binding IsAutoFetch1Minute, Mode=OneWay}" Click="AutoFetchIntervalClicked" Margin="0,0,8,0"
+                         AutomationProperties.Name="{Binding AutoFetch1MinuteLabel}" />
+            <RadioButton Content="{Binding AutoFetch5MinuteLabel}" GroupName="AutoFetchInterval" Tag="5"
+                         IsChecked="{Binding IsAutoFetch5Minutes, Mode=OneWay}" Click="AutoFetchIntervalClicked" Margin="0,0,8,0"
+                         AutomationProperties.Name="{Binding AutoFetch5MinuteLabel}" />
+            <RadioButton Content="{Binding AutoFetch10MinuteLabel}" GroupName="AutoFetchInterval" Tag="10"
+                         IsChecked="{Binding IsAutoFetch10Minutes, Mode=OneWay}" Click="AutoFetchIntervalClicked" Margin="0,0,8,0"
+                         AutomationProperties.Name="{Binding AutoFetch10MinuteLabel}" />
+            <RadioButton Content="{Binding AutoFetch30MinuteLabel}" GroupName="AutoFetchInterval" Tag="30"
+                         IsChecked="{Binding IsAutoFetch30Minutes, Mode=OneWay}" Click="AutoFetchIntervalClicked"
+                         AutomationProperties.Name="{Binding AutoFetch30MinuteLabel}" />
+          </WrapPanel>
+        </StackPanel>
+
+        <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
+
+        <StackPanel Spacing="8">
           <TextBlock Text="{Binding GitExecutableHeading}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource BoughBrushTextSubtle}" />
           <TextBlock Text="{Binding GitPathHint}" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">

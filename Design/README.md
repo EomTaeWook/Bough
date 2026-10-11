@@ -14,6 +14,7 @@
 | [파일 히스토리](FileHistory.md) | 파일별 커밋 목록, 날짜 위치 탐색, 당시 경로와 줄 번호 diff |
 | [충돌 해결 창 진입](ConflictEntry.md) | 실제 충돌 시 해결 창 자동 열기와 Local Changes에서 다시 열기 |
 | [원격 작업과 Stash](RemoteAndStash.md) | Fetch, Pull, Push, Stash의 화면·실행·갱신 흐름 |
+| [원격 변경 자동 확인](RemoteAutoFetch.md) | 설정한 주기의 백그라운드 Fetch와 받을 새 커밋 표시 |
 | [GitHub 인증 계정 전환](GitHubAccountSwitching.md) | 저장소별 GitHub HTTPS 인증 계정 선택과 GCM 로그인 |
 | [화면 테마](AppearanceTheme.md) | 기본 밝은 테마와 어두움·시스템 설정 전환 |
 | [앱 업데이트](ApplicationUpdate.md) | 설정에서 정식 릴리스 조회·다운로드와 정상 종료 후 단일 exe 교체 |

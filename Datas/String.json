@@ -6814,5 +6814,95 @@
     "Name": "AppUpdateReleaseOpenFailed",
     "Kor": "정식 릴리스 페이지를 열지 못했습니다. 잠시 후 다시 시도하세요.",
     "Eng": "Could not open the official release page. Please try again shortly."
+  },
+  {
+    "Id": 3236,
+    "Name": "AutoFetchHeading",
+    "Kor": "원격 변경 자동 확인",
+    "Eng": "Automatic remote checks"
+  },
+  {
+    "Id": 3237,
+    "Name": "AutoFetchDescription",
+    "Kor": "현재 열린 저장소의 원격 변경을 주기적으로 가져와 받을 새 커밋을 알려줍니다. Pull과 작업 파일 변경은 자동 실행하지 않습니다.",
+    "Eng": "Fetch remote changes periodically for the open repository and show new incoming commits. Pull and working file changes are not performed automatically."
+  },
+  {
+    "Id": 3238,
+    "Name": "AutoFetchEnabledLabel",
+    "Kor": "주기적으로 원격 변경 확인",
+    "Eng": "Check for remote changes periodically"
+  },
+  {
+    "Id": 3239,
+    "Name": "AutoFetchIntervalLabel",
+    "Kor": "확인 주기",
+    "Eng": "Check interval"
+  },
+  {
+    "Id": 3240,
+    "Name": "AutoFetch1Minute",
+    "Kor": "1분",
+    "Eng": "1 minute"
+  },
+  {
+    "Id": 3241,
+    "Name": "AutoFetch5Minutes",
+    "Kor": "5분",
+    "Eng": "5 minutes"
+  },
+  {
+    "Id": 3242,
+    "Name": "AutoFetch10Minutes",
+    "Kor": "10분",
+    "Eng": "10 minutes"
+  },
+  {
+    "Id": 3243,
+    "Name": "AutoFetch30Minutes",
+    "Kor": "30분",
+    "Eng": "30 minutes"
+  },
+  {
+    "Id": 3244,
+    "Name": "AutoFetchSettingsSaved",
+    "Kor": "원격 자동 확인 설정을 저장했습니다.",
+    "Eng": "Automatic remote check settings saved."
+  },
+  {
+    "Id": 3245,
+    "Name": "AutoFetchOperationName",
+    "Kor": "원격 자동 확인",
+    "Eng": "Automatic remote check"
+  },
+  {
+    "Id": 3246,
+    "Name": "RemoteIncomingCommits",
+    "Kor": "받을 새 커밋 {0}개",
+    "Eng": "{0} new commits to pull"
+  },
+  {
+    "Id": 3247,
+    "Name": "RemoteAutoFetchFailed",
+    "Kor": "원격 자동 확인에 실패했습니다. Fetch로 다시 확인하세요.",
+    "Eng": "Automatic remote check failed. Use Fetch to try again."
+  },
+  {
+    "Id": 3248,
+    "Name": "RemoteAutoFetchConfigurationUnavailable",
+    "Kor": "이 원격 또는 사용자 지정 SSH 설정은 자동 확인할 수 없습니다. Fetch로 직접 확인하세요.",
+    "Eng": "This remote or custom SSH configuration cannot be checked automatically. Use Fetch manually."
+  },
+  {
+    "Id": 3249,
+    "Name": "RemoteAutoFetchRequestFailed",
+    "Kor": "원격 자동 확인이 종료 코드 {0}으로 실패했습니다. Fetch로 다시 확인하세요.",
+    "Eng": "Automatic remote check failed with exit code {0}. Use Fetch to try again."
+  },
+  {
+    "Id": 3250,
+    "Name": "RemoteAutoFetchTimedOut",
+    "Kor": "원격 자동 확인 시간이 초과됐습니다. Fetch로 다시 확인하세요.",
+    "Eng": "Automatic remote check timed out. Use Fetch to try again."
   }
 ]

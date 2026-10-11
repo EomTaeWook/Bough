@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Avalonia.Platform.Storage;
 using Bough.App.Localization;
 using Bough.App.Presenters;
@@ -32,6 +33,9 @@ namespace Bough.App
         internal bool UpdateCloseApproved { get; private set; }
         private ConflictWindow _conflictWindow;
         private bool _closeConfirmed;
+        private bool _autoFetchCloseReady;
+        private bool _autoFetchClosePending;
+        private bool _mainWindowClosed;
         private bool _revertAbortConfirmationPending;
         private bool _wasDeactivated;
         private bool _conflictWasDeactivated;
@@ -120,10 +124,13 @@ namespace Bough.App
             Closing += OnMainWindowClosing;
             Closed += delegate
             {
+                _mainWindowClosed = true;
+                _viewModel.StopAutoFetch();
                 _updateCloseRequest?.TrySetResult(true);
             };
             Opened += async delegate
             {
+                _viewModel.StartAutoFetch();
                 if (string.IsNullOrWhiteSpace(_viewModel.RepositoryList.LastActivePath) == false)
                 {
                     await _viewModel.OpenRepositoryAsync(_viewModel.RepositoryList.LastActivePath);
@@ -152,6 +159,34 @@ namespace Bough.App
                 eventArgs.Handled = true;
                 await _viewModel.RefreshAsync();
             };
+        }
+
+        internal async Task PrepareUpdateCloseAsync(CancellationToken cancellationToken)
+        {
+            await _viewModel.PauseAutoFetchAsync();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                EnsureUpdateCanClose();
+            }
+            catch
+            {
+                ResumeAutoFetchAfterUpdate();
+                throw;
+            }
+        }
+
+        internal void ResumeAutoFetchAfterUpdate()
+        {
+            if (Dispatcher.UIThread.CheckAccess() == false)
+            {
+                Dispatcher.UIThread.Post(ResumeAutoFetchAfterUpdate);
+                return;
+            }
+            if (_mainWindowClosed == false)
+            {
+                _viewModel.ResumeAutoFetch();
+            }
         }
 
         internal void EnsureUpdateCanClose()
@@ -250,6 +285,45 @@ namespace Bough.App
         }
 
         private async void OnMainWindowClosing(object sender, WindowClosingEventArgs eventArgs)
+        {
+            if (_autoFetchCloseReady == false)
+            {
+                eventArgs.Cancel = true;
+                if (_autoFetchClosePending == true)
+                {
+                    return;
+                }
+                _autoFetchClosePending = true;
+                try
+                {
+                    await _viewModel.PauseAutoFetchAsync();
+                    _autoFetchCloseReady = true;
+                    Dispatcher.UIThread.Post(Close);
+                }
+                finally
+                {
+                    _autoFetchClosePending = false;
+                }
+                return;
+            }
+            try
+            {
+                await CompleteMainWindowCloseAsync(eventArgs);
+            }
+            finally
+            {
+                if (eventArgs.Cancel == true && _mainWindowClosed == false)
+                {
+                    _autoFetchCloseReady = false;
+                    if (_updateCloseRequest == null)
+                    {
+                        _viewModel.ResumeAutoFetch();
+                    }
+                }
+            }
+        }
+
+        private async Task CompleteMainWindowCloseAsync(WindowClosingEventArgs eventArgs)
         {
             TaskCompletionSource<bool> updateRequest = _updateCloseRequest;
             if (updateRequest != null)

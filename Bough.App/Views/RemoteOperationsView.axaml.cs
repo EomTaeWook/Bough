@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -23,6 +24,8 @@ namespace Bough.App.Views
         private StringHelper _stringHelper;
         private GitSettingsService _settingsService;
         private readonly LanguageChangeBinding _languageBinding;
+        private RemoteOperationsViewModel _boundIncomingModel;
+        private bool _attached;
         public StringHelper StringHelper
         {
             get { return _stringHelper; }
@@ -69,6 +72,70 @@ namespace Bough.App.Views
         {
             InitializeComponent();
             _languageBinding = LanguageChangeBinding.Bind(this, () => _stringHelper, RefreshLocalizedLabels);
+            DataContextChanged += OnIncomingDataContextChanged;
+            AttachedToVisualTree += OnIncomingViewAttached;
+            DetachedFromVisualTree += OnIncomingViewDetached;
+        }
+
+        private void OnIncomingViewAttached(object sender, VisualTreeAttachmentEventArgs eventArgs)
+        {
+            _attached = true;
+            BindIncomingModel();
+        }
+
+        private void OnIncomingViewDetached(object sender, VisualTreeAttachmentEventArgs eventArgs)
+        {
+            _attached = false;
+            BindIncomingModel();
+        }
+
+        private void OnIncomingDataContextChanged(object sender, EventArgs eventArgs)
+        {
+            BindIncomingModel();
+        }
+
+        private void BindIncomingModel()
+        {
+            if (_boundIncomingModel != null)
+            {
+                _boundIncomingModel.PropertyChanged -= OnIncomingStateChanged;
+            }
+            _boundIncomingModel = null;
+            if (_attached == true)
+            {
+                _boundIncomingModel = DataContext as RemoteOperationsViewModel;
+                if (_boundIncomingModel != null)
+                {
+                    _boundIncomingModel.PropertyChanged += OnIncomingStateChanged;
+                }
+            }
+            UpdateIncomingPresentation();
+        }
+
+        private void OnIncomingStateChanged(object sender, PropertyChangedEventArgs eventArgs)
+        {
+            if (eventArgs.PropertyName == nameof(RemoteOperationsViewModel.IncomingCommitCount) ||
+                eventArgs.PropertyName == nameof(RemoteOperationsViewModel.AutoFetchError) || string.IsNullOrEmpty(eventArgs.PropertyName) == true)
+            {
+                UpdateIncomingPresentation();
+            }
+        }
+
+        private void UpdateIncomingPresentation()
+        {
+            if (_stringHelper == null)
+            {
+                return;
+            }
+            IncomingCommitsLabel.Text = string.Empty;
+            if (DataContext is RemoteOperationsViewModel model)
+            {
+                if (model.HasIncomingCommits == true)
+                {
+                    IncomingCommitsLabel.Text = _stringHelper.Format("RemoteIncomingCommits", model.IncomingCommitCount);
+                }
+            }
+            AutoFetchFailureLabel.Text = _stringHelper.GetString("RemoteAutoFetchFailed");
         }
 
         private void RefreshLocalizedLabels()
@@ -86,6 +153,8 @@ namespace Bough.App.Views
             AutomationProperties.SetName(FetchMenuButton, _stringHelper.GetString("RemoteFetchMenuAutomation"));
             AutomationProperties.SetName(PushMenuButton, _stringHelper.GetString("RemotePushMenuAutomation"));
             UpdatePullStrategyPresentation();
+            UpdateIncomingPresentation();
+            UpdateIncomingPresentation();
         }
 
         private void OnDefaultPullStrategyChanged(GitPullStrategy strategy)

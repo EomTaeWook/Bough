@@ -60,6 +60,7 @@ namespace Bough.App.ViewModels
         private bool _isLoading;
         private bool _prune;
         private bool _showPullStrategies;
+        private Exception _autoFetchError;
 
         public RemoteOperationsViewModel(GitRemoteOperationService service, GitRepositoryService repositoryService, StringHelper strings, GitErrorLocalizer errors)
         {
@@ -81,6 +82,27 @@ namespace Bough.App.ViewModels
         }
 
         internal GitRemoteState RemoteState { get { return _state; } }
+        internal int ReadVersion { get { return _executionPresenter.ReadVersion; } }
+        public Exception AutoFetchError
+        {
+            get { return _autoFetchError; }
+            internal set
+            {
+                if (SetProperty(ref _autoFetchError, value) == true)
+                {
+                    OnPropertyChanged(nameof(HasAutoFetchError));
+                    OnPropertyChanged(nameof(HasIncomingCommits));
+                }
+            }
+        }
+        public bool HasAutoFetchError { get { return _autoFetchError != null; } }
+        public bool HasIncomingCommits { get { return _state != null && _state.HasUpstream == true && _state.Behind > 0 && HasAutoFetchError == false; } }
+        public int IncomingCommitCount { get { return _state?.Behind ?? 0; } }
+
+        internal bool ApplyAutoFetchState(GitRepository repository, int readVersion, GitRemoteState state)
+        {
+            return _executionPresenter.ApplyAutoFetchState(repository, readVersion, state);
+        }
         internal bool PullStrategiesRequested
         {
             get { return _showPullStrategies; }
@@ -297,6 +319,7 @@ namespace Bough.App.ViewModels
             _repository = repository;
             LatestOperationStateSnapshot = null;
             _state = null;
+            AutoFetchError = null;
             _remotes.Clear();
             SelectedRemote = selectedRemote;
             _showPullStrategies = false;
@@ -382,6 +405,8 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(UpstreamRemote));
             OnPropertyChanged(nameof(UpstreamBranch));
             OnPropertyChanged(nameof(AheadBehindText));
+            OnPropertyChanged(nameof(IncomingCommitCount));
+            OnPropertyChanged(nameof(HasIncomingCommits));
             OnPropertyChanged(nameof(HasUpstream));
             OnPropertyChanged(nameof(CanFetch));
             OnPropertyChanged(nameof(CanFetchAll));

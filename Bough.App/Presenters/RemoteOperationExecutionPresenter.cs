@@ -39,6 +39,27 @@ namespace Bough.App.Presenters
             get { return _model.IsBusy && _cancellation != null && _cancellation.IsCancellationRequested == false; }
         }
 
+        internal int ReadVersion { get { return _requestVersion; } }
+
+        internal bool ApplyAutoFetchState(GitRepository repository, int readVersion, GitRemoteState state)
+        {
+            if (readVersion != _requestVersion)
+            {
+                return false;
+            }
+            if (ReferenceEquals(_model.CurrentRepository, repository) == false)
+            {
+                return false;
+            }
+            if (_model.IsBusy == true || _model.IsLoading == true)
+            {
+                return false;
+            }
+            _model.ApplyState(state);
+            _model.AutoFetchError = null;
+            return true;
+        }
+
         public async Task SetRepositoryAsync(GitRepository repository, CancellationToken cancellationToken = default)
         {
             _model.BindRepository(repository);
@@ -134,6 +155,7 @@ namespace Bough.App.Presenters
             _model.IsLoading = false;
             _model.CurrentRepository = snapshot.Repository;
             _model.ApplyState(snapshot.State);
+            _model.AutoFetchError = null;
             _model.LatestOperationStateSnapshot = snapshot;
             _model.StatusText = string.Empty;
             return true;
