@@ -912,7 +912,7 @@ namespace Bough.App
                 {
                     return;
                 }
-                _viewModel.StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+                _viewModel.ReportRemoteCompletionFailure(exception, repository, repositoryRequest);
             }
             finally
             {
