@@ -219,6 +219,10 @@ namespace Bough.App
             {
                 throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
             }
+            if (_viewModel.GitSettings.CanChangeAutoFetchSettings == false)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
+            }
             if (_viewModel.References.IsBusy)
             {
                 throw new ApplicationUpdateException("AppUpdateCoreGitBusy", null, Array.Empty<object>());
@@ -296,6 +300,7 @@ namespace Bough.App
                 _autoFetchClosePending = true;
                 try
                 {
+                    await _viewModel.GitSettings.WaitForAutoFetchSettingsSaveAsync();
                     await _viewModel.PauseAutoFetchAsync();
                     _autoFetchCloseReady = true;
                     Dispatcher.UIThread.Post(Close);
@@ -339,6 +344,11 @@ namespace Bough.App
                     updateRequest.TrySetException(exception);
                     return;
                 }
+            }
+            if (_viewModel.GitSettings.CanChangeAutoFetchSettings == false)
+            {
+                eventArgs.Cancel = true;
+                return;
             }
             if (_closeConfirmed)
             {

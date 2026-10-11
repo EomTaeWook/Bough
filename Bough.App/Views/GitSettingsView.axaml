@@ -101,10 +101,11 @@
           <TextBlock Text="{Binding AutoFetchHeading}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource BoughBrushTextMuted}" />
           <TextBlock Text="{Binding AutoFetchDescription}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextSubtle}" />
           <CheckBox Content="{Binding AutoFetchEnabledLabel}" IsChecked="{Binding AutoFetchEnabled, Mode=OneWay}"
+                    IsEnabled="{Binding CanChangeAutoFetchSettings}"
                     Click="AutoFetchEnabledClicked" AutomationProperties.Name="{Binding AutoFetchEnabledLabel}"
                     Foreground="{DynamicResource BoughBrushText}" />
           <TextBlock Text="{Binding AutoFetchIntervalLabel}" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
-          <WrapPanel Orientation="Horizontal">
+          <WrapPanel Orientation="Horizontal" IsEnabled="{Binding CanChangeAutoFetchSettings}">
             <RadioButton Content="{Binding AutoFetch1MinuteLabel}" GroupName="AutoFetchInterval" Tag="1"
                          IsChecked="{Binding IsAutoFetch1Minute, Mode=OneWay}" Click="AutoFetchIntervalClicked" Margin="0,0,8,0"
                          AutomationProperties.Name="{Binding AutoFetch1MinuteLabel}" />

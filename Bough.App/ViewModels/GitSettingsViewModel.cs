@@ -30,6 +30,7 @@ namespace Bough.App.ViewModels
         private readonly LanguageSelectionPresenter _languagePresenter;
         private readonly GitOperationQueue _operationQueue;
         private readonly GitExecutablePresenter _gitExecutablePresenter;
+        private readonly RemoteAutoFetchSettingsPresenter _autoFetchPresenter;
         private readonly ObservableCollection<GitRemote> _remotes;
         private readonly ObservableCollection<GitHubRemoteAccountItem> _gitHubRemotes;
         private readonly Dictionary<string, string> _displayLabels = new();
@@ -54,13 +55,14 @@ namespace Bough.App.ViewModels
         private int _pendingAccountSelections;
         private CancellationTokenSource _accountCancellation;
         private bool _isBusy;
+        private bool _isSavingAutoFetchSettings;
         private int _requestVersion;
         private int _localNameEditVersion;
         private int _localEmailEditVersion;
         private int _globalNameEditVersion;
         private int _globalEmailEditVersion;
 
-        public GitSettingsViewModel(GitSettingsService settingsService, GitHubAccountService gitHubAccountService, StringHelper stringHelper, AppearanceThemeService appearanceTheme, GitErrorLocalizer errorLocalizer, GitOperationQueue operationQueue, LanguageSelectionPresenter languagePresenter, ApplicationUpdateService applicationUpdateService, IApplicationUpdateRestart applicationUpdateRestart)
+        public GitSettingsViewModel(GitSettingsService settingsService, GitHubAccountService gitHubAccountService, StringHelper stringHelper, AppearanceThemeService appearanceTheme, GitErrorLocalizer errorLocalizer, GitOperationQueue operationQueue, LanguageSelectionPresenter languagePresenter, ApplicationUpdateService applicationUpdateService, IApplicationUpdateRestart applicationUpdateRestart, RemoteAutoFetchSettingsPresenter autoFetchPresenter)
         {
             _settingsService = settingsService;
             _gitHubAccountService = gitHubAccountService;
@@ -71,9 +73,9 @@ namespace Bough.App.ViewModels
             _languagePresenter = languagePresenter;
             _operationQueue = operationQueue;
             _gitExecutablePresenter = new GitExecutablePresenter(settingsService);
+            _autoFetchPresenter = autoFetchPresenter;
             _appearanceTheme.ThemeChanged += OnAppearanceThemeChanged;
             _settingsService.DefaultPullStrategyChanged += OnDefaultPullStrategyChanged;
-            _settingsService.AutoFetchSettingsChanged += OnAutoFetchSettingsChanged;
             _gitPathInput = settingsService.ConfiguredGitPath;
             _gitVersion = string.Empty;
             _localName = string.Empty;
@@ -173,12 +175,61 @@ namespace Bough.App.ViewModels
         public bool IsFastForwardOnlyPull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.FastForwardOnly; } }
         public bool IsMergePull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.Merge; } }
         public bool IsRebasePull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.Rebase; } }
-        public bool AutoFetchEnabled { get { return _settingsService.AutoFetchEnabled; } }
-        public int AutoFetchIntervalMinutes { get { return _settingsService.AutoFetchIntervalMinutes; } }
-        public bool IsAutoFetch1Minute { get { return AutoFetchIntervalMinutes == 1; } }
-        public bool IsAutoFetch5Minutes { get { return AutoFetchIntervalMinutes == 5; } }
-        public bool IsAutoFetch10Minutes { get { return AutoFetchIntervalMinutes == 10; } }
-        public bool IsAutoFetch30Minutes { get { return AutoFetchIntervalMinutes == 30; } }
+        public bool AutoFetchEnabled
+        {
+            get
+            {
+                return _settingsService.AutoFetchEnabled;
+            }
+        }
+
+        public int AutoFetchIntervalMinutes
+        {
+            get
+            {
+                return _settingsService.AutoFetchIntervalMinutes;
+            }
+        }
+
+        public bool IsAutoFetch1Minute
+        {
+            get
+            {
+                return AutoFetchIntervalMinutes == 1;
+            }
+        }
+
+        public bool IsAutoFetch5Minutes
+        {
+            get
+            {
+                return AutoFetchIntervalMinutes == 5;
+            }
+        }
+
+        public bool IsAutoFetch10Minutes
+        {
+            get
+            {
+                return AutoFetchIntervalMinutes == 10;
+            }
+        }
+
+        public bool IsAutoFetch30Minutes
+        {
+            get
+            {
+                return AutoFetchIntervalMinutes == 30;
+            }
+        }
+
+        public bool CanChangeAutoFetchSettings
+        {
+            get
+            {
+                return _isSavingAutoFetchSettings == false;
+            }
+        }
         public bool IsRemoteOperationBusy { get { return _remoteOperationBusy; } }
 
         public async Task SelectLanguageAsync(StringLanguage language)
@@ -232,21 +283,37 @@ namespace Bough.App.ViewModels
             }
         }
 
-        public void SelectAutoFetchSettings(bool enabled, int intervalMinutes)
+        public Task SelectAutoFetchSettingsAsync(bool enabled, int intervalMinutes)
         {
-            try
-            {
-                _settingsService.SaveAutoFetchSettings(enabled, intervalMinutes);
-                ShowDisplayResult(GitSettingsDisplayTarget.Status, "AutoFetchSettingsSaved");
-            }
-            catch (Exception exception)
-            {
-                ShowDisplayError(GitSettingsDisplayTarget.Status, exception);
-            }
-            OnAutoFetchSettingsChanged();
+            return _autoFetchPresenter.SelectAsync(this, enabled, intervalMinutes);
         }
 
-        private void OnAutoFetchSettingsChanged()
+        public Task WaitForAutoFetchSettingsSaveAsync()
+        {
+            return _autoFetchPresenter.WaitForSaveAsync();
+        }
+
+        public void AttachAutoFetchSettings()
+        {
+            _autoFetchPresenter.Attach(this);
+        }
+
+        public void DetachAutoFetchSettings()
+        {
+            _autoFetchPresenter.Detach(this);
+        }
+
+        internal void SetAutoFetchSettingsSaving(bool value)
+        {
+            SetProperty(ref _isSavingAutoFetchSettings, value, nameof(CanChangeAutoFetchSettings));
+        }
+
+        internal void ApplyAutoFetchSettingsResult(GitSettingsDisplayResult result)
+        {
+            DisplayResult = result;
+        }
+
+        internal void RefreshAutoFetchSettings()
         {
             OnPropertyChanged(nameof(AutoFetchEnabled));
             OnPropertyChanged(nameof(AutoFetchIntervalMinutes));

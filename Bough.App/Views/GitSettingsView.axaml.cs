@@ -94,7 +94,7 @@ namespace Bough.App.Views
             ShowAuthorStatus(viewModel);
         }
 
-        private void AutoFetchEnabledClicked(object sender, RoutedEventArgs eventArgs)
+        private async void AutoFetchEnabledClicked(object sender, RoutedEventArgs eventArgs)
         {
             if (DataContext is not GitSettingsViewModel viewModel)
             {
@@ -104,10 +104,10 @@ namespace Bough.App.Views
             {
                 return;
             }
-            viewModel.SelectAutoFetchSettings(checkBox.IsChecked == true, viewModel.AutoFetchIntervalMinutes);
+            await viewModel.SelectAutoFetchSettingsAsync(checkBox.IsChecked == true, viewModel.AutoFetchIntervalMinutes);
         }
 
-        private void AutoFetchIntervalClicked(object sender, RoutedEventArgs eventArgs)
+        private async void AutoFetchIntervalClicked(object sender, RoutedEventArgs eventArgs)
         {
             if (DataContext is not GitSettingsViewModel viewModel)
             {
@@ -121,7 +121,7 @@ namespace Bough.App.Views
             {
                 return;
             }
-            viewModel.SelectAutoFetchSettings(viewModel.AutoFetchEnabled, intervalMinutes);
+            await viewModel.SelectAutoFetchSettingsAsync(viewModel.AutoFetchEnabled, intervalMinutes);
         }
 
         private async void KoreanLanguageClicked(object sender, RoutedEventArgs eventArgs)
@@ -180,6 +180,7 @@ namespace Bough.App.Views
             }
 
             _boundViewModel.PropertyChanged += GitSettingsPropertyChanged;
+            _boundViewModel.AttachAutoFetchSettings();
             INotifyCollectionChanged accountChanges = _boundViewModel.GitHubRemotes;
             accountChanges.CollectionChanged += GitHubRemotesChanged;
             ShowFixedLabels(_boundViewModel);
@@ -201,6 +202,7 @@ namespace Bough.App.Views
             }
 
             _boundViewModel.PropertyChanged -= GitSettingsPropertyChanged;
+            _boundViewModel.DetachAutoFetchSettings();
             INotifyCollectionChanged accountChanges = _boundViewModel.GitHubRemotes;
             accountChanges.CollectionChanged -= GitHubRemotesChanged;
             UnbindAccountItems();

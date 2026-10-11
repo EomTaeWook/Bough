@@ -8,6 +8,7 @@ namespace Bough.Core.Git
     public class GitExecutableSettings
     {
         private readonly string _filePath;
+        private readonly object _saveLock = new();
         private string _configuredPath;
         private GitPullStrategy _defaultPullStrategy;
         private bool _autoFetchEnabled;
@@ -32,8 +33,21 @@ namespace Bough.Core.Git
 
         public string ConfiguredPath { get { return _configuredPath; } }
         public GitPullStrategy DefaultPullStrategy { get { return _defaultPullStrategy; } }
-        public bool AutoFetchEnabled { get { return _autoFetchEnabled; } }
-        public int AutoFetchIntervalMinutes { get { return _autoFetchIntervalMinutes; } }
+        public bool AutoFetchEnabled
+        {
+            get
+            {
+                return _autoFetchEnabled;
+            }
+        }
+
+        public int AutoFetchIntervalMinutes
+        {
+            get
+            {
+                return _autoFetchIntervalMinutes;
+            }
+        }
         public string ExecutablePath
         {
             get
@@ -61,8 +75,11 @@ namespace Bough.Core.Git
                 throw new GitException("GitExecutableSettingsPathInvalid", null, _filePath);
             }
 
-            SaveState(directory, selectedPath, _defaultPullStrategy, _autoFetchEnabled, _autoFetchIntervalMinutes);
-            _configuredPath = selectedPath;
+            lock (_saveLock)
+            {
+                SaveState(directory, selectedPath, _defaultPullStrategy, _autoFetchEnabled, _autoFetchIntervalMinutes);
+                _configuredPath = selectedPath;
+            }
         }
 
         public void SaveDefaultPullStrategy(GitPullStrategy strategy)
@@ -78,8 +95,11 @@ namespace Bough.Core.Git
                 throw new GitException("GitExecutableSettingsPathInvalid", null, _filePath);
             }
 
-            SaveState(directory, _configuredPath, strategy, _autoFetchEnabled, _autoFetchIntervalMinutes);
-            _defaultPullStrategy = strategy;
+            lock (_saveLock)
+            {
+                SaveState(directory, _configuredPath, strategy, _autoFetchEnabled, _autoFetchIntervalMinutes);
+                _defaultPullStrategy = strategy;
+            }
         }
 
         public void SaveAutoFetchSettings(bool enabled, int intervalMinutes)
@@ -88,14 +108,18 @@ namespace Bough.Core.Git
             {
                 throw new ArgumentOutOfRangeException(nameof(intervalMinutes), intervalMinutes, null);
             }
+
             string directory = Path.GetDirectoryName(_filePath);
             if (directory == null)
             {
                 throw new GitException("GitExecutableSettingsPathInvalid", null, _filePath);
             }
-            SaveState(directory, _configuredPath, _defaultPullStrategy, enabled, intervalMinutes);
-            _autoFetchEnabled = enabled;
-            _autoFetchIntervalMinutes = intervalMinutes;
+            lock (_saveLock)
+            {
+                SaveState(directory, _configuredPath, _defaultPullStrategy, enabled, intervalMinutes);
+                _autoFetchEnabled = enabled;
+                _autoFetchIntervalMinutes = intervalMinutes;
+            }
         }
 
         private static int NormalizeAutoFetchInterval(int intervalMinutes)

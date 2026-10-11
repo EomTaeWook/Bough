@@ -2,6 +2,14 @@
 
 이 문서는 현재 코드에 반영된 범위와 남은 검증을 구분한다. 기능별 담당 범위와 실행 계약은 [구현 작업 지시](ImplementationPlan.md)를, 현재 작업 배분·검증 방침은 [AGENTS.md](../AGENTS.md)를 따른다.
 
+## 2026-10-11 자동 확인 설정 후발 변경 통합
+
+작업자 1의 후발 설정 편집을 총괄이 채택했다. 기존 `GitExecutableSettings`의 세 저장 경로에 공통 잠금을 적용하고, 목적별 `RemoteAutoFetchSettingsPresenter`가 백그라운드 저장·입력 await·화면 연결과 분리·늦은 결과를 조정한다. 저장 중에는 해당 설정 입력만 비활성화하며 기존 Git busy를 확대하지 않는다. 기존 App assembly Injectable 등록과 같은 GitSettingsService를 사용한다.
+
+서비스 변경 이벤트는 호출 스레드에서 발생하며 화면 Presenter와 기존 자동 Fetch Presenter가 UI Dispatcher로 넘긴다. 총괄이 분리된 모델의 저장 중 상태 해제와 정상 종료의 저장 완료 대기·업데이트 종료 보호를 연결했다. 기존 15키를 재사용하고 문자열을 중복 병합하지 않았다. 앱 업데이트의 App 인프라 이동은 유지한다.
+
+별도 작업자 3의 자동 Fetch 실행·Runner·원격 서비스 후발 편집은 작업 트리에 보존하며 이번 설정 통합 커밋에 포함하지 않는다. 소스 반영·필요 선언과 호출 읽기만 수행했고 빌드·테스트·UI·실제 Fetch·정적 검사·diff check·리소스 대조·푸시·릴리스 생성은 수행하지 않았다.
+
 ## 2026-10-11 앱 업데이트 배포 인프라 이동
 
 사용자 지시에 따라 앱 제품 버전·업데이트는 Core가 참조하지 않는 App 배포 인프라 책임으로 확정했다. 서비스는 `Bough.App/Infrastructure/Updates`, 버전 비교 타입과 릴리스·조회·진행·검증 다운로드·설치 모델은 `Bough.App/Infrastructure/Models/Updates`에 타입별 파일로 두는 규칙을 AGENTS·코딩 컨벤션·재사용 적용·응용프로그램 기준·현재 아키텍처·구현 지시·앱 업데이트 기획·오류 지역화·릴리스 정책에 반영했다.
