@@ -96,6 +96,7 @@ namespace Bough.App.ViewModels
         public event Action<string> TagCommitSelected;
         public event Action StashesRequested;
         public event Action<string> StashSelected;
+        public event Action<GitRepository, GitSubmodule> SubmoduleOpenRequested;
         public GitRepository CurrentRepository { get { return _repository; } }
         public StringHelper Strings { get { return _stringHelper; } }
 
@@ -261,7 +262,32 @@ namespace Bough.App.ViewModels
         public void InvalidatePendingRequests()
         {
             _snapshotPresenter.Invalidate();
+            _snapshotPresenter.CancelSubmoduleOpen();
             IsBusy = _branchChangeInProgress;
+        }
+
+        public Task<string> PrepareSubmoduleOpenAsync(GitRepository parentRepository, GitSubmodule submodule, CancellationToken cancellationToken = default)
+        {
+            return _snapshotPresenter.PrepareSubmoduleOpenAsync(parentRepository, submodule, cancellationToken);
+        }
+
+        public void OpenSubmodule(GitRepository parentRepository, GitSubmodule submodule)
+        {
+            if (parentRepository == null)
+            {
+                StatusMessage = _stringHelper.GetString("ReferenceSwitchRepositoryRequired");
+                return;
+            }
+            if (submodule == null)
+            {
+                StatusMessage = _stringHelper.GetString("ReferenceSwitchMenuRepositoryChanged");
+                return;
+            }
+            if (CanRunMenuAction(parentRepository.RootPath) == false)
+            {
+                return;
+            }
+            SubmoduleOpenRequested?.Invoke(parentRepository, submodule);
         }
 
         public async Task RefreshAsync()

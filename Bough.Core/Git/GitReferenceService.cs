@@ -16,6 +16,7 @@ namespace Bough.Core.Git
         private static readonly string[] _currentBranchArguments = new string[] { "symbolic-ref", "--quiet", "--short", "HEAD" };
         private static readonly string[] _localReferencesArguments = new string[] { "for-each-ref", "--format=%(refname)%00%(objectname)%00%(HEAD)%00%(upstream)%00%(upstream:remotename)%00%(upstream:remoteref)", "refs/heads" };
         private static readonly string[] _submoduleConfigArguments = new string[] { "config", "--null", "--file", ".gitmodules", "--get-regexp", "^submodule\\..*\\.(path|url)$" };
+        private static readonly string[] _submodulePathArguments = new string[] { "config", "--null", "--file", ".gitmodules", "--get-regexp", "^submodule\\..*\\.path$" };
         private static readonly string[] _submoduleTreeArguments = new string[] { "ls-tree", "-r", "-z", "HEAD" };
         private static readonly string[] _verifyHeadArguments = new string[] { "rev-parse", "--verify", "HEAD" };
         private static readonly string[] _renameTagTransactionArguments = new string[] { "update-ref", "--no-deref", "--stdin" };
@@ -26,6 +27,110 @@ namespace Bough.Core.Git
         {
             _runner = runner;
             _repositoryService = repositoryService;
+        }
+
+        public async Task<string> GetSubmoduleRepositoryPathAsync(GitRepository parentRepository, string submodulePath, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(parentRepository);
+            if (string.IsNullOrWhiteSpace(submodulePath) == true)
+            {
+                throw new GitException("ReferenceSubmoduleConfigInvalid", null, Array.Empty<object>());
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            string parentRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(parentRepository.RootPath));
+            if (Path.IsPathRooted(submodulePath) == true)
+            {
+                throw new GitException("ReferenceSubmoduleOutsideRepository", null, submodulePath);
+            }
+            string fullPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(Path.Combine(parentRoot, submodulePath)));
+            string relativePath = Path.GetRelativePath(parentRoot, fullPath);
+            if (relativePath == ".")
+            {
+                throw new GitException("ReferenceSubmoduleOutsideRepository", null, submodulePath);
+            }
+            if (relativePath == "..")
+            {
+                throw new GitException("ReferenceSubmoduleOutsideRepository", null, submodulePath);
+            }
+            if (relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) == true)
+            {
+                throw new GitException("ReferenceSubmoduleOutsideRepository", null, submodulePath);
+            }
+            if (File.Exists(Path.Combine(parentRoot, ".gitmodules")) == false)
+            {
+                throw new GitException("SubmoduleOpenNotRegistered", null, submodulePath);
+            }
+
+            GitCommandResult configured = await _runner.RunAsync(parentRoot, _submodulePathArguments, true, cancellationToken);
+            if (configured.ExitCode == 1)
+            {
+                throw new GitException("SubmoduleOpenNotRegistered", null, submodulePath);
+            }
+            if (configured.ExitCode != 0)
+            {
+                throw new GitException("SubmoduleOpenConfigUnavailable", null, Array.Empty<object>());
+            }
+            StringComparison comparison = StringComparison.Ordinal;
+            if (OperatingSystem.IsWindows() == true)
+            {
+                comparison = StringComparison.OrdinalIgnoreCase;
+            }
+            bool registered = false;
+            foreach (string entry in configured.Output.Split('\0', StringSplitOptions.RemoveEmptyEntries))
+            {
+                int separator = entry.IndexOf('\n');
+                if (separator < 0)
+                {
+                    throw new GitException("ReferenceSubmoduleConfigInvalid", null, Array.Empty<object>());
+                }
+                string configuredPath = entry[(separator + 1)..];
+                if (Path.IsPathRooted(configuredPath) == true)
+                {
+                    continue;
+                }
+                string registeredPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(Path.Combine(parentRoot, configuredPath)));
+                if (string.Equals(registeredPath, fullPath, comparison) == true)
+                {
+                    registered = true;
+                    break;
+                }
+            }
+            if (registered == false)
+            {
+                throw new GitException("SubmoduleOpenNotRegistered", null, submodulePath);
+            }
+            if (Directory.Exists(fullPath) == false)
+            {
+                throw new GitException("SubmoduleOpenDirectoryUnavailable", null, submodulePath);
+            }
+            string gitMarker = Path.Combine(fullPath, ".git");
+            if (Directory.Exists(gitMarker) == false)
+            {
+                if (File.Exists(gitMarker) == false)
+                {
+                    throw new GitException("SubmoduleOpenUninitialized", null, submodulePath);
+                }
+            }
+            GitRepository opened;
+            try
+            {
+                opened = await _repositoryService.OpenAsync(fullPath, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                throw new GitException("SubmoduleOpenRepositoryUnavailable", exception, submodulePath);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            string actualRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(opened.RootPath));
+            if (string.Equals(actualRoot, fullPath, comparison) == false)
+            {
+                throw new GitException("SubmoduleOpenRepositoryUnavailable", null, submodulePath);
+            }
+            return actualRoot;
         }
 
         public async Task<GitReferenceSnapshot> GetSnapshotAsync(GitRepository repository, CancellationToken cancellationToken = default)

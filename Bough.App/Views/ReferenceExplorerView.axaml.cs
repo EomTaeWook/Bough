@@ -208,7 +208,11 @@ namespace Bough.App.Views
             {
                 return;
             }
-            ReferenceTreeNode node = pointerNode;
+            ReferenceTreeNode node = menu.Tag as ReferenceTreeNode;
+            if (node == null)
+            {
+                node = pointerNode;
+            }
             if (node == null)
             {
                 node = menu.DataContext as ReferenceTreeNode;
@@ -254,7 +258,7 @@ namespace Bough.App.Views
                 return;
             }
             MenuItem[] items = menu.Items.OfType<MenuItem>().ToArray();
-            if (items.Length < 13)
+            if (items.Length < 14)
             {
                 menu.Close();
                 return;
@@ -279,6 +283,7 @@ namespace Bough.App.Views
             items[10].Header = viewModel.ReferenceText("ReferenceDeleteLocalBranch");
             items[11].Header = viewModel.ReferenceText("ReferenceDeleteRemoteBranch");
             items[12].Header = viewModel.ReferenceText("TagDeleteLocalMenu");
+            items[13].Header = viewModel.ReferenceText("RepositoryAddExistingAction");
             items[0].IsVisible = node.IsBranchSection;
             items[0].IsEnabled = true;
             items[1].IsVisible = node.IsTagSection;
@@ -303,6 +308,9 @@ namespace Bough.App.Views
             items[11].IsEnabled = viewModel.IsRemoteDefaultBranch(node.Target as GitRemoteBranch) == false;
             items[12].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
             items[12].IsEnabled = true;
+            items[13].IsVisible = node.Kind == ReferenceTreeNodeKind.Submodule;
+            items[13].IsEnabled = node.Target is GitSubmodule;
+            items[13].CommandParameter = viewModel.CurrentRepository;
             foreach (Separator separator in menu.Items.OfType<Separator>())
             {
                 separator.IsVisible = items[10].IsVisible || items[11].IsVisible || items[12].IsVisible;
@@ -313,6 +321,31 @@ namespace Bough.App.Views
         {
             _menuNode = null;
             _menuRepositoryRoot = null;
+        }
+
+        private void OpenSubmoduleClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not ReferenceExplorerViewModel viewModel)
+            {
+                return;
+            }
+            if (sender is not MenuItem item)
+            {
+                return;
+            }
+            if (item.Tag is not ReferenceTreeNode node)
+            {
+                return;
+            }
+            if (node.Target is not GitSubmodule submodule)
+            {
+                return;
+            }
+            if (item.CommandParameter is not GitRepository parentRepository)
+            {
+                return;
+            }
+            viewModel.OpenSubmodule(parentRepository, submodule);
         }
 
         private async void DeleteTagClicked(object sender, RoutedEventArgs eventArgs)

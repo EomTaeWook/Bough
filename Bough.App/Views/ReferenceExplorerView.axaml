@@ -75,7 +75,7 @@
                   ToolTip.Tip="{Binding ToolTipText}"
                   AutomationProperties.Name="{Binding AccessibleLabel}">
             <Border.ContextMenu>
-              <ContextMenu Placement="RightEdgeAlignedTop" Opened="TreeContextOpened" Closed="TreeContextClosed">
+              <ContextMenu Tag="{Binding}" Placement="RightEdgeAlignedTop" Opened="TreeContextOpened" Closed="TreeContextClosed">
                 <MenuItem Click="CreateBranchSectionClicked" />
                 <MenuItem Click="CreateTagSectionClicked" />
                 <MenuItem Click="OpenStashesClicked" />
@@ -90,6 +90,7 @@
                 <MenuItem Click="DeleteLocalBranchClicked" />
                 <MenuItem Click="DeleteRemoteBranchClicked" />
                 <MenuItem Click="DeleteTagClicked" />
+                <MenuItem Click="OpenSubmoduleClicked" />
               </ContextMenu>
             </Border.ContextMenu>
             <Grid ColumnDefinitions="20,*,Auto" MinWidth="0" MinHeight="24">

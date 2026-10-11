@@ -43,6 +43,8 @@ namespace Bough.App
         private bool _remoteDialogOpen;
         private int _activationSuppressionDepth;
         private int _activationVersion;
+        private int _submoduleOpenRequestVersion;
+        private CancellationTokenSource _submoduleOpenCancellation;
         private DateTime _lastActivationRefreshUtc;
 
         private void RefreshLocalizedLabels()
@@ -112,6 +114,7 @@ namespace Bough.App
             RemoteOperationsPanel.GetRepositoryRequestVersion = () => _viewModel.RepositoryRequestVersion;
             RemoteOperationsPanel.OperationFinishedAsync = _viewModel.HandleRemoteOperationFinishedAsync;
             RemoteOperationsPanel.PopupProgressChanged = _viewModel.UpdateRemotePopupProgress;
+            _viewModel.References.SubmoduleOpenRequested += OnSubmoduleOpenRequested;
             _viewModel.ConflictWindowRequested += OpenConflictWindow;
             _viewModel.ConflictResolutionCompleted += CloseCompletedConflictWindow;
             LocalChangesPanel.StashDialogOpening += OnStashDialogOpening;
@@ -125,6 +128,9 @@ namespace Bough.App
             Closed += delegate
             {
                 _mainWindowClosed = true;
+                _viewModel.References.SubmoduleOpenRequested -= OnSubmoduleOpenRequested;
+                _submoduleOpenRequestVersion++;
+                _submoduleOpenCancellation?.Cancel();
                 _viewModel.StopAutoFetch();
                 _updateCloseRequest?.TrySetResult(true);
             };
@@ -821,6 +827,122 @@ namespace Bough.App
         {
             RepositoryPickerButton.Flyout.Hide();
             RepositoryActionsButton.ContextMenu?.Close();
+        }
+
+        private async void OnSubmoduleOpenRequested(GitRepository parentRepository, GitSubmodule submodule)
+        {
+            if (_mainWindowClosed == true)
+            {
+                return;
+            }
+            if (parentRepository == null)
+            {
+                return;
+            }
+            if (submodule == null)
+            {
+                return;
+            }
+            GitRepository repository = _viewModel.CurrentRepository;
+            if (repository == null)
+            {
+                return;
+            }
+            StringComparison pathComparison = StringComparison.Ordinal;
+            if (OperatingSystem.IsWindows() == true)
+            {
+                pathComparison = StringComparison.OrdinalIgnoreCase;
+            }
+            if (string.Equals(repository.RootPath, parentRepository.RootPath, pathComparison) == false)
+            {
+                return;
+            }
+            if (_viewModel.IsRepositoryMutationInProgress == true)
+            {
+                return;
+            }
+
+            int repositoryRequest = _viewModel.RepositoryRequestVersion;
+            int openRequest = ++_submoduleOpenRequestVersion;
+            _submoduleOpenCancellation?.Cancel();
+            CancellationTokenSource cancellation = new();
+            _submoduleOpenCancellation = cancellation;
+            try
+            {
+                if (IsCurrentSubmoduleOpenRequest(repository, repositoryRequest, openRequest) == false)
+                {
+                    return;
+                }
+                string path = await _viewModel.References.PrepareSubmoduleOpenAsync(parentRepository, submodule, cancellation.Token);
+                if (IsCurrentSubmoduleOpenRequest(repository, repositoryRequest, openRequest) == false)
+                {
+                    return;
+                }
+                if (path == null)
+                {
+                    return;
+                }
+                if (_viewModel.IsRepositoryMutationInProgress == true)
+                {
+                    return;
+                }
+
+                bool canChange = await CloseConflictWindowForRepositoryChangeAsync();
+                if (IsCurrentSubmoduleOpenRequest(repository, repositoryRequest, openRequest) == false)
+                {
+                    return;
+                }
+                if (canChange == false)
+                {
+                    return;
+                }
+                if (_viewModel.IsRepositoryMutationInProgress == true)
+                {
+                    return;
+                }
+                await _viewModel.OpenRepositoryAsync(path);
+            }
+            catch (OperationCanceledException)
+            {
+                // Closing or superseding this read never cancels queued user mutations.
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentSubmoduleOpenRequest(repository, repositoryRequest, openRequest) == false)
+                {
+                    return;
+                }
+                _viewModel.StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+            }
+            finally
+            {
+                if (ReferenceEquals(_submoduleOpenCancellation, cancellation) == true)
+                {
+                    _submoduleOpenCancellation = null;
+                }
+                cancellation.Dispose();
+            }
+        }
+
+        private bool IsCurrentSubmoduleOpenRequest(GitRepository repository, int repositoryRequest, int openRequest)
+        {
+            if (_mainWindowClosed == true)
+            {
+                return false;
+            }
+            if (repositoryRequest != _viewModel.RepositoryRequestVersion)
+            {
+                return false;
+            }
+            if (ReferenceEquals(_viewModel.CurrentRepository, repository) == false)
+            {
+                return false;
+            }
+            if (openRequest != _submoduleOpenRequestVersion)
+            {
+                return false;
+            }
+            return true;
         }
 
         private async void RepositoryClicked(object sender, RoutedEventArgs eventArgs)
