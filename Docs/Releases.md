@@ -1,5 +1,29 @@
 # 릴리스
 
+## v0.1.0-beta.8 게시 완료
+
+- 생성·배포일: 2026-10-11
+- 소스 커밋: `4ef9e148d5b52e56f6e894394804119f587bdf78`
+- 대상: Windows x64 자체 포함 단일 `Bough-v0.1.0-beta.8-win-x64.exe`
+- 상태: GitHub 사전 릴리스 게시 완료
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.8)
+- [Windows x64 단일 실행 파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.8/Bough-v0.1.0-beta.8-win-x64.exe)
+- 생성 위치: `.codex-build/release-v0.1.0-beta.8-current/Bough-v0.1.0-beta.8-win-x64.exe`
+
+게시된 beta.7 다음 베타로 최신 소스에서 새 실행 파일을 생성했다. 기존 미게시 로컬 beta.8 파일은 보관하고 새 출력을 별도 폴더에 생성했다. 처음 생성 중 드러난 서브모듈 열기 오류 안내의 private setter 접근을 기존 Main 상태 표시 메서드 호출 한 줄로 수정·커밋한 뒤 생성을 완료했다.
+
+원격 자동 확인 설정과 받을 커밋 수 안내, 서브모듈 저장소 열기, 자동 확인 수명·비동기 설정 저장·참조 갱신 보완과 앱 업데이트의 App 배포 인프라 이동을 포함한다. 자동 확인은 기본 꺼짐·5분이고 자동 Pull·병합하지 않는다. 서브모듈은 열린 저장소에서 기존 Fetch·Pull·Push를 사용하며 자동 초기화·함께 받기/올리기는 추가하지 않았다. beta.7의 기존 수정도 포함한다.
+
+이 베타는 앱 내부 업데이트 후보에서 제외하며 공식 정식 릴리스만 확인하는 기존 정책을 유지한다. .NET 런타임·네이티브 라이브러리·필수 데이터·로그 기본 설정을 포함하고 Git은 별도로 설치한다. 기존 사용자 설정·최근 저장소 목록·앱 프로세스는 변경하지 않았다.
+
+요청된 다음 `dotnet publish`가 종료 코드 0으로 완료됐다.
+
+```powershell
+dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=0.1.0-beta.8 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v0.1.0-beta.8-current\build\ -o D:\Source\Bough\.codex-build\release-v0.1.0-beta.8-current\win-x64\
+```
+
+이번 게시에는 소스 커밋을 가리키는 beta.8 태그를 전송하고 단일 exe를 업로드했다. main 브랜치는 푸시하지 않았으며 한영 README와 게시 기록은 로컬 커밋으로 보관한다. 별도 테스트·UI 실행·실제 Git 작업·업데이트 설치/복원·하네스·정적 검사·diff check·리소스/해시/출력 대조는 수행하지 않았다.
+
 ## v0.1.0-beta.7 게시 완료
 
 - 생성·배포일: 2026-10-09
@@ -22,7 +46,7 @@ dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained
 
 소스 커밋을 가리키는 beta.7 태그를 원격에 푸시하고 exe를 사전 릴리스로 업로드·게시했다. 이번 요청에서는 main 브랜치를 푸시하지 않았으며 한영 README와 게시 기록은 로컬 커밋으로 보관한다. 별도 테스트·UI 실행·업데이트 설치/복원·Git 재현·하네스·정적 검증·diff check·리소스/해시/출력 대조는 수행하지 않았다.
 
-## v0.1.0-beta.8
+## v0.1.0-beta.8 최초 로컬 생성 (미게시)
 
 - 생성일: 2026-10-09
 - 소스 커밋: `15c65a070b0cde5d6fcc3cb80778b10be3a69719`

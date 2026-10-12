@@ -8,7 +8,7 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-[Download Bough v0.1.0-beta.7 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.7/Bough-v0.1.0-beta.7-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.7)
+[Download Bough v0.1.0-beta.8 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.8/Bough-v0.1.0-beta.8-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.8)
 
 Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. Windows x64 is the current release platform. Running on macOS has not yet been verified.
 
@@ -120,6 +120,12 @@ Right-click a commit and choose **Revert this commit…** to create a new commit
 Right-click a branch under **Git references** on the left to delete a local or remote branch. Confirm the target before deletion. The checked-out branch and a remote's default branch cannot be deleted, and local branches with unmerged commits are kept. Deleting a remote branch affects the server and other users.
 
 For tags, **Delete tag** opens one dialog to choose local or remote deletion, with local selected by default. Remote deletion inspects the actual tag on the selected server and requires confirmation of its impact; the local tag is preserved. Renaming a local branch or tag does not rename remote references. Annotated and signed tags keep their original tag object. Deletion and renaming run through the repository operation queue after confirmation.
+
+Enable automatic remote checks in Settings to periodically fetch the current repository's upstream and show incoming commit counts near Pull. The default is off with a five-minute interval; choose one, five, ten, or thirty minutes. Checks do not pull or merge automatically.
+
+Right-click a submodule in the reference tree and choose **Open repository**, then use the existing Fetch, Pull, and Push actions. Perform parent and submodule operations in their respective repositories. Uninitialized submodules are reported rather than initialized automatically.
+
+Application updates in Settings consider only official stable releases. Prereleases, including this beta, are excluded from in-app update candidates.
 
 ## Data generation
 
