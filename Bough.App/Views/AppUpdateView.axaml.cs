@@ -148,12 +148,6 @@ namespace Bough.App.Views
         private void RefreshProgress(AppUpdateViewModel model)
         {
             StringHelper strings = model.Strings;
-            DownloadProgress.IsIndeterminate = model.TotalBytes <= 0;
-            DownloadProgress.Value = 0;
-            if (model.TotalBytes > 0)
-            {
-                DownloadProgress.Value = Math.Clamp((double)model.DownloadedBytes / model.TotalBytes * 100, 0, 100);
-            }
             double downloaded = model.DownloadedBytes / 1048576d;
             if (model.TotalBytes > 0)
             {

@@ -286,7 +286,9 @@
                            Foreground="{DynamicResource BoughBrushTextMuted}"
                            ToolTip.Tip="{Binding SidebarStatusText}" />
               </ScrollViewer>
-              <ProgressBar IsVisible="{Binding IsMainProgress}" IsIndeterminate="True" Height="3" />
+              <ProgressBar x:Name="SidebarProgressBar" IsVisible="{Binding IsMainProgress}" IsIndeterminate="True" Height="3" />
+              <Button x:Name="SidebarUpdateReleaseButton" IsVisible="{Binding GitSettings.AppUpdate.IsDownloading}"
+                      Click="SidebarUpdateReleaseClicked" Height="32" HorizontalAlignment="Stretch" />
             </StackPanel>
           </Border>
         </Grid>

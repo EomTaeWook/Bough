@@ -330,6 +330,10 @@ namespace Bough.App.ViewModels
         {
             get
             {
+                if (GitSettings.AppUpdate.IsDownloading == true)
+                {
+                    return true;
+                }
                 if (IsBusy == true)
                 {
                     return true;
@@ -2369,8 +2373,9 @@ namespace Bough.App.ViewModels
             NotifySidebarStatusChanged();
         }
 
-        private void NotifySidebarStatusChanged()
+        internal void NotifySidebarStatusChanged()
         {
+            OnPropertyChanged(nameof(IsMainProgress));
             OnPropertyChanged(nameof(SidebarStatusText));
             OnPropertyChanged(nameof(HasSidebarStatusText));
             OnPropertyChanged(nameof(HasSidebarStatus));

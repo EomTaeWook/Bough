@@ -49,6 +49,8 @@ namespace Bough.App
 
         private void RefreshLocalizedLabels()
         {
+            SidebarUpdateReleaseButton.Content = _stringHelper.GetString("AppUpdateReleaseAction");
+            Avalonia.Automation.AutomationProperties.SetName(SidebarUpdateReleaseButton, _stringHelper.GetString("AppUpdateReleaseAction"));
             ToolTip.SetTip(RepositoryActionsButton, _stringHelper.GetString("RepositoryActionsTooltip"));
             Avalonia.Automation.AutomationProperties.SetName(RepositoryActionsButton, _stringHelper.GetString("RepositoryActionsButtonText"));
             OpenRepositoryActionLabel.Text = _stringHelper.GetString("RepositoryAddExistingAction");
@@ -123,11 +125,14 @@ namespace Bough.App
             RemoteOperationsPanel.InternalDialogClosed += OnRemoteDialogClosed;
             _viewModel.RemoteOperations.PropertyChanged += OnRemoteOperationsPropertyChanged;
             _viewModel.GitSettings.PropertyChanged += OnGitSettingsPropertyChanged;
+            _viewModel.GitSettings.AppUpdate.PropertyChanged += OnApplicationUpdatePropertyChanged;
+            RefreshApplicationUpdateProgress();
             UpdateSettingsAndRemoteAvailability();
             Closing += OnMainWindowClosing;
             Closed += delegate
             {
                 _mainWindowClosed = true;
+                _viewModel.GitSettings.AppUpdate.PropertyChanged -= OnApplicationUpdatePropertyChanged;
                 _viewModel.References.SubmoduleOpenRequested -= OnSubmoduleOpenRequested;
                 _submoduleOpenRequestVersion++;
                 _submoduleOpenCancellation?.Cancel();
@@ -581,6 +586,80 @@ namespace Bough.App
                 return;
             }
             UpdateSettingsAndRemoteAvailability();
+        }
+
+        private void OnApplicationUpdatePropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArguments)
+        {
+            if (_mainWindowClosed == true)
+            {
+                return;
+            }
+            if (ReferenceEquals(sender, _viewModel.GitSettings.AppUpdate) == false)
+            {
+                return;
+            }
+            switch (propertyChangedEventArguments.PropertyName)
+            {
+                case nameof(AppUpdateViewModel.IsDownloading):
+                case nameof(AppUpdateViewModel.DownloadedBytes):
+                case nameof(AppUpdateViewModel.TotalBytes):
+                    break;
+                default:
+                    return;
+            }
+            if (Dispatcher.UIThread.CheckAccess() == false)
+            {
+                Dispatcher.UIThread.Post(() => OnApplicationUpdatePropertyChanged(sender, propertyChangedEventArguments));
+                return;
+            }
+            RefreshApplicationUpdateProgress();
+            if (propertyChangedEventArguments.PropertyName == nameof(AppUpdateViewModel.IsDownloading))
+            {
+                _viewModel.NotifySidebarStatusChanged();
+            }
+        }
+
+        private async void SidebarUpdateReleaseClicked(object sender, RoutedEventArgs routedEventArguments)
+        {
+            if (_mainWindowClosed == true)
+            {
+                return;
+            }
+            Exception releaseOpenException = null;
+            try
+            {
+                bool releasePageOpened = await Launcher.LaunchUriAsync(new Uri("https://github.com/EomTaeWook/Bough/releases"));
+                if (releasePageOpened == true)
+                {
+                    return;
+                }
+            }
+            catch (Exception exception)
+            {
+                releaseOpenException = exception;
+            }
+            if (_mainWindowClosed == true)
+            {
+                return;
+            }
+            _viewModel.ReportRemoteCompletionFailure(new ApplicationUpdateException("AppUpdateReleaseOpenFailed", releaseOpenException, Array.Empty<object>()), _viewModel.CurrentRepository, _viewModel.RepositoryRequestVersion);
+        }
+
+        private void RefreshApplicationUpdateProgress()
+        {
+            AppUpdateViewModel applicationUpdate = _viewModel.GitSettings.AppUpdate;
+            bool isIndeterminate = true;
+            double progressValue = 0;
+            if (applicationUpdate.IsDownloading == true)
+            {
+                if (applicationUpdate.TotalBytes > 0)
+                {
+                    isIndeterminate = false;
+                    progressValue = Math.Clamp((double)applicationUpdate.DownloadedBytes / applicationUpdate.TotalBytes * 100, 0, 100);
+                }
+            }
+            SidebarProgressBar.IsIndeterminate = isIndeterminate;
+            SidebarProgressBar.Value = progressValue;
         }
 
         private void UpdateSettingsAndRemoteAvailability()
