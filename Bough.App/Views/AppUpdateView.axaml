@@ -20,8 +20,8 @@
     <WrapPanel>
       <Button x:Name="CheckButton" MinHeight="32" MinWidth="80" Margin="0,0,8,8" IsEnabled="{Binding CanCheck}" Click="CheckClicked" />
       <Button x:Name="UpdateButton" MinHeight="32" MinWidth="80" Margin="0,0,8,8" IsEnabled="{Binding CanUpdate}" Click="UpdateClicked" />
+      <Button x:Name="ReleaseButton" MinHeight="32" MinWidth="80" Margin="0,0,8,8" Click="ReleaseClicked" />
       <Button x:Name="CancelButton" MinHeight="32" MinWidth="80" Margin="0,0,0,8" IsVisible="{Binding CanCancel}" Click="CancelClicked" />
     </WrapPanel>
-    <Button x:Name="ReleaseButton" MinHeight="32" HorizontalAlignment="Left" Click="ReleaseClicked" />
   </StackPanel>
 </UserControl>

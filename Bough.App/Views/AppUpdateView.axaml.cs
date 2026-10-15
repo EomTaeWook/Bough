@@ -141,7 +141,6 @@ namespace Bough.App.Views
             AutomationProperties.SetName(CancelButton, strings.GetString("AppUpdateCancelAction"));
             ReleaseButton.Content = strings.GetString("AppUpdateReleaseAction");
             AutomationProperties.SetName(ReleaseButton, strings.GetString("AppUpdateReleaseAction"));
-            ReleaseButton.IsVisible = string.IsNullOrEmpty(model.ReleaseUrl) == false;
             RefreshProgress(model);
         }
 
@@ -243,10 +242,6 @@ namespace Bough.App.Views
             {
                 return;
             }
-            if (string.IsNullOrEmpty(model.ReleaseUrl))
-            {
-                return;
-            }
             int bindingVersion = _bindingVersion;
             try
             {
@@ -255,7 +250,7 @@ namespace Bough.App.Views
                 {
                     return;
                 }
-                if (Uri.TryCreate(model.ReleaseUrl, UriKind.Absolute, out Uri address) == false)
+                if (Uri.TryCreate("https://github.com/EomTaeWook/Bough/releases", UriKind.Absolute, out Uri address) == false)
                 {
                     ShowReleaseError(model, bindingVersion, null);
                     return;
