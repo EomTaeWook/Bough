@@ -1,6 +1,6 @@
 # 서브모듈 저장소 열기
 
-> 관련 화면: [Submodules](GitClientWorkflow.md#submodules), 담당: [구현 작업 지시](../Docs/ImplementationPlan.md#이번-작업-서브모듈-저장소-열기)
+> 관련 화면: [Submodules](GitClientWorkflow.md#submodules), 담당: [구현 작업 지시](../Docs/ImplementationPlan.md#완료-기능-서브모듈-저장소-열기)
 
 ## 사용자 흐름
 

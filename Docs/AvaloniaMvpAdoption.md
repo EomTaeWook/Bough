@@ -69,6 +69,8 @@ Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AX
 
 `AppUpdatePresenter`는 설정의 사용자 조회·다운로드·취소·재시작 입력과 요청 수명, 진행·코드형 오류 적용을 조정한다. `AppUpdateViewModel`은 현재·최신 버전, byte 진행과 원본 `LocalizedText` 상태를 보관하며 `AppUpdateView`가 언어·표시·브라우저 열기를 연결한다. 부모 `GitSettingsViewModel`에는 앱 업데이트 상태를 연결하고 HTTP·교체 구현을 넣지 않는다.
 
+설정의 진행 막대는 제거했고 MainWindow가 기존 AppUpdate의 `IsDownloading`·`DownloadedBytes`·`TotalBytes`를 읽어 왼쪽 하단 3px 막대에 표시한다. MainWindowViewModel의 기존 진행·상태 영역 알림을 재사용하며 다운로드 상태를 복제하거나 부모 Git busy를 켜지 않는다. 표시 구독은 창 종료 때 해제한다. 설정의 릴리스 페이지 버튼은 재시작 바로 옆에 항상 표시하고, 좌하단 버튼은 다운로드 중에 표시한다. 두 버튼은 후보 조회와 독립적으로 고정 GitHub 릴리스 목록을 연다.
+
 `ApplicationUpdateService`는 고정한 공식 정식 릴리스 조회·비교와 다운로드·SHA-256 확인을 수행하고 검증된 요청 자원만 반환한다. `ApplicationUpdateRestartPresenter`는 실제 전체 Git 큐와 앱 작업을 확인한 뒤 기존 Main 정상 닫기·초안 확인을 소비한다. `ApplicationUpdateInstaller`가 준비 사본과 임시 보조 프로세스, UI 수명 종료 후 승인·실제 원래 프로세스 종료 뒤 교체·복원을 맡는다. `App.axaml.cs`는 서비스를 주입하고 `Program`은 정상 시작과 전용 helper 진입을 연결한다.
 
 설정 View가 분리돼도 재시작 await 중 다운로드를 먼저 삭제하지 않는다. 정상 닫기 수락 전에는 UI가 원래 다운로드를 소유하며 수락 뒤 설치 담당으로 넘긴다. 거절·실패로 끝난 요청은 현재 화면에서 재입력할 수 있고 끝난 화면은 await 종료 후 자기 자원만 정리한다. HTTP 읽기는 Git 변경 FIFO에 넣지 않으며 별도 영구 updater·범용 완료 계층·작업 큐를 추가하지 않는다. 구현과 실행 확인 상태는 [구현 현황](CurrentStatus.md), 기능 계약은 [앱 업데이트](../Design/ApplicationUpdate.md)를 따른다.

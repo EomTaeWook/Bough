@@ -8,6 +8,8 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
+The first stable release, **v0.1.0**, is being prepared. Its executable has not been generated or published; the link below remains the existing beta.8 package. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
+
 [Download Bough v0.1.0-beta.8 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v0.1.0-beta.8/Bough-v0.1.0-beta.8-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v0.1.0-beta.8)
 
 Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. Windows x64 is the current release platform. Running on macOS has not yet been verified.
@@ -66,14 +68,15 @@ Bough is designed to show the source of each conflicting change and preview the 
 - **History and references:** Browse the commit graph, file changes, and file history; revert a selected commit; create, switch, delete, and rename branches; create, delete, and rename tags.
 - **Remotes and stashes:** Fetch, Pull, and Push; configure the default Pull strategy or choose one for a single Pull; save, apply, and delete stashes.
 - **Automatic remote checks:** Enable periodic checks in Settings and see new incoming commits for the open repository. Pull remains a manual action.
+- **Open submodule repositories:** Open a child repository from the reference tree and use its existing Fetch, Pull, and Push actions.
 - **Conflict resolution:** Inspect merge, rebase, or revert changes; choose sections, edit and save individual files, or apply, save, and stage the remaining sections across all conflicted files.
 - **Application updates:** Check official stable releases from Settings, download with progress and cancellation, then replace the single executable and restart after a normal shutdown. Beta and prerelease versions are excluded.
 
-Features and workflows are still being refined.
+The implemented basic Git workflows form the scope of the first stable v0.1.0 release. [Implementation status](Docs/CurrentStatus.md) separates the latest source from the contents of published packages.
 
-Application updating is included in the beta.7 download above. In-app update candidates are limited to stable releases; actual download, replacement, and recovery have not been exercised. See [implementation status](Docs/CurrentStatus.md) for implementation and release status.
+Application updates, automatic remote checks, and opening submodule repositories are included in the beta.8 download above. Moving update progress to the lower left and rearranging the release-page buttons are later source changes intended for the stable release.
 
-Automatic remote checks are added in the latest source and are not included in the beta.7 download above. They are disabled by default, with a choice of 1, 5, 10, or 30 minutes.
+In-app updates consider only official stable releases. The complete update download, replacement, and recovery flow and execution of the latest source have not been verified.
 
 Additional screens and workflows are described in the [design notes](Design/README.md) (Korean).
 
@@ -83,7 +86,7 @@ Additional screens and workflows are described in the [design notes](Design/READ
 - **Current release platform:** Windows x64
 - **UI:** Avalonia
 
-The project is under active development. [Implementation status](Docs/CurrentStatus.md) (Korean) separates available features from checks still pending. See [development docs](Docs/README.md) and [design notes](Design/README.md) for more detail.
+The first stable v0.1.0 release is being prepared around the implemented basic Git features. [Implementation status](Docs/CurrentStatus.md) (Korean) separates implemented features from behavior still unconfirmed. See [development docs](Docs/README.md) and [design notes](Design/README.md) for more detail.
 
 Bough is an architecture reference for desktop applications such as Eidolon. See [desktop application architecture](Docs/DesktopApplicationArchitecture.md) (Korean) for responsibilities, task lifetimes, and the mappings each project must define.
 
@@ -109,7 +112,7 @@ dotnet run --project Bough.App/Bough.App.csproj
 
 ### Work with repositories
 
-Bough adds and opens the repository when cloning finishes. The list's remove button appears on hover or keyboard focus. For individual conflict resolution, choose sections, inspect or edit the final file, and select **Save and Stage**. In beta.7, batch actions apply one choice to all unselected sections across conflicted files, then save and stage them immediately. Existing choices are preserved; inseparable manual edits are excluded with a reason. Merge commits, rebase continue, and revert continue remain explicit actions. Text conflict resolution currently targets UTF-8 files.
+Bough adds and opens the repository when cloning finishes. The list's remove button appears on hover or keyboard focus. For individual conflict resolution, choose sections, inspect or edit the final file, and select **Save and Stage**. Batch actions apply one choice to all unselected sections across conflicted files, then save and stage them immediately. Existing choices are preserved; inseparable manual edits are excluded with a reason. Merge commits, rebase continue, and revert continue remain explicit actions. Text conflict resolution currently targets UTF-8 files.
 
 When cloning fails, Bough shows the cause identified from Git diagnostics, such as authentication, repository access, connection, storage space, or file writing. Destination status is reported separately. If the folder is empty, you can retry using the same path after resolving the clone error. When the cause cannot be identified, Bough shows a general failure message and the exit code.
 
@@ -126,6 +129,8 @@ Enable automatic remote checks in Settings to periodically fetch the current rep
 Right-click a submodule in the reference tree and choose **Open repository**, then use the existing Fetch, Pull, and Push actions. Perform parent and submodule operations in their respective repositories. Uninitialized submodules are reported rather than initialized automatically.
 
 Application updates in Settings consider only official stable releases. Prereleases, including this beta, are excluded from in-app update candidates.
+
+In the latest source, update download progress appears in the lower left. The release-page button beside **Update and restart** opens GitHub Releases even before checking for an update. A button to the same page is also shown in the lower left while downloading.
 
 ## Data generation
 
