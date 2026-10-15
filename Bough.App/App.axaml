@@ -59,8 +59,20 @@
       <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
     </Style>
-    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+    <Style Selector="Button.primary">
       <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="Button.primary:pointerover:not(:disabled) /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="Button.primary:pressed:not(:disabled) /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushAccent}" />
     </Style>
     <Style Selector="Button.primary:disabled">
       <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />
