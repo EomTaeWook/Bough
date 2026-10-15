@@ -38,7 +38,7 @@
       <Button x:Name="StopButton" Click="StopClicked" Height="32" MinWidth="80" Padding="12,4"
               IsVisible="True" IsEnabled="True"
               />
-      <Button x:Name="CloseButton" Click="CloseClicked" Height="32" MinWidth="80" Padding="12,4"
+      <Button x:Name="CloseButton" Classes="primary" Click="CloseClicked" Height="32" MinWidth="80" Padding="12,4"
               IsVisible="False" IsDefault="True" />
     </StackPanel>
   </Grid>
