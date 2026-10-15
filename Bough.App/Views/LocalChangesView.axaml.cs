@@ -46,7 +46,7 @@ namespace Bough.App.Views
         private LocalChangesViewModel _previewSource;
         private bool _previewAttached;
         private GitRepository _contextStagedRepository;
-        private GitWorktreeFile _contextStagedFile;
+        private IReadOnlyList<GitWorktreeFile> _contextStagedFiles = Array.Empty<GitWorktreeFile>();
         private GitRepository _contextUnstagedRepository;
         private IReadOnlyList<GitWorktreeFile> _contextUnstagedFiles = Array.Empty<GitWorktreeFile>();
         private IReadOnlyList<string> _contextDiscardPaths = Array.Empty<string>();
@@ -136,7 +136,7 @@ namespace Bough.App.Views
         {
             UnstagedDangerSeparator.IsVisible = false;
             _contextStagedRepository = null;
-            _contextStagedFile = null;
+            _contextStagedFiles = Array.Empty<GitWorktreeFile>();
             _contextUnstagedRepository = null;
             _contextUnstagedFiles = Array.Empty<GitWorktreeFile>();
             _contextDiscardPaths = Array.Empty<string>();
@@ -404,6 +404,39 @@ namespace Bough.App.Views
             }
         }
 
+        private void StagedSelectionChanged(object sender, SelectionChangedEventArgs eventArgs)
+        {
+            if (DataContext is not LocalChangesViewModel viewModel)
+            {
+                return;
+            }
+
+            viewModel.SetStagedSelection(StagedList.SelectedItems.OfType<GitWorktreeFile>());
+        }
+
+        private void StagedKeyDown(object sender, KeyEventArgs eventArgs)
+        {
+            if (eventArgs.Key != Key.A)
+            {
+                return;
+            }
+
+            if ((eventArgs.KeyModifiers & KeyModifiers.Control) == 0)
+            {
+                return;
+            }
+
+            foreach (GitWorktreeFile file in StagedList.ItemsSource.OfType<GitWorktreeFile>())
+            {
+                if (StagedList.SelectedItems.Contains(file) == false)
+                {
+                    StagedList.SelectedItems.Add(file);
+                }
+            }
+
+            eventArgs.Handled = true;
+        }
+
         private void UnstagedSelectionChanged(object sender, SelectionChangedEventArgs eventArgs)
         {
             if (DataContext is not LocalChangesViewModel viewModel)
@@ -446,7 +479,7 @@ namespace Bough.App.Views
             }
 
             _stagedPointerSelection = true;
-            _contextStagedFile = null;
+            _contextStagedFiles = Array.Empty<GitWorktreeFile>();
             if (eventArgs.Source is not Control source)
             {
                 return;
@@ -463,34 +496,59 @@ namespace Bough.App.Views
                 return;
             }
 
-            _contextStagedFile = file;
-            StagedList.SelectedItem = file;
+            if (StagedList.SelectedItems.Contains(file) == true)
+            {
+                _contextStagedFiles = StagedList.SelectedItems.OfType<GitWorktreeFile>().ToArray();
+                return;
+            }
+
+            StagedList.SelectedItems.Clear();
+            StagedList.SelectedItems.Add(file);
+            _contextStagedFiles = new GitWorktreeFile[] { file };
         }
 
         private void StagedContextOpened(object sender, RoutedEventArgs eventArgs)
         {
             if (DataContext is not LocalChangesViewModel viewModel)
             {
+                _contextStagedRepository = null;
+                _contextStagedFiles = Array.Empty<GitWorktreeFile>();
                 StagedUnstageItem.IsEnabled = false;
                 return;
             }
 
-            if (_stagedPointerSelection == false)
+            bool preservePointerSelection = _stagedPointerSelection;
+            if (preservePointerSelection == false)
             {
-                _contextStagedFile = viewModel.SelectedStagedFile;
+                _contextStagedFiles = StagedList.SelectedItems.OfType<GitWorktreeFile>().ToArray();
             }
 
             _stagedPointerSelection = false;
             _contextStagedRepository = viewModel.CurrentRepository;
             StagedUnstageItem.Header = viewModel.UnstageSelectedText;
             ToolTip.SetTip(StagedUnstageItem, viewModel.UnstageSelectedText);
-            if (_contextStagedFile == null)
+            if (_contextStagedFiles.Count == 0)
             {
                 StagedUnstageItem.IsEnabled = false;
                 return;
             }
 
-            StagedUnstageItem.IsEnabled = viewModel.StagedFiles.Contains(_contextStagedFile);
+            if (_contextStagedFiles.All(file => viewModel.StagedFiles.Contains(file)) == false)
+            {
+                StagedUnstageItem.IsEnabled = false;
+                return;
+            }
+
+            if (preservePointerSelection == true)
+            {
+                StagedList.SelectedItems.Clear();
+                foreach (GitWorktreeFile file in _contextStagedFiles)
+                {
+                    StagedList.SelectedItems.Add(file);
+                }
+            }
+
+            StagedUnstageItem.IsEnabled = true;
         }
 
         private void StagedContextRequested(object sender, ContextRequestedEventArgs eventArgs)
@@ -506,18 +564,18 @@ namespace Bough.App.Views
             }
 
             GitRepository repository = _contextStagedRepository;
-            GitWorktreeFile file = _contextStagedFile;
+            IReadOnlyList<GitWorktreeFile> files = _contextStagedFiles;
             if (repository == null)
             {
                 return;
             }
 
-            if (file == null)
+            if (files.Count == 0)
             {
                 return;
             }
 
-            await viewModel.UnstageFileAsync(repository, file);
+            await viewModel.UnstageFilesAsync(repository, files);
         }
 
         private void UnstagedPointerPressed(object sender, PointerPressedEventArgs eventArgs)

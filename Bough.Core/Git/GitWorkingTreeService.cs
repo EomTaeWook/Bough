@@ -233,6 +233,42 @@ namespace Bough.Core.Git
             await _runner.RunAsync(repository.RootPath, arguments, false, cancellationToken);
         }
 
+        public async Task UnstageFilesAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files, CancellationToken cancellationToken = default)
+        {
+            if (files.Count == 0)
+            {
+                return;
+            }
+            if (files.Count == 1)
+            {
+                await UnstageAsync(repository, files[0], cancellationToken);
+                return;
+            }
+
+            List<string> arguments = await BuildUnstageArgumentsAsync(repository, cancellationToken);
+            arguments.Add("--pathspec-from-file=-");
+            arguments.Add("--pathspec-file-nul");
+            StringBuilder pathspecs = new();
+            HashSet<string> addedPaths = new(StringComparer.Ordinal);
+            foreach (GitWorktreeFile file in files)
+            {
+                if (addedPaths.Add(file.Path) == true)
+                {
+                    pathspecs.Append(LiteralPath(file.Path)).Append('\0');
+                }
+
+                if (string.IsNullOrEmpty(file.OriginalPath) == false)
+                {
+                    if (addedPaths.Add(file.OriginalPath) == true)
+                    {
+                        pathspecs.Append(LiteralPath(file.OriginalPath)).Append('\0');
+                    }
+                }
+            }
+
+            await _runner.RunWithInputAsync(repository.RootPath, arguments, pathspecs.ToString(), cancellationToken);
+        }
+
         public GitDiscardPlan PrepareDiscard(GitRepository repository, GitWorktreeFile file)
         {
             if (repository == null)

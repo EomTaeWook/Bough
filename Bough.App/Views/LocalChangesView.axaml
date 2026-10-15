@@ -124,6 +124,7 @@
           </Border>
           <ListBox x:Name="StagedList" Grid.Row="1" ItemsSource="{Binding StagedFiles}" SelectedItem="{Binding SelectedStagedFile, Mode=TwoWay}"
                    ItemTemplate="{StaticResource WorktreeFileRowTemplate}"
+                   SelectionMode="Multiple" SelectionChanged="StagedSelectionChanged" KeyDown="StagedKeyDown"
                    IsVisible="{Binding HasStagedFiles}" Background="Transparent" BorderThickness="0">
             <ListBox.ContextMenu>
               <ContextMenu Opened="StagedContextOpened" Background="{DynamicResource BoughBrushSurface}">

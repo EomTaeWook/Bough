@@ -127,20 +127,27 @@ namespace Bough.App.Presenters
             }, preferredPath, true, cancellationToken));
         }
 
-        public Task UnstageSelectedAsync(LocalChangesViewModel screen, GitRepository repository, GitWorktreeFile file, LocalizedText operationName)
+        public Task UnstageSelectedAsync(LocalChangesViewModel screen, GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, string preferredPath, LocalizedText operationName)
         {
             return EnqueueAsync(screen, repository, operationName, cancellationToken => RunOperationAsync(screen, repository, async token =>
             {
                 GitWorktreeStatus status = await _workingTreeService.GetStatusAsync(repository, token);
-                GitWorktreeFile current = status.Files.FirstOrDefault(candidate => candidate.Path == file.Path);
-                if (current == null)
+                List<GitWorktreeFile> currentFiles = [];
+                foreach (GitWorktreeFile expectedFile in expectedFiles)
                 {
-                    throw new GitException("LocalSelectedFileChanged", null, file.Path);
+                    GitWorktreeFile currentFile = status.Files.FirstOrDefault(candidate => candidate.Path == expectedFile.Path);
+                    if (currentFile == null)
+                    {
+                        throw new GitException("LocalSelectedFileChanged", null, expectedFile.Path);
+                    }
+
+                    currentFiles.Add(currentFile);
                 }
-                _workingTreeService.ValidateSelectedFiles([file], [current], true);
-                await _workingTreeService.UnstageAsync(repository, current, token);
+
+                _workingTreeService.ValidateSelectedFiles(expectedFiles, currentFiles, true);
+                await _workingTreeService.UnstageFilesAsync(repository, currentFiles, token);
                 return true;
-            }, file.Path, false, cancellationToken));
+            }, preferredPath, false, cancellationToken));
         }
 
         public Task UnstageAllAsync(LocalChangesViewModel screen, GitRepository repository, IReadOnlyList<GitWorktreeFile> expectedFiles, string preferredPath, LocalizedText operationName)

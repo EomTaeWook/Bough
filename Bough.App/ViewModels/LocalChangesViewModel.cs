@@ -45,6 +45,7 @@ namespace Bough.App.ViewModels
         private readonly ObservableCollection<GitWorktreeFile> _stagedFiles;
         private readonly ObservableCollection<GitWorktreeFile> _conflictFiles;
         private readonly List<GitWorktreeFile> _selectedUnstagedFiles;
+        private readonly List<GitWorktreeFile> _selectedStagedFiles;
         private readonly Dictionary<string, LocalizedText> _queuedMutationErrors;
         private GitRepository _repository;
         private GitWorktreeStatus _workingStatus;
@@ -99,6 +100,7 @@ namespace Bough.App.ViewModels
             _stagedFiles = [];
             _conflictFiles = [];
             _selectedUnstagedFiles = [];
+            _selectedStagedFiles = [];
             StringComparer repositoryComparer = StringComparer.Ordinal;
             if (OperatingSystem.IsWindows() == true)
             {
@@ -570,6 +572,42 @@ namespace Bough.App.ViewModels
             return [];
         }
 
+        public void SetStagedSelection(IEnumerable<GitWorktreeFile> files)
+        {
+            _selectedStagedFiles.Clear();
+            foreach (GitWorktreeFile file in files)
+            {
+                if (_stagedFiles.Contains(file) == false)
+                {
+                    continue;
+                }
+
+                if (file.IsConflict == true)
+                {
+                    continue;
+                }
+
+                _selectedStagedFiles.Add(file);
+            }
+
+            UnstageSelectedCommand.NotifyCanExecuteChanged();
+        }
+
+        private List<GitWorktreeFile> GetStagedSelection()
+        {
+            if (_selectedStagedFiles.Count > 0)
+            {
+                return _selectedStagedFiles.ToList();
+            }
+
+            if (SelectedStagedFile != null)
+            {
+                return [SelectedStagedFile];
+            }
+
+            return [];
+        }
+
         public GitWorktreeFile SelectedStagedFile
         {
             get { return _selectedStagedFile; }
@@ -659,6 +697,7 @@ namespace Bough.App.ViewModels
             _selectedUnstagedFiles.Clear();
             OnPropertyChanged(nameof(DiscardSelectionText));
             SelectedStagedFile = null;
+            _selectedStagedFiles.Clear();
             SelectedConflictFile = null;
             _unstagedFiles.Clear();
             _stagedFiles.Clear();
@@ -1024,7 +1063,7 @@ namespace Bough.App.ViewModels
 
         private Task UnstageSelectedAsync()
         {
-            return UnstageFileAsync(_repository, SelectedStagedFile);
+            return UnstageFilesAsync(_repository, GetStagedSelection());
         }
 
         public Task UnstageFileAsync(GitRepository repository, GitWorktreeFile file)
@@ -1038,7 +1077,36 @@ namespace Bough.App.ViewModels
                 return Task.CompletedTask;
             }
 
-            return _mutationPresenter.UnstageSelectedAsync(this, repository, file, new LocalizedText("UnstageSelected"));
+            return UnstageFilesAsync(repository, [file]);
+        }
+
+        public Task UnstageFilesAsync(GitRepository repository, IReadOnlyList<GitWorktreeFile> files)
+        {
+            if (repository == null)
+            {
+                return Task.CompletedTask;
+            }
+            if (files == null)
+            {
+                return Task.CompletedTask;
+            }
+            if (files.Count == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            GitWorktreeFile[] expectedFiles = files.ToArray();
+            string preferredPath = expectedFiles[0].Path;
+            GitWorktreeFile primaryFile = SelectedStagedFile;
+            if (primaryFile != null)
+            {
+                if (expectedFiles.Contains(primaryFile) == true)
+                {
+                    preferredPath = primaryFile.Path;
+                }
+            }
+
+            return _mutationPresenter.UnstageSelectedAsync(this, repository, expectedFiles, preferredPath, new LocalizedText("UnstageSelected"));
         }
 
         private Task DiscardSelectedAsync()
@@ -1741,6 +1809,7 @@ namespace Bough.App.ViewModels
             _selectedUnstagedFiles.Clear();
             OnPropertyChanged(nameof(DiscardSelectionText));
             SelectedStagedFile = null;
+            _selectedStagedFiles.Clear();
             SelectedConflictFile = null;
             _unstagedFiles.Clear();
             _stagedFiles.Clear();
@@ -1862,7 +1931,7 @@ namespace Bough.App.ViewModels
                 return false;
             }
 
-            return SelectedStagedFile != null;
+            return GetStagedSelection().Count > 0;
         }
 
         private bool CanStageAll()
