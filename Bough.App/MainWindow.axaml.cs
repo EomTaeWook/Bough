@@ -133,6 +133,7 @@ namespace Bough.App
             Closed += delegate
             {
                 _mainWindowClosed = true;
+                _viewModel.StopTagPushCandidates();
                 RemoteOperationsPanel.TagPushRequestedAsync = null;
                 _viewModel.GitSettings.AppUpdate.PropertyChanged -= OnApplicationUpdatePropertyChanged;
                 _viewModel.References.SubmoduleOpenRequested -= OnSubmoduleOpenRequested;
@@ -315,6 +316,7 @@ namespace Bough.App
                 {
                     await _viewModel.GitSettings.WaitForAutoFetchSettingsSaveAsync();
                     await _viewModel.PauseAutoFetchAsync();
+                    await _viewModel.PauseTagPushCandidatesAsync();
                     _autoFetchCloseReady = true;
                     Dispatcher.UIThread.Post(Close);
                 }
@@ -330,12 +332,16 @@ namespace Bough.App
             }
             finally
             {
-                if (eventArgs.Cancel == true && _mainWindowClosed == false)
+                if (eventArgs.Cancel == true)
                 {
-                    _autoFetchCloseReady = false;
-                    if (_updateCloseRequest == null)
+                    if (_mainWindowClosed == false)
                     {
-                        _viewModel.ResumeAutoFetch();
+                        _autoFetchCloseReady = false;
+                        _viewModel.ResumeTagPushCandidates();
+                        if (_updateCloseRequest == null)
+                        {
+                            _viewModel.ResumeAutoFetch();
+                        }
                     }
                 }
             }
@@ -943,6 +949,27 @@ namespace Bough.App
             OnRemoteDialogOpening();
             try
             {
+                await _viewModel.PauseTagPushCandidatesAsync();
+                if (_mainWindowClosed == true)
+                {
+                    return;
+                }
+                if (_viewModel.IsCurrentRepositoryRequest(repository, repositoryRequestVersion) == false)
+                {
+                    return;
+                }
+                if (referenceBindingVersion != references.ReferenceBindingVersion)
+                {
+                    return;
+                }
+                if (references.CurrentRepository == null)
+                {
+                    return;
+                }
+                if (string.Equals(references.CurrentRepository.RootPath, repository.RootPath, pathComparison) == false)
+                {
+                    return;
+                }
                 await references.RefreshAsync(updateStatus: false);
                 if (_mainWindowClosed == true)
                 {
@@ -952,7 +979,7 @@ namespace Bough.App
                 {
                     return;
                 }
-                if (ReferenceEquals(references.CurrentRepository, referenceRepository) == false)
+                if (references.CurrentRepository == null)
                 {
                     return;
                 }
@@ -976,11 +1003,15 @@ namespace Bough.App
                 {
                     return;
                 }
-                if (ReferenceEquals(references.CurrentRepository, referenceRepository) == false)
+                if (references.CurrentRepository == null)
                 {
                     return;
                 }
                 if (referenceBindingVersion != references.ReferenceBindingVersion)
+                {
+                    return;
+                }
+                if (string.Equals(references.CurrentRepository.RootPath, repository.RootPath, pathComparison) == false)
                 {
                     return;
                 }
@@ -990,6 +1021,7 @@ namespace Bough.App
             {
                 if (_mainWindowClosed == false)
                 {
+                    _viewModel.ResumeTagPushCandidates();
                     OnRemoteDialogClosed();
                 }
             }

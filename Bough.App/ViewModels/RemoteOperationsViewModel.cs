@@ -61,6 +61,8 @@ namespace Bough.App.ViewModels
         private bool _prune;
         private bool _showPullStrategies;
         private Exception _autoFetchError;
+        private IReadOnlyList<GitTag> _tagPushCandidates;
+        private LocalizedText _tagPushCandidatesStatus;
 
         public RemoteOperationsViewModel(GitRemoteOperationService service, GitRepositoryService repositoryService, StringHelper strings, GitErrorLocalizer errors)
         {
@@ -138,7 +140,29 @@ namespace Bough.App.ViewModels
         public bool CanFetchAll { get { return _repository != null && _remotes.Count > 0; } }
         public bool CanSelectFetchRemote { get { return CanFetchAll; } }
         public bool CanPull { get { return CanFetchAll && _state != null && _state.IsDetached == false && _state.HeadHash.Length > 0; } }
-        public bool CanPush { get { return CanPushTo; } }
+        public bool CanPush
+        {
+            get
+            {
+                if (CanPushTo == false)
+                {
+                    return false;
+                }
+                if (_state.HasUpstream == false)
+                {
+                    return true;
+                }
+                if (_state.Ahead > 0)
+                {
+                    return true;
+                }
+                if (_tagPushCandidates == null)
+                {
+                    return false;
+                }
+                return _tagPushCandidates.Count > 0;
+            }
+        }
         public bool CanPushTo { get { return CanPull; } }
         public bool HasNoOutgoingPushCommits { get { return CanPushTo && _state.HasUpstream && _state.Ahead == 0; } }
         public string PushAvailabilityText
@@ -148,6 +172,14 @@ namespace Bough.App.ViewModels
                 if (HasNoOutgoingPushCommits == false)
                 {
                     return string.Empty;
+                }
+                if (_tagPushCandidatesStatus != null)
+                {
+                    return _tagPushCandidatesStatus.GetText(_strings);
+                }
+                if (_tagPushCandidates == null)
+                {
+                    return _strings.GetString("RemoteTagPushCandidatesChecking");
                 }
                 if (_state.Behind > 0)
                 {
@@ -319,6 +351,9 @@ namespace Bough.App.ViewModels
             _repository = repository;
             LatestOperationStateSnapshot = null;
             _state = null;
+            _tagPushCandidates = null;
+            _tagPushCandidatesStatus = null;
+            OnPropertyChanged(nameof(RemoteState));
             AutoFetchError = null;
             _remotes.Clear();
             SelectedRemote = selectedRemote;
@@ -398,6 +433,14 @@ namespace Bough.App.ViewModels
             _executionPresenter.ReportCompletionFailure(exception);
         }
 
+        internal void SetTagPushCandidates(IReadOnlyList<GitTag> candidates, LocalizedText status)
+        {
+            _tagPushCandidates = candidates;
+            _tagPushCandidatesStatus = status;
+            OnPropertyChanged(nameof(CanPush));
+            OnPropertyChanged(nameof(PushAvailabilityText));
+        }
+
         internal void NotifyState()
         {
             OnPropertyChanged(nameof(CurrentBranchText));
@@ -423,11 +466,14 @@ namespace Bough.App.ViewModels
         internal void ApplyState(GitRemoteState state)
         {
             _state = state;
+            _tagPushCandidates = null;
+            _tagPushCandidatesStatus = null;
             _remotes.Clear();
             foreach (string remote in state.Remotes) { _remotes.Add(remote); }
             if (_remotes.Contains(SelectedRemote))
             {
                 NotifyState();
+                OnPropertyChanged(nameof(RemoteState));
                 return;
             }
             if (state.HasUpstream == true)
@@ -443,6 +489,7 @@ namespace Bough.App.ViewModels
                 }
             }
             NotifyState();
+            OnPropertyChanged(nameof(RemoteState));
         }
 
     }

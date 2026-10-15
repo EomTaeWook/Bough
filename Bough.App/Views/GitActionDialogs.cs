@@ -75,20 +75,24 @@ namespace Bough.App.Views
             string repositoryRoot = repository.RootPath;
             StringHelper stringHelper = viewModel.Strings;
             int bindingVersion = viewModel.ReferenceBindingVersion;
-            GitTag[] localTags = viewModel.Tags.ToArray();
+            GitTag[] localTags = Array.Empty<GitTag>();
             if (selectedTag != null)
             {
                 localTags = new GitTag[] { selectedTag };
             }
-            string[] tagNames = localTags.Select(tag => tag.Name).ToArray();
             string[] remoteNames = viewModel.Remotes.Select(remote => remote.Name).ToArray();
             Window dialog = CreateWindow(TagText("TagPushTitle", stringHelper));
             dialog.CanResize = true;
             TextBlock repositoryLabel = new() { Text = repositoryRoot, TextWrapping = TextWrapping.Wrap };
             TextBlock tagLabel = new() { Text = TagText("ReferenceTagsHeading", stringHelper) };
-            ComboBox tags = new() { ItemsSource = tagNames, SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch, IsEnabled = selectedTag == null };
+            ComboBox tags = new() { ItemsSource = localTags.Select(tag => tag.Name).ToArray(), SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
             TextBlock remoteLabel = new() { Text = TagText("ReferenceRemotesHeading", stringHelper) };
             ComboBox remotes = new() { ItemsSource = remoteNames, SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
+            Button reload = new() { Content = TagText("TagDeleteDialogReload", stringHelper), Height = 32, MinWidth = 80 };
+            Grid remoteSelection = new() { ColumnDefinitions = new ColumnDefinitions("*,Auto"), ColumnSpacing = 8 };
+            Grid.SetColumn(reload, 1);
+            remoteSelection.Children.Add(remotes);
+            remoteSelection.Children.Add(reload);
             TextBlock confirmation = new() { TextWrapping = TextWrapping.Wrap };
             TextBlock progress = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
             TextBlock error = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
@@ -96,6 +100,11 @@ namespace Bough.App.Views
             Button push = new() { Content = TagText("TagPushAction", stringHelper), IsDefault = true };
             LocalizedText failure = null;
             Task<LocalizedText> operation = null;
+            Task<IReadOnlyList<GitTag>> candidateLookup = null;
+            IReadOnlyList<GitTag> candidates = null;
+            CancellationTokenSource lookupCancellation = null;
+            int lookupVersion = 0;
+            bool closed = false;
             Avalonia.Automation.AutomationProperties.SetName(tags, tagLabel.Text);
             Avalonia.Automation.AutomationProperties.SetName(remotes, remoteLabel.Text);
 
@@ -106,16 +115,23 @@ namespace Bough.App.Views
                 {
                     running = operation.IsCompleted == false;
                 }
+                bool lookingUp = false;
+                if (candidateLookup != null)
+                {
+                    lookingUp = candidateLookup.IsCompleted == false;
+                }
                 LocalizedText currentFailure = failure;
-                bool valid = true;
+                bool valid = candidates != null;
+                if (candidates != null)
+                {
+                    if (candidates.Count == 0)
+                    {
+                        valid = false;
+                    }
+                }
                 if (remoteNames.Length == 0)
                 {
                     currentFailure = new LocalizedText("ReferenceNoRemotes");
-                    valid = false;
-                }
-                if (localTags.Length == 0)
-                {
-                    currentFailure = new LocalizedText("ReferenceNoTags");
                     valid = false;
                 }
                 if (bindingVersion != viewModel.ReferenceBindingVersion)
@@ -137,6 +153,10 @@ namespace Bough.App.Views
                 {
                     valid = false;
                 }
+                if (tags.SelectedIndex >= localTags.Length)
+                {
+                    valid = false;
+                }
                 if (remotes.SelectedItem is not string)
                 {
                     valid = false;
@@ -144,10 +164,13 @@ namespace Bough.App.Views
                 confirmation.Text = string.Empty;
                 if (tags.SelectedIndex >= 0)
                 {
-                    if (remotes.SelectedItem is string remoteName)
+                    if (tags.SelectedIndex < localTags.Length)
                     {
-                        GitTag tag = localTags[tags.SelectedIndex];
-                        confirmation.Text = stringHelper.Format("TagPushConfirm", tag.Name, tag.ObjectId, remoteName);
+                        if (remotes.SelectedItem is string remoteName)
+                        {
+                            GitTag tag = localTags[tags.SelectedIndex];
+                            confirmation.Text = stringHelper.Format("TagPushConfirm", tag.Name, tag.ObjectId, remoteName);
+                        }
                     }
                 }
                 error.Text = string.Empty;
@@ -156,25 +179,145 @@ namespace Bough.App.Views
                     error.Text = currentFailure.GetText(stringHelper);
                 }
                 error.IsVisible = string.IsNullOrEmpty(error.Text) == false;
-                progress.IsVisible = running;
-                push.IsEnabled = valid;
+                progress.Text = string.Empty;
+                if (candidates != null)
+                {
+                    if (candidates.Count == 0)
+                    {
+                        progress.Text = stringHelper.Format("TagPushCandidatesEmpty", remotes.SelectedItem as string);
+                    }
+                }
+                if (lookingUp == true)
+                {
+                    progress.Text = stringHelper.Format("TagPushCandidatesLoading", remotes.SelectedItem as string);
+                    valid = false;
+                }
                 if (running == true)
                 {
-                    push.IsEnabled = false;
+                    if (tags.SelectedIndex >= 0)
+                    {
+                        if (tags.SelectedIndex < localTags.Length)
+                        {
+                            progress.Text = stringHelper.Format("TagPushProgress", localTags[tags.SelectedIndex].Name, remotes.SelectedItem as string);
+                        }
+                    }
+                    valid = false;
                 }
-                tags.IsEnabled = running == false;
+                progress.IsVisible = string.IsNullOrEmpty(progress.Text) == false;
+                push.IsEnabled = valid;
+                tags.IsEnabled = valid;
                 if (selectedTag != null)
                 {
                     tags.IsEnabled = false;
                 }
                 remotes.IsEnabled = running == false;
                 cancel.IsEnabled = running == false;
+                reload.IsEnabled = running == false;
+                if (lookingUp == true)
+                {
+                    reload.IsEnabled = false;
+                }
+                if (remoteNames.Length == 0)
+                {
+                    reload.IsEnabled = false;
+                }
                 error.Foreground = GetResourceBrush(dialog, "BoughBrushError");
                 progress.Foreground = GetResourceBrush(dialog, "BoughBrushTextMuted");
             }
 
-            tags.SelectionChanged += delegate { failure = null; Render(); };
-            remotes.SelectionChanged += delegate { failure = null; Render(); };
+            async Task LoadCandidatesAsync()
+            {
+                lookupCancellation?.Cancel();
+                int requestVersion = ++lookupVersion;
+                candidates = null;
+                failure = null;
+                if (selectedTag == null)
+                {
+                    tags.SelectedIndex = -1;
+                    localTags = Array.Empty<GitTag>();
+                    tags.ItemsSource = Array.Empty<string>();
+                }
+                if (remotes.SelectedItem is not string remoteName)
+                {
+                    Render();
+                    return;
+                }
+                using CancellationTokenSource cancellation = new();
+                lookupCancellation = cancellation;
+                Task<IReadOnlyList<GitTag>> currentLookup = viewModel.GetTagPushCandidatesAsync(repository, remoteName, selectedTag, cancellation.Token);
+                candidateLookup = currentLookup;
+                Render();
+                try
+                {
+                    IReadOnlyList<GitTag> result = await currentLookup;
+                    if (closed == true)
+                    {
+                        return;
+                    }
+                    if (requestVersion != lookupVersion)
+                    {
+                        return;
+                    }
+                    if (bindingVersion != viewModel.ReferenceBindingVersion)
+                    {
+                        return;
+                    }
+                    if (remotes.SelectedItem as string != remoteName)
+                    {
+                        return;
+                    }
+                    if (result == null)
+                    {
+                        failure = new LocalizedText("TagPushCandidatesSuperseded");
+                        return;
+                    }
+                    candidates = result;
+                    if (selectedTag == null)
+                    {
+                        localTags = result.ToArray();
+                        tags.ItemsSource = localTags.Select(tag => tag.Name).ToArray();
+                        tags.SelectedIndex = 0;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    if (closed == true)
+                    {
+                        return;
+                    }
+                    if (requestVersion != lookupVersion)
+                    {
+                        return;
+                    }
+                    if (bindingVersion != viewModel.ReferenceBindingVersion)
+                    {
+                        return;
+                    }
+                    if (remotes.SelectedItem as string != remoteName)
+                    {
+                        return;
+                    }
+                    failure = new LocalizedText(exception);
+                }
+                finally
+                {
+                    if (lookupCancellation == cancellation)
+                    {
+                        lookupCancellation = null;
+                    }
+                    if (closed == false)
+                    {
+                        if (requestVersion == lookupVersion)
+                        {
+                            Render();
+                        }
+                    }
+                }
+            }
+
+            tags.SelectionChanged += delegate { Render(); };
+            remotes.SelectionChanged += async delegate { await LoadCandidatesAsync(); };
+            reload.Click += async delegate { await LoadCandidatesAsync(); };
             cancel.Click += delegate { dialog.Close(false); };
             push.Click += async delegate
             {
@@ -191,7 +334,19 @@ namespace Bough.App.Views
                     Render();
                     return;
                 }
+                if (candidates == null)
+                {
+                    return;
+                }
+                if (candidates.Count == 0)
+                {
+                    return;
+                }
                 if (tags.SelectedIndex < 0)
+                {
+                    return;
+                }
+                if (tags.SelectedIndex >= localTags.Length)
                 {
                     return;
                 }
@@ -200,11 +355,10 @@ namespace Bough.App.Views
                     return;
                 }
                 GitTag tag = localTags[tags.SelectedIndex];
-                progress.Text = stringHelper.Format("TagPushProgress", tag.Name, remoteName);
                 operation = viewModel.PushTagAsync(repository, tag, remoteName);
                 Render();
                 failure = await operation;
-                if (dialog.IsVisible == false)
+                if (closed == true)
                 {
                     return;
                 }
@@ -213,7 +367,31 @@ namespace Bough.App.Views
                     dialog.Close(true);
                     return;
                 }
-                Render();
+                LocalizedText operationFailure = failure;
+                Task candidateRefresh = LoadCandidatesAsync();
+                int refreshVersion = lookupVersion;
+                await candidateRefresh;
+                if (closed == true)
+                {
+                    return;
+                }
+                if (refreshVersion != lookupVersion)
+                {
+                    return;
+                }
+                if (bindingVersion != viewModel.ReferenceBindingVersion)
+                {
+                    return;
+                }
+                if (remotes.SelectedItem as string != remoteName)
+                {
+                    return;
+                }
+                if (failure == null)
+                {
+                    failure = operationFailure;
+                    Render();
+                }
             };
             dialog.Closing += delegate(object sender, WindowClosingEventArgs eventArgs)
             {
@@ -225,12 +403,17 @@ namespace Bough.App.Views
                     }
                 }
             };
-            dialog.Opened += delegate { Render(); };
+            dialog.Closed += delegate
+            {
+                closed = true;
+                lookupVersion++;
+                lookupCancellation?.Cancel();
+            };
+            dialog.Opened += async delegate { await LoadCandidatesAsync(); };
             dialog.ActualThemeVariantChanged += delegate { Render(); };
-            dialog.Content = CreateContent(repositoryLabel, tagLabel, tags, remoteLabel, remotes, confirmation, progress, error, CreateButtons(cancel, push));
+            dialog.Content = CreateContent(repositoryLabel, tagLabel, tags, remoteLabel, remoteSelection, confirmation, progress, error, CreateButtons(cancel, push));
             return await dialog.ShowDialog<bool>(owner);
         }
-
         public static async Task<bool> RequestTagDeletionAsync(Window owner, GitTag tag, string[] remoteNames,
             Func<string, CancellationToken, Task<GitRemoteTagDeletionPreview>> lookup,
             Func<Task<string>> deleteLocal, Func<GitRemoteTagDeletionPreview, Task<string>> deleteRemote, StringHelper stringHelper)

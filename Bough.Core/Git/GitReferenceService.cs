@@ -16,6 +16,7 @@ namespace Bough.Core.Git
         private static readonly string[] _allReferencesArguments = new string[] { "for-each-ref", "--format=%(refname)%00%(objectname)%00%(HEAD)%00%(objecttype)%00%(*objectname)%00%(*objecttype)%00%(upstream)%00%(upstream:remotename)%00%(upstream:remoteref)%00%(symref)", "refs/heads", "refs/remotes", "refs/tags" };
         private static readonly string[] _currentBranchArguments = new string[] { "symbolic-ref", "--quiet", "--short", "HEAD" };
         private static readonly string[] _localReferencesArguments = new string[] { "for-each-ref", "--format=%(refname)%00%(objectname)%00%(HEAD)%00%(upstream)%00%(upstream:remotename)%00%(upstream:remoteref)", "refs/heads" };
+        private static readonly string[] _tagPushCandidatesArguments = new string[] { "for-each-ref", "--format=%(refname)%00%(objectname)%00%(objecttype)%00%(*objectname)%00%(*objecttype)%00%(symref)", "refs/tags" };
         private static readonly string[] _submoduleConfigArguments = new string[] { "config", "--null", "--file", ".gitmodules", "--get-regexp", "^submodule\\..*\\.(path|url)$" };
         private static readonly string[] _submodulePathArguments = new string[] { "config", "--null", "--file", ".gitmodules", "--get-regexp", "^submodule\\..*\\.path$" };
         private static readonly string[] _submoduleTreeArguments = new string[] { "ls-tree", "-r", "-z", "HEAD" };
@@ -740,6 +741,89 @@ namespace Bough.Core.Git
                 throw new GitException("TagPushMultiplePushUrls", null, remoteName);
             }
             return pushUrls[0];
+        }
+
+        public async Task<IReadOnlyList<GitTag>> GetTagPushCandidatesAsync(GitRepository repository, string remoteName, GitTag selectedTag = null, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            string pushUrl = await GetTagPushUrlAsync(repository, remoteName, cancellationToken);
+            List<GitTag> candidates = [];
+            if (selectedTag != null)
+            {
+                await ValidateTagDeletionNameAsync(repository, selectedTag.Name, cancellationToken);
+                ValidateTagObjectId(selectedTag.Name, selectedTag.ObjectId);
+                string objectId = await ReadLocalTagObjectIdAsync(repository, selectedTag, cancellationToken, "TagPushLocalReadFailed", "TagPushLocalChanged");
+                if (objectId != selectedTag.ObjectId)
+                {
+                    throw new GitException("TagPushLocalChanged", null, selectedTag.Name);
+                }
+                candidates.Add(selectedTag);
+            }
+            else
+            {
+                GitCommandResult localReferences = await _runner.RunAsync(repository.RootPath, _tagPushCandidatesArguments, false, cancellationToken);
+                foreach (string[] fields in ParseRows(localReferences.Output, 6))
+                {
+                    if (fields[0].StartsWith("refs/tags/", StringComparison.Ordinal) == false)
+                    {
+                        throw new GitException("ReferenceOutputInvalid", null, Array.Empty<object>());
+                    }
+                    string tagName = fields[0]["refs/tags/".Length..];
+                    if (fields[5].Length > 0)
+                    {
+                        throw new GitException("TagPushLocalChanged", null, tagName);
+                    }
+                    ValidateTagObjectId(tagName, fields[1]);
+                    string commitHash = string.Empty;
+                    if (fields[2] == "commit")
+                    {
+                        commitHash = fields[1];
+                    }
+                    if (fields[4] == "commit")
+                    {
+                        commitHash = fields[3];
+                    }
+                    candidates.Add(new GitTag(tagName, commitHash, fields[1]));
+                }
+            }
+            GitCommandResult remoteReferences = await _runner.RunAsync(repository.RootPath, new string[] { "ls-remote", "--refs", "--tags", "--", pushUrl }, true, cancellationToken);
+            if (remoteReferences.ExitCode != 0)
+            {
+                throw new GitRemoteOperationException("TagPushCandidatesLookupFailed", RedactTagDeletionOutput(remoteReferences.Error.Trim(), pushUrl), remoteName);
+            }
+            string currentPushUrl = await GetTagPushUrlAsync(repository, remoteName, cancellationToken);
+            if (currentPushUrl != pushUrl)
+            {
+                throw new GitException("TagPushUrlChanged", null, remoteName);
+            }
+            foreach (string line in SplitLines(remoteReferences.Output))
+            {
+                int separator = line.IndexOf('\t');
+                if (separator < 0)
+                {
+                    throw new GitException("TagPushCandidatesLookupFailed", null, remoteName);
+                }
+                string referenceName = line[(separator + 1)..];
+                string objectId = line[..separator];
+                if (referenceName.StartsWith("refs/tags/", StringComparison.Ordinal) == false)
+                {
+                    throw new GitException("TagPushCandidatesLookupFailed", null, remoteName);
+                }
+                ValidateTagObjectId(referenceName["refs/tags/".Length..], objectId);
+                if (selectedTag != null)
+                {
+                    if (referenceName == selectedTag.ReferenceName)
+                    {
+                        if (objectId == selectedTag.ObjectId)
+                        {
+                            throw new GitException("TagPushAlreadyPresent", null, selectedTag.Name, remoteName);
+                        }
+                        throw new GitException("TagPushRemoteConflict", null, selectedTag.Name, remoteName);
+                    }
+                }
+                candidates.RemoveAll(tag => tag.ReferenceName == referenceName);
+            }
+            return candidates.ToArray();
         }
 
         public async Task<bool> PushTagAsync(GitRepository repository, GitTag tag, string remoteName, string expectedPushUrl, CancellationToken cancellationToken = default)

@@ -98,6 +98,7 @@ namespace Bough.App.ViewModels
         public event Action StashesRequested;
         public event Action<string> StashSelected;
         public event Action<GitRepository, GitSubmodule> SubmoduleOpenRequested;
+        public event Action<GitRepository, string> TagPushCompleted;
         public GitRepository CurrentRepository { get { return _repository; } }
         internal int ReferenceBindingVersion { get { return _referenceBindingVersion; } }
         public StringHelper Strings { get { return _stringHelper; } }
@@ -265,6 +266,7 @@ namespace Bough.App.ViewModels
         public void InvalidatePendingRequests()
         {
             _snapshotPresenter.Invalidate();
+            _snapshotPresenter.InvalidateTagPushCandidates();
             _snapshotPresenter.CancelSubmoduleOpen();
             IsBusy = _branchChangeInProgress;
         }
@@ -761,6 +763,16 @@ namespace Bough.App.ViewModels
                 (repository, applyResult) => _mutationPresenter.DeleteLocalTagAsync(repository, tag, operationName, applyResult));
         }
 
+        public Task<IReadOnlyList<GitTag>> GetTagPushCandidatesAsync(GitRepository repository, string remoteName, CancellationToken cancellationToken = default)
+        {
+            return _snapshotPresenter.GetTagPushCandidatesAsync(repository, remoteName, null, cancellationToken);
+        }
+
+        internal Task<IReadOnlyList<GitTag>> GetTagPushCandidatesAsync(GitRepository repository, string remoteName, GitTag selectedTag, CancellationToken cancellationToken)
+        {
+            return _snapshotPresenter.GetTagPushCandidatesAsync(repository, remoteName, selectedTag, cancellationToken);
+        }
+
         public async Task<LocalizedText> PushTagAsync(GitRepository repository, GitTag tag, string remoteName)
         {
             if (repository == null)
@@ -797,6 +809,17 @@ namespace Bough.App.ViewModels
             {
                 result = new LocalizedText(exception);
                 failure = result;
+            }
+            if (failure == null)
+            {
+                try
+                {
+                    TagPushCompleted?.Invoke(repository, remoteName);
+                }
+                catch (Exception exception)
+                {
+                    result = new LocalizedText("TagPushCandidatesRefreshFailed", result, new LocalizedText(exception));
+                }
             }
             if (IsCurrentRepository(repositoryRoot) == false)
             {

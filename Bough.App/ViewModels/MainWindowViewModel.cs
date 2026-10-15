@@ -123,6 +123,22 @@ namespace Bough.App.ViewModels
             ShowGitSettingsCommand = new AsyncRelayCommand(ShowGitSettingsAsync, CanShowGitSettings);
             ContinueRebaseCommand = new AsyncRelayCommand(ContinueRebaseAsync, CanContinueRebase);
             IsLocalChangesView = true;
+            _remoteCompletionPresenter.StartTagPushCandidates();
+        }
+
+        internal Task PauseTagPushCandidatesAsync()
+        {
+            return _remoteCompletionPresenter.PauseTagPushCandidatesAsync();
+        }
+
+        internal void ResumeTagPushCandidates()
+        {
+            _remoteCompletionPresenter.ResumeTagPushCandidates();
+        }
+
+        internal void StopTagPushCandidates()
+        {
+            _remoteCompletionPresenter.StopTagPushCandidates();
         }
 
         public event Action<string> ConflictWindowRequested;

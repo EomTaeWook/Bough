@@ -67,6 +67,7 @@
 - [커밋 상세](../Design/CommitInspection.md), [커밋 명령](../Design/CommitActions.md), [태그 삭제](../Design/TagDeletion.md), [참조 이름 변경](../Design/ReferenceRename.md)을 따른다.
 - MainWindow는 수정하지 않는다. 최신 메타데이터는 기존 `RepositoryChanged`로 전달하고 조회하지 못한 실제 변경은 `ReferenceRefreshRequired(root)`로 통지한다. 상위는 원래 root의 History dirty를 기록하며 현재 저장소·참조 바인딩이 맞으면 기존 참조 새로 고침으로 표시를 갱신한다. 이전 저장소 객체를 채택하거나 자식을 다시 바인딩하지 않는다. 다른 root와 숨긴 History의 변경은 복귀 시 반영한다.
 - [태그 Push](../Design/RemoteAndStash.md#태그-push)의 공용 선택 창은 `GitActionDialogs.RequestTagPushAsync(owner, References, repository, selectedTag)`다. 고정 `GitRepository` 객체를 전달하며 우클릭은 고정 태그를 추가하고 상단 진입은 태그 인수를 생략한다. 기존 ReferenceMutationPresenter·GitReferenceService에서 원본 OID와 Push 주소를 확인하고 선택 태그만 전송한다. 상단 Push 활성화·Ahead0 진입·MainWindow modal 수명 연결은 작업자 3이 이 API를 소비한다.
+- 태그 Push 후보 정정은 Core의 원격 Push 주소·exact tag ref/OID 비교와 선택 창의 원격별 후보 필터링을 작업자 2가 소유한다. 상단 소비 API는 `ReferenceExplorerViewModel.GetTagPushCandidatesAsync(GitRepository repository, string remoteName, CancellationToken cancellationToken = default): Task<IReadOnlyList<GitTag>>`이며 후보 반환·대체 null·현재 실패 원본 예외 전파 계약이다. 기존 ReferenceSnapshotPresenter가 조회·취소 수명을 조정하며 소스 반영 상태는 CurrentStatus에 기록한다. 같은 이름의 원격 태그는 후보에서 제외하며 고정 우클릭 태그는 동일/상이 객체 이유를 표시한다. Core는 한 조회의 Push 주소를 고정하고 반환 전 재확인한다. 기존 Presenter는 이전 읽기 취소 뒤 실제 종료를 기다려 활성 읽기 하나를 유지한다. 전송 완료 알림은 `Action<GitRepository, string>` 형식의 `ReferenceExplorerViewModel.TagPushCompleted` 이벤트이며 실제 성공·동일 객체 확정에만 원래 대상을 한 번 전달한다. 공유 문구는 총괄이 병합한다.
 - Git Settings는 작업자 1, 원격 실행·진행 창과 RemoteOperationsViewModel은 작업자 3 소유다.
 
 ## 작업자 3: MainWindow, 원격 작업, 충돌 해결, 복제와 배포 연결
@@ -77,6 +78,7 @@
 - 앱 업데이트의 실제 다운로드 상태를 기존 좌하단 막대에 표시하고 다운로드 중 GitHub 릴리스 페이지 버튼을 제공한다. 표시만 기존 상태에 연결하며 부모 Git busy·다운로드 수명·원격 팝업 중복 억제를 바꾸지 않는다.
 - 태그 커밋 이동은 `History.SelectCommitAsync(repository, hash, GitHistoryScope.All)` 뒤 `History.ReportCommitSelectionResult(result)`로 연결한다. 저장소 인스턴스·저장소 요청·태그 선택 요청 버전을 각각 검사하며 현재 결과만 표시한다. History의 dirty 버전은 해당 갱신이 성공하고 버전이 일치한 경우에만 해제한다.
 - Fetch/Pull/Push의 FIFO·실행 직전 검증·진행·취소·완료 연결. 기본 Pull 실행은 작업자 1의 GitSettingsService 설정을 읽으며 일회성 메뉴는 저장값을 바꾸지 않는다.
+- 상단 기본 Push는 보낼 커밋 또는 upstream 원격의 미전송 태그가 있을 때만 활성화한다. 작업자 2의 실제 후보 조회 API를 기존 갱신 수명에 연결하고 같은 기준을 태그 선택 창과 사용한다. 원격별 확인 전·실패·빈 결과를 구분하고 늦은 결과는 버린다. 태그 전송 뒤 현재 후보·버튼 상태를 갱신하며 보낼 커밋이 있으면 태그 조회만의 실패로 브랜치 Push를 막지 않는다. 상단과 우클릭 전송 완료는 작업자 2의 실제 `TagPushCompleted`를 한 곳에서 소비해 현재 root·기본 Push 원격의 후보만 다시 읽고 종료 때 구독을 해제한다. 창의 true 결과에서도 같은 완료 조회를 중복 실행하지 않는다. 첫 Push·명시적 Push to와 기존 FIFO 밖 태그 창 진입은 유지한다. getter의 네트워크 조회·새 폴링·별도 캐시는 추가하지 않는다.
 - 원격 자동 확인 실행: 작업자 1의 실제 설정 API를 소비하는 목적별 Presenter에서 단일 예약·취소·현재 저장소 수명을 맡는다. 현재 upstream 원격의 비대화형 Fetch와 필요한 상태 조회는 기존 FIFO를 사용하고 Pull 근처의 받을 커밋 표시는 기존 원격 상태를 사용한다. 자동 확인의 성공·실패·정상 닫기·업데이트 종료 연결은 [기능 기획](../Design/RemoteAutoFetch.md)을 따른다. Settings와 공유 리소스는 수정하지 않는다.
 - 원격 완료의 각 await 뒤와 자식 Load·Bind 시작 전에 기존 메인 요청·저장소 인스턴스를 독립 검사한다. 늦은 실패 표시도 같은 수명을 유지한다. 이번 가드 수정에서는 새 완료 결과 계층·조회 API·재시도 UI를 추가하지 않는다.
 - [충돌 창](../Design/ConflictEntry.md)의 진입·파일 선택·개별/일괄 선택·직접 편집·저장·스테이징·리베이스 계속. 화면에서 Git 도메인 검증을 재구현하지 않는다.

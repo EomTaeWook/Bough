@@ -7018,5 +7018,47 @@
     "Name": "TagPushMultiplePushUrls",
     "Kor": "원격 {0}에 Push 주소가 여러 개 있어 태그를 전송할 수 없습니다.",
     "Eng": "Remote {0} has multiple push URLs, so the tag cannot be pushed."
+  },
+  {
+    "Id": 3270,
+    "Name": "RemoteTagPushCandidatesChecking",
+    "Kor": "보낼 태그가 있는지 확인하는 중입니다.",
+    "Eng": "Checking for tags to push."
+  },
+  {
+    "Id": 3271,
+    "Name": "RemoteTagPushCandidatesCheckFailed",
+    "Kor": "보낼 태그를 확인하지 못했습니다: {0}",
+    "Eng": "Could not check tags to push: {0}"
+  },
+  {
+    "Id": 3272,
+    "Name": "TagPushCandidatesLoading",
+    "Kor": "원격 {0}에 보낼 태그를 확인하는 중입니다.",
+    "Eng": "Checking which tags can be pushed to remote {0}."
+  },
+  {
+    "Id": 3273,
+    "Name": "TagPushCandidatesEmpty",
+    "Kor": "원격 {0}에 보낼 새 로컬 태그가 없습니다.",
+    "Eng": "There are no new local tags to push to remote {0}."
+  },
+  {
+    "Id": 3274,
+    "Name": "TagPushCandidatesLookupFailed",
+    "Kor": "원격 {0}에서 태그 전송 후보를 조회하지 못했습니다.",
+    "Eng": "Tag push candidates could not be read from remote {0}."
+  },
+  {
+    "Id": 3275,
+    "Name": "TagPushCandidatesSuperseded",
+    "Kor": "태그 후보 조회가 다른 요청으로 대체되었습니다. 다시 조회해 주세요.",
+    "Eng": "Another request replaced this tag candidate lookup. Reload the candidates."
+  },
+  {
+    "Id": 3276,
+    "Name": "TagPushCandidatesRefreshFailed",
+    "Kor": "{0}\n태그 후보를 다시 조회해야 합니다: {1}",
+    "Eng": "{0}\nThe tag candidates need to be refreshed: {1}"
   }
 ]

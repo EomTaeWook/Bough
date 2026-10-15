@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.Core.Git;
@@ -15,6 +16,10 @@ namespace Bough.App.Presenters
         private int _submoduleBindingVersion;
         private int _submoduleOpenVersion;
         private CancellationTokenSource _submoduleOpenCancellation;
+        private int _tagPushCandidatesBindingVersion;
+        private int _tagPushCandidatesVersion;
+        private CancellationTokenSource _tagPushCandidatesCancellation;
+        private Task _tagPushCandidatesTask = Task.CompletedTask;
 
         public ReferenceSnapshotPresenter(GitReferenceService referenceService)
         {
@@ -26,6 +31,8 @@ namespace Bough.App.Presenters
 
         public void BindRepository(GitRepository repository)
         {
+            _tagPushCandidatesBindingVersion++;
+            InvalidateTagPushCandidates();
             StringComparison comparison = StringComparison.Ordinal;
             if (OperatingSystem.IsWindows() == true)
             {
@@ -38,6 +45,117 @@ namespace Bough.App.Presenters
             }
             _repository = repository;
             Invalidate();
+        }
+
+        public void InvalidateTagPushCandidates()
+        {
+            _tagPushCandidatesVersion++;
+            _tagPushCandidatesCancellation?.Cancel();
+        }
+
+        public async Task<IReadOnlyList<GitTag>> GetTagPushCandidatesAsync(GitRepository repository, string remoteName, GitTag selectedTag, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            StringComparison comparison = StringComparison.Ordinal;
+            if (OperatingSystem.IsWindows() == true)
+            {
+                comparison = StringComparison.OrdinalIgnoreCase;
+            }
+            string repositoryRoot = repository.RootPath;
+            if (_repository == null)
+            {
+                return null;
+            }
+            if (string.Equals(_repository.RootPath, repositoryRoot, comparison) == false)
+            {
+                return null;
+            }
+            InvalidateTagPushCandidates();
+            int requestVersion = _tagPushCandidatesVersion;
+            int bindingVersion = _tagPushCandidatesBindingVersion;
+            using CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _tagPushCandidatesCancellation = cancellation;
+            try
+            {
+                Task previousLookup = _tagPushCandidatesTask;
+                try
+                {
+                    await previousLookup;
+                }
+                catch (Exception)
+                {
+                    // The previous request reports its own error to its caller.
+                }
+                if (requestVersion != _tagPushCandidatesVersion)
+                {
+                    return null;
+                }
+                if (bindingVersion != _tagPushCandidatesBindingVersion)
+                {
+                    return null;
+                }
+                if (_repository == null)
+                {
+                    return null;
+                }
+                if (string.Equals(_repository.RootPath, repositoryRoot, comparison) == false)
+                {
+                    return null;
+                }
+                cancellation.Token.ThrowIfCancellationRequested();
+                Task<IReadOnlyList<GitTag>> currentLookup = Task.Run(() => _referenceService.GetTagPushCandidatesAsync(repository, remoteName, selectedTag, cancellation.Token), cancellation.Token);
+                _tagPushCandidatesTask = currentLookup;
+                IReadOnlyList<GitTag> candidates = await currentLookup;
+                if (requestVersion != _tagPushCandidatesVersion)
+                {
+                    return null;
+                }
+                if (bindingVersion != _tagPushCandidatesBindingVersion)
+                {
+                    return null;
+                }
+                if (_repository == null)
+                {
+                    return null;
+                }
+                if (string.Equals(_repository.RootPath, repositoryRoot, comparison) == false)
+                {
+                    return null;
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+                return candidates;
+            }
+            catch (Exception)
+            {
+                if (requestVersion != _tagPushCandidatesVersion)
+                {
+                    return null;
+                }
+                if (bindingVersion != _tagPushCandidatesBindingVersion)
+                {
+                    return null;
+                }
+                if (_repository == null)
+                {
+                    return null;
+                }
+                if (string.Equals(_repository.RootPath, repositoryRoot, comparison) == false)
+                {
+                    return null;
+                }
+                throw;
+            }
+            finally
+            {
+                if (_tagPushCandidatesTask.IsCompleted == true)
+                {
+                    _tagPushCandidatesTask = Task.CompletedTask;
+                }
+                if (_tagPushCandidatesCancellation == cancellation)
+                {
+                    _tagPushCandidatesCancellation = null;
+                }
+            }
         }
 
         public void CancelSubmoduleOpen()

@@ -91,7 +91,7 @@
                    Foreground="{DynamicResource BoughBrushWarning}" FontSize="12" TextWrapping="Wrap" />
       </StackPanel>
       <TextBlock Grid.Column="1" Text="{Binding PushAvailabilityText}" IsVisible="{Binding HasNoOutgoingPushCommits}"
-                 Foreground="{DynamicResource BoughBrushWarning}" FontSize="12" MaxWidth="260" TextTrimming="CharacterEllipsis" />
+                 Foreground="{DynamicResource BoughBrushWarning}" FontSize="12" MaxWidth="260" TextWrapping="Wrap" />
     </Grid>
   </Grid>
 </UserControl>
