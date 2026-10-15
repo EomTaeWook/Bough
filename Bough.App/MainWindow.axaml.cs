@@ -115,6 +115,7 @@ namespace Bough.App
             RemoteOperationsPanel.CreateOperationSession = createRemoteOperationSession;
             RemoteOperationsPanel.GetRepositoryRequestVersion = () => _viewModel.RepositoryRequestVersion;
             RemoteOperationsPanel.OperationFinishedAsync = _viewModel.HandleRemoteOperationFinishedAsync;
+            RemoteOperationsPanel.TagPushRequestedAsync = RequestTagPushAsync;
             RemoteOperationsPanel.PopupProgressChanged = _viewModel.UpdateRemotePopupProgress;
             _viewModel.References.SubmoduleOpenRequested += OnSubmoduleOpenRequested;
             _viewModel.ConflictWindowRequested += OpenConflictWindow;
@@ -132,6 +133,7 @@ namespace Bough.App
             Closed += delegate
             {
                 _mainWindowClosed = true;
+                RemoteOperationsPanel.TagPushRequestedAsync = null;
                 _viewModel.GitSettings.AppUpdate.PropertyChanged -= OnApplicationUpdatePropertyChanged;
                 _viewModel.References.SubmoduleOpenRequested -= OnSubmoduleOpenRequested;
                 _submoduleOpenRequestVersion++;
@@ -906,6 +908,91 @@ namespace Bough.App
         {
             RepositoryPickerButton.Flyout.Hide();
             RepositoryActionsButton.ContextMenu?.Close();
+        }
+
+        private async Task RequestTagPushAsync(GitRepository repository, int repositoryRequestVersion)
+        {
+            if (_mainWindowClosed == true)
+            {
+                return;
+            }
+            if (repository == null)
+            {
+                return;
+            }
+            if (_viewModel.IsCurrentRepositoryRequest(repository, repositoryRequestVersion) == false)
+            {
+                return;
+            }
+            ReferenceExplorerViewModel references = _viewModel.References;
+            GitRepository referenceRepository = references.CurrentRepository;
+            if (referenceRepository == null)
+            {
+                return;
+            }
+            StringComparison pathComparison = StringComparison.Ordinal;
+            if (OperatingSystem.IsWindows() == true)
+            {
+                pathComparison = StringComparison.OrdinalIgnoreCase;
+            }
+            if (string.Equals(referenceRepository.RootPath, repository.RootPath, pathComparison) == false)
+            {
+                return;
+            }
+            int referenceBindingVersion = references.ReferenceBindingVersion;
+            OnRemoteDialogOpening();
+            try
+            {
+                await references.RefreshAsync(updateStatus: false);
+                if (_mainWindowClosed == true)
+                {
+                    return;
+                }
+                if (_viewModel.IsCurrentRepositoryRequest(repository, repositoryRequestVersion) == false)
+                {
+                    return;
+                }
+                if (ReferenceEquals(references.CurrentRepository, referenceRepository) == false)
+                {
+                    return;
+                }
+                if (referenceBindingVersion != references.ReferenceBindingVersion)
+                {
+                    return;
+                }
+                if (string.Equals(references.CurrentRepository.RootPath, repository.RootPath, pathComparison) == false)
+                {
+                    return;
+                }
+                await GitActionDialogs.RequestTagPushAsync(this, references, repository);
+            }
+            catch (Exception exception)
+            {
+                if (_mainWindowClosed == true)
+                {
+                    return;
+                }
+                if (_viewModel.IsCurrentRepositoryRequest(repository, repositoryRequestVersion) == false)
+                {
+                    return;
+                }
+                if (ReferenceEquals(references.CurrentRepository, referenceRepository) == false)
+                {
+                    return;
+                }
+                if (referenceBindingVersion != references.ReferenceBindingVersion)
+                {
+                    return;
+                }
+                _viewModel.ReportRemoteCompletionFailure(exception, repository, repositoryRequestVersion);
+            }
+            finally
+            {
+                if (_mainWindowClosed == false)
+                {
+                    OnRemoteDialogClosed();
+                }
+            }
         }
 
         private async void OnSubmoduleOpenRequested(GitRepository parentRepository, GitSubmodule submodule)

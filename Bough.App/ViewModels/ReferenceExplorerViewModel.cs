@@ -45,6 +45,7 @@ namespace Bough.App.ViewModels
         private int _branchChangeVersion;
         private bool _branchChangeInProgress;
         private string _branchChangeTarget;
+        private LocalizedText _tagPushStatus;
 
         public ReferenceExplorerViewModel(GitReferenceService referenceService, GitCommitActionService actionService, ITerminalLauncher terminalLauncher, RepositoryFolderLauncher folderLauncher, PullRequestLauncher pullRequestLauncher, StashViewModel stashViewModel, StringHelper stringHelper, GitOperationQueue operationQueue)
         {
@@ -98,6 +99,7 @@ namespace Bough.App.ViewModels
         public event Action<string> StashSelected;
         public event Action<GitRepository, GitSubmodule> SubmoduleOpenRequested;
         public GitRepository CurrentRepository { get { return _repository; } }
+        internal int ReferenceBindingVersion { get { return _referenceBindingVersion; } }
         public StringHelper Strings { get { return _stringHelper; } }
 
         public string ReferenceText(string name)
@@ -164,6 +166,7 @@ namespace Bough.App.ViewModels
             get { return _statusMessage; }
             private set
             {
+                _tagPushStatus = null;
                 if (SetProperty(ref _statusMessage, value))
                 {
                     OnPropertyChanged(nameof(HasStatusMessage));
@@ -756,6 +759,60 @@ namespace Bough.App.ViewModels
         {
             return RunTagDeletionAsync(repositoryRoot, successMessage,
                 (repository, applyResult) => _mutationPresenter.DeleteLocalTagAsync(repository, tag, operationName, applyResult));
+        }
+
+        public async Task<LocalizedText> PushTagAsync(GitRepository repository, GitTag tag, string remoteName)
+        {
+            if (repository == null)
+            {
+                return new LocalizedText("ReferenceSwitchRepositoryRequired");
+            }
+            string repositoryRoot = repository.RootPath;
+            if (_repository == null)
+            {
+                return new LocalizedText("ReferenceSwitchRepositoryRequired");
+            }
+            if (IsCurrentRepository(repositoryRoot) == false)
+            {
+                return new LocalizedText("ReferenceSwitchMenuRepositoryChanged");
+            }
+            if (tag == null)
+            {
+                return new LocalizedText("ReferenceNoTags");
+            }
+            int bindingVersion = _referenceBindingVersion;
+            int requestVersion = ++_referenceMutationRequest;
+            LocalizedText result;
+            LocalizedText failure = null;
+            try
+            {
+                bool pushed = await _mutationPresenter.PushTagAsync(repository, tag, remoteName, _stringHelper.Format("TagPushProgress", tag.Name, remoteName));
+                result = new LocalizedText("TagPushAlreadyPresent", tag.Name, remoteName);
+                if (pushed == true)
+                {
+                    result = new LocalizedText("TagPushSucceeded", tag.Name, remoteName);
+                }
+            }
+            catch (Exception exception)
+            {
+                result = new LocalizedText(exception);
+                failure = result;
+            }
+            if (IsCurrentRepository(repositoryRoot) == false)
+            {
+                return failure;
+            }
+            if (bindingVersion != _referenceBindingVersion)
+            {
+                return failure;
+            }
+            if (requestVersion != _referenceMutationRequest)
+            {
+                return failure;
+            }
+            StatusMessage = result.GetText(_stringHelper);
+            _tagPushStatus = result;
+            return failure;
         }
 
         public Task<bool> DeleteRemoteTagAsync(string repositoryRoot, GitRemoteTagDeletionPreview preview, string operationName, string successMessage)
@@ -1642,6 +1699,12 @@ namespace Bough.App.ViewModels
 
         public override void RefreshLocalization()
         {
+            if (_tagPushStatus != null)
+            {
+                LocalizedText status = _tagPushStatus;
+                StatusMessage = status.GetText(_stringHelper);
+                _tagPushStatus = status;
+            }
             foreach (ReferenceTreeNode root in _treeRoots)
             {
                 RefreshTreeLocalization(root);

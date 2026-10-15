@@ -86,6 +86,7 @@
                 <MenuItem Click="RenameLocalBranchClicked" />
                 <MenuItem Click="RenameLocalTagClicked" />
                 <MenuItem Click="CopyTreeNameClicked" />
+                <MenuItem Click="PushTagClicked" />
                 <Separator />
                 <MenuItem Click="DeleteLocalBranchClicked" />
                 <MenuItem Click="DeleteRemoteBranchClicked" />

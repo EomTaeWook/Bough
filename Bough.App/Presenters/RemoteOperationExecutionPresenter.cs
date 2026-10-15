@@ -462,6 +462,10 @@ namespace Bough.App.Presenters
             {
                 _model.LastOperationOutcome = RemoteOperationOutcome.RefreshFailed;
             }
+            if (_model.LastOperationOutcome == RemoteOperationOutcome.NoNewCommits)
+            {
+                _model.LastOperationOutcome = RemoteOperationOutcome.RefreshFailed;
+            }
             _model.NotifyState();
         }
 

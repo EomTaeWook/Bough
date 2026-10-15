@@ -67,6 +67,12 @@ namespace Bough.App.Presenters
                 token => _referenceService.DeleteRemoteTagAsync(repository, preview, token), applyResult);
         }
 
+        public async Task<bool> PushTagAsync(GitRepository repository, GitTag tag, string remoteName, string operationName)
+        {
+            string pushUrl = await Task.Run(() => _referenceService.GetTagPushUrlAsync(repository, remoteName));
+            return await _operationQueue.EnqueueAsync(repository.RootPath, operationName, cancellationToken => Task.Run(() => _referenceService.PushTagAsync(repository, tag, remoteName, pushUrl, cancellationToken), cancellationToken));
+        }
+
         public Task<bool> RenameLocalBranchAsync(GitRepository repository, GitReferenceRenameRequest request,
             string operationName, Func<GitReferenceRenameResult, Task<bool>> applyResult)
         {

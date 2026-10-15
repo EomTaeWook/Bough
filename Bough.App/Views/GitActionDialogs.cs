@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -11,6 +12,7 @@ using Avalonia.Threading;
 using Bough.App.Localization;
 using Bough.App.Presenters;
 using Bough.App.ViewModels.Models;
+using Bough.App.ViewModels;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
 using Bough.Core.Internals;
@@ -64,6 +66,168 @@ namespace Bough.App.Views
             cancel.Click += delegate { dialog.Close(false); };
             confirm.Click += delegate { dialog.Close(true); };
             dialog.Content = CreateContent(description, CreateButtons(cancel, confirm));
+            return await dialog.ShowDialog<bool>(owner);
+        }
+
+        public static async Task<bool> RequestTagPushAsync(Window owner, ReferenceExplorerViewModel viewModel, GitRepository repository, GitTag selectedTag = null)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            string repositoryRoot = repository.RootPath;
+            StringHelper stringHelper = viewModel.Strings;
+            int bindingVersion = viewModel.ReferenceBindingVersion;
+            GitTag[] localTags = viewModel.Tags.ToArray();
+            if (selectedTag != null)
+            {
+                localTags = new GitTag[] { selectedTag };
+            }
+            string[] tagNames = localTags.Select(tag => tag.Name).ToArray();
+            string[] remoteNames = viewModel.Remotes.Select(remote => remote.Name).ToArray();
+            Window dialog = CreateWindow(TagText("TagPushTitle", stringHelper));
+            dialog.CanResize = true;
+            TextBlock repositoryLabel = new() { Text = repositoryRoot, TextWrapping = TextWrapping.Wrap };
+            TextBlock tagLabel = new() { Text = TagText("ReferenceTagsHeading", stringHelper) };
+            ComboBox tags = new() { ItemsSource = tagNames, SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch, IsEnabled = selectedTag == null };
+            TextBlock remoteLabel = new() { Text = TagText("ReferenceRemotesHeading", stringHelper) };
+            ComboBox remotes = new() { ItemsSource = remoteNames, SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
+            TextBlock confirmation = new() { TextWrapping = TextWrapping.Wrap };
+            TextBlock progress = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            Button cancel = new() { Content = TagText("ReferenceCancel", stringHelper), IsCancel = true };
+            Button push = new() { Content = TagText("TagPushAction", stringHelper), IsDefault = true };
+            LocalizedText failure = null;
+            Task<LocalizedText> operation = null;
+            Avalonia.Automation.AutomationProperties.SetName(tags, tagLabel.Text);
+            Avalonia.Automation.AutomationProperties.SetName(remotes, remoteLabel.Text);
+
+            void Render()
+            {
+                bool running = false;
+                if (operation != null)
+                {
+                    running = operation.IsCompleted == false;
+                }
+                LocalizedText currentFailure = failure;
+                bool valid = true;
+                if (remoteNames.Length == 0)
+                {
+                    currentFailure = new LocalizedText("ReferenceNoRemotes");
+                    valid = false;
+                }
+                if (localTags.Length == 0)
+                {
+                    currentFailure = new LocalizedText("ReferenceNoTags");
+                    valid = false;
+                }
+                if (bindingVersion != viewModel.ReferenceBindingVersion)
+                {
+                    currentFailure = new LocalizedText("ReferenceSwitchMenuRepositoryChanged");
+                    valid = false;
+                }
+                StringComparison comparison = StringComparison.Ordinal;
+                if (OperatingSystem.IsWindows() == true)
+                {
+                    comparison = StringComparison.OrdinalIgnoreCase;
+                }
+                if (string.Equals(repositoryRoot, viewModel.CurrentRepository?.RootPath, comparison) == false)
+                {
+                    currentFailure = new LocalizedText("ReferenceSwitchMenuRepositoryChanged");
+                    valid = false;
+                }
+                if (tags.SelectedIndex < 0)
+                {
+                    valid = false;
+                }
+                if (remotes.SelectedItem is not string)
+                {
+                    valid = false;
+                }
+                confirmation.Text = string.Empty;
+                if (tags.SelectedIndex >= 0)
+                {
+                    if (remotes.SelectedItem is string remoteName)
+                    {
+                        GitTag tag = localTags[tags.SelectedIndex];
+                        confirmation.Text = stringHelper.Format("TagPushConfirm", tag.Name, tag.ObjectId, remoteName);
+                    }
+                }
+                error.Text = string.Empty;
+                if (currentFailure != null)
+                {
+                    error.Text = currentFailure.GetText(stringHelper);
+                }
+                error.IsVisible = string.IsNullOrEmpty(error.Text) == false;
+                progress.IsVisible = running;
+                push.IsEnabled = valid;
+                if (running == true)
+                {
+                    push.IsEnabled = false;
+                }
+                tags.IsEnabled = running == false;
+                if (selectedTag != null)
+                {
+                    tags.IsEnabled = false;
+                }
+                remotes.IsEnabled = running == false;
+                cancel.IsEnabled = running == false;
+                error.Foreground = GetResourceBrush(dialog, "BoughBrushError");
+                progress.Foreground = GetResourceBrush(dialog, "BoughBrushTextMuted");
+            }
+
+            tags.SelectionChanged += delegate { failure = null; Render(); };
+            remotes.SelectionChanged += delegate { failure = null; Render(); };
+            cancel.Click += delegate { dialog.Close(false); };
+            push.Click += async delegate
+            {
+                if (operation != null)
+                {
+                    if (operation.IsCompleted == false)
+                    {
+                        return;
+                    }
+                }
+                if (bindingVersion != viewModel.ReferenceBindingVersion)
+                {
+                    failure = new LocalizedText("ReferenceSwitchMenuRepositoryChanged");
+                    Render();
+                    return;
+                }
+                if (tags.SelectedIndex < 0)
+                {
+                    return;
+                }
+                if (remotes.SelectedItem is not string remoteName)
+                {
+                    return;
+                }
+                GitTag tag = localTags[tags.SelectedIndex];
+                progress.Text = stringHelper.Format("TagPushProgress", tag.Name, remoteName);
+                operation = viewModel.PushTagAsync(repository, tag, remoteName);
+                Render();
+                failure = await operation;
+                if (dialog.IsVisible == false)
+                {
+                    return;
+                }
+                if (failure == null)
+                {
+                    dialog.Close(true);
+                    return;
+                }
+                Render();
+            };
+            dialog.Closing += delegate(object sender, WindowClosingEventArgs eventArgs)
+            {
+                if (operation != null)
+                {
+                    if (operation.IsCompleted == false)
+                    {
+                        eventArgs.Cancel = true;
+                    }
+                }
+            };
+            dialog.Opened += delegate { Render(); };
+            dialog.ActualThemeVariantChanged += delegate { Render(); };
+            dialog.Content = CreateContent(repositoryLabel, tagLabel, tags, remoteLabel, remotes, confirmation, progress, error, CreateButtons(cancel, push));
             return await dialog.ShowDialog<bool>(owner);
         }
 

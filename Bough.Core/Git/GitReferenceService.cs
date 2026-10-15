@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Dignus.Collections;
@@ -717,6 +718,89 @@ namespace Bough.Core.Git
             return new GitRemoteTagDeletionPreview(repository.RootPath, remoteName, pushUrl, tagName, objectId);
         }
 
+        public async Task<string> GetTagPushUrlAsync(GitRepository repository, string remoteName, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            if (string.IsNullOrWhiteSpace(remoteName) == true)
+            {
+                throw new GitException("TagPushRemoteUnavailable", null, remoteName ?? string.Empty);
+            }
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "remote", "get-url", "--push", "--all", "--", remoteName }, true, cancellationToken);
+            if (result.ExitCode != 0)
+            {
+                throw new GitException("TagPushRemoteUnavailable", null, remoteName);
+            }
+            string[] pushUrls = SplitLines(result.Output);
+            if (pushUrls.Length == 0)
+            {
+                throw new GitException("TagPushRemoteUnavailable", null, remoteName);
+            }
+            if (pushUrls.Length > 1)
+            {
+                throw new GitException("TagPushMultiplePushUrls", null, remoteName);
+            }
+            return pushUrls[0];
+        }
+
+        public async Task<bool> PushTagAsync(GitRepository repository, GitTag tag, string remoteName, string expectedPushUrl, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            ArgumentNullException.ThrowIfNull(tag);
+            await ValidateTagDeletionNameAsync(repository, tag.Name, cancellationToken);
+            ValidateTagObjectId(tag.Name, tag.ObjectId);
+            string localObjectId = await ReadLocalTagObjectIdAsync(repository, tag, cancellationToken, "TagPushLocalReadFailed", "TagPushLocalChanged");
+            if (localObjectId != tag.ObjectId)
+            {
+                throw new GitException("TagPushLocalChanged", null, tag.Name);
+            }
+            string pushUrl = await GetTagPushUrlAsync(repository, remoteName, cancellationToken);
+            if (pushUrl != expectedPushUrl)
+            {
+                throw new GitException("TagPushUrlChanged", null, remoteName);
+            }
+            GitCommandResult lookup = await _runner.RunAsync(repository.RootPath, new string[] { "ls-remote", "--refs", "--exit-code", "--", expectedPushUrl, tag.ReferenceName }, true, cancellationToken);
+            if (lookup.ExitCode != 0)
+            {
+                if (lookup.ExitCode != 2)
+                {
+                    throw new GitRemoteOperationException("TagPushLookupFailed", RedactTagDeletionOutput(lookup.Error.Trim(), expectedPushUrl), tag.Name, remoteName);
+                }
+            }
+            if (lookup.ExitCode == 0)
+            {
+                string remoteObjectId = string.Empty;
+                foreach (string line in SplitLines(lookup.Output))
+                {
+                    int separator = line.IndexOf('\t');
+                    if (separator < 0)
+                    {
+                        continue;
+                    }
+                    if (line[(separator + 1)..] != tag.ReferenceName)
+                    {
+                        continue;
+                    }
+                    remoteObjectId = line[..separator];
+                    break;
+                }
+                if (remoteObjectId == tag.ObjectId)
+                {
+                    return false;
+                }
+                if (remoteObjectId.Length == 0)
+                {
+                    throw new GitException("TagPushLookupFailed", null, tag.Name, remoteName);
+                }
+                throw new GitException("TagPushRemoteConflict", null, tag.Name, remoteName);
+            }
+            GitCommandResult pushed = await _runner.RunAsync(repository.RootPath, new string[] { "push", "--porcelain", "--no-force", "--no-mirror", "--no-tags", "--no-follow-tags", "--no-prune", "--recurse-submodules=no", "--", expectedPushUrl, tag.ObjectId + ":" + tag.ReferenceName }, true, cancellationToken);
+            if (pushed.ExitCode != 0)
+            {
+                throw new GitRemoteOperationException("TagPushFailed", RedactTagDeletionOutput(pushed.Error.Trim(), expectedPushUrl), tag.Name, remoteName);
+            }
+            return true;
+        }
+
         public async Task DeleteRemoteTagAsync(GitRepository repository, GitRemoteTagDeletionPreview preview,
             CancellationToken cancellationToken = default)
         {
@@ -782,13 +866,13 @@ namespace Bough.Core.Git
             }
         }
 
-        private async Task<string> ReadLocalTagObjectIdAsync(GitRepository repository, GitTag tag, CancellationToken cancellationToken)
+        private async Task<string> ReadLocalTagObjectIdAsync(GitRepository repository, GitTag tag, CancellationToken cancellationToken, string failureCode = "TagDeleteLocalFailed", string changedCode = "TagDeleteLocalChanged")
         {
             GitCommandResult result = await _runner.RunAsync(repository.RootPath,
                 new string[] { "for-each-ref", "--format=%(refname)%00%(objectname)%00%(symref)", tag.ReferenceName }, true, cancellationToken);
             if (result.ExitCode != 0)
             {
-                throw new GitException("TagDeleteLocalFailed", null, tag.Name, result.Error.Trim());
+                throw new GitException(failureCode, null, tag.Name, result.Error.Trim());
             }
             foreach (string line in SplitLines(result.Output))
             {
@@ -803,7 +887,7 @@ namespace Bough.Core.Git
                 }
                 if (fields[2].Length > 0)
                 {
-                    throw new GitException("TagDeleteLocalChanged", null, tag.Name);
+                    throw new GitException(changedCode, null, tag.Name);
                 }
                 return fields[1];
             }
@@ -876,6 +960,12 @@ namespace Bough.Core.Git
                     safe = safe.Replace(parsed.UserInfo, "***", StringComparison.Ordinal);
                     safe = safe.Replace(Uri.UnescapeDataString(parsed.UserInfo), "***", StringComparison.Ordinal);
                 }
+            }
+            safe = Regex.Replace(safe, @"(?i)(https?://)[^/@\s]+@", "$1***@");
+            safe = Regex.Replace(safe, @"(?i)([?&](token|access_token|password|passwd|secret|key)=)[^&\s]+", "$1***");
+            if (safe.Length > 1000)
+            {
+                safe = safe.Substring(0, 1000);
             }
             return safe;
         }

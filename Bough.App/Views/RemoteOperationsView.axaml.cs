@@ -62,6 +62,7 @@ namespace Bough.App.Views
         public Func<RemoteOperationsViewModel> CreateOperationSession { get; set; }
         public Func<int> GetRepositoryRequestVersion { get; set; }
         public Func<GitRepository, RemoteOperationStateSnapshot, bool, int, Task> OperationFinishedAsync { get; set; }
+        public Func<GitRepository, int, Task> TagPushRequestedAsync { get; set; }
 
         public Action<GitRepository, RemoteOperationsViewModel, int, bool> PopupProgressChanged { get; set; }
 
@@ -496,6 +497,23 @@ namespace Bough.App.Views
         private async Task RunPushAsync(RemoteOperationsViewModel viewModel, bool chooseTarget)
         {
             GitRepository repository = viewModel.CurrentRepository;
+            if (repository == null)
+            {
+                return;
+            }
+            if (GetRepositoryRequestVersion == null)
+            {
+                return;
+            }
+            int repositoryRequestVersion = GetRepositoryRequestVersion();
+            bool useTagPushWhenNoCommits = false;
+            if (chooseTarget == false)
+            {
+                if (viewModel.HasUpstream == true)
+                {
+                    useTagPushWhenNoCommits = true;
+                }
+            }
             RemoteOperationTarget target;
             bool confirmed = false;
             bool needsTarget = chooseTarget;
@@ -528,7 +546,7 @@ namespace Bough.App.Views
             {
                 target = new RemoteOperationTarget(viewModel.UpstreamRemote, viewModel.UpstreamBranch);
             }
-            if (viewModel.CurrentRepository != repository)
+            if (IsCurrentPushRequest(viewModel, repository, repositoryRequestVersion) == false)
             {
                 return;
             }
@@ -547,12 +565,29 @@ namespace Bough.App.Views
                 {
                     if (await viewModel.PrepareUpstreamPushAsync(target.Remote, target.Branch) == false)
                     {
+                        if (IsCurrentPushRequest(viewModel, repository, repositoryRequestVersion) == false)
+                        {
+                            return;
+                        }
+                        if (useTagPushWhenNoCommits == true)
+                        {
+                            if (viewModel.LastOperationOutcome == RemoteOperationOutcome.NoNewCommits)
+                            {
+                                if (TagPushRequestedAsync != null)
+                                {
+                                    await TagPushRequestedAsync(repository, repositoryRequestVersion);
+                                }
+                            }
+                        }
                         return;
                     }
                 }
             }
-            await ShowOperationAsync(viewModel, RemoteOperationKind.Push, false, StringHelper.GetString("RemotePushAction"),
-                $"{viewModel.CurrentBranchText} → {target.Remote}/{target.Branch}", async (session, token) =>
+            if (IsCurrentPushRequest(viewModel, repository, repositoryRequestVersion) == false)
+            {
+                return;
+            }
+            RemoteOperationsViewModel completedSession = await ShowOperationAsync(viewModel, RemoteOperationKind.Push, false, StringHelper.GetString("RemotePushAction"), $"{viewModel.CurrentBranchText} → {target.Remote}/{target.Branch}", async (session, token) =>
             {
                 if (await session.PrepareUpstreamPushAsync(target.Remote, target.Branch, token) == false)
                 {
@@ -560,33 +595,81 @@ namespace Bough.App.Views
                 }
                 token.ThrowIfCancellationRequested();
                 return await session.PushAsync(target.Remote, target.Branch, confirmed);
-            }, false, false);
+            }, false, false, closeOnNoNewCommits: useTagPushWhenNoCommits);
+            if (useTagPushWhenNoCommits == false)
+            {
+                return;
+            }
+            if (completedSession == null)
+            {
+                return;
+            }
+            if (completedSession.LastOperationOutcome != RemoteOperationOutcome.NoNewCommits)
+            {
+                return;
+            }
+            GitRepository completedRepository = completedSession.CurrentRepository;
+            if (IsCurrentPushRequest(viewModel, completedRepository, repositoryRequestVersion) == false)
+            {
+                return;
+            }
+            if (TagPushRequestedAsync != null)
+            {
+                await TagPushRequestedAsync(completedRepository, repositoryRequestVersion);
+            }
         }
 
-        private async Task ShowOperationAsync(RemoteOperationsViewModel viewModel, RemoteOperationKind kind, bool fetchAll,
-            string operationName, string target,
-            Func<RemoteOperationsViewModel, CancellationToken, Task<bool>> operation, bool closeOnSuccess, bool worktreeMayChange)
+        private bool IsCurrentPushRequest(RemoteOperationsViewModel viewModel, GitRepository repository, int repositoryRequestVersion)
         {
-            if (TopLevel.GetTopLevel(this) is not Window owner)
+            if (_attached == false)
             {
-                return;
+                return false;
             }
-            if (OperationQueue == null)
+            if (ReferenceEquals(DataContext, viewModel) == false)
             {
-                return;
+                return false;
             }
-            if (CreateOperationSession == null)
+            if (repository == null)
             {
-                return;
+                return false;
             }
             if (GetRepositoryRequestVersion == null)
             {
-                return;
+                return false;
+            }
+            if (repositoryRequestVersion != GetRepositoryRequestVersion())
+            {
+                return false;
+            }
+            if (ReferenceEquals(viewModel.CurrentRepository, repository) == false)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private async Task<RemoteOperationsViewModel> ShowOperationAsync(RemoteOperationsViewModel viewModel, RemoteOperationKind kind, bool fetchAll, string operationName, string target, Func<RemoteOperationsViewModel, CancellationToken, Task<bool>> operation, bool closeOnSuccess, bool worktreeMayChange, bool closeOnNoNewCommits = false)
+        {
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return null;
+            }
+            if (OperationQueue == null)
+            {
+                return null;
+            }
+            if (CreateOperationSession == null)
+            {
+                return null;
+            }
+            if (GetRepositoryRequestVersion == null)
+            {
+                return null;
             }
             GitRepository requestedRepository = viewModel.CurrentRepository;
             if (requestedRepository == null)
             {
-                return;
+                return null;
             }
             int repositoryRequestVersion = GetRepositoryRequestVersion();
             string requestedBranch = viewModel.CurrentBranchText;
@@ -595,7 +678,7 @@ namespace Bough.App.Views
             RemoteOperationsViewModel session = CreateOperationSession();
             if (session == null)
             {
-                return;
+                return null;
             }
             RemoteOperationPresenter presenter = new(OperationQueue, requestedRepository, session,
                 repositoryRequestVersion, requestedBranch, requestedRemote, requestedPrune, OperationFinishedAsync);
@@ -603,6 +686,7 @@ namespace Bough.App.Views
             Func<Task<bool>> observedOperation = () => presenter.ExecuteAsync(kind, fetchAll, operationName, target,
                 activeSession => operation(activeSession, cancellation.Token), worktreeMayChange, cancellation.Token);
             RemoteOperationWindow dialog = new(session, operationName, target, observedOperation, closeOnSuccess, StringHelper, ErrorLocalizer, cancellation, OperationQueue, requestedRepository.RootPath);
+            dialog.CloseOnNoNewCommits = closeOnNoNewCommits;
             bool popupOpen = false;
             void UpdatePopupProgress()
             {
@@ -657,6 +741,11 @@ namespace Bough.App.Views
                 PopupProgressChanged?.Invoke(requestedRepository, session, repositoryRequestVersion, false);
                 InternalDialogClosed?.Invoke();
             }
+            if (cancellation.IsCancellationRequested == true)
+            {
+                return null;
+            }
+            return session;
         }
     }
 }

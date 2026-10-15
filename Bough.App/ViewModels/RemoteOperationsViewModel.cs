@@ -138,7 +138,7 @@ namespace Bough.App.ViewModels
         public bool CanFetchAll { get { return _repository != null && _remotes.Count > 0; } }
         public bool CanSelectFetchRemote { get { return CanFetchAll; } }
         public bool CanPull { get { return CanFetchAll && _state != null && _state.IsDetached == false && _state.HeadHash.Length > 0; } }
-        public bool CanPush { get { return CanPushTo && HasNoOutgoingPushCommits == false; } }
+        public bool CanPush { get { return CanPushTo; } }
         public bool CanPushTo { get { return CanPull; } }
         public bool HasNoOutgoingPushCommits { get { return CanPushTo && _state.HasUpstream && _state.Ahead == 0; } }
         public string PushAvailabilityText

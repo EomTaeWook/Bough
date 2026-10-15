@@ -7,6 +7,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Bough.App.Localization;
 using Bough.App.ViewModels;
+using Bough.App.Internals;
 using Bough.Core.Git;
 using Bough.Core.Git.Models;
 
@@ -26,6 +27,7 @@ namespace Bough.App.Views
         private DateTimeOffset _startedAt;
         private bool _started;
         private bool _finished;
+        internal bool CloseOnNoNewCommits { get; set; }
 
         public RemoteOperationWindow()
         {
@@ -119,6 +121,17 @@ namespace Bough.App.Views
                 _elapsedTimer.Stop();
                 StopButton.IsVisible = false;
                 QueueStatusText.Text = string.Empty;
+            }
+            if (CloseOnNoNewCommits == true)
+            {
+                if (_cancellation.IsCancellationRequested == false)
+                {
+                    if (_viewModel.LastOperationOutcome == RemoteOperationOutcome.NoNewCommits)
+                    {
+                        Close();
+                        return;
+                    }
+                }
             }
             if (succeeded == true)
             {

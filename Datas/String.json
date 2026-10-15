@@ -6934,5 +6934,89 @@
     "Name": "SubmoduleOpenRepositoryUnavailable",
     "Kor": "선택한 경로에서 실제 하위 Git 저장소를 열 수 없습니다: {0}",
     "Eng": "An actual child Git repository could not be opened at the selected path: {0}"
+  },
+  {
+    "Id": 3256,
+    "Name": "TagPushAction",
+    "Kor": "Push",
+    "Eng": "Push"
+  },
+  {
+    "Id": 3257,
+    "Name": "TagPushTitle",
+    "Kor": "태그 Push",
+    "Eng": "Push tag"
+  },
+  {
+    "Id": 3258,
+    "Name": "TagPushConfirm",
+    "Kor": "태그: {0}\n객체: {1}\n원격: {2}\n선택한 태그 하나만 전송합니다. 기존 원격 태그는 덮어쓰지 않습니다.",
+    "Eng": "Tag: {0}\nObject: {1}\nRemote: {2}\nOnly this tag will be sent. Existing remote tags will not be overwritten."
+  },
+  {
+    "Id": 3259,
+    "Name": "TagPushProgress",
+    "Kor": "태그 {0} → {1} 전송 중",
+    "Eng": "Pushing tag {0} to {1}"
+  },
+  {
+    "Id": 3260,
+    "Name": "TagPushSucceeded",
+    "Kor": "태그 {0}을(를) {1}에 전송했습니다.",
+    "Eng": "Tag {0} was pushed to {1}."
+  },
+  {
+    "Id": 3261,
+    "Name": "TagPushAlreadyPresent",
+    "Kor": "원격 {1}에 태그 {0}의 같은 객체가 이미 있습니다.",
+    "Eng": "Remote {1} already has the same object for tag {0}."
+  },
+  {
+    "Id": 3262,
+    "Name": "TagPushRemoteConflict",
+    "Kor": "원격 {1}의 태그 {0}이(가) 다른 객체를 가리킵니다. 덮어쓰지 않았습니다.",
+    "Eng": "Tag {0} on remote {1} points to a different object. It was not overwritten."
+  },
+  {
+    "Id": 3263,
+    "Name": "TagPushFailed",
+    "Kor": "태그 {0}을(를) 원격 {1}에 전송하지 못했습니다.",
+    "Eng": "Tag {0} could not be pushed to remote {1}."
+  },
+  {
+    "Id": 3264,
+    "Name": "TagPushLookupFailed",
+    "Kor": "원격 {1}의 태그 {0}을(를) 확인하지 못했습니다.",
+    "Eng": "Tag {0} could not be checked on remote {1}."
+  },
+  {
+    "Id": 3265,
+    "Name": "TagPushLocalChanged",
+    "Kor": "로컬 태그 {0}이(가) 변경되었거나 없어졌습니다. 태그를 다시 선택해 주세요.",
+    "Eng": "Local tag {0} has changed or no longer exists. Select the tag again."
+  },
+  {
+    "Id": 3266,
+    "Name": "TagPushLocalReadFailed",
+    "Kor": "로컬 태그 {0}을(를) 읽지 못했습니다: {1}",
+    "Eng": "Local tag {0} could not be read: {1}"
+  },
+  {
+    "Id": 3267,
+    "Name": "TagPushUrlChanged",
+    "Kor": "원격 {0}의 Push 주소가 변경되어 전송하지 않았습니다. 대상을 다시 확인해 주세요.",
+    "Eng": "The push URL for remote {0} changed. Nothing was sent. Confirm the target again."
+  },
+  {
+    "Id": 3268,
+    "Name": "TagPushRemoteUnavailable",
+    "Kor": "등록된 원격 {0}의 Push 주소를 읽을 수 없습니다.",
+    "Eng": "The push URL for registered remote {0} could not be read."
+  },
+  {
+    "Id": 3269,
+    "Name": "TagPushMultiplePushUrls",
+    "Kor": "원격 {0}에 Push 주소가 여러 개 있어 태그를 전송할 수 없습니다.",
+    "Eng": "Remote {0} has multiple push URLs, so the tag cannot be pushed."
   }
 ]
