@@ -8,7 +8,7 @@
 
 ## 현재 구성
 
-Bough는 .NET 10·Avalonia 12.1.3 기반 데스크톱 Git 클라이언트다. AXAML 바인딩과 ViewModel을 유지하면서 기능별 비동기 조정을 Presenter로 분리한 구조이며, 순수 MVP로의 이행은 아직 끝나지 않았다. 이 문서는 현재 책임과 앞으로 지켜야 할 경계를 함께 기록한다. 구현·검증 상태는 [구현 현황](CurrentStatus.md)을 따른다.
+Bough는 .NET 10·Avalonia 12.1.4 기반 데스크톱 Git 클라이언트다. AXAML 바인딩과 ViewModel을 유지하면서 기능별 비동기 조정을 Presenter로 분리한 구조이며, 순수 MVP로의 이행은 아직 끝나지 않았다. 이 문서는 현재 책임과 앞으로 지켜야 할 경계를 함께 기록한다. 구현·검증 상태는 [구현 현황](CurrentStatus.md)을 따른다.
 
 | 프로젝트·영역 | 현재 책임 |
 | --- | --- |

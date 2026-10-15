@@ -1,24 +1,34 @@
 # 릴리스
 
+## v1.0.0 정식 릴리스 게시 완료
+
+- 생성·배포일: 2026-10-16
+- 소스 커밋: `1d619371eae5e732fde8433520af2d6fa29b154c`
+- 대상: Windows x64 자체 포함 단일 `Bough-v1.0.0-win-x64.exe`
+- 상태: v1.0.0 태그 전송·GitHub 최신 정식 릴리스 게시 완료
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.0)
+- [Windows x64 단일 실행 파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.0/Bough-v1.0.0-win-x64.exe)
+- 생성 위치: `.codex-build/release-v1.0.0/Bough-v1.0.0-win-x64.exe`
+- GitHub 게시 크기: 103,786,025바이트
+- GitHub 제공 SHA-256: `64cc916f1622c13185a7741aecfd7513281dbb7fbcb4c80ae381fe682e6d61f9`
+
+사용자 최종 지정에 따라 첫 정식 버전을 1.0.0으로 게시했다. 저장소 열기·복제, Local Changes와 Stash, 커밋·파일 히스토리, 브랜치·태그, Fetch/Pull/Push, 원격 자동 확인, 서브모듈 저장소 열기, 충돌 해결·일괄 저장/스테이징, Revert, 설정과 정식 릴리스 기반 앱 업데이트를 포함한다.
+
+beta.8 이후 변경은 업데이트 좌하단 진행과 릴리스 페이지 버튼, 확인·닫기 버튼 대비, 태그 Push 후보 조회와 상단 활성 조건, Staged의 Ctrl/Shift 다중 선택과 선택 집합 일괄 해제다. Dignus.Log 2.0.0·Dignus 1.4.0·Avalonia 12.1.4를 사용하고 해당 Dignus 라이선스 임베딩 경로도 맞췄다.
+
+요청된 아래 `dotnet publish`가 종료 코드 0으로 완료됐다. .NET 런타임·네이티브 라이브러리·필수 데이터·기본 로그 설정을 단일 exe에 포함하며 Git은 별도로 설치한다. 기존 사용자 설정·최근 저장소·앱 프로세스는 변경하지 않았다.
+
+```powershell
+dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=1.0.0 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v1.0.0\build\ -o D:\Source\Bough\.codex-build\release-v1.0.0\win-x64\
+```
+
+GitHub 게시 응답은 draft=false·prerelease=false이며 위 크기와 digest는 그 응답의 배포 메타데이터다. 별도 해시 대조·앱 실행·테스트·UI·회귀 검증·설치·복원 검증은 수행하지 않았다. 제품 업데이트는 공식 정식 릴리스만 사용하는 정책을 유지한다. 기존 베타 파일과 태그는 보존했다.
+
 ## 앱 업데이트 테스트 범위 정정
 
 제품은 공식 정식 릴리스만 업데이트한다. 베타 허용은 사용자가 승인한 이번 격리 테스트 사본에 한정한다. 관련 소스·기존 문구 5키·문서는 정식 전용 정책을 유지한다. 베타 허용을 제품 정책으로 바꾼 배포본은 생성·게시하지 않았다.
 
-격리 사본의 7개 결과에는 버전 선택과 실제 공식 beta.8 조회·다운로드·digest 확인이 포함된다. 실제 제품 UI·정상 닫기·exe 교체·재시작은 아직 확인하지 않았다. 정책 정정에서 추가 실행·설치·게시·푸시는 수행하지 않았다.
-
-## v0.1.0 정식 릴리스 준비
-
-- 배포 방향: 첫 정식 릴리스. 베타 태그를 사용하지 않는다.
-- 구현 기준: `ae52f03`까지 반영된 기본 Git 기능.
-- 대상: Windows x64 자체 포함 단일 `Bough-v0.1.0-win-x64.exe`.
-- 상태: 기능 범위·문서 정리. 정식 실행 파일·태그·GitHub 게시와 다운로드 링크는 아직 생성하지 않았다.
-- 기존 다운로드: 아래 beta.8 게시 파일을 유지한다. 미게시 정식 파일의 링크로 바꾸지 않는다.
-
-저장소 열기·복제, Local Changes와 Stash, 커밋·파일 히스토리, 브랜치·태그, Fetch/Pull/Push, 원격 자동 확인, 서브모듈 저장소 열기, 충돌 해결·일괄 저장/스테이징, Revert, 설정과 정식 릴리스 기반 앱 업데이트를 첫 정식 범위로 정했다. 상세한 현재 상태와 제한은 [구현 현황](CurrentStatus.md)을 따른다.
-
-beta.8 이후에는 업데이트 진행 막대를 왼쪽 하단으로 옮기고 GitHub 릴리스 페이지 버튼을 연결했다. 설정의 릴리스 페이지 버튼은 업데이트 후 재시작 바로 옆에 두며 조회 전에도 공식 릴리스 목록을 열 수 있다. 최신 소스의 exe 생성·게시와 실제 업데이트 설치/복원 확인은 아직 수행하지 않았다.
-
-정식 배포 시에는 실제 버전과 태그를 `0.1.0`/`v0.1.0`으로 맞추고 기존 단일 파일 형식·사용자 설정 보존·공식 asset 이름·digest 정책을 유지한다. 이번 문서 정리는 배포 생성·게시·추가 검증을 실행한 기록이 아니다. 과거 생성·게시 이력은 아래에 보존한다.
+격리 사본의 7개 결과에는 버전 선택과 실제 공식 beta.8 조회·다운로드·digest 확인이 포함된다. 이 7개 결과는 실제 제품 UI·정상 닫기·exe 교체·재시작 확인을 포함하지 않는다. 이후 별도로 승인된 격리 수동 시험에서 사용자 입력에 의한 beta.7 정상 종료·같은 경로 교체·beta.8 재시작과 정상 종료를 기록했다. 설치 시험은 로컬 후보 응답을 사용했으며 공식 HTTP 다운로드와 연속한 한 번의 시험이나 제품 1.0.0·실패 복원 확인은 아니다.
 
 ## v0.1.0-beta.8 게시 완료
 
