@@ -4,12 +4,15 @@ namespace Bough.Core.Git.Models
 {
     public class GitWorktreeFile
     {
-        public GitWorktreeFile(string path, string originalPath, char indexStatus, char worktreeStatus)
+        public GitWorktreeFile(string path, string originalPath, char indexStatus, char worktreeStatus,
+            bool isSubmodule = false, string submoduleStatus = "N...")
         {
             Path = path;
             OriginalPath = originalPath;
             IndexStatus = indexStatus;
             WorktreeStatus = worktreeStatus;
+            IsSubmodule = isSubmodule;
+            SubmoduleStatus = submoduleStatus;
         }
 
         public string Path { get; }
@@ -19,6 +22,10 @@ namespace Bough.Core.Git.Models
         public char IndexStatus { get; }
 
         public char WorktreeStatus { get; }
+
+        public bool IsSubmodule { get; }
+
+        public string SubmoduleStatus { get; }
 
         public bool IsConflict
         {
@@ -60,6 +67,11 @@ namespace Bough.Core.Git.Models
                 if (IsUntracked == true)
                 {
                     return "WorktreeStatusUntracked";
+                }
+
+                if (IsSubmodule == true)
+                {
+                    return "WorktreeStatusSubmodule";
                 }
 
                 if (IndexStatus == 'R' || WorktreeStatus == 'R')

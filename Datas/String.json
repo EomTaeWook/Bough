@@ -7060,5 +7060,59 @@
     "Name": "TagPushCandidatesRefreshFailed",
     "Kor": "{0}\n태그 후보를 다시 조회해야 합니다: {1}",
     "Eng": "{0}\nThe tag candidates need to be refreshed: {1}"
+  },
+  {
+    "Id": 3277,
+    "Name": "WorktreeStatusSubmodule",
+    "Kor": "서브모듈",
+    "Eng": "Submodule"
+  },
+  {
+    "Id": 3278,
+    "Name": "WorktreeStatusSubmodulePreview",
+    "Kor": "서브모듈 변경 · 내부 파일 변경은 서브모듈 저장소에서 확인하세요.",
+    "Eng": "Submodule changes · Open the submodule repository to inspect changes to its files."
+  },
+  {
+    "Id": 3279,
+    "Name": "WorkingSubmoduleDiscardUnsupported",
+    "Kor": "이 서브모듈 상태는 상위 저장소에서 되돌릴 수 없습니다. 서브모듈 저장소를 열어 처리하세요: {0}",
+    "Eng": "This submodule state cannot be restored from the parent repository. Open the submodule repository to handle it: {0}"
+  },
+  {
+    "Id": 3280,
+    "Name": "WorkingSubmoduleOperationInProgress",
+    "Kor": "서브모듈에 진행 중인 Git 작업이 있어 커밋 위치를 되돌리지 않았습니다. 서브모듈 저장소에서 작업을 먼저 완료하거나 중단하세요: {0}",
+    "Eng": "The submodule has a Git operation in progress. Complete or abort it in the submodule repository before restoring its commit: {0}"
+  },
+  {
+    "Id": 3281,
+    "Name": "WorkingSubmoduleDirty",
+    "Kor": "서브모듈 내부에 미커밋 변경이나 미추적 파일이 있어 커밋 위치를 되돌리지 않았습니다. 서브모듈 저장소를 열어 먼저 처리하세요: {0}",
+    "Eng": "The submodule has uncommitted changes or untracked files. Handle them in the submodule repository before restoring its commit: {0}"
+  },
+  {
+    "Id": 3282,
+    "Name": "WorkingSubmoduleCommitUnavailable",
+    "Kor": "복원할 커밋을 서브모듈에서 읽을 수 없습니다. 서브모듈 저장소에서 상태를 확인하고 필요한 커밋을 가져온 뒤 다시 시도하세요: {0} · {1}",
+    "Eng": "The target commit cannot be read in the submodule. Check the submodule repository and fetch the commit if needed, then try again: {0} · {1}"
+  },
+  {
+    "Id": 3283,
+    "Name": "DiscardSubmoduleTitle",
+    "Kor": "서브모듈 커밋 위치 되돌리기",
+    "Eng": "Restore submodule commit"
+  },
+  {
+    "Id": 3284,
+    "Name": "DiscardSubmoduleImpact",
+    "Kor": "서브모듈 {0}개의 체크아웃을 상위 저장소의 스테이징된 커밋으로 되돌립니다. 서브모듈은 분리된 HEAD 상태가 되며 브랜치와 커밋 기록은 유지됩니다. 내부의 미커밋 변경은 폐기하지 않습니다.",
+    "Eng": "Restore the checkout of {0} submodules to the commits recorded in the parent index. The submodules will have detached HEADs; branches and commit history are preserved. Uncommitted changes inside them will not be discarded."
+  },
+  {
+    "Id": 3285,
+    "Name": "DiscardSubmoduleConfirm",
+    "Kor": "커밋 위치 되돌리기",
+    "Eng": "Restore commit"
   }
 ]

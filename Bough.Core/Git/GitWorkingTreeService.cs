@@ -15,7 +15,8 @@ namespace Bough.Core.Git
     public class GitWorkingTreeService
     {
         private const long _largeNewFileThreshold = 10 * 1024 * 1024;
-        private static readonly string[] _statusArguments = new string[] { "status", "--porcelain=v1", "-z", "--untracked-files=all" };
+        private static readonly string[] _statusArguments = new string[] { "status", "--porcelain=v2", "-z", "--untracked-files=all", "--ignore-submodules=none" };
+        private static readonly string[] _submoduleOperationPaths = new string[] { "MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply", "sequencer", "BISECT_START" };
         private static readonly string[] _restoreBatchArguments = new string[] { "restore", "--worktree", "--pathspec-from-file=-", "--pathspec-file-nul" };
         private static readonly string[] _stageBatchArguments = new string[] { "add", "-A", "--pathspec-from-file=-", "--pathspec-file-nul" };
         private static readonly string[] _headMessageArguments = new string[] { "rev-parse", "--verify", "HEAD^{commit}" };
@@ -72,6 +73,14 @@ namespace Bough.Core.Git
                 {
                     throw new GitException("LocalWorkingFileChanged", null, file.Path);
                 }
+                if (file.IsSubmodule != item.IsSubmodule)
+                {
+                    throw new GitException("LocalWorkingFileChanged", null, file.Path);
+                }
+                if (file.SubmoduleStatus != item.SubmoduleStatus)
+                {
+                    throw new GitException("LocalWorkingFileChanged", null, file.Path);
+                }
             }
         }
 
@@ -88,16 +97,57 @@ namespace Bough.Core.Git
             for (int index = 0; index < entries.Length - 1; index++)
             {
                 string entry = entries[index];
-                if (entry.Length < 4 || entry[2] != ' ')
+                if (entry.StartsWith("# ", StringComparison.Ordinal) == true)
+                {
+                    continue;
+                }
+                if (entry.StartsWith("? ", StringComparison.Ordinal) == true)
+                {
+                    files.Add(new GitWorktreeFile(entry.Substring(2), null, '?', '?'));
+                    continue;
+                }
+
+                int fieldCount = 9;
+                if (entry.StartsWith("2 ", StringComparison.Ordinal) == true)
+                {
+                    fieldCount = 10;
+                }
+                else if (entry.StartsWith("u ", StringComparison.Ordinal) == true)
+                {
+                    fieldCount = 11;
+                }
+                else if (entry.StartsWith("1 ", StringComparison.Ordinal) == false)
                 {
                     throw new GitException("WorkingStatusEntryInvalid", null, index);
                 }
 
-                char indexStatus = entry[0];
-                char worktreeStatus = entry[1];
-                string path = entry.Substring(3);
+                string[] fields = entry.Split(' ', fieldCount);
+                if (fields.Length != fieldCount)
+                {
+                    throw new GitException("WorkingStatusEntryInvalid", null, index);
+                }
+                if (fields[1].Length != 2)
+                {
+                    throw new GitException("WorkingStatusEntryInvalid", null, index);
+                }
+                if (fields[2].Length != 4)
+                {
+                    throw new GitException("WorkingStatusEntryInvalid", null, index);
+                }
+
+                char indexStatus = fields[1][0];
+                char worktreeStatus = fields[1][1];
+                if (indexStatus == '.')
+                {
+                    indexStatus = ' ';
+                }
+                if (worktreeStatus == '.')
+                {
+                    worktreeStatus = ' ';
+                }
+                string path = fields[fieldCount - 1];
                 string originalPath = null;
-                if (indexStatus == 'R' || indexStatus == 'C' || worktreeStatus == 'R' || worktreeStatus == 'C')
+                if (fields[0] == "2")
                 {
                     index++;
                     if (index >= entries.Length - 1)
@@ -108,7 +158,12 @@ namespace Bough.Core.Git
                     originalPath = entries[index];
                 }
 
-                files.Add(new GitWorktreeFile(path, originalPath, indexStatus, worktreeStatus));
+                bool isSubmodule = fields[2][0] == 'S' || fields.Skip(3).Take(3).Contains("160000");
+                if (fields[0] == "u")
+                {
+                    isSubmodule = isSubmodule || fields[6] == "160000";
+                }
+                files.Add(new GitWorktreeFile(path, originalPath, indexStatus, worktreeStatus, isSubmodule, fields[2]));
             }
 
             string mergeCommitMessage = await ReadMergeCommitMessageAsync(repository, cancellationToken);
@@ -171,6 +226,11 @@ namespace Bough.Core.Git
 
             List<string> arguments = ["diff", "--no-ext-diff", "--no-color"];
             List<string> numstatArguments = ["diff", "--numstat", "--no-ext-diff"];
+            if (file.IsSubmodule == true)
+            {
+                arguments.Add("--submodule=short");
+                arguments.Add("--ignore-submodules=none");
+            }
             if (staged == true)
             {
                 arguments.Add("--cached");
@@ -188,6 +248,10 @@ namespace Bough.Core.Git
             }
 
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, arguments, false, cancellationToken);
+            if (file.IsSubmodule == true)
+            {
+                return new GitFilePreview(result.Output, "WorktreeStatusSubmodulePreview", false, 0);
+            }
             GitCommandResult numstat = await _runner.RunAsync(repository.RootPath, numstatArguments, false, cancellationToken);
             bool isBinary = numstat.Output.StartsWith("-\t-\t", StringComparison.Ordinal);
             long size = GetWorkingFileSize(repository, file.Path);
@@ -362,7 +426,7 @@ namespace Bough.Core.Git
             GitWorktreeStatus status = await GetStatusAsync(repository, cancellationToken);
             Dictionary<string, List<GitWorktreeFile>> currentFiles = status.Files.GroupBy(file => file.Path, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.ToList(), StringComparer.Ordinal);
             Dictionary<string, string> indexEntries = await GetDiscardIndexEntriesAsync(repository, selected, cancellationToken);
-            return await Task.Run(() =>
+            return await Task.Run(async () =>
             {
                 List<GitDiscardPlan> plans = [];
                 HashSet<string> paths = new(StringComparer.Ordinal);
@@ -385,13 +449,129 @@ namespace Bough.Core.Git
                         throw new GitException("WorkingSelectedFileChanged", null, file.Path);
                     }
 
-                    GitDiscardPlan plan = PrepareDiscard(repository, current);
+                    GitDiscardPlan plan;
+                    if (current.IsSubmodule == true)
+                    {
+                        plan = await PrepareSubmoduleDiscardAsync(repository, current, indexEntries, cancellationToken);
+                    }
+                    else
+                    {
+                        plan = PrepareDiscard(repository, current);
+                    }
                     plan.IndexEntries = GetDiscardIndexFingerprint(indexEntries, current);
                     plans.Add(plan);
                 }
 
                 return (IReadOnlyList<GitDiscardPlan>)plans;
             }, cancellationToken);
+        }
+
+        private async Task<GitDiscardPlan> PrepareSubmoduleDiscardAsync(GitRepository repository, GitWorktreeFile file,
+            Dictionary<string, string> indexEntries, CancellationToken cancellationToken)
+        {
+            if (file.WorktreeStatus != 'M')
+            {
+                throw new GitException("WorkingSubmoduleDiscardUnsupported", null, file.Path);
+            }
+            if (string.IsNullOrEmpty(file.OriginalPath) == false)
+            {
+                throw new GitException("WorkingSubmoduleDiscardUnsupported", null, file.Path);
+            }
+            if (indexEntries.TryGetValue(file.Path, out string indexEntry) == false)
+            {
+                throw new GitException("WorkingIndexChanged", null, file.Path);
+            }
+            string[] records = indexEntry.Split('\0', StringSplitOptions.RemoveEmptyEntries);
+            if (records.Length != 1)
+            {
+                throw new GitException("WorkingIndexChanged", null, file.Path);
+            }
+            int separator = records[0].IndexOf('\t');
+            if (separator < 0)
+            {
+                throw new GitException("WorkingIndexChanged", null, file.Path);
+            }
+            string[] fields = records[0][..separator].Split(' ');
+            if (fields.Length != 3)
+            {
+                throw new GitException("WorkingIndexChanged", null, file.Path);
+            }
+            if (fields[0] != "160000")
+            {
+                throw new GitException("WorkingIndexChanged", null, file.Path);
+            }
+            if (fields[2] != "0")
+            {
+                throw new GitException("WorkingIndexChanged", null, file.Path);
+            }
+
+            string fullPath = ResolveDiscardPath(repository, file.Path);
+            if (Directory.Exists(fullPath) == false)
+            {
+                throw new GitException("SubmoduleOpenDirectoryUnavailable", null, file.Path);
+            }
+            if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
+            {
+                throw new GitException("WorkingPathSymlink", null, file.Path);
+            }
+            string marker = Path.Combine(fullPath, ".git");
+            if (File.Exists(marker) == false)
+            {
+                if (Directory.Exists(marker) == false)
+                {
+                    throw new GitException("SubmoduleOpenUninitialized", null, file.Path);
+                }
+            }
+            GitCommandResult root = await _runner.RunAsync(fullPath,
+                new string[] { "rev-parse", "--show-toplevel" }, false, cancellationToken);
+            StringComparison comparison = StringComparison.Ordinal;
+            if (OperatingSystem.IsWindows() == true)
+            {
+                comparison = StringComparison.OrdinalIgnoreCase;
+            }
+            if (string.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(root.Output.TrimEnd('\r', '\n'))),
+                Path.TrimEndingDirectorySeparator(fullPath), comparison) == false)
+            {
+                throw new GitException("SubmoduleOpenRepositoryUnavailable", null, file.Path);
+            }
+            GitCommandResult metadata = await _runner.RunAsync(fullPath,
+                new string[] { "rev-parse", "--absolute-git-dir" }, false, cancellationToken);
+            string metadataPath = metadata.Output.TrimEnd('\r', '\n');
+            GitCommandResult parentMetadata = await _runner.RunAsync(repository.RootPath,
+                new string[] { "rev-parse", "--absolute-git-dir" }, false, cancellationToken);
+            if (string.Equals(Path.GetFullPath(metadataPath),
+                Path.GetFullPath(parentMetadata.Output.TrimEnd('\r', '\n')), comparison) == true)
+            {
+                throw new GitException("SubmoduleOpenRepositoryUnavailable", null, file.Path);
+            }
+            foreach (string operationPath in _submoduleOperationPaths)
+            {
+                string operation = Path.Combine(metadataPath, operationPath);
+                if (File.Exists(operation) == true || Directory.Exists(operation) == true)
+                {
+                    throw new GitException("WorkingSubmoduleOperationInProgress", null, file.Path);
+                }
+            }
+            GitCommandResult status = await _runner.RunAsync(fullPath,
+                new string[] { "status", "--porcelain=v1", "-z", "--untracked-files=all", "--ignore-submodules=none" }, false, cancellationToken);
+            if (status.Output.Length > 0)
+            {
+                throw new GitException("WorkingSubmoduleDirty", null, file.Path);
+            }
+            GitCommandResult head = await _runner.RunAsync(fullPath, _headArguments, false, cancellationToken);
+            GitCommandResult headReference = await _runner.RunAsync(fullPath,
+                new string[] { "rev-parse", "--symbolic-full-name", "HEAD" }, false, cancellationToken);
+            string target = fields[1];
+            try
+            {
+                await _runner.RunAsync(fullPath,
+                    new string[] { "cat-file", "-e", $"{target}^{{commit}}" }, false, cancellationToken);
+            }
+            catch (GitException exception)
+            {
+                throw new GitException("WorkingSubmoduleCommitUnavailable", exception, file.Path, target);
+            }
+            return new GitDiscardPlan(file, fullPath, head.Output.Trim(), headReference.Output.Trim(), target);
         }
 
         public async Task<GitDiscardBatchResult> ApplyDiscardsAsync(GitRepository repository, IReadOnlyList<GitDiscardPlan> plans, CancellationToken cancellationToken = default)
@@ -433,9 +613,29 @@ namespace Bough.Core.Git
 
             cancellationToken.ThrowIfCancellationRequested();
             List<string> completed = [];
-            List<GitDiscardPlan> regular = current.Where(plan => plan.IsUntracked == false && plan.IsWorktreeRename == false).ToList();
+            List<GitDiscardPlan> regular = current.Where(plan => plan.IsUntracked == false && plan.IsWorktreeRename == false && plan.IsSubmodule == false).ToList();
             try
             {
+                foreach (GitDiscardPlan plan in current)
+                {
+                    if (plan.IsSubmodule == false)
+                    {
+                        continue;
+                    }
+                    IReadOnlyList<GitDiscardPlan> latest = await PrepareDiscardsAsync(repository,
+                        new GitWorktreeFile[] { plan.File }, cancellationToken);
+                    if (DiscardFileMatches(plan, latest[0]) == false)
+                    {
+                        throw new GitException("WorkingSelectedFileChanged", null, plan.Path);
+                    }
+                    if (plan.IndexEntries != latest[0].IndexEntries)
+                    {
+                        throw new GitException("WorkingIndexChanged", null, plan.Path);
+                    }
+                    await _runner.RunAsync(plan.SubmoduleRoot,
+                        new string[] { "checkout", "--detach", "--no-recurse-submodules", "--no-overwrite-ignore", plan.SubmoduleIndexCommit, "--" }, false, cancellationToken);
+                    completed.Add(plan.Path);
+                }
                 if (regular.Count > 0)
                 {
                     StringBuilder pathspecs = new();
@@ -937,6 +1137,14 @@ namespace Bough.Core.Git
 
         private static bool DiscardStatusMatches(GitWorktreeFile expected, GitWorktreeFile current)
         {
+            if (expected.IsSubmodule != current.IsSubmodule)
+            {
+                return false;
+            }
+            if (expected.SubmoduleStatus != current.SubmoduleStatus)
+            {
+                return false;
+            }
             if (current.IsConflict == true)
             {
                 return false;
@@ -967,6 +1175,26 @@ namespace Bough.Core.Git
 
         private static bool DiscardFileMatches(GitDiscardPlan expected, GitDiscardPlan current)
         {
+            if (expected.IsSubmodule != current.IsSubmodule)
+            {
+                return false;
+            }
+            if (expected.SubmoduleRoot != current.SubmoduleRoot)
+            {
+                return false;
+            }
+            if (expected.SubmoduleHead != current.SubmoduleHead)
+            {
+                return false;
+            }
+            if (expected.SubmoduleHeadReference != current.SubmoduleHeadReference)
+            {
+                return false;
+            }
+            if (expected.SubmoduleIndexCommit != current.SubmoduleIndexCommit)
+            {
+                return false;
+            }
             if (expected.Exists != current.Exists)
             {
                 return false;
@@ -1007,6 +1235,10 @@ namespace Bough.Core.Git
 
         private static void ValidateStopTrackingPlan(GitDiscardPlan plan)
         {
+            if (plan.IsSubmodule == true)
+            {
+                throw new GitException("WorkingOnlyFileDiscard", null, plan.Path);
+            }
             if (plan.IsUntracked == true)
             {
                 throw new GitException("WorkingSelectedFileChanged", null, plan.Path);

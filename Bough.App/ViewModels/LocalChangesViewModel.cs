@@ -255,6 +255,10 @@ namespace Bough.App.ViewModels
 
         public string GetDiscardTitleText(IReadOnlyList<GitDiscardPlan> plans)
         {
+            if (plans.All(plan => plan.IsSubmodule) == true)
+            {
+                return _stringHelper.GetString("DiscardSubmoduleTitle");
+            }
             int untrackedCount = plans.Count(plan => plan.IsUntracked);
             int trackedCount = plans.Count - untrackedCount;
             if (untrackedCount == 0)
@@ -296,6 +300,20 @@ namespace Bough.App.ViewModels
 
         public string GetDiscardImpactText(IReadOnlyList<GitDiscardPlan> plans)
         {
+            List<GitDiscardPlan> submodules = plans.Where(plan => plan.IsSubmodule).ToList();
+            if (submodules.Count > 0)
+            {
+                string impact = _stringHelper.Format("DiscardSubmoduleImpact", submodules.Count);
+                string targets = string.Join(Environment.NewLine, submodules.Select(plan =>
+                    $"{plan.Path}: {plan.SubmoduleHead} → {plan.SubmoduleIndexCommit}"));
+                impact += Environment.NewLine + targets;
+                List<GitDiscardPlan> files = plans.Where(plan => plan.IsSubmodule == false).ToList();
+                if (files.Count == 0)
+                {
+                    return impact;
+                }
+                return GetDiscardImpactText(files) + Environment.NewLine + impact;
+            }
             int untrackedCount = plans.Count(plan => plan.IsUntracked);
             int renameCount = plans.Count(plan => plan.IsWorktreeRename);
             int trackedCount = plans.Count - untrackedCount;
@@ -313,6 +331,10 @@ namespace Bough.App.ViewModels
 
         public string GetDiscardConfirmText(IReadOnlyList<GitDiscardPlan> plans)
         {
+            if (plans.All(plan => plan.IsSubmodule) == true)
+            {
+                return _stringHelper.GetString("DiscardSubmoduleConfirm");
+            }
             if (plans.All(plan => plan.IsUntracked) == true)
             {
                 return _stringHelper.GetString("DiscardConfirmUntracked");

@@ -33,6 +33,9 @@ namespace Bough.App.Converters
             string resourceKey;
             switch (statusCode)
             {
+                case "WorktreeStatusSubmodule":
+                    resourceKey = "BoughIconFolder";
+                    break;
                 case "WorktreeStatusModified":
                     resourceKey = "BoughIconFileModified";
                     break;

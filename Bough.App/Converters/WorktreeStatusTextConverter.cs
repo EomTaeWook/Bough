@@ -30,6 +30,23 @@ namespace Bough.App.Converters
                 return AvaloniaProperty.UnsetValue;
             }
             string status = strings.GetString(file.StatusCode);
+            if (file.StatusCode == "WorktreeStatusSubmodule")
+            {
+                List<string> parts = [status];
+                if (file.SubmoduleStatus[1] == 'C')
+                {
+                    parts.Add(strings.GetString("ReferenceSubmoduleDifferentCommit"));
+                }
+                if (file.SubmoduleStatus[2] == 'M')
+                {
+                    parts.Add(strings.GetString("WorktreeStatusModified"));
+                }
+                if (file.SubmoduleStatus[3] == 'U')
+                {
+                    parts.Add(strings.GetString("WorktreeStatusUntracked"));
+                }
+                status = string.Join(" · ", parts);
+            }
             if (file.IsPartiallyStaged)
             {
                 status = strings.Format("WorktreeStatusPartiallyStaged", status);
