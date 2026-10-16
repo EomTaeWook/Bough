@@ -280,12 +280,15 @@
                   Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}"
                   BorderThickness="0,1,0,0" Padding="12,8">
             <StackPanel Spacing="8">
-              <ScrollViewer IsVisible="{Binding HasSidebarStatusText}" MaxHeight="112"
-                            VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <TextBlock Text="{Binding SidebarStatusText}" TextWrapping="Wrap" FontSize="12"
-                           Foreground="{DynamicResource BoughBrushTextMuted}"
-                           ToolTip.Tip="{Binding SidebarStatusText}" />
-              </ScrollViewer>
+              <StackPanel IsVisible="{Binding HasSidebarStatusText}" Spacing="8">
+                <TextBlock x:Name="SidebarStatusPreview" Text="{Binding SidebarStatusText}" TextWrapping="Wrap"
+                           MaxLines="2" TextTrimming="CharacterEllipsis" FontSize="12"
+                           Foreground="{DynamicResource BoughBrushTextMuted}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button x:Name="SidebarStatusDetailsButton" Click="SidebarStatusDetailsClicked" MinHeight="32" MinWidth="80" Padding="12,4" />
+                  <Button x:Name="SidebarStatusCopyButton" Click="SidebarStatusCopyClicked" MinHeight="32" MinWidth="80" Padding="12,4" />
+                </StackPanel>
+              </StackPanel>
               <ProgressBar x:Name="SidebarProgressBar" IsVisible="{Binding IsMainProgress}" IsIndeterminate="True" Height="3" />
               <Button x:Name="SidebarUpdateReleaseButton" IsVisible="{Binding GitSettings.AppUpdate.IsDownloading}"
                       Click="SidebarUpdateReleaseClicked" Height="32" HorizontalAlignment="Stretch" />

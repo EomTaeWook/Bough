@@ -7060,5 +7060,17 @@
     "Name": "TagPushCandidatesRefreshFailed",
     "Kor": "{0}\n태그 후보를 다시 조회해야 합니다: {1}",
     "Eng": "{0}\nThe tag candidates need to be refreshed: {1}"
+  },
+  {
+    "Id": 3277,
+    "Name": "MainStatusDetailsTitle",
+    "Kor": "작업 상태 자세히",
+    "Eng": "Operation details"
+  },
+  {
+    "Id": 3278,
+    "Name": "MainStatusCopyFailed",
+    "Kor": "상태 메시지를 복사하지 못했습니다. 텍스트를 선택해 복사하세요.",
+    "Eng": "Could not copy the status message. Select the text and copy it."
   }
 ]
