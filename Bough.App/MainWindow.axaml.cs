@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.Platform.Storage;
@@ -51,9 +50,7 @@ namespace Bough.App
         private void RefreshLocalizedLabels()
         {
             SidebarStatusDetailsButton.Content = _stringHelper.GetString("RemoteOperationDetails");
-            SidebarStatusCopyButton.Content = _stringHelper.GetString("HistoryCopy");
             Avalonia.Automation.AutomationProperties.SetName(SidebarStatusDetailsButton, _stringHelper.GetString("RemoteOperationDetails"));
-            Avalonia.Automation.AutomationProperties.SetName(SidebarStatusCopyButton, _stringHelper.GetString("HistoryCopy"));
             Avalonia.Automation.AutomationProperties.SetName(SidebarStatusPreview, _stringHelper.GetString("MainStatusDetailsTitle"));
             SidebarUpdateReleaseButton.Content = _stringHelper.GetString("AppUpdateReleaseAction");
             Avalonia.Automation.AutomationProperties.SetName(SidebarUpdateReleaseButton, _stringHelper.GetString("AppUpdateReleaseAction"));
@@ -184,45 +181,10 @@ namespace Bough.App
         private async void SidebarStatusDetailsClicked(object sender, RoutedEventArgs eventArgs)
         {
             string statusText = SidebarStatusPreview.Text;
-            await ShowSidebarStatusDetailsAsync(statusText, false);
+            await ShowSidebarStatusDetailsAsync(statusText);
         }
 
-        private async void SidebarStatusCopyClicked(object sender, RoutedEventArgs eventArgs)
-        {
-            if (_mainWindowClosed == true)
-            {
-                return;
-            }
-            string statusText = SidebarStatusPreview.Text;
-            if (string.IsNullOrWhiteSpace(statusText) == true)
-            {
-                return;
-            }
-            bool copyFailed = false;
-            try
-            {
-                IClipboard clipboard = Clipboard;
-                if (clipboard == null)
-                {
-                    copyFailed = true;
-                }
-                else
-                {
-                    await clipboard.SetTextAsync(statusText);
-                }
-            }
-            catch (Exception)
-            {
-                copyFailed = true;
-            }
-            if (copyFailed == false)
-            {
-                return;
-            }
-            await ShowSidebarStatusDetailsAsync(statusText, true);
-        }
-
-        private async Task ShowSidebarStatusDetailsAsync(string statusText, bool copyFailed)
+        private async Task ShowSidebarStatusDetailsAsync(string statusText)
         {
             if (_mainWindowClosed == true)
             {
@@ -235,7 +197,7 @@ namespace Bough.App
             _activationSuppressionDepth++;
             try
             {
-                SidebarStatusDetailsWindow dialog = new(statusText, _stringHelper, copyFailed);
+                SidebarStatusDetailsWindow dialog = new(statusText, _stringHelper);
                 await dialog.ShowDialog(this);
             }
             finally
