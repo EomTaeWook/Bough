@@ -49,9 +49,6 @@ namespace Bough.App
 
         private void RefreshLocalizedLabels()
         {
-            SidebarStatusDetailsButton.Content = _stringHelper.GetString("RemoteOperationDetails");
-            Avalonia.Automation.AutomationProperties.SetName(SidebarStatusDetailsButton, _stringHelper.GetString("RemoteOperationDetails"));
-            Avalonia.Automation.AutomationProperties.SetName(SidebarStatusPreview, _stringHelper.GetString("MainStatusDetailsTitle"));
             ToolTip.SetTip(RepositoryActionsButton, _stringHelper.GetString("RepositoryActionsTooltip"));
             Avalonia.Automation.AutomationProperties.SetName(RepositoryActionsButton, _stringHelper.GetString("RepositoryActionsButtonText"));
             OpenRepositoryActionLabel.Text = _stringHelper.GetString("RepositoryAddExistingAction");
@@ -178,38 +175,6 @@ namespace Bough.App
                 eventArgs.Handled = true;
                 await _viewModel.RefreshAsync();
             };
-        }
-
-        private async void SidebarStatusDetailsClicked(object sender, RoutedEventArgs eventArgs)
-        {
-            string statusText = SidebarStatusPreview.Text;
-            await ShowSidebarStatusDetailsAsync(statusText);
-        }
-
-        private async Task ShowSidebarStatusDetailsAsync(string statusText)
-        {
-            if (_mainWindowClosed == true)
-            {
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(statusText) == true)
-            {
-                return;
-            }
-            _activationSuppressionDepth++;
-            try
-            {
-                SidebarStatusDetailsWindow dialog = new(statusText, _stringHelper);
-                await dialog.ShowDialog(this);
-            }
-            finally
-            {
-                _activationSuppressionDepth--;
-                if (_mainWindowClosed == false)
-                {
-                    CompleteInternalDialog();
-                }
-            }
         }
 
         internal async Task PrepareUpdateCloseAsync(CancellationToken cancellationToken)

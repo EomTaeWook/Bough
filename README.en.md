@@ -74,7 +74,7 @@ Bough is designed to show the source of each conflicting change and preview the 
 
 Version 1.0.2 improves sidebar navigation, update buttons, the untracked-file menu, query lifetimes, event cleanup, error preservation, and the logging dependency. [Implementation status](Docs/CurrentStatus.md) separates the latest source from the contents of published packages.
 
-The stable release includes application updates, automatic remote checks, opening submodule repositories, update progress in the lower left, and a GitHub release icon button in Settings. Since v1.0.1, open status-message details to select the full text by dragging or use Ctrl+A/C to copy it.
+The stable release includes application updates, automatic remote checks, opening submodule repositories, update progress in the lower left, and a GitHub release icon button in Settings. The current source keeps only the status summary and progress in the lower left; Fetch/Pull/Push details remain in the corresponding operation dialog. This display change follows the published v1.0.2 release.
 
 In-app updates consider only official stable releases. The complete update download, replacement, and recovery flow and execution of the latest source have not been verified.
 
