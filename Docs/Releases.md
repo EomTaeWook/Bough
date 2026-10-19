@@ -6,6 +6,7 @@
 - 소스 커밋: `d7c56d044f3c9304bceca4434a4df3674dfd8608`
 - 대상: Windows x64 자체 포함 단일 `Bough-v1.0.1-win-x64.exe`
 - 상태: v1.0.1 태그 전송·GitHub 최신 정식 릴리스 게시 완료
+- 릴리스 설명: 한국어·English 병기 반영 완료
 - [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.1)
 - [Windows x64 단일 실행 파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.1/Bough-v1.0.1-win-x64.exe)
 - 생성 위치: `.codex-build/release-v1.0.1/Bough-v1.0.1-win-x64.exe`
