@@ -6,18 +6,18 @@
         Width="560" Height="300" MinWidth="420" MinHeight="240"
         CanResize="True" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
         Background="{DynamicResource BoughBrushCanvas}">
-  <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12" Margin="12">
+  <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8" Margin="12">
     <StackPanel Grid.Row="0" Spacing="8">
-      <TextBlock x:Name="OperationNameText" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+      <TextBlock x:Name="OperationNameText" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
       <TextBlock x:Name="TargetText" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" />
     </StackPanel>
-    <StackPanel Grid.Row="1" Spacing="5">
+    <StackPanel Grid.Row="1" Spacing="8">
       <TextBlock x:Name="OutcomeText" Text="{Binding OperationOutcomeText}" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushAccent}" />
       <TextBlock x:Name="QueueStatusText" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" TextTrimming="CharacterEllipsis" />
-      <StackPanel Spacing="5" IsVisible="{Binding IsBusy}">
+      <StackPanel Spacing="8" IsVisible="{Binding IsBusy}">
         <TextBlock Text="{Binding OperationStageText}" Foreground="{DynamicResource BoughBrushText}" />
         <TextBlock x:Name="TransferStatusBlock" Text="{Binding TransferStatusText}" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" />
-        <ProgressBar IsIndeterminate="True" Height="4" />
+        <ProgressBar IsIndeterminate="True" Height="3" />
         <TextBlock x:Name="ElapsedText" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" />
       </StackPanel>
     </StackPanel>
@@ -27,8 +27,8 @@
                    Foreground="{DynamicResource BoughBrushText}" />
         <Expander x:Name="DetailsExpander" IsExpanded="False" IsVisible="{Binding HasOperationDiagnostic}" HorizontalAlignment="Stretch">
           <TextBox Text="{Binding OperationDetailsText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
-                   FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12"
-                   TextWrapping="Wrap" MaxHeight="140" Background="{DynamicResource BoughBrushCanvas}"
+                   FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14"
+                   TextWrapping="Wrap" MaxHeight="140" Background="{DynamicResource BoughBrushInset}" Padding="12"
                    ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                    Foreground="{DynamicResource BoughBrushText}" />
         </Expander>

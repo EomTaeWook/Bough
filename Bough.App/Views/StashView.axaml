@@ -8,23 +8,24 @@
   <UserControl.Styles>
     <Style Selector="Button">
       <Setter Property="MinHeight" Value="32" />
+      <Setter Property="CornerRadius" Value="6" />
     </Style>
   </UserControl.Styles>
-  <Grid RowDefinitions="64,*">
+  <Grid RowDefinitions="56,*">
     <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="12,0">
-        <TextBlock Text="{Binding HeadingText}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Center" />
+        <TextBlock Text="{Binding HeadingText}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Center" />
         <Button Grid.Column="1" Content="{Binding RefreshText}" Command="{Binding RefreshCommand}" VerticalAlignment="Center" />
       </Grid>
     </Border>
 
     <Grid Grid.Row="1" ColumnDefinitions="300,*,240">
-      <Grid Grid.Column="0" Background="{DynamicResource BoughBrushSidebar}">
+      <Grid Grid.Column="0" Background="{DynamicResource BoughBrushSurface}">
         <ListBox ItemsSource="{Binding Stashes}" SelectedItem="{Binding SelectedStash, Mode=TwoWay}"
                  Background="Transparent" BorderThickness="0">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="git:GitStashEntry">
-              <StackPanel Margin="12,9" Spacing="3">
+              <StackPanel Margin="12,8" Spacing="4">
                 <TextBlock Text="{Binding DisplayText}" Foreground="{DynamicResource BoughBrushText}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold" />
                 <TextBlock Text="{Binding Branch}" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" />
                 <TextBlock Text="{Binding CreatedAtText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" />
@@ -37,11 +38,11 @@
       </Grid>
 
       <Grid Grid.Column="1" RowDefinitions="Auto,120,Auto,*" Background="{DynamicResource BoughBrushInset}">
-        <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="12">
+        <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="12,8">
           <TextBlock Text="{Binding PreviewFilesHeadingText}" Foreground="{DynamicResource BoughBrushTextMuted}" FontWeight="SemiBold" />
         </Border>
         <ListBox Grid.Row="1" ItemsSource="{Binding PreviewFiles}" Background="Transparent" BorderThickness="0" />
-        <Border Grid.Row="2" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,1" Padding="12">
+        <Border Grid.Row="2" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,1" Padding="12,8">
           <TextBlock Text="{Binding PreviewDiffHeadingText}" Foreground="{DynamicResource BoughBrushTextMuted}" FontWeight="SemiBold" />
         </Border>
         <TextBox Grid.Row="3" Text="{Binding PreviewDiff}" IsReadOnly="True" AcceptsReturn="True"
@@ -52,19 +53,19 @@
 
       <Border Grid.Column="2" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1,0,0,0" Padding="12">
         <StackPanel Spacing="8">
-          <Button Content="{Binding ApplyButtonText}" Click="ApplyClicked" IsEnabled="{Binding CanUseSelectedStash}" />
+          <Button Content="{Binding ApplyButtonText}" Click="ApplyClicked" IsEnabled="{Binding CanUseSelectedStash}" Classes="primary" />
           <Button Content="{Binding PopButtonText}" Click="PopClicked" IsEnabled="{Binding CanUseSelectedStash}" />
           <Button Content="{Binding OpenResolveText}" Command="{Binding OpenResolveCommand}" IsVisible="{Binding HasConflicts}" />
           <Border Height="1" Background="{DynamicResource BoughBrushBorder}" Margin="0,8" />
-          <Button Content="{Binding RequestDropText}" Command="{Binding RequestDropCommand}" />
-          <Border IsVisible="{Binding HasDropConfirmation}" BorderBrush="{DynamicResource BoughBrushError}" Background="{DynamicResource BoughBrushErrorSurface}" BorderThickness="1" Padding="12" CornerRadius="7">
+          <Button Content="{Binding RequestDropText}" Command="{Binding RequestDropCommand}" Classes="danger" />
+          <Border IsVisible="{Binding HasDropConfirmation}" BorderBrush="{DynamicResource BoughBrushError}" Background="{DynamicResource BoughBrushErrorSurface}" BorderThickness="1" Padding="12" CornerRadius="8">
             <StackPanel Spacing="8">
               <TextBlock Text="{Binding DropConfirmationText}" Foreground="{DynamicResource BoughBrushError}" TextWrapping="Wrap" />
               <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Width="168" HorizontalAlignment="Right">
                 <Button Command="{Binding CancelDropCommand}" MinWidth="80" HorizontalAlignment="Stretch" AutomationProperties.Name="{Binding CancelDropText}">
                   <TextBlock Text="{Binding CancelDropText}" TextWrapping="Wrap" TextAlignment="Center" />
                 </Button>
-                <Button Grid.Column="1" Click="ConfirmDropClicked" IsEnabled="{Binding CanConfirmDropStash}" MinWidth="80" HorizontalAlignment="Stretch" AutomationProperties.Name="{Binding ConfirmDropText}">
+                <Button Grid.Column="1" Click="ConfirmDropClicked" IsEnabled="{Binding CanConfirmDropStash}" MinWidth="80" HorizontalAlignment="Stretch" AutomationProperties.Name="{Binding ConfirmDropText}" Classes="danger">
                   <TextBlock Text="{Binding ConfirmDropText}" TextWrapping="Wrap" TextAlignment="Center" />
                 </Button>
               </Grid>

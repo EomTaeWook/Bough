@@ -9,24 +9,27 @@
     <Style Selector="Button">
       <Setter Property="MinHeight" Value="32" />
       <Setter Property="MinWidth" Value="80" />
+      <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Button.primary">
       <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
     </Style>
   </Window.Styles>
-  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" Margin="12" RowSpacing="8">
-    <TextBlock Text="{Binding SaveHeadingText}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" Margin="0,0,0,8" />
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" Margin="16" RowSpacing="8">
+    <TextBlock Text="{Binding SaveHeadingText}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" Margin="0,0,0,8" />
     <StackPanel Grid.Row="1" Spacing="8">
       <TextBlock Text="{Binding MessageLabelText}" Foreground="{DynamicResource BoughBrushTextMuted}" />
-      <TextBox x:Name="MessageInput" Text="{Binding StashMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+      <TextBox x:Name="MessageInput" Text="{Binding StashMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" CornerRadius="6" Background="{DynamicResource BoughBrushInput}" />
     </StackPanel>
     <CheckBox Grid.Row="2" Content="{Binding IncludeUntrackedText}" IsChecked="{Binding IncludeUntracked, Mode=TwoWay}" Foreground="{DynamicResource BoughBrushText}" />
     <Grid Grid.Row="3" RowDefinitions="Auto,*" RowSpacing="8">
       <TextBlock Text="{Binding TargetSummaryText}" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
-      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Background="{DynamicResource BoughBrushInset}" Padding="12">
+      <Border Grid.Row="1" Background="{DynamicResource BoughBrushInset}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="8" Padding="12">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
         <ItemsControl ItemsSource="{Binding StashTargets}" />
       </ScrollViewer>
+      </Border>
     </Grid>
     <ScrollViewer x:Name="ResultArea" Grid.Row="4" MaxHeight="112" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">
       <StackPanel Spacing="8">

@@ -4,7 +4,7 @@
         Width="600" MinWidth="480" Height="400" MinHeight="340"
         CanResize="True" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
         Background="{DynamicResource BoughBrushCanvas}">
-  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="16" Margin="12">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="12" Margin="12">
     <TextBlock x:Name="HeadingText" Grid.Row="0" FontSize="18" FontWeight="SemiBold"
                Foreground="{DynamicResource BoughBrushText}" />
     <StackPanel Grid.Row="1" Spacing="8">
@@ -24,8 +24,8 @@
       <StackPanel Spacing="8">
         <TextBlock x:Name="StatusText" Foreground="{DynamicResource BoughBrushText}"
                    TextWrapping="Wrap" />
-        <ProgressBar x:Name="CloneProgress" IsVisible="False" IsIndeterminate="True" Height="4" />
-        <TextBlock x:Name="DestinationOutcomeText" Foreground="{DynamicResource BoughBrushTextMuted}"
+        <ProgressBar x:Name="CloneProgress" IsVisible="False" IsIndeterminate="True" Height="3" />
+        <TextBlock x:Name="DestinationOutcomeText" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}"
                    TextWrapping="Wrap" />
       </StackPanel>
     </ScrollViewer>

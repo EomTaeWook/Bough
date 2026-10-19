@@ -21,15 +21,10 @@
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
     </Style>
   </UserControl.Styles>
-  <Grid RowDefinitions="Auto,Auto,Auto" Margin="12,8" RowSpacing="8">
-    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
-      <TextBlock x:Name="UpstreamLabel" Foreground="{DynamicResource BoughBrushTextSubtle}" />
-      <TextBlock Text="{Binding UpstreamText}" Foreground="{DynamicResource BoughBrushTextMuted}"
-                 MaxWidth="220" TextTrimming="CharacterEllipsis" />
-      <TextBlock Text="{Binding AheadBehindText}" IsVisible="{Binding HasUpstream}" Foreground="{DynamicResource BoughBrushTextMuted}" />
-    </StackPanel>
-    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
-      <Border BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
+  <Grid RowDefinitions="Auto,Auto" Margin="16,8" RowSpacing="8">
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="16">
+    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+      <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="6" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
         <Grid ColumnDefinitions="Auto,1,Auto">
           <Button x:Name="FetchButton" Grid.Column="0" Classes="remoteActionSegment" Click="FetchClicked"
                   IsEnabled="{Binding CanFetch}" Padding="12,4">
@@ -39,14 +34,14 @@
                          Foreground="{ReflectionBinding $parent[Button].Foreground}" />
             </StackPanel>
           </Button>
-          <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorderStrong}" />
+          <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorder}" />
           <Button x:Name="FetchMenuButton" Grid.Column="2" Classes="remoteActionSegment" Click="FetchMenuClicked"
                   IsEnabled="{Binding CanFetchAll}" Padding="8,4">
             <PathIcon Data="{StaticResource BoughIconChevronDown}" Classes="boughIcon boughChevronIcon" />
           </Button>
         </Grid>
       </Border>
-      <Border BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
+      <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="6" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
         <Grid ColumnDefinitions="Auto,1,Auto">
           <Button x:Name="PullButton" Grid.Column="0" Classes="remoteActionSegment" Click="PullClicked"
                   IsEnabled="{Binding CanPull}" Padding="12,4">
@@ -56,14 +51,14 @@
                          Foreground="{ReflectionBinding $parent[Button].Foreground}" />
             </StackPanel>
           </Button>
-          <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorderStrong}" />
+          <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorder}" />
           <Button x:Name="PullMenuButton" Grid.Column="2" Classes="remoteActionSegment" Click="PullMenuClicked"
                   IsEnabled="{Binding CanPull}" Padding="8,4">
             <PathIcon Data="{StaticResource BoughIconChevronDown}" Classes="boughIcon boughChevronIcon" />
           </Button>
         </Grid>
       </Border>
-      <Border BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
+      <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="6" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
         <Grid ColumnDefinitions="Auto,1,Auto">
           <Button x:Name="PushButton" Grid.Column="0" Classes="remoteActionSegment" Click="PushClicked"
                   IsEnabled="{Binding CanPush}" Padding="12,4">
@@ -73,7 +68,7 @@
                          Foreground="{ReflectionBinding $parent[Button].Foreground}" />
             </StackPanel>
           </Button>
-          <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorderStrong}" />
+          <Border Grid.Column="1" Background="{DynamicResource BoughBrushBorder}" />
           <Button x:Name="PushMenuButton" Grid.Column="2" Classes="remoteActionSegment" Click="PushMenuClicked"
                   IsEnabled="{Binding CanPushTo}" Padding="8,4">
             <PathIcon Data="{StaticResource BoughIconChevronDown}" Classes="boughIcon boughChevronIcon" />
@@ -81,7 +76,14 @@
         </Grid>
       </Border>
     </StackPanel>
-    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="8">
+      <TextBlock x:Name="UpstreamLabel" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+      <TextBlock Text="{Binding UpstreamText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}"
+                 MaxWidth="220" TextTrimming="CharacterEllipsis" />
+      <TextBlock Text="{Binding AheadBehindText}" FontSize="12" IsVisible="{Binding HasUpstream}" Foreground="{DynamicResource BoughBrushTextMuted}" />
+    </StackPanel>
+    </Grid>
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="12">
       <StackPanel Spacing="8">
         <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12"
                    TextTrimming="CharacterEllipsis" />

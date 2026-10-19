@@ -7,12 +7,13 @@
     <Style Selector="Button">
       <Setter Property="MinHeight" Value="32" />
       <Setter Property="MinWidth" Value="80" />
+      <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Button.danger">
       <Setter Property="Background" Value="{DynamicResource BoughBrushErrorSurface}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushError}" />
     </Style>
-    <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+    <Style Selector="Button.danger:pointerover:not(:disabled) /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource BoughBrushErrorSurface}" />
     </Style>
     <Style Selector="Button.danger:disabled">
@@ -23,13 +24,13 @@
       <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
     </Style>
   </Window.Styles>
-  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="12" RowSpacing="16">
-    <TextBlock x:Name="Heading" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" TextWrapping="Wrap" />
+  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="16" RowSpacing="16">
+    <TextBlock x:Name="Heading" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" TextWrapping="Wrap" />
     <TextBlock x:Name="PathLabel" Grid.Row="1" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" />
-    <ListBox x:Name="FilesList" Grid.Row="2" Background="{DynamicResource BoughBrushInset}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1">
+    <ListBox x:Name="FilesList" Grid.Row="2" Background="{DynamicResource BoughBrushInset}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="8">
       <ListBox.ItemTemplate>
         <DataTemplate>
-          <TextBlock Text="{Binding}" Foreground="{DynamicResource BoughBrushText}" Margin="8,5" ToolTip.Tip="{Binding}" />
+          <TextBlock Text="{Binding}" Foreground="{DynamicResource BoughBrushText}" Margin="12,6" ToolTip.Tip="{Binding}" />
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>

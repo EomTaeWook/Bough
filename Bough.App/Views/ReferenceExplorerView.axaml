@@ -13,10 +13,17 @@
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
       <Setter Property="Padding" Value="5,2" />
-      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Button.referenceBranchAdd:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+    </Style>
+    <Style Selector="Button.referenceBranchAdd:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+    </Style>
+    <Style Selector="Button.referenceBranchAdd:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
     </Style>
     <Style Selector="Button.referenceBranchAdd:focus">
       <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" />
@@ -49,8 +56,29 @@
           <Setter Property="HorizontalAlignment" Value="Stretch" />
           <Setter Property="MinHeight" Value="32" />
         </Style>
+        <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot, TreeViewItem /template/ Border#PART_LayoutRoot:pointerover, TreeViewItem:selected /template/ Border#PART_LayoutRoot, TreeViewItem:pressed /template/ Border#PART_LayoutRoot:pointerover, TreeViewItem:selected /template/ Border#PART_LayoutRoot:pointerover, TreeViewItem:pressed:selected /template/ Border#PART_LayoutRoot:pointerover">
+          <Setter Property="Background" Value="Transparent" />
+          <Setter Property="BorderBrush" Value="Transparent" />
+          <Setter Property="BorderThickness" Value="0" />
+        </Style>
         <Style Selector="Border.referenceNodeRow">
           <Setter Property="Margin" Value="0,0,16,0" />
+          <Setter Property="CornerRadius" Value="6" />
+          <Setter Property="Background" Value="Transparent" />
+          <Setter Property="BorderBrush" Value="Transparent" />
+          <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Border.referenceNodeRow:pointerover:not(.referenceEmpty)">
+          <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+        </Style>
+        <Style Selector="TreeViewItem:selected /template/ ContentPresenter#PART_HeaderPresenter Border.referenceNodeRow:not(.referenceEmpty)">
+          <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+        </Style>
+        <Style Selector="TreeViewItem:focus-visible /template/ ContentPresenter#PART_HeaderPresenter Border.referenceNodeRow:not(.referenceEmpty)">
+          <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" />
+        </Style>
+        <Style Selector="Border.referenceNodeRow.referenceEmpty">
+          <Setter Property="BorderThickness" Value="0" />
         </Style>
         <Style Selector="Border.referenceSectionRow">
           <Setter Property="Margin" Value="0,8,16,0" />
@@ -65,13 +93,13 @@
         </Style>
         <Style Selector="TextBlock.referenceEmpty">
           <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextSubtle}" />
-          <Setter Property="FontStyle" Value="Italic" />
+          <Setter Property="FontSize" Value="12" />
         </Style>
       </TreeView.Styles>
       <TreeView.ItemTemplate>
         <TreeDataTemplate x:DataType="models:ReferenceTreeNode" ItemsSource="{Binding Children}">
-          <Border Classes="referenceNodeRow" Classes.referenceSectionRow="{Binding IsSection}"
-                  Padding="2,4,20,4" MinHeight="32" HorizontalAlignment="Stretch" Background="Transparent"
+          <Border Classes="referenceNodeRow" Classes.referenceSectionRow="{Binding IsSection}" Classes.referenceEmpty="{Binding IsEmpty}"
+                  Padding="2,4,20,4" MinHeight="32" HorizontalAlignment="Stretch"
                   Tapped="TreeNodeTapped" DoubleTapped="TreeNodeDoubleTapped"
                   ToolTip.Tip="{Binding ToolTipText}"
                   AutomationProperties.Name="{Binding AccessibleLabel}">

@@ -8,6 +8,7 @@
     <Style Selector="Button">
       <Setter Property="MinHeight" Value="32" />
       <Setter Property="MinWidth" Value="80" />
+      <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Button.primary">
       <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
@@ -17,15 +18,15 @@
       <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
     </Style>
   </Window.Styles>
-  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12" RowSpacing="16">
-    <TextBlock x:Name="Heading" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" TextWrapping="Wrap" />
+  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16" RowSpacing="16">
+    <TextBlock x:Name="Heading" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" TextWrapping="Wrap" />
     <TextBlock x:Name="Description" Grid.Row="1" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
-    <ListBox x:Name="FilesList" Grid.Row="2" Background="{DynamicResource BoughBrushInset}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1">
+    <ListBox x:Name="FilesList" Grid.Row="2" Background="{DynamicResource BoughBrushInset}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="8">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="git:GitIgnoreEntry">
-          <StackPanel Margin="10,6" Spacing="3">
+          <StackPanel Margin="12,6" Spacing="4">
             <TextBlock Text="{Binding Path}" Foreground="{DynamicResource BoughBrushText}" TextWrapping="Wrap" ToolTip.Tip="{Binding Path}" />
-            <TextBlock Text="{Binding Rule}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontFamily="Cascadia Mono, Menlo, monospace" TextWrapping="Wrap" ToolTip.Tip="{Binding Rule}" />
+            <TextBlock Text="{Binding Rule}" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" FontFamily="Cascadia Mono, Menlo, monospace" TextWrapping="Wrap" ToolTip.Tip="{Binding Rule}" />
           </StackPanel>
         </DataTemplate>
       </ListBox.ItemTemplate>

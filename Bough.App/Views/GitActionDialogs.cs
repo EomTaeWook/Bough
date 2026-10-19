@@ -95,7 +95,7 @@ namespace Bough.App.Views
             remoteSelection.Children.Add(reload);
             TextBlock confirmation = new() { TextWrapping = TextWrapping.Wrap };
             TextBlock progress = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
-            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, LineHeight = 20, IsVisible = false };
             Button cancel = new() { Content = TagText("ReferenceCancel", stringHelper), IsCancel = true };
             Button push = new() { Content = TagText("TagPushAction", stringHelper), IsDefault = true };
             LocalizedText failure = null;
@@ -452,7 +452,7 @@ namespace Bough.App.Views
             remoteContent.Children.Add(remoteTarget);
             remoteContent.Children.Add(remoteConfirmation);
             TextBlock progress = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
-            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, LineHeight = 20, IsVisible = false };
             Button cancel = new() { Content = TagText("ReferenceCancel", stringHelper), IsCancel = true };
             Button delete = new() { Content = TagText("TagDeleteAction", stringHelper), IsDefault = true };
             delete.Classes.Add("primary");
@@ -610,7 +610,7 @@ namespace Bough.App.Views
             TextBlock label = new() { Text = nameLabel };
             TextBox name = new() { Text = oldName, PlaceholderText = nameLabel };
             Avalonia.Automation.AutomationProperties.SetName(name, nameLabel);
-            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, LineHeight = 20, IsVisible = false };
             TextBlock progress = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
             Button cancel = new() { Content = TagText("ReferenceCancel", stringHelper), IsCancel = true, MinWidth = 80 };
             Button rename = new() { Content = TagText("ReferenceRenameAction", stringHelper), IsDefault = true, MinWidth = 100 };
@@ -745,7 +745,7 @@ namespace Bough.App.Views
             TextBlock nameLabel = new() { Text = namePlaceholder };
             TextBox name = new() { Text = suggestedName, PlaceholderText = namePlaceholder };
             TextBlock warningText = new() { Text = warning ?? string.Empty, TextWrapping = TextWrapping.Wrap, IsVisible = string.IsNullOrEmpty(warning) == false };
-            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, LineHeight = 20, IsVisible = false };
             TextBlock progress = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
             dialog.Opened += delegate
             {
@@ -888,7 +888,7 @@ namespace Bough.App.Views
             TextBlock targetText = new() { Text = $"{TagText("ReferenceTagTarget", stringHelper)}: {target}", TextWrapping = TextWrapping.Wrap };
             TextBlock nameLabel = new() { Text = TagText("ReferenceTagName", stringHelper) };
             TextBox name = new() { PlaceholderText = TagText("ReferenceTagName", stringHelper) };
-            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            TextBlock error = new() { TextWrapping = TextWrapping.Wrap, LineHeight = 20, IsVisible = false };
             Button cancel = new() { Content = TagText("ReferenceCancel", stringHelper), IsCancel = true, MinWidth = 80 };
             Button create = new() { Content = TagText("ReferenceTagAction", stringHelper), IsDefault = true, IsEnabled = false, MinWidth = 120 };
             create.Classes.Add("primary");
@@ -1080,6 +1080,7 @@ namespace Bough.App.Views
                 Width = 480,
                 MinHeight = 170,
                 MaxHeight = 640,
+                FontSize = 14,
                 SizeToContent = SizeToContent.Height,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 CanResize = false
@@ -1146,6 +1147,14 @@ namespace Bough.App.Views
 
         private static StackPanel CreateButtons(Button cancel, Button confirm)
         {
+            cancel.CornerRadius = new CornerRadius(6);
+            confirm.CornerRadius = new CornerRadius(6);
+            cancel.Padding = new Thickness(12, 4);
+            confirm.Padding = new Thickness(12, 4);
+            cancel.BorderThickness = new Thickness(1);
+            confirm.BorderThickness = new Thickness(1);
+            cancel.FontWeight = FontWeight.Normal;
+            confirm.FontWeight = FontWeight.SemiBold;
             cancel.MinWidth = Math.Max(80, cancel.MinWidth);
             confirm.MinWidth = Math.Max(80, confirm.MinWidth);
             cancel.Height = Math.Max(32, cancel.MinHeight);

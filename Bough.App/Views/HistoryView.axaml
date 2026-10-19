@@ -15,16 +15,18 @@
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
     </Style>
     <Style Selector="Button">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
       <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Button:disabled">
       <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
     </Style>
     <Style Selector="Button /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
     </Style>
     <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -35,33 +37,60 @@
       <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
     </Style>
+    <Style Selector="Button:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+    </Style>
+    <Style Selector="Button:focus-visible">
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushInput}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="TextBox:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" />
+    </Style>
     <Style Selector="TabItem">
       <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextMuted}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="12,8" />
     </Style>
-    <Style Selector="TabItem:pointerover">
+    <Style Selector="TabItem:pointerover /template/ Border#PART_LayoutRoot, TabItem:pressed /template/ Border#PART_LayoutRoot">
       <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
-      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource BoughBrushSelectionText}" />
     </Style>
     <Style Selector="TabItem:selected">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
-      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
     </Style>
-    <Style Selector="TabItem:disabled">
-      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
+    <Style Selector="TabItem:selected /template/ Border#PART_LayoutRoot, TabItem:selected:pointerover /template/ Border#PART_LayoutRoot, TabItem:selected:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource BoughBrushAccentText}" />
     </Style>
-    <Style Selector="TabItem /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
+    <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="TabItem /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextMuted}" />
     </Style>
-    <Style Selector="TabItem:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
-      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter, TabItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushSelectionText}" />
     </Style>
-    <Style Selector="TabItem:selected /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
-      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+    <Style Selector="TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+    </Style>
+    <Style Selector="TabItem:disabled /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
+    </Style>
+    <Style Selector="TabItem:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
     </Style>
     <Style Selector="Border.referenceBadge">
       <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
@@ -137,8 +166,11 @@
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
     </Style>
     <Style Selector="Expander.commitFile /template/ ToggleButton">
-      <Setter Property="Padding" Value="8,0,4,0" />
-      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+      <Setter Property="Padding" Value="8,0" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushInset}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
     </Style>
     <Style Selector="TabControl">
@@ -163,13 +195,25 @@
     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
     </Style>
+    <Style Selector="ListBoxItem:focus-visible">
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" />
+    </Style>
+    <Style Selector="GridSplitter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushCanvas}" />
+    </Style>
+    <Style Selector="GridSplitter:pointerover">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+    </Style>
+    <Style Selector="GridSplitter:focus-visible">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushFocus}" />
+    </Style>
   </UserControl.Styles>
 
   <Grid RowDefinitions="Auto,*">
     <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
-      <Grid ColumnDefinitions="*,Auto" RowDefinitions="32,34,Auto" Margin="22,0" ColumnSpacing="14">
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Labels.Heading}" FontSize="18" FontWeight="SemiBold"
-                   Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Bottom" />
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="32,32,Auto" Margin="16,0" ColumnSpacing="16">
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Labels.Heading}" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Center" />
         <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
           <RadioButton Content="{Binding Labels.ScopeAll}" GroupName="HistoryScope" IsChecked="{Binding IsAllScope, Mode=OneWay}"
                        Click="AllScopeClicked" ToolTip.Tip="{Binding Labels.ScopeAllTooltip}"
@@ -178,7 +222,7 @@
                        Click="CurrentBranchScopeClicked" ToolTip.Tip="{Binding Labels.ScopeCurrentTooltip}"
                        AutomationProperties.Name="{Binding Labels.ScopeCurrentAccessible}" />
         </StackPanel>
-        <Border Grid.Column="1" Grid.RowSpan="2" Background="{DynamicResource BoughBrushRaised}" CornerRadius="12" Padding="10,5" VerticalAlignment="Center">
+        <Border Grid.Column="1" Grid.RowSpan="2" Background="{DynamicResource BoughBrushInset}" CornerRadius="6" Padding="8,4" VerticalAlignment="Center">
           <TextBlock Text="{Binding CountText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
         </Border>
         <ScrollViewer Grid.Row="2" Grid.ColumnSpan="2" IsVisible="{Binding HasNavigationMessage}" MaxHeight="96"
@@ -194,9 +238,9 @@
         <RowDefinition Height="8" />
         <RowDefinition Height="*" MinHeight="310" />
       </Grid.RowDefinitions>
-      <Grid Grid.Row="0" RowDefinitions="*,Auto" Background="{DynamicResource BoughBrushInset}">
+      <Grid Grid.Row="0" RowDefinitions="*,Auto" Background="{DynamicResource BoughBrushSurface}">
         <ListBox x:Name="HistoryCommitList" Grid.Row="0" ItemsSource="{Binding Commits}" SelectedItem="{Binding SelectedCommit, Mode=TwoWay}"
-                 Background="{DynamicResource BoughBrushInset}" Foreground="{DynamicResource BoughBrushText}" BorderThickness="0"
+                 Background="{DynamicResource BoughBrushSurface}" Foreground="{DynamicResource BoughBrushText}" BorderThickness="0"
                  ScrollViewer.VerticalScrollBarVisibility="Auto">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="models:HistoryCommitItem">
@@ -245,14 +289,14 @@
                               ToolTip.Tip="{Binding DataContext.Labels.MoreReferencesTooltip, ElementName=HistoryRoot, x:CompileBindings=False}">
                         <Button.Flyout>
                           <Flyout Placement="Bottom">
-                            <Border Background="{DynamicResource BoughBrushRaised}" Padding="12" CornerRadius="6" MinWidth="180">
+                            <Border Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" Padding="12" CornerRadius="8" MinWidth="180">
                               <StackPanel Spacing="8">
                                 <TextBlock Text="{Binding DataContext.Labels.AllReferencesHeading, ElementName=HistoryRoot, x:CompileBindings=False}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" FontWeight="Bold" />
                                 <ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
                                   <ItemsControl ItemsSource="{Binding References}">
                                     <ItemsControl.ItemTemplate>
                                       <DataTemplate x:DataType="models:HistoryReferenceItem">
-                                        <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,0,5"
+                                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8"
                                                     ToolTip.Tip="{Binding ToolTipText}">
                                           <Border Classes="referenceBadge" Classes.refCurrent="{Binding IsCurrent}" Classes.refLocal="{Binding IsLocal}"
                                                   Classes.refRemote="{Binding IsRemote}" Classes.refTag="{Binding IsTag}"
@@ -286,12 +330,12 @@
         </ListBox>
 
         <TextBlock Grid.Row="0" Text="{Binding Labels.Empty}" IsVisible="{Binding IsEmpty}"
-                   Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                   Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
         <TextBlock Grid.Row="0" Text="{Binding ErrorText}" IsVisible="{Binding HasLoadError}"
                    Foreground="{DynamicResource BoughBrushError}" FontSize="12" TextWrapping="Wrap" TextAlignment="Center"
                    HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24" />
 
-        <Border Grid.Row="1" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" Padding="12,5"
+        <Border Grid.Row="1" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" Padding="12,8"
                 IsVisible="{Binding ShowPageStatus}">
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
             <TextBlock Text="{Binding Labels.LoadingCommits}" IsVisible="{Binding IsLoadingMore}"
@@ -300,13 +344,13 @@
                        Foreground="{DynamicResource BoughBrushError}" FontSize="12" VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis" MaxWidth="500" ToolTip.Tip="{Binding PageErrorText}" />
             <Button Content="{Binding Labels.Retry}" Command="{Binding RetryLoadMoreCommand}"
-                    IsVisible="{Binding HasPageError}" Padding="7,2" FontSize="12" />
+                    IsVisible="{Binding HasPageError}" Padding="12,4" MinHeight="32" FontSize="12" />
           </StackPanel>
         </Border>
       </Grid>
 
       <GridSplitter Grid.Row="1" Height="8" HorizontalAlignment="Stretch"
-                    Background="{DynamicResource BoughBrushBorder}" Cursor="SizeNorthSouth"
+                    Cursor="SizeNorthSouth"
                     ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" KeyboardIncrement="16"
                     PointerPressed="CommitSplitterPointerPressed" KeyDown="CommitSplitterKeyDown"
                     Focusable="True" ToolTip.Tip="{Binding Labels.ResizeHistory}"
@@ -321,7 +365,7 @@
                       HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
             <TabItem Header="{Binding Labels.TabCommit}">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="16" Spacing="13">
+                <StackPanel Margin="16" Spacing="12">
                   <Grid ColumnDefinitions="*">
                     <StackPanel Spacing="5">
                       <SelectableTextBlock Text="{Binding SelectedMessage}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
@@ -333,15 +377,15 @@
                   <Grid ColumnDefinitions="*,Auto">
                     <SelectableTextBlock Text="{Binding Inspection.Hash}" FontFamily="Cascadia Mono, Menlo, monospace"
                                          FontSize="14" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Inspection.Hash}" />
-                    <Button Grid.Column="1" Content="{Binding Labels.CopySha}" Click="CopyHashClicked" Padding="7,3" FontSize="12" />
+                    <Button Grid.Column="1" Content="{Binding Labels.CopySha}" Click="CopyHashClicked" Padding="12,4" MinHeight="32" FontSize="12" />
                   </Grid>
                   <ItemsControl ItemsSource="{Binding Inspection.Parents}" IsVisible="{Binding HasParents}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="x:String">
-                        <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,0,3">
-                          <Button Content="{Binding}" Click="ParentClicked" Padding="5,2" FontSize="14"
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,4">
+                          <Button Content="{Binding}" Click="ParentClicked" Padding="8,4" MinHeight="32" FontSize="14"
                                   FontFamily="Cascadia Mono, Menlo, monospace" ToolTip.Tip="{Binding DataContext.Labels.ParentTooltip, ElementName=HistoryRoot, x:CompileBindings=False}" />
-                          <Button Content="{Binding DataContext.Labels.Copy, ElementName=HistoryRoot, x:CompileBindings=False}" Click="CopyParentClicked" Padding="5,2" FontSize="12" />
+                          <Button Content="{Binding DataContext.Labels.Copy, ElementName=HistoryRoot, x:CompileBindings=False}" Click="CopyParentClicked" Padding="12,4" MinHeight="32" FontSize="12" />
                         </StackPanel>
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -350,8 +394,8 @@
                             IsVisible="{Binding HasMultipleParents}" />
                   <TextBlock Text="{Binding ComparisonText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
                   <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="{Binding Labels.ExpandAll}" Click="ExpandAllClicked" Padding="7,4" FontSize="12" />
-                    <Button Content="{Binding Labels.CollapseAll}" Click="CollapseAllClicked" Padding="7,4" FontSize="12" />
+                    <Button Content="{Binding Labels.ExpandAll}" Click="ExpandAllClicked" Padding="12,4" MinHeight="32" FontSize="12" />
+                    <Button Content="{Binding Labels.CollapseAll}" Click="CollapseAllClicked" Padding="12,4" MinHeight="32" FontSize="12" />
                   </StackPanel>
                   <TextBlock Text="{Binding Labels.NoChanges}" IsVisible="{Binding HasNoChangedFiles}"
                              Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" />
@@ -430,7 +474,7 @@
                   <RowDefinition Height="6" />
                   <RowDefinition Height="2*" MinHeight="90" />
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Row="0" Spacing="3" Margin="0,0,0,9">
+                <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,8">
                   <TextBlock Text="{Binding MessageFirstLine}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                   <TextBlock Text="{Binding ChangesSummary}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
                   <TextBlock Text="{Binding Labels.LoadingChanges}" IsVisible="{Binding IsLoadingDetails}"
@@ -444,10 +488,11 @@
                   </ScrollViewer>
                 </StackPanel>
                 <TextBox Grid.Row="1" PlaceholderText="{Binding Labels.SearchChangedPaths}" Text="{Binding FileSearch, Mode=TwoWay}"
-                         Margin="0,0,0,8" />
+                         Margin="0,0,0,8" MinHeight="32" Padding="12,4" />
                 <ListBox x:Name="HistoryChangedFiles" Grid.Row="2" ItemsSource="{Binding VisibleChangedFiles}"
                          SelectedItem="{Binding SelectedChangedFile, Mode=TwoWay}"
                          Background="{DynamicResource BoughBrushSurface}" Foreground="{DynamicResource BoughBrushText}"
+                         BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="8"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                   <ListBox.ItemTemplate>
@@ -474,7 +519,7 @@
                     </DataTemplate>
                   </ListBox.ItemTemplate>
                 </ListBox>
-                <GridSplitter Grid.Row="3" Height="6" Background="{DynamicResource BoughBrushBorder}" Cursor="SizeNorthSouth"
+                <GridSplitter Grid.Row="3" Height="6" Cursor="SizeNorthSouth"
                               ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" KeyboardIncrement="12"
                               Focusable="True" ToolTip.Tip="{Binding Labels.ResizeChanges}"
                               AutomationProperties.Name="{Binding Labels.ResizeChanges}" />
@@ -547,7 +592,7 @@
                     </TreeDataTemplate>
                   </TreeView.ItemTemplate>
                 </TreeView>
-                <GridSplitter Grid.Row="2" Height="6" Background="{DynamicResource BoughBrushBorder}" Cursor="SizeNorthSouth"
+                <GridSplitter Grid.Row="2" Height="6" Cursor="SizeNorthSouth"
                               ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" KeyboardIncrement="12"
                               Focusable="True" ToolTip.Tip="{Binding Labels.ResizeTree}"
                               AutomationProperties.Name="{Binding Labels.ResizeTree}" />

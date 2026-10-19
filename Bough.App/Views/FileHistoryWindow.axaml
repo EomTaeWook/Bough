@@ -5,8 +5,16 @@
         Background="{DynamicResource BoughBrushCanvas}" Foreground="{DynamicResource BoughBrushText}" FontSize="14">
   <Window.Styles>
     <Style Selector="TextBlock"><Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" /></Style>
+    <Style Selector="Button"><Setter Property="CornerRadius" Value="6" /><Setter Property="Padding" Value="12,4" /></Style>
+    <Style Selector="ListBoxItem"><Setter Property="Padding" Value="0" /><Setter Property="Margin" Value="4,0" /><Setter Property="CornerRadius" Value="6" /><Setter Property="HorizontalContentAlignment" Value="Stretch" /></Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" /></Style>
     <Style Selector="ListBoxItem:selected"><Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" /></Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter"><Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" /></Style>
     <Style Selector="ListBoxItem:selected TextBlock"><Setter Property="Foreground" Value="{DynamicResource BoughBrushSelectionText}" /></Style>
+    <Style Selector="ListBoxItem:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" /></Style>
+    <Style Selector="GridSplitter"><Setter Property="Background" Value="{DynamicResource BoughBrushCanvas}" /></Style>
+    <Style Selector="GridSplitter:pointerover"><Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" /></Style>
+    <Style Selector="GridSplitter:focus-visible"><Setter Property="Background" Value="{DynamicResource BoughBrushFocus}" /></Style>
     <Style Selector="Border.diffLine"><Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" /></Style>
     <Style Selector="Border.diffLine.diffAdded"><Setter Property="Background" Value="{DynamicResource BoughBrushDiffAddedSurface}" /></Style>
     <Style Selector="Border.diffLine.diffRemoved"><Setter Property="Background" Value="{DynamicResource BoughBrushDiffRemovedSurface}" /></Style>
@@ -39,7 +47,7 @@
         <ColumnDefinition Width="6" />
         <ColumnDefinition Width="*" MinWidth="320" />
       </Grid.ColumnDefinitions>
-      <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" Background="{DynamicResource BoughBrushSurface}">
+      <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="8" Background="{DynamicResource BoughBrushSurface}">
         <Grid RowDefinitions="Auto,Auto,*">
           <TextBlock x:Name="CountText" Margin="12" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
           <TextBlock x:Name="ListMessage" Grid.Row="1" Margin="12,0,12,8" TextWrapping="Wrap" FontSize="12" />
@@ -48,7 +56,7 @@
                    ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="models:FileHistoryEntryItem">
-                <StackPanel Spacing="4" Margin="8,6" ToolTip.Tip="{Binding PathDescription}">
+                <StackPanel Spacing="4" Margin="8,4" ToolTip.Tip="{Binding PathDescription}">
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                     <TextBlock Text="{Binding Author}" TextTrimming="CharacterEllipsis" FontSize="12" ToolTip.Tip="{Binding Author}" />
                     <TextBlock Grid.Column="1" Text="{Binding ShortHash}" FontFamily="Cascadia Mono, Menlo, monospace" FontSize="12" ToolTip.Tip="{Binding Entry.CommitHash}" />
@@ -66,11 +74,11 @@
           </ListBox>
         </Grid>
       </Border>
-      <GridSplitter x:Name="PanelSplitter" Grid.Column="1" Width="6" Background="{DynamicResource BoughBrushBorder}"
+      <GridSplitter x:Name="PanelSplitter" Grid.Column="1" Width="6"
                     ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Focusable="True" KeyboardIncrement="12" />
-      <Border Grid.Column="2" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" Background="{DynamicResource BoughBrushSurface}">
+      <Border Grid.Column="2" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="8" Background="{DynamicResource BoughBrushSurface}">
         <Grid RowDefinitions="Auto,Auto,Auto,*">
-          <Border Padding="12" Background="{DynamicResource BoughBrushRaised}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
+          <Border Padding="12,8" CornerRadius="8,8,0,0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1">
             <TextBlock x:Name="SelectedPathText" TextTrimming="CharacterEllipsis" />
           </Border>
           <StackPanel Grid.Row="1" Spacing="8" Margin="12">

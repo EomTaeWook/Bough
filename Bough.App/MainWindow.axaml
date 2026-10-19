@@ -17,13 +17,13 @@
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
     </Style>
     <Style Selector="Button">
-      <Setter Property="Padding" Value="14,8" />
-      <Setter Property="CornerRadius" Value="7" />
+      <Setter Property="Padding" Value="12,4" />
+      <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
       <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
     </Style>
-    <Style Selector="Button:pointerover /template/ ContentPresenter">
+    <Style Selector="Button:pointerover:not(.primary):not(:disabled):not(:pressed) /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
     </Style>
     <Style Selector="Button.primary">
@@ -56,13 +56,33 @@
       <Setter Property="Height" Value="32" />
       <Setter Property="Padding" Value="12,4" />
     </Style>
+    <Style Selector="Button#RepositoryPickerButton">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushInput}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="Button#RepositoryPickerButton:pointerover:not(:disabled):not(:pressed) /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorderStrong}" />
+    </Style>
+    <Style Selector="Button#RepositoryPickerButton:pressed:not(:disabled) /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" />
+    </Style>
+    <Style Selector="Button#RepositoryPickerButton:focus-visible:not(:disabled) /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" />
+    </Style>
     <Style Selector="TextBox.code">
       <Setter Property="FontFamily" Value="Cascadia Mono, Menlo, monospace" />
       <Setter Property="FontSize" Value="14" />
       <Setter Property="Background" Value="{DynamicResource BoughBrushInset}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
       <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Padding" Value="14" />
+      <Setter Property="Padding" Value="12" />
     </Style>
     <Style Selector="ListBoxItem">
       <Setter Property="Padding" Value="0" />
@@ -76,14 +96,14 @@
 
   <Grid RowDefinitions="Auto,*">
     <Border Grid.Row="0" Background="{DynamicResource BoughBrushHeader}" BorderBrush="{DynamicResource BoughBrushBorderStrong}" BorderThickness="0,0,0,1">
-      <Grid RowDefinitions="72,Auto">
-      <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="20,0">
+      <Grid RowDefinitions="60,Auto">
+      <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="16,0">
         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-          <Image Width="34" Height="34" Source="/Assets/AppIcon.png" />
+          <Image Width="32" Height="32" Source="/Assets/AppIcon.png" />
           <TextBlock Text="Bough" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
         </StackPanel>
 
-        <Grid Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalAlignment="Center" Margin="18,0">
+        <Grid Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalAlignment="Center" Margin="16,0">
           <Button x:Name="RepositoryPickerButton" Grid.Column="0" Classes="navigation"
                   Height="48" MinWidth="140" Padding="12,4" HorizontalAlignment="Stretch"
                   HorizontalContentAlignment="Stretch" Focusable="True"
@@ -92,7 +112,7 @@
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
               <PathIcon Grid.Column="0" Data="{StaticResource BoughIconFolder}" Classes="boughIcon" />
               <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                <TextBlock Text="{Binding RepositoryName}" FontSize="16" FontWeight="SemiBold"
+                <TextBlock Text="{Binding RepositoryName}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}"
                            TextTrimming="CharacterEllipsis" />
                 <TextBlock Text="{Binding RepositoryMeta}" IsVisible="{Binding HasRepository}"
                            Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12"
@@ -111,7 +131,7 @@
                       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                       <Setter Property="Background" Value="Transparent" />
                       <Setter Property="BorderThickness" Value="0" />
-                      <Setter Property="CornerRadius" Value="5" />
+                      <Setter Property="CornerRadius" Value="6" />
                       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
                       <Setter Property="Padding" Value="12,6" />
                     </Style>
@@ -124,7 +144,7 @@
                     </Style>
                     <Style Selector="Border.repositoryRow">
                       <Setter Property="Background" Value="Transparent" />
-                      <Setter Property="CornerRadius" Value="5" />
+                      <Setter Property="CornerRadius" Value="6" />
                     </Style>
                     <Style Selector="Border.repositoryRow.active">
                       <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
@@ -345,7 +365,7 @@
                        Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Center" />
             <TextBlock Grid.Column="1" Text="{Binding RevertStatusText}" TextWrapping="Wrap"
                        Foreground="{DynamicResource BoughBrushTextMuted}" VerticalAlignment="Center" />
-            <Button Grid.Column="2" Content="{Binding AbortRevertText}" IsEnabled="{Binding CanAbortRevert}"
+            <Button Grid.Column="2" Content="{Binding AbortRevertText}" IsEnabled="{Binding CanAbortRevert}" Foreground="{DynamicResource BoughBrushError}" BorderBrush="{DynamicResource BoughBrushError}"
                     Click="AbortRevertClicked" AutomationProperties.Name="{Binding AbortRevertText}"
                     VerticalAlignment="Center" Height="32" MinWidth="80" Padding="12,4" />
             <Button Grid.Column="3" Classes="primary" Content="{Binding ContinueRevertText}"
@@ -373,7 +393,7 @@
         </Border>
         <Border Grid.Row="2" IsVisible="{Binding IsRepositoryStartView}"
                 Background="{DynamicResource BoughBrushCanvas}" Padding="32">
-          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="24" MaxWidth="480">
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" MaxWidth="480">
             <Image Source="/Assets/AppIcon.png" Width="72" Height="72" HorizontalAlignment="Center" />
             <TextBlock Text="{Binding RepositoryName}" FontSize="24" FontWeight="SemiBold"
                        TextAlignment="Center" TextWrapping="Wrap" />
