@@ -8,9 +8,9 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-The first stable release, **v1.0.0**, is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
+Stable patch release **v1.0.1** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
 
-[Download Bough v1.0.0 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.0/Bough-v1.0.0-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.0)
+[Download Bough v1.0.1 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.1/Bough-v1.0.1-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.1)
 
 Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. Windows x64 is the current release platform. Running on macOS has not yet been verified.
 
@@ -72,9 +72,9 @@ Bough is designed to show the source of each conflicting change and preview the 
 - **Conflict resolution:** Inspect merge, rebase, or revert changes; choose sections, edit and save individual files, or apply, save, and stage the remaining sections across all conflicted files.
 - **Application updates:** Check official stable releases from Settings, download with progress and cancellation, then replace the single executable and restart after a normal shutdown. Beta and prerelease versions are excluded.
 
-The implemented basic Git workflows form the scope of the first stable v0.1.0 release. [Implementation status](Docs/CurrentStatus.md) separates the latest source from the contents of published packages.
+Version 1.0.1 adds status-message details to the basic Git workflows shipped in the first stable v1.0.0 release. [Implementation status](Docs/CurrentStatus.md) separates the latest source from the contents of published packages.
 
-Application updates, automatic remote checks, and opening submodule repositories are included in the beta.8 download above. Moving update progress to the lower left and rearranging the release-page buttons are later source changes intended for the stable release.
+The stable release includes application updates, automatic remote checks, opening submodule repositories, update progress in the lower left, and release-page buttons. In v1.0.1, open status-message details to select the full text by dragging or use Ctrl+A/C to copy it.
 
 In-app updates consider only official stable releases. The complete update download, replacement, and recovery flow and execution of the latest source have not been verified.
 
@@ -86,7 +86,7 @@ Additional screens and workflows are described in the [design notes](Design/READ
 - **Current release platform:** Windows x64
 - **UI:** Avalonia
 
-The first stable v0.1.0 release is being prepared around the implemented basic Git features. [Implementation status](Docs/CurrentStatus.md) (Korean) separates implemented features from behavior still unconfirmed. See [development docs](Docs/README.md) and [design notes](Design/README.md) for more detail.
+Stable releases provide the implemented basic Git features. [Implementation status](Docs/CurrentStatus.md) (Korean) separates implemented features from behavior still unconfirmed. See [development docs](Docs/README.md) and [design notes](Design/README.md) for more detail.
 
 Bough is an architecture reference for desktop applications such as Eidolon. See [desktop application architecture](Docs/DesktopApplicationArchitecture.md) (Korean) for responsibilities, task lifetimes, and the mappings each project must define.
 
@@ -128,11 +128,11 @@ Enable automatic remote checks in Settings to periodically fetch the current rep
 
 Right-click a submodule in the reference tree and choose **Open repository**, then use the existing Fetch, Pull, and Push actions. Perform parent and submodule operations in their respective repositories. Uninitialized submodules are reported rather than initialized automatically.
 
-Application updates in Settings consider only official stable releases. Prereleases, including this beta, are excluded from in-app update candidates.
+Application updates in Settings consider only official stable releases. Beta and prerelease versions are excluded from in-app update candidates.
 
 Beta-enabled update tests use isolated test copies only; the application keeps its stable-only update policy.
 
-In the latest source, update download progress appears in the lower left. The release-page button beside **Update and restart** opens GitHub Releases even before checking for an update. A button to the same page is also shown in the lower left while downloading.
+Update download progress appears in the lower left. The release-page button beside **Update and restart** opens GitHub Releases even before checking for an update. A button to the same page is also shown in the lower left while downloading.
 
 ## Data generation
 

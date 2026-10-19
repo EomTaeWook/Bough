@@ -1,5 +1,27 @@
 # 릴리스
 
+## v1.0.1 정식 패치 릴리스 게시 완료
+
+- 생성·배포일: 2026-10-19
+- 소스 커밋: `d7c56d044f3c9304bceca4434a4df3674dfd8608`
+- 대상: Windows x64 자체 포함 단일 `Bough-v1.0.1-win-x64.exe`
+- 상태: v1.0.1 태그 전송·GitHub 최신 정식 릴리스 게시 완료
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.1)
+- [Windows x64 단일 실행 파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.1/Bough-v1.0.1-win-x64.exe)
+- 생성 위치: `.codex-build/release-v1.0.1/Bough-v1.0.1-win-x64.exe`
+- GitHub 게시 크기: 103,790,121바이트
+- GitHub 제공 SHA-256: `4fcc8a94f17a9fb8422deb506b43bd08fd93392104d6b510ae7433c7b20ee214`
+
+하단 상태 메시지를 최대 두 줄과 자세히 버튼으로 표시한다. 상세 창에서 전체 메시지를 스크롤하고 마우스 드래그·Ctrl+A/C로 선택·복사할 수 있다. 하단과 상세 창의 별도 복사 버튼을 제거했으며 상세 창에는 닫기만 제공한다. 기존 Git 조회·오류 집계·진행과 사용자 설정·최근 저장소·로그 저장 정책을 유지한다.
+
+요청된 아래 `dotnet publish`가 종료 코드 0으로 완료됐다. .NET 런타임·네이티브 라이브러리·필수 데이터·기본 로그 설정을 단일 exe에 포함하며 Git은 별도로 설치한다.
+
+```powershell
+dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=1.0.1 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v1.0.1\build\ -o D:\Source\Bough\.codex-build\release-v1.0.1\win-x64\
+```
+
+GitHub 게시 응답은 draft=false·prerelease=false이며 위 크기와 digest는 그 응답의 배포 메타데이터다. 별도 해시 대조·앱 실행·테스트·UI·회귀 검증·업데이트 설치·복원 검증은 수행하지 않았다. 기존 v1.0.0과 베타 파일·태그는 보존했다.
+
 ## v1.0.0 정식 릴리스 게시 완료
 
 - 생성·배포일: 2026-10-16
