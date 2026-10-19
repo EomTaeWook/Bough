@@ -45,7 +45,10 @@ namespace Bough.App.Presenters
             _model.IsLoadingList = true;
             try
             {
-                GitFileHistoryPage page = await _service.GetFileHistoryAsync(_model.Repository, _model.RevisionHash, _model.FilePath, 100, cancellation.Token);
+                GitRepository repository = _model.Repository;
+                string revisionHash = _model.RevisionHash;
+                string filePath = _model.FilePath;
+                GitFileHistoryPage page = await Task.Run(() => _service.GetFileHistoryAsync(repository, revisionHash, filePath, 100, cancellation.Token), cancellation.Token);
                 if (_closed)
                 {
                     return;
@@ -134,7 +137,8 @@ namespace Bough.App.Presenters
             {
                 GitFileHistoryEntry entry = item.Entry;
                 GitCommitChangedFile file = new(entry.Status, entry.Path, entry.PreviousPath);
-                GitCommitFileDiff diff = await _service.GetFileDiffAsync(_model.Repository, entry.CommitHash, null, file, cancellation.Token);
+                GitRepository repository = _model.Repository;
+                GitCommitFileDiff diff = await Task.Run(() => _service.GetFileDiffAsync(repository, entry.CommitHash, null, file, cancellation.Token), cancellation.Token);
                 if (_closed)
                 {
                     return;

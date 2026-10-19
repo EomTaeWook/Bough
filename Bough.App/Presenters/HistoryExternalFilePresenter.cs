@@ -57,7 +57,8 @@ namespace Bough.App.Presenters
             bool accepted = false;
             try
             {
-                snapshot = await _service.PrepareSnapshotFileAsync(repository, revision, context.Path, cancellation.Token);
+                string filePath = context.Path;
+                snapshot = await Task.Run(() => _service.PrepareSnapshotFileAsync(repository, revision, filePath, cancellation.Token), cancellation.Token);
                 if (request != _requestVersion)
                 {
                     return null;

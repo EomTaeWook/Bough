@@ -81,6 +81,15 @@ namespace Bough.Core.Git
                     _verifyHeadArguments, true, cancellationToken);
                 if (head.ExitCode != 0)
                 {
+                    string error = head.Error.Trim();
+                    if (error.Length > 0)
+                    {
+                        throw new GitException(error);
+                    }
+                    if (head.ExitCode != 1)
+                    {
+                        throw new GitException(GitException.ExitWithoutErrorMessageCode, null, head.ExitCode);
+                    }
                     return new GitHistoryPage(Array.Empty<GitHistoryCommit>(), false);
                 }
             }

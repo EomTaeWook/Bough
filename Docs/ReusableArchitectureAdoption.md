@@ -4,20 +4,22 @@
 
 Bough는 Eidolon 같은 응용프로그램의 적용 기준 사례다. 다른 앱으로 전달할 공통 경계와 매핑 항목은 [데스크톱 응용프로그램 기준](DesktopApplicationArchitecture.md)을 따르며 Bough 전용 Git 기능·현재 구현 상태는 이 프로젝트에 둔다.
 
-`Teeeb/ReusableArchitecture`의 공통 컨벤션과 계층형 MVP 원칙을 Bough의 .NET·Avalonia·Git 실행 경계에 매핑한다. 이 문서는 채택 여부·실제 경로·프로젝트 차이를 소유하며 원본 패키지를 복제하지 않는다. 현재 사용자 지시, [AGENTS.md](../AGENTS.md), 기능별 확정 계약을 우선한다.
+`Paper-Toss/Blueprints/ReusableArchitecture`의 공통 UI·일반 애플리케이션 규칙을 Bough의 .NET·Avalonia·Git 실행 경계에 매핑한다. 이 문서는 채택 여부·실제 경로·프로젝트 차이를 소유하며 원본 패키지를 복제하지 않는다. 현재 사용자 지시, [AGENTS.md](../AGENTS.md), 기능별 확정 계약을 우선한다.
 
-원본 링크는 Bough와 Teeeb가 같은 상위 폴더에 있는 작업 환경을 기준으로 한다. 외부 카탈로그를 사용할 수 없는 환경에서도 Bough의 [코딩 컨벤션](CodingConvention.md)과 [아키텍처](AvaloniaMvpAdoption.md)가 현재 프로젝트 계약이다. 문서 적용은 전체 코드가 규칙을 충족한다는 실행·검수 결과가 아니다.
+원본 링크는 Bough와 Paper-Toss가 같은 상위 폴더에 있는 작업 환경을 기준으로 한다. 외부 카탈로그를 사용할 수 없는 환경에서도 Bough의 [코딩 컨벤션](CodingConvention.md)과 [아키텍처](AvaloniaMvpAdoption.md)가 현재 프로젝트 계약이다. 문서 적용은 전체 코드가 규칙을 충족한다는 실행·검수 결과가 아니다.
 
 ## 채택 범위
 
 | 원본 | Bough에서 적용할 내용 | 프로젝트 계약 |
 | --- | --- | --- |
-| [공통 컨벤션](../../Teeeb/ReusableArchitecture/CodingConvention.md) | 최소 변경, 실제 책임별 타입, 구성과 생성자 DI, 데이터 단일 소유자, 검사 위치, C#·문서·생성물 규칙 | [코딩 컨벤션](CodingConvention.md) |
-| [Unity 계층형 MVP](../../Teeeb/ReusableArchitecture/UnityClientArchitecture.md) | 원본 상태·표현 분리, 입력과 확정 결과, 지역화·서식, 구독·비동기 수명 | [Avalonia MVP 적용](AvaloniaMvpAdoption.md) |
-| 공통 컨벤션의 작업 큐·영속 확정 원칙 | 접수·실행·완료 구분, await 동안 실행 소유권 유지, 확정된 성공과 후속 읽기 오류 분리 | [Git 작업 큐](GitOperationQueue.md), [오류 지역화](GitErrorLocalization.md) |
+| [공통 컨벤션](../../Paper-Toss/Blueprints/ReusableArchitecture/Common/CodingConvention.md) | 최소 변경, 실제 책임별 타입, 구성과 생성자 DI, 데이터 단일 소유자, 검사 위치, C#·문서·생성물 규칙 | [코딩 컨벤션](CodingConvention.md) |
+| [공통 UI 계층](../../Paper-Toss/Blueprints/ReusableArchitecture/Common/PresentationArchitecture.md) | 원본 상태·표현 분리, 입력과 확정 결과, 지역화·서식과 구독 | [Avalonia MVP 적용](AvaloniaMvpAdoption.md) |
+| [일반 앱 아키텍처](../../Paper-Toss/Blueprints/ReusableArchitecture/Application/ApplicationArchitecture.md) | DI·창 구성, 조회·변경 전체 완료, 초안·취소·자원 인계와 배포 인프라 | [응용프로그램 기준](DesktopApplicationArchitecture.md), [현재 아키텍처](AvaloniaMvpAdoption.md) |
+| [협업과 전달](../../Paper-Toss/Blueprints/ReusableArchitecture/Common/Collaboration.md) | 담당 경계, 변경된 계약만 전달, 실제 처리 기록 기준 인수와 간결한 보고 | [작업 배분](../AGENTS.md), [구현 작업 지시](ImplementationPlan.md) |
+| 일반 앱의 변경 명령·전체 완료 원칙 | 접수·실행·완료 구분, await 동안 실행 소유권 유지, 확정된 성공과 후속 읽기 오류 분리 | [Git 작업 큐](GitOperationQueue.md), [오류 지역화](GitErrorLocalization.md) |
 | 공통 컨벤션의 데이터 원본·생성물 원칙 | 원본과 산출물 소유, 기존 ID·내용 보존, 원본 변경과 생성 절차 구분 | [데이터 변환](<데이터 변환 도구 사용법.md>) |
 
-Unity·서버 전용 규칙은 해당 구조가 없으면 적용하지 않는다. 규칙을 적용하기 위해 없는 기능이나 계층을 만들지 않으며 작업자 역할은 [AGENTS.md](../AGENTS.md)를 유지한다.
+일반 앱은 공통 UI·일반 앱 문서를 직접 적용하며 Unity 문서를 경유하지 않는다. Unity·서버 전용 규칙은 해당 구조가 없으면 적용하지 않는다. 규칙을 적용하기 위해 없는 기능이나 계층을 만들지 않으며 작업자 역할은 [AGENTS.md](../AGENTS.md)를 유지한다.
 
 ## 실제 경계 매핑
 
@@ -49,6 +51,6 @@ Unity·서버 전용 규칙은 해당 구조가 없으면 적용하지 않는다
 
 ## 작업 범위와 미결
 
-이번 반영은 문서 규칙과 프로젝트 매핑 갱신이다. 기존 소스 전체의 `partial`, 타입별 파일, DI·표시 책임 준수 여부를 전수 검사하거나 일괄 리팩터링하지 않았다. 해당 구현을 요청받을 때 현재 코드의 필요한 선언·호출·등록을 읽어 이행 범위와 남은 연결을 인계한다.
+이 문서는 채택 규칙과 프로젝트 매핑을 소유한다. 기능별 검토는 현재 선언·호출·등록·완료 수명을 읽어 확인된 차이만 수정하며, 기존 소스 전체의 `partial`, 타입별 파일, DI·표시 책임을 일괄 리팩터링하지 않는다. 실제 수정과 남은 연결은 [구현 현황](CurrentStatus.md)에 기록한다.
 
 `[TBD]`는 아직 결정하지 않은 프로젝트 계약에만 사용하고 기존에 확정한 실행·데이터·오류 계약을 지우지 않는다. 실제 반영 범위는 [구현 현황](CurrentStatus.md)이 소유한다. Git·검증·배포 권한은 [AGENTS.md](../AGENTS.md), 표현·구현 규칙은 [코딩 컨벤션](CodingConvention.md)이 소유한다.

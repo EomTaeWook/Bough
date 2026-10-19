@@ -50,9 +50,12 @@ namespace Bough.App.Views
                     _settingsService.DefaultPullStrategyChanged -= OnDefaultPullStrategyChanged;
                 }
                 _settingsService = value;
-                if (_settingsService != null)
+                if (_attached == true)
                 {
-                    _settingsService.DefaultPullStrategyChanged += OnDefaultPullStrategyChanged;
+                    if (_settingsService != null)
+                    {
+                        _settingsService.DefaultPullStrategyChanged += OnDefaultPullStrategyChanged;
+                    }
                 }
                 UpdatePullStrategyPresentation();
             }
@@ -81,12 +84,21 @@ namespace Bough.App.Views
         private void OnIncomingViewAttached(object sender, VisualTreeAttachmentEventArgs eventArgs)
         {
             _attached = true;
+            if (_settingsService != null)
+            {
+                _settingsService.DefaultPullStrategyChanged += OnDefaultPullStrategyChanged;
+            }
             BindIncomingModel();
+            UpdatePullStrategyPresentation();
         }
 
         private void OnIncomingViewDetached(object sender, VisualTreeAttachmentEventArgs eventArgs)
         {
             _attached = false;
+            if (_settingsService != null)
+            {
+                _settingsService.DefaultPullStrategyChanged -= OnDefaultPullStrategyChanged;
+            }
             BindIncomingModel();
         }
 
@@ -160,12 +172,16 @@ namespace Bough.App.Views
 
         private void OnDefaultPullStrategyChanged(GitPullStrategy strategy)
         {
-            if (Dispatcher.UIThread.CheckAccess())
+            if (_attached == false)
+            {
+                return;
+            }
+            if (Dispatcher.UIThread.CheckAccess() == true)
             {
                 UpdatePullStrategyPresentation();
                 return;
             }
-            Dispatcher.UIThread.Post(UpdatePullStrategyPresentation);
+            Dispatcher.UIThread.Post(() => OnDefaultPullStrategyChanged(strategy));
         }
 
         private void UpdatePullStrategyPresentation()

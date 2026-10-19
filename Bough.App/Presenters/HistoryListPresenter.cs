@@ -31,7 +31,7 @@ namespace Bough.App.Presenters
             int requestVersion = ++_requestVersion;
             try
             {
-                GitHistoryPage page = await _historyService.GetHistoryPageAsync(repository, 0, 200, scope);
+                GitHistoryPage page = await Task.Run(() => _historyService.GetHistoryPageAsync(repository, 0, 200, scope));
                 return new HistoryListResult(requestVersion, IsCurrent(requestVersion), page, null);
             }
             catch (Exception exception)
@@ -45,7 +45,7 @@ namespace Bough.App.Presenters
             int requestVersion = ++_requestVersion;
             try
             {
-                GitHistoryPage page = await _historyService.GetHistoryPageAsync(repository, existingCount - 1, 201, scope);
+                GitHistoryPage page = await Task.Run(() => _historyService.GetHistoryPageAsync(repository, existingCount - 1, 201, scope));
                 if (IsCurrent(requestVersion) == false)
                 {
                     return new HistoryListResult(requestVersion, false, null, null);

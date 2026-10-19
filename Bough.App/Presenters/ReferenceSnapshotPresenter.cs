@@ -261,7 +261,7 @@ namespace Bough.App.Presenters
             int requestVersion = ++_requestVersion;
             try
             {
-                GitReferenceSnapshot snapshot = await _referenceService.GetSnapshotAsync(repository, cancellation.Token);
+                GitReferenceSnapshot snapshot = await Task.Run(() => _referenceService.GetSnapshotAsync(repository, cancellation.Token), cancellation.Token);
                 return new ReferenceSnapshotResult(requestVersion, IsCurrent(requestVersion, repository), snapshot, null);
             }
             catch (OperationCanceledException)

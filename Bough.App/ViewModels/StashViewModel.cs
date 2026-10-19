@@ -395,6 +395,7 @@ namespace Bough.App.ViewModels
 
         private async Task RefreshCoreAsync(GitRepository repository, int requestVersion, GitWorktreeStatus knownStatus)
         {
+            GitRepository boundRepository = _repository;
             _previewPresenter.Invalidate();
             IsBusy = true;
             ErrorText = string.Empty;
@@ -402,6 +403,10 @@ namespace Bough.App.ViewModels
             {
                 IReadOnlyList<GitStashEntry> entries = await _stashService.GetStashesAsync(repository);
                 if (requestVersion != _requestVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(boundRepository, _repository) == false)
                 {
                     return;
                 }
@@ -416,16 +421,25 @@ namespace Bough.App.ViewModels
                 {
                     return;
                 }
+                if (ReferenceEquals(boundRepository, _repository) == false)
+                {
+                    return;
+                }
 
                 ApplyEntries(entries);
                 SetWorktreeStatus(repository, status);
             }
             catch (Exception exception)
             {
-                if (requestVersion == _requestVersion)
+                if (requestVersion != _requestVersion)
                 {
-                    SetLocalizedErrorText(new LocalizedText(exception));
+                    return;
                 }
+                if (ReferenceEquals(boundRepository, _repository) == false)
+                {
+                    return;
+                }
+                SetLocalizedErrorText(new LocalizedText(exception));
             }
             finally
             {

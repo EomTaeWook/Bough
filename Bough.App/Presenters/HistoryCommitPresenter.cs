@@ -32,12 +32,12 @@ namespace Bough.App.Presenters
             int requestVersion = ++_requestVersion;
             try
             {
-                GitCommitInspection inspection = await _inspectionService.GetCommitAsync(repository, commitHash);
+                GitCommitInspection inspection = await Task.Run(() => _inspectionService.GetCommitAsync(repository, commitHash));
                 if (IsCurrent(requestVersion) == false)
                 {
                     return new HistoryCommitResult(requestVersion, false, null, null, null);
                 }
-                string message = await _messageService.GetMessageAsync(repository, commitHash);
+                string message = await Task.Run(() => _messageService.GetMessageAsync(repository, commitHash));
                 return new HistoryCommitResult(requestVersion, IsCurrent(requestVersion), inspection, message, null);
             }
             catch (Exception exception)

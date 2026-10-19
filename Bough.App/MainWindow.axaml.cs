@@ -136,8 +136,12 @@ namespace Bough.App
                 _mainWindowClosed = true;
                 _viewModel.StopTagPushCandidates();
                 RemoteOperationsPanel.TagPushRequestedAsync = null;
+                _viewModel.RemoteOperations.PropertyChanged -= OnRemoteOperationsPropertyChanged;
+                _viewModel.GitSettings.PropertyChanged -= OnGitSettingsPropertyChanged;
                 _viewModel.GitSettings.AppUpdate.PropertyChanged -= OnApplicationUpdatePropertyChanged;
                 _viewModel.References.SubmoduleOpenRequested -= OnSubmoduleOpenRequested;
+                _viewModel.ConflictWindowRequested -= OpenConflictWindow;
+                _viewModel.ConflictResolutionCompleted -= CloseCompletedConflictWindow;
                 _submoduleOpenRequestVersion++;
                 _submoduleOpenCancellation?.Cancel();
                 _viewModel.StopAutoFetch();

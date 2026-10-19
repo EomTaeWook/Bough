@@ -111,13 +111,13 @@ namespace Bough.App.Infrastructure.Updates
                     }
                     cancellationToken.ThrowIfCancellationRequested();
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException exception)
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
                         throw;
                     }
-                    throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
+                    throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", exception, Array.Empty<object>());
                 }
                 catch (ApplicationUpdateException)
                 {
