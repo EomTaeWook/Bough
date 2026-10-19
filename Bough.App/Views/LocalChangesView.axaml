@@ -170,12 +170,12 @@
                    IsVisible="{Binding HasUnstagedFiles}" Background="Transparent" BorderThickness="0">
             <ListBox.ContextMenu>
               <ContextMenu Opened="UnstagedContextOpened" Background="{DynamicResource BoughBrushSurface}">
+                <MenuItem x:Name="DiscardContextItem" Click="DiscardContextClicked" />
+                <Separator x:Name="UnstagedDangerSeparator" IsVisible="False" />
                 <MenuItem x:Name="IgnoreContextItem">
                   <MenuItem x:Name="IgnoreRepositoryItem" Click="IgnoreRepositoryClicked" />
                   <MenuItem x:Name="IgnoreLocalItem" Click="IgnoreLocalClicked" />
                 </MenuItem>
-                <Separator x:Name="UnstagedDangerSeparator" IsVisible="False" />
-                <MenuItem x:Name="DiscardContextItem" Click="DiscardContextClicked" />
                 <MenuItem x:Name="StopTrackingContextItem" Click="StopTrackingContextClicked" />
               </ContextMenu>
             </ListBox.ContextMenu>
