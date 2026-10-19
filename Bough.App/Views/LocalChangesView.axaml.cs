@@ -20,7 +20,7 @@ namespace Bough.App.Views
         private const double _minimumFileListWidth = 260;
         private const double _minimumPreviewWidth = 220;
         private const double _splitterWidth = 6;
-        private const double _localHeaderHeight = 64;
+        private const double _localHeaderHeight = 56;
         private const double _minimumWorkAreaHeight = 180;
         private const double _fileSectionHeaderHeight = 48;
         private const double _minimumPopulatedSectionHeight = 84;

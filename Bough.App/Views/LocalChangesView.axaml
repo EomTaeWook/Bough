@@ -73,7 +73,7 @@
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
   <Grid x:Name="LayoutGrid" Height="440">
     <Grid.RowDefinitions>
-      <RowDefinition Height="64" />
+      <RowDefinition Height="56" />
       <RowDefinition Height="*" MinHeight="180" />
       <RowDefinition Height="6" />
       <RowDefinition Height="190" MinHeight="190" MaxHeight="420" />

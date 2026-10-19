@@ -55,8 +55,12 @@
           <Setter Property="Padding" Value="0" />
           <Setter Property="HorizontalAlignment" Value="Stretch" />
           <Setter Property="MinHeight" Value="32" />
+          <Setter Property="Background" Value="Transparent" />
+          <Setter Property="BorderBrush" Value="Transparent" />
+          <Setter Property="BorderThickness" Value="0" />
+          <Setter Property="CornerRadius" Value="0" />
         </Style>
-        <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot, TreeViewItem /template/ Border#PART_LayoutRoot:pointerover, TreeViewItem:selected /template/ Border#PART_LayoutRoot, TreeViewItem:pressed /template/ Border#PART_LayoutRoot:pointerover, TreeViewItem:selected /template/ Border#PART_LayoutRoot:pointerover, TreeViewItem:pressed:selected /template/ Border#PART_LayoutRoot:pointerover, TreeViewItem:disabled /template/ Border#PART_LayoutRoot, TreeViewItem:disabled:selected /template/ Border#PART_LayoutRoot">
+        <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot:pointerover, TreeViewItem:selected /template/ Border#PART_LayoutRoot, TreeViewItem:pressed /template/ Border#PART_LayoutRoot:pointerover, TreeViewItem:selected /template/ Border#PART_LayoutRoot:pointerover, TreeViewItem:pressed:selected /template/ Border#PART_LayoutRoot:pointerover, TreeViewItem:disabled /template/ Border#PART_LayoutRoot, TreeViewItem:disabled:selected /template/ Border#PART_LayoutRoot">
           <Setter Property="Background" Value="Transparent" />
           <Setter Property="BorderBrush" Value="Transparent" />
           <Setter Property="BorderThickness" Value="0" />
