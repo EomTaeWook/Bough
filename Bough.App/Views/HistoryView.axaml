@@ -224,7 +224,7 @@
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Labels.Heading}" FontSize="16" FontWeight="SemiBold"
                    Foreground="{DynamicResource BoughBrushText}" VerticalAlignment="Center" />
-        <WrapPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <WrapPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
           <RadioButton Content="{Binding Labels.ScopeAll}" GroupName="HistoryScope" IsChecked="{Binding IsAllScope, Mode=OneWay}"
                        MinHeight="32" Margin="0,4,8,4"
                        Click="AllScopeClicked" ToolTip.Tip="{Binding Labels.ScopeAllTooltip}"

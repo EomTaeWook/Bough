@@ -32,7 +32,7 @@
   </UserControl.Styles>
 
   <Grid RowDefinitions="Auto,*">
-    <Border Grid.Row="0" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="12,8">
+    <Border Grid.Row="0" Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="12,8">
       <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
         <TextBlock Text="{Binding ReferenceTitle}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}"
                    VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding ReferenceTitle}" />
