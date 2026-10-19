@@ -52,8 +52,6 @@ namespace Bough.App
             SidebarStatusDetailsButton.Content = _stringHelper.GetString("RemoteOperationDetails");
             Avalonia.Automation.AutomationProperties.SetName(SidebarStatusDetailsButton, _stringHelper.GetString("RemoteOperationDetails"));
             Avalonia.Automation.AutomationProperties.SetName(SidebarStatusPreview, _stringHelper.GetString("MainStatusDetailsTitle"));
-            SidebarUpdateReleaseButton.Content = _stringHelper.GetString("AppUpdateReleaseAction");
-            Avalonia.Automation.AutomationProperties.SetName(SidebarUpdateReleaseButton, _stringHelper.GetString("AppUpdateReleaseAction"));
             ToolTip.SetTip(RepositoryActionsButton, _stringHelper.GetString("RepositoryActionsTooltip"));
             Avalonia.Automation.AutomationProperties.SetName(RepositoryActionsButton, _stringHelper.GetString("RepositoryActionsButtonText"));
             OpenRepositoryActionLabel.Text = _stringHelper.GetString("RepositoryAddExistingAction");
@@ -660,32 +658,6 @@ namespace Bough.App
             {
                 _viewModel.NotifySidebarStatusChanged();
             }
-        }
-
-        private async void SidebarUpdateReleaseClicked(object sender, RoutedEventArgs routedEventArguments)
-        {
-            if (_mainWindowClosed == true)
-            {
-                return;
-            }
-            Exception releaseOpenException = null;
-            try
-            {
-                bool releasePageOpened = await Launcher.LaunchUriAsync(new Uri("https://github.com/EomTaeWook/Bough/releases"));
-                if (releasePageOpened == true)
-                {
-                    return;
-                }
-            }
-            catch (Exception exception)
-            {
-                releaseOpenException = exception;
-            }
-            if (_mainWindowClosed == true)
-            {
-                return;
-            }
-            _viewModel.ReportRemoteCompletionFailure(new ApplicationUpdateException("AppUpdateReleaseOpenFailed", releaseOpenException, Array.Empty<object>()), _viewModel.CurrentRepository, _viewModel.RepositoryRequestVersion);
         }
 
         private void RefreshApplicationUpdateProgress()

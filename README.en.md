@@ -132,7 +132,7 @@ Application updates in Settings consider only official stable releases. Beta and
 
 Beta-enabled update tests use isolated test copies only; the application keeps its stable-only update policy.
 
-Update download progress appears in the lower left. The release-page button beside **Update and restart** opens GitHub Releases even before checking for an update. A button to the same page is also shown in the lower left while downloading.
+Update download progress appears in the lower left. The release-page button beside **Update and restart** opens GitHub Releases even before checking for an update.
 
 ## Data generation
 
