@@ -48,7 +48,7 @@
 - Git Settings: Git 실행 파일·작성자·인증 계정·테마·Bough 기본 Pull 방식과 앱 언어의 즉시 적용·저장. GitHub 계정 인증과 커밋 작성자를 구분하며 `credential.helper` 출처·값 목록은 노출하지 않는다.
 - 원격 자동 확인 설정: 기존 설정 파일의 꺼짐·주기 저장과 즉시 변경 알림, Settings 표시·입력·현재 언어·구독 해제를 소유한다. [자동 확인 계약](../Design/RemoteAutoFetch.md)에 따라 기본 꺼짐·5분과 1/5/10/30분 선택을 연결하고 실제 예약·Fetch는 작업자 3에게 인계한다.
 - 앱 업데이트 설정: 현재 버전·정식 릴리스 확인·다운로드 진행과 취소·업데이트 후 재시작 입력을 연결한다. 조회·다운로드 조정은 목적별 Presenter, 상태는 바인딩 모델에 두고 작업자 3의 실제 App 배포 인프라·종료 API를 소비한다. [정식 릴리스 업데이트](../Design/ApplicationUpdate.md)를 따르며 HTTP·exe 교체를 기존 큰 GitSettings ViewModel에 넣지 않는다.
-- 앱 업데이트의 설정 내 릴리스 페이지 버튼은 업데이트 후 재시작 바로 옆에 표시하고 조회 전에도 공식 GitHub 릴리스 목록을 연다. 설정에는 다운로드 용량 안내를 유지하며 진행 막대는 Main의 좌하단 표시를 사용한다.
+- 앱 업데이트의 설정 내 릴리스 페이지 동작은 primary 업데이트 후 재시작 바로 옆의 GitHub 아이콘 버튼으로 표시한다. 두 버튼은 함께 줄바꿈하며 기존 문구를 한·영 툴팁·접근성 이름으로 사용하고 조회 전에도 공식 GitHub 릴리스 목록을 연다. 설정에는 다운로드 용량 안내를 유지하며 진행 막대는 Main의 좌하단 표시를 사용한다.
 - 표시 계약은 [화면과 동작](../Design/GitClientWorkflow.md), [원격과 Stash](../Design/RemoteAndStash.md), [GitHub 계정](../Design/GitHubAccountSwitching.md), [테마](../Design/AppearanceTheme.md)를 따른다.
 - MainWindow와 원격 실행 파일은 수정하지 않고 갱신·상태·설정 변경 이벤트 계약을 총괄에게 전달한다.
 

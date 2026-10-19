@@ -139,7 +139,7 @@ namespace Bough.App.Views
             AutomationProperties.SetName(UpdateButton, strings.GetString("AppUpdateRestartAction"));
             CancelButton.Content = strings.GetString("AppUpdateCancelAction");
             AutomationProperties.SetName(CancelButton, strings.GetString("AppUpdateCancelAction"));
-            ReleaseButton.Content = strings.GetString("AppUpdateReleaseAction");
+            ToolTip.SetTip(ReleaseButton, strings.GetString("AppUpdateReleaseAction"));
             AutomationProperties.SetName(ReleaseButton, strings.GetString("AppUpdateReleaseAction"));
             RefreshProgress(model);
         }

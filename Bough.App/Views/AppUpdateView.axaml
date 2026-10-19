@@ -19,8 +19,12 @@
     </StackPanel>
     <WrapPanel>
       <Button x:Name="CheckButton" MinHeight="32" MinWidth="80" Margin="0,0,8,8" IsEnabled="{Binding CanCheck}" Click="CheckClicked" />
-      <Button x:Name="UpdateButton" MinHeight="32" MinWidth="80" Margin="0,0,8,8" IsEnabled="{Binding CanUpdate}" Click="UpdateClicked" />
-      <Button x:Name="ReleaseButton" MinHeight="32" MinWidth="80" Margin="0,0,8,8" Click="ReleaseClicked" />
+      <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,8,8">
+        <Button x:Name="UpdateButton" Classes="primary" MinHeight="32" MinWidth="80" IsEnabled="{Binding CanUpdate}" Click="UpdateClicked" />
+        <Button x:Name="ReleaseButton" MinHeight="32" MinWidth="32" Padding="7" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="ReleaseClicked">
+          <PathIcon Data="{StaticResource BoughIconGitHub}" Classes="boughIcon" />
+        </Button>
+      </StackPanel>
       <Button x:Name="CancelButton" MinHeight="32" MinWidth="80" Margin="0,0,0,8" IsVisible="{Binding CanCancel}" Click="CancelClicked" />
     </WrapPanel>
   </StackPanel>
