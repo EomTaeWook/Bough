@@ -43,7 +43,7 @@ Bough는 .NET 10·Avalonia 12.1.4 기반 데스크톱 Git 클라이언트다. AX
 
 - `RepositoryListViewModel`과 `RepositoryListStore`가 등록 목록·활성 항목·마지막 저장소와 저장을 관리한다. 내부 모델은 부모 경로별 그룹을 유지하지만 상단 드롭다운에는 저장소 이름만 표시한다. 부모 폴더 이름을 별도 제목으로 표시하지 않고 전체 경로는 항목 툴팁으로 제공한다.
 - `MainWindow`가 상단 저장소 선택·`+` 메뉴와 중앙 시작 화면을 기존 폴더 선택기·복제 창에 연결한다. `MainWindowViewModel`이 저장소 전환·화면 선택·영역별 조회 순서를 조정한다. Git Settings는 저장소가 없어도 열 수 있으며, 이때 시작 화면을 숨긴다.
-- 왼쪽은 현재 저장소의 참조 탐색과 하단 공통 상태 영역이다. Local Changes·History·Git Settings는 상단에서 전환하며 충돌 해결은 별도 `ConflictWindow`에서 진행한다.
+- 왼쪽 사이드바 맨 위의 높이 40px 두 행에서 Local Changes·History를 전환한다. 그 아래는 현재 저장소의 참조 탐색, 맨 아래는 공통 상태 영역이다. Git Settings는 상단에서 전환하며 충돌 해결은 별도 `ConflictWindow`에서 진행한다. 기존 전환 Command·활성·지역화·접근성 바인딩을 그대로 사용한다.
 - 저장소 선택 시 요청 버전을 갱신하고 이전 열기를 취소한다. Local Changes 화면과 선택 경로를 먼저 표시하고, History·설정 상세는 필요한 시점에 조회한다. 늦은 결과는 요청 버전과 저장소를 각각 검사한다.
 - 변경 명령은 공통 `GitOperationQueue`의 저장소별 FIFO 경계를 사용한다. 복제는 목적지 절대 경로를 큐 키로 사용하며 성공 후 등록·열기는 메인 전환 경로에 연결한다.
 - `GitOperationQueue`의 내부 `RepositoryOperationQueue`가 각 저장소의 대기·실행 상태를 소유한다. 그래프 레인을 뜻하는 이름과 구분하며 저장소별 순차 실행과 서로 다른 저장소의 독립 실행을 유지한다.

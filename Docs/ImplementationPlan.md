@@ -75,7 +75,7 @@
 
 소유 범위는 MainWindow·MainWindowViewModel, 원격 View·ViewModel·Presenter·진행 창과 서비스, 충돌 해결 화면·Presenter·Core 계약, 복제 화면·Presenter·Core, App 시작·DI·배포 설정이다.
 
-- 상단 저장소 선택·추가 메뉴·시작 화면의 열기·복제 진입, 화면 전환·영역별 조회·공통 사이드바 상태, 작업 완료 후 갱신 순서와 숨긴 History의 참조 변경 반영.
+- 상단 저장소 선택·추가 메뉴·시작 화면의 열기·복제 진입, 사이드바 맨 위 Local Changes·History의 높이 40px 두 행 탐색, 화면 전환·영역별 조회·공통 사이드바 상태, 작업 완료 후 갱신 순서와 숨긴 History의 참조 변경 반영. 탐색은 기존 Command·활성·지역화·접근성을 유지하고 선택 행의 배경·전경으로 현재 화면을 표시한다.
 - 앱 업데이트의 실제 다운로드 상태를 기존 좌하단 막대에 표시한다. 릴리스 페이지 버튼은 설정의 재시작 옆에만 두며 좌하단에는 추가하지 않는다. 표시만 기존 상태에 연결하며 부모 Git busy·다운로드 수명·원격 팝업 중복 억제를 바꾸지 않는다.
 - 하단 공통 상태는 기존 SidebarStatusText를 최대 두 줄과 자세히 버튼으로 표시한다. View는 클릭 시 표시된 전체 문구를 고정해 마우스 드래그 선택·Ctrl+A/C가 가능한 읽기 전용 상세 창으로 전달한다. 하단·상세 창의 복사 버튼과 전용 클립보드 처리는 제거하고 상세 창에는 닫기만 둔다. Git 조회·오류집계·새 Presenter나 범용 오류 모델을 추가하지 않고 기존 진행·모달 수명을 유지한다.
 - 태그 커밋 이동은 `History.SelectCommitAsync(repository, hash, GitHistoryScope.All)` 뒤 `History.ReportCommitSelectionResult(result)`로 연결한다. 저장소 인스턴스·저장소 요청·태그 선택 요청 버전을 각각 검사하며 현재 결과만 표시한다. History의 dirty 버전은 해당 갱신이 성공하고 버전이 일치한 경우에만 해제한다.

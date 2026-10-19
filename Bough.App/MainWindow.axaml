@@ -212,22 +212,6 @@
         </Grid>
 
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-          <Button Command="{Binding ShowLocalChangesCommand}" Classes="navigation toolbar"
-                  AutomationProperties.Name="{Binding LocalChangesNavigationText}" Classes.active="{Binding IsLocalChangesView}">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <PathIcon Data="{StaticResource BoughIconChanges}" Classes="boughIcon" />
-              <TextBlock Text="{Binding LocalChangesNavigationText}" FontSize="14" VerticalAlignment="Center"
-                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
-            </StackPanel>
-          </Button>
-          <Button Command="{Binding ShowHistoryCommand}" Classes="navigation toolbar"
-                  AutomationProperties.Name="{Binding HistoryNavigationText}" Classes.active="{Binding IsHistoryView}">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <PathIcon Data="{StaticResource BoughIconHistory}" Classes="boughIcon" />
-              <TextBlock Text="{Binding HistoryNavigationText}" FontSize="14" VerticalAlignment="Center"
-                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
-            </StackPanel>
-          </Button>
           <Button Command="{Binding ShowGitSettingsCommand}" Classes="navigation toolbar"
                   AutomationProperties.Name="{Binding SettingsNavigationText}" Classes.active="{Binding IsGitSettingsView}">
             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -268,15 +252,63 @@
 
     <Grid Grid.Row="1" ColumnDefinitions="280,*">
       <Border Grid.Column="0" Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,1,0">
-        <Grid RowDefinitions="*,Auto" Margin="12">
-          <Border Grid.Row="0" IsVisible="{Binding HasRepository}">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+          <Border Grid.Row="0" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1"
+                  Padding="0,4,0,16" Margin="0,0,0,12">
+            <StackPanel Spacing="8">
+              <StackPanel.Styles>
+                <Style Selector="Button.navigation">
+                  <Setter Property="Height" Value="40" />
+                  <Setter Property="HorizontalAlignment" Value="Stretch" />
+                  <Setter Property="HorizontalContentAlignment" Value="Left" />
+                  <Setter Property="Padding" Value="12,0" />
+                  <Setter Property="CornerRadius" Value="6" />
+                </Style>
+                <Style Selector="Button.navigation.active">
+                  <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+                  <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+                  <Setter Property="BorderThickness" Value="0" />
+                  <Setter Property="FontWeight" Value="SemiBold" />
+                </Style>
+                <Style Selector="Button.navigation.active:pointerover:not(:disabled) /template/ ContentPresenter#PART_ContentPresenter">
+                  <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+                  <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+                </Style>
+                <Style Selector="Button.navigation.active:pressed:not(:disabled) /template/ ContentPresenter#PART_ContentPresenter">
+                  <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
+                  <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+                </Style>
+                <Style Selector="Button.navigation:disabled">
+                  <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />
+                  <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
+                </Style>
+              </StackPanel.Styles>
+              <Button Command="{Binding ShowLocalChangesCommand}" Classes="navigation"
+                  AutomationProperties.Name="{Binding LocalChangesNavigationText}" Classes.active="{Binding IsLocalChangesView}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource BoughIconChanges}" Classes="boughIcon" />
+                  <TextBlock Text="{Binding LocalChangesNavigationText}" FontSize="14" VerticalAlignment="Center"
+                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
+                </StackPanel>
+              </Button>
+              <Button Command="{Binding ShowHistoryCommand}" Classes="navigation"
+                  AutomationProperties.Name="{Binding HistoryNavigationText}" Classes.active="{Binding IsHistoryView}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource BoughIconHistory}" Classes="boughIcon" />
+                  <TextBlock Text="{Binding HistoryNavigationText}" FontSize="14" VerticalAlignment="Center"
+                         Foreground="{ReflectionBinding $parent[Button].Foreground}" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Border>
+          <Border Grid.Row="1" IsVisible="{Binding HasRepository}">
             <Grid>
               <views:ReferenceExplorerView DataContext="{Binding References}" />
               <ProgressBar IsVisible="{Binding IsReferencesLoading}" IsIndeterminate="True"
                            Height="3" VerticalAlignment="Top" />
             </Grid>
           </Border>
-          <Border Grid.Row="1" IsVisible="{Binding HasSidebarStatus}"
+          <Border Grid.Row="2" IsVisible="{Binding HasSidebarStatus}"
                   Background="{DynamicResource BoughBrushSidebar}" BorderBrush="{DynamicResource BoughBrushBorder}"
                   BorderThickness="0,1,0,0" Padding="12,8">
             <StackPanel Spacing="8">

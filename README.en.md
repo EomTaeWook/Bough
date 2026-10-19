@@ -116,7 +116,7 @@ Bough adds and opens the repository when cloning finishes. The list's remove but
 
 When cloning fails, Bough shows the cause identified from Git diagnostics, such as authentication, repository access, connection, storage space, or file writing. Destination status is reported separately. If the folder is empty, you can retry using the same path after resolving the clone error. When the cause cannot be identified, Bough shows a general failure message and the exit code.
 
-Select **History** at the top to see commits from all local and remote references in a branch graph. Selecting a commit shows its author, date, message, and changed files in the details panel. The first 200 commits are shown; scroll down to load older history. Selecting and inspecting a commit does not change the repository.
+Select **History** in the left sidebar to see commits from all local and remote references in a branch graph. Selecting a commit shows its author, date, message, and changed files in the details panel. The first 200 commits are shown; scroll down to load older history. Selecting and inspecting a commit does not change the repository.
 
 Right-click a commit and choose **Revert this commit…** to create a new commit reversing its changes on the current local branch. Confirm the repository, HEAD, and target; explicitly choose the mainline parent for a merge commit. Start with a clean working tree and index and no other Git operation in progress. Resolve any conflicts, save and stage the result, then select **Continue** in the pending revert banner. **Abort** returns to the prior state and may discard conflict resolutions or file edits made during the operation, so review its confirmation first. Use Refresh for read errors after a successful Git change.
 
