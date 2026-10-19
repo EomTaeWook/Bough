@@ -1,5 +1,30 @@
 # 릴리스
 
+## v1.0.2 정식 패치 릴리스 게시 완료
+
+- 생성·배포일: 2026-10-20
+- 소스 커밋: `464dd6f58451f1238bf029c79169cefada583c97`
+- 대상: Windows x64 자체 포함 단일 `Bough-v1.0.2-win-x64.exe`
+- 상태: v1.0.2 태그 전송·GitHub 최신 정식 릴리스 게시 완료
+- 릴리스 설명: 한국어·English 병기
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.2)
+- [Windows x64 단일 실행 파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.2/Bough-v1.0.2-win-x64.exe)
+- 생성 위치: `.codex-build/release-v1.0.2/Bough-v1.0.2-win-x64.exe`
+- GitHub 게시 크기: 103,802,409바이트
+- GitHub 제공 SHA-256: `28bef53b848036e6dc8c5e76b197366eb48d6def34d3c9cd379b030576d78884`
+
+Local Changes·History 탐색을 사이드바 맨 위의 높이 40px 두 행으로 옮겼다. 미추적 메뉴의 파일 삭제·무시 순서를 정리하고, 업데이트 릴리스 링크는 설정의 재시작 옆 GitHub 아이콘으로 표시하며 좌하단에는 기존 진행 막대만 둔다. Dignus.Log 2.0.1·실제 Dignus 1.4.1과 라이선스 참조를 반영했고 Avalonia 12.1.4는 유지했다.
+
+기존 작업자 3명이 Blueprints 공통 UI·일반 앱 규칙을 기준으로 확인한 조회 준비·해석의 백그라운드 경계, Stash 대체 결과 차단, HEAD 조회 오류, Main·원격 View 구독 해제와 업데이트 helper 원본 예외 보존을 포함한다. 새 계층·큐·API·문자열은 추가하지 않았다.
+
+요청된 아래 `dotnet publish` 제작 1회가 종료 코드 0으로 완료됐다. .NET 런타임·네이티브 라이브러리·필수 데이터·기본 로그 설정을 단일 exe에 포함하며 Git은 별도로 설치한다.
+
+```powershell
+dotnet publish Bough.App/Bough.App.csproj -c Release -r win-x64 --self-contained true -m:1 -nr:false -p:UseSharedCompilation=false -p:NuGetAudit=false -p:Version=1.0.2 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:OutputPath=D:\Source\Bough\.codex-build\release-v1.0.2\build\ -o D:\Source\Bough\.codex-build\release-v1.0.2\win-x64\
+```
+
+GitHub 게시 응답은 draft=false·prerelease=false이며 크기와 digest는 그 응답의 배포 메타데이터다. 별도 해시 대조·앱 실행·테스트·UI·회귀·업데이트 설치·복원 검증은 수행하지 않았다. 기존 v1.0.1·v1.0.0·베타 파일과 태그, 사용자 설정·등록 저장소·기존 앱은 보존했다.
+
 ## v1.0.1 정식 패치 릴리스 게시 완료
 
 - 생성·배포일: 2026-10-19

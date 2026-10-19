@@ -8,9 +8,9 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-Stable patch release **v1.0.1** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
+Stable patch release **v1.0.2** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
 
-[Download Bough v1.0.1 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.1/Bough-v1.0.1-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.1)
+[Download Bough v1.0.2 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.2/Bough-v1.0.2-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.2)
 
 Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. Windows x64 is the current release platform. Running on macOS has not yet been verified.
 
@@ -72,9 +72,9 @@ Bough is designed to show the source of each conflicting change and preview the 
 - **Conflict resolution:** Inspect merge, rebase, or revert changes; choose sections, edit and save individual files, or apply, save, and stage the remaining sections across all conflicted files.
 - **Application updates:** Check official stable releases from Settings, download with progress and cancellation, then replace the single executable and restart after a normal shutdown. Beta and prerelease versions are excluded.
 
-Version 1.0.1 adds status-message details to the basic Git workflows shipped in the first stable v1.0.0 release. [Implementation status](Docs/CurrentStatus.md) separates the latest source from the contents of published packages.
+Version 1.0.2 improves sidebar navigation, update buttons, the untracked-file menu, query lifetimes, event cleanup, error preservation, and the logging dependency. [Implementation status](Docs/CurrentStatus.md) separates the latest source from the contents of published packages.
 
-The stable release includes application updates, automatic remote checks, opening submodule repositories, update progress in the lower left, and release-page buttons. In v1.0.1, open status-message details to select the full text by dragging or use Ctrl+A/C to copy it.
+The stable release includes application updates, automatic remote checks, opening submodule repositories, update progress in the lower left, and a GitHub release icon button in Settings. Since v1.0.1, open status-message details to select the full text by dragging or use Ctrl+A/C to copy it.
 
 In-app updates consider only official stable releases. The complete update download, replacement, and recovery flow and execution of the latest source have not been verified.
 
