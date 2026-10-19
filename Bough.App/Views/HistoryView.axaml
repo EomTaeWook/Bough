@@ -55,35 +55,41 @@
       <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushFocus}" />
     </Style>
     <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="MinHeight" Value="32" />
       <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextMuted}" />
       <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="CornerRadius" Value="6" />
-      <Setter Property="Padding" Value="12,8" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="Padding" Value="8,4" />
+    </Style>
+    <Style Selector="TabItem /template/ Border#PART_LayoutRoot">
+      <Setter Property="TextElement.FontSize" Value="14" />
     </Style>
     <Style Selector="TabItem:pointerover /template/ Border#PART_LayoutRoot, TabItem:pressed /template/ Border#PART_LayoutRoot">
       <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource BoughBrushSelectionText}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource BoughBrushText}" />
     </Style>
     <Style Selector="TabItem:selected">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
-      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
     </Style>
     <Style Selector="TabItem:selected /template/ Border#PART_LayoutRoot, TabItem:selected:pointerover /template/ Border#PART_LayoutRoot, TabItem:selected:pressed /template/ Border#PART_LayoutRoot">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushAccent}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource BoughBrushAccent}" />
     </Style>
     <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
       <Setter Property="IsVisible" Value="False" />
     </Style>
     <Style Selector="TabItem /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="FontSize" Value="14" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushTextMuted}" />
     </Style>
     <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter, TabItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource BoughBrushSelectionText}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
     </Style>
     <Style Selector="TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccentText}" />
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
     </Style>
     <Style Selector="TabItem:disabled /template/ Border#PART_LayoutRoot">
       <Setter Property="Background" Value="{DynamicResource BoughBrushDisabled}" />

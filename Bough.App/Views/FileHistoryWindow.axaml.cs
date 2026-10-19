@@ -75,7 +75,6 @@ namespace Bough.App.Views
             ToolTip.SetTip(PanelSplitter, _strings.GetString("FileHistoryResizePanels"));
             ToolTip.SetTip(BaselineText, _model.Repository.RootPath + " · " + _model.RevisionHash);
             CancelButton.IsVisible = _model.IsLoadingList || _model.IsLoadingDiff;
-            LoadingProgress.IsVisible = CancelButton.IsVisible;
             foreach (FileHistoryEntryItem entry in _model.Entries)
             {
                 entry.SetStatusText(GetStatusText(entry.Status));

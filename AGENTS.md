@@ -31,6 +31,10 @@
 - 인계에는 변경 파일, 최종 계약 파일 경로, 남은 의존성과 검증 미실시를 적는다. 이전 관찰과 현재 소스가 다르면 필요한 파일을 읽어 현재 상태를 전달하고 추가 검증으로 확대하지 않는다.
 - 공유 Excel·JSON은 총괄이 최종 계약으로 병합한다. 작업자는 코드 참조와 계약을 전달하며 공유 파일을 동시에 편집하지 않는다.
 
+## 진행 막대 위치
+
+- 진행 막대는 메인 창 왼쪽 하단 한 곳에만 표시한다. 상단·본문·개별 팝업에 추가하거나 팝업 표시를 이유로 하단 막대를 숨기지 않는다. 상세 규칙은 [진행 막대 표시 위치](Design/UIConsistency.md#진행-막대-표시-위치)를 따른다.
+
 ## 구현 전에 읽을 규칙
 
 - 현재 작업의 시작과 재개 전에 이 문서, [코딩 컨벤션](Docs/CodingConvention.md), [재사용 아키텍처 적용](Docs/ReusableArchitectureAdoption.md), [응용프로그램 기준](Docs/DesktopApplicationArchitecture.md), [현재 아키텍처](Docs/AvaloniaMvpAdoption.md), 자신의 [담당 구현 계약](Docs/ImplementationPlan.md)과 해당 기능 기획을 읽는다.

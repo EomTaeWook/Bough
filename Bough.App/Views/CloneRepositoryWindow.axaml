@@ -24,7 +24,6 @@
       <StackPanel Spacing="8">
         <TextBlock x:Name="StatusText" Foreground="{DynamicResource BoughBrushText}"
                    TextWrapping="Wrap" />
-        <ProgressBar x:Name="CloneProgress" IsVisible="False" IsIndeterminate="True" Height="3" />
         <TextBlock x:Name="DestinationOutcomeText" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}"
                    TextWrapping="Wrap" />
       </StackPanel>

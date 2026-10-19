@@ -17,7 +17,6 @@
       <StackPanel Spacing="8" IsVisible="{Binding IsBusy}">
         <TextBlock Text="{Binding OperationStageText}" Foreground="{DynamicResource BoughBrushText}" />
         <TextBlock x:Name="TransferStatusBlock" Text="{Binding TransferStatusText}" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" />
-        <ProgressBar IsIndeterminate="True" Height="3" />
         <TextBlock x:Name="ElapsedText" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12" />
       </StackPanel>
     </StackPanel>

@@ -235,7 +235,6 @@ namespace Bough.App.Views
             {
                 CancelButton.Content = _strings.GetString("CloneClose");
             }
-            CloneProgress.IsVisible = running;
         }
     }
 }

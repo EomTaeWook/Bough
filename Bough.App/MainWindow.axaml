@@ -263,8 +263,6 @@
       <Border Grid.Row="1" Background="{DynamicResource BoughBrushSubheader}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
         <Grid>
           <views:RemoteOperationsView x:Name="RemoteOperationsPanel" DataContext="{Binding RemoteOperations}" />
-          <ProgressBar IsVisible="{Binding IsRemoteLoading}" IsIndeterminate="True"
-                       Height="3" VerticalAlignment="Bottom" />
         </Grid>
       </Border>
       </Grid>
@@ -324,8 +322,6 @@
           <Border Grid.Row="1" IsVisible="{Binding HasRepository}">
             <Grid>
               <views:ReferenceExplorerView DataContext="{Binding References}" />
-              <ProgressBar IsVisible="{Binding IsReferencesLoading}" IsIndeterminate="True"
-                           Height="3" VerticalAlignment="Top" />
             </Grid>
           </Border>
           <Border Grid.Row="2" IsVisible="{Binding HasSidebarStatus}"
@@ -381,8 +377,6 @@
         <Border Grid.Row="2" IsVisible="{Binding IsLocalChangesView}">
           <Grid>
             <views:LocalChangesView x:Name="LocalChangesPanel" DataContext="{Binding LocalChanges}" />
-            <ProgressBar IsVisible="{Binding IsLocalChangesLoading}" IsIndeterminate="True"
-                         Height="3" VerticalAlignment="Top" />
           </Grid>
         </Border>
         <Border Grid.Row="2" IsVisible="{Binding IsStashView}">

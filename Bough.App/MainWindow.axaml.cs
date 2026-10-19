@@ -114,7 +114,6 @@ namespace Bough.App
             RemoteOperationsPanel.GetRepositoryRequestVersion = () => _viewModel.RepositoryRequestVersion;
             RemoteOperationsPanel.OperationFinishedAsync = _viewModel.HandleRemoteOperationFinishedAsync;
             RemoteOperationsPanel.TagPushRequestedAsync = RequestTagPushAsync;
-            RemoteOperationsPanel.PopupProgressChanged = _viewModel.UpdateRemotePopupProgress;
             _viewModel.References.SubmoduleOpenRequested += OnSubmoduleOpenRequested;
             _viewModel.ConflictWindowRequested += OpenConflictWindow;
             _viewModel.ConflictResolutionCompleted += CloseCompletedConflictWindow;
@@ -586,6 +585,7 @@ namespace Bough.App
             {
                 return;
             }
+            _viewModel.NotifySidebarStatusChanged();
             UpdateSettingsAndRemoteAvailability();
         }
 

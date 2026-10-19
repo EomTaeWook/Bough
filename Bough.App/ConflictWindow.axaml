@@ -224,7 +224,7 @@
       </Grid>
     </Grid>
     <Border Grid.Row="1" Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
-      <Grid ColumnDefinitions="*,Auto,180" Margin="16,0">
+      <Grid ColumnDefinitions="*,Auto" Margin="16,0">
         <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" IsVisible="{Binding HasGeneralStatus}"
                    Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
         <TextBlock x:Name="StageStatusBlock" Grid.Column="0" IsVisible="{Binding HasStageResult}"
@@ -232,7 +232,6 @@
         <TextBlock Grid.Column="1" Text="{Binding QueueStatusText}" IsVisible="{Binding HasQueueStatus}"
                    Foreground="{DynamicResource BoughBrushTextMuted}" FontSize="12" VerticalAlignment="Center" Margin="12,0"
                    MaxWidth="300" TextTrimming="CharacterEllipsis" />
-        <ProgressBar Grid.Column="2" IsVisible="{Binding IsBusy}" IsIndeterminate="True" Height="3" VerticalAlignment="Center" />
       </Grid>
     </Border>
   </Grid>

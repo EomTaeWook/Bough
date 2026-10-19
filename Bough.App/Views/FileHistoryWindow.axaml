@@ -106,7 +106,6 @@
       </Border>
     </Grid>
     <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-      <ProgressBar x:Name="LoadingProgress" Height="3" IsIndeterminate="True" VerticalAlignment="Center" Margin="0,0,8,0" />
       <Button x:Name="CancelButton" Grid.Column="1" MinHeight="32" MinWidth="80" Click="CancelClicked" />
       <Button x:Name="CloseButton" Grid.Column="2" MinHeight="32" MinWidth="80" Click="CloseClicked">
         <StackPanel Orientation="Horizontal" Spacing="8">

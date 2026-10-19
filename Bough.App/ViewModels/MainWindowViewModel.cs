@@ -60,9 +60,6 @@ namespace Bough.App.ViewModels
         private bool _isRebaseInProgress;
         private GitRevertState _revertState;
         private bool _isRevertStateLoading;
-        private RemoteOperationsViewModel _remotePopupProgressSession;
-        private string _remotePopupProgressRoot = string.Empty;
-        private int _remotePopupProgressRequest;
         private int _repositoryRequestVersion;
         private int _historyReferenceChangeVersion;
         private int _tagCommitSelectionRequestVersion;
@@ -354,62 +351,28 @@ namespace Bough.App.ViewModels
                 {
                     return true;
                 }
-                if (IsGitOperationRunning == false)
-                {
-                    return false;
-                }
-                if (_remotePopupProgressSession == null)
+                if (IsRemoteLoading == true)
                 {
                     return true;
                 }
-                if (_remotePopupProgressSession.IsBusy == false)
+                if (IsReferencesLoading == true)
                 {
                     return true;
                 }
-                if (_remotePopupProgressRequest != _repositoryRequestVersion)
+                if (IsLocalChangesLoading == true)
                 {
                     return true;
                 }
-                if (_repository == null)
+                if (Conflicts.IsBusy == true)
                 {
                     return true;
                 }
-                return _pathComparer.Equals(_remotePopupProgressRoot, _repository.RootPath) == false;
+                if (RemoteOperations.IsBusy == true)
+                {
+                    return true;
+                }
+                return IsGitOperationRunning;
             }
-        }
-
-        public void UpdateRemotePopupProgress(GitRepository repository, RemoteOperationsViewModel session,
-            int request, bool isShowingProgress)
-        {
-            if (isShowingProgress == false)
-            {
-                if (ReferenceEquals(_remotePopupProgressSession, session) == false)
-                {
-                    return;
-                }
-                _remotePopupProgressSession = null;
-                _remotePopupProgressRoot = string.Empty;
-            }
-            else
-            {
-                if (request != _repositoryRequestVersion)
-                {
-                    return;
-                }
-                if (_repository == null)
-                {
-                    return;
-                }
-                if (_pathComparer.Equals(_repository.RootPath, repository.RootPath) == false)
-                {
-                    return;
-                }
-                _remotePopupProgressSession = session;
-                _remotePopupProgressRoot = repository.RootPath;
-                _remotePopupProgressRequest = request;
-            }
-            OnPropertyChanged(nameof(IsMainProgress));
-            NotifySidebarStatusChanged();
         }
 
         public string SidebarStatusText
@@ -614,6 +577,7 @@ namespace Bough.App.ViewModels
             {
                 if (SetProperty(ref _isLocalChangesLoading, value))
                 {
+                    NotifySidebarStatusChanged();
                     NotifyRebaseState();
                 }
             }
@@ -622,13 +586,25 @@ namespace Bough.App.ViewModels
         public bool IsReferencesLoading
         {
             get { return _isReferencesLoading; }
-            private set { SetProperty(ref _isReferencesLoading, value); }
+            private set
+            {
+                if (SetProperty(ref _isReferencesLoading, value) == true)
+                {
+                    NotifySidebarStatusChanged();
+                }
+            }
         }
 
         public bool IsRemoteLoading
         {
             get { return _isRemoteLoading; }
-            private set { SetProperty(ref _isRemoteLoading, value); }
+            private set
+            {
+                if (SetProperty(ref _isRemoteLoading, value) == true)
+                {
+                    NotifySidebarStatusChanged();
+                }
+            }
         }
 
         public bool IsBusy
@@ -2228,8 +2204,6 @@ namespace Bough.App.ViewModels
 
         private void ClearGitOperationQueueState()
         {
-            _remotePopupProgressSession = null;
-            _remotePopupProgressRoot = string.Empty;
             _runningGitOperationName = string.Empty;
             _pendingGitOperationCount = 0;
             NotifyGitOperationQueueState();
@@ -2423,9 +2397,14 @@ namespace Bough.App.ViewModels
             }
             if (Dispatcher.UIThread.CheckAccess() == false)
             {
-                Dispatcher.UIThread.Post(NotifyCommandStates);
+                Dispatcher.UIThread.Post(() =>
+                {
+                    NotifySidebarStatusChanged();
+                    NotifyCommandStates();
+                });
                 return;
             }
+            NotifySidebarStatusChanged();
             NotifyCommandStates();
         }
 
