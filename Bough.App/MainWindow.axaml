@@ -64,7 +64,7 @@
       <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Button#RepositoryPickerButton:pointerover:not(:disabled):not(:pressed) /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
       <Setter Property="BorderBrush" Value="{DynamicResource BoughBrushBorderStrong}" />
     </Style>
