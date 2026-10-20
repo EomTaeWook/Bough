@@ -215,20 +215,20 @@
       </ResourceDictionary.MergedDictionaries>
       <ResourceDictionary.ThemeDictionaries>
       <ResourceDictionary x:Key="Light">
-        <Color x:Key="BoughColorHeader">#E8EFF6</Color>
-        <SolidColorBrush x:Key="BoughBrushHeader" Color="#E8EFF6" />
-        <Color x:Key="BoughColorSubheader">#F0F4F8</Color>
-        <SolidColorBrush x:Key="BoughBrushSubheader" Color="#F0F4F8" />
-        <Color x:Key="BoughColorSidebar">#F2F5F9</Color>
-        <SolidColorBrush x:Key="BoughBrushSidebar" Color="#F2F5F9" />
-        <Color x:Key="BoughColorCanvas">#F7F9FC</Color>
-        <SolidColorBrush x:Key="BoughBrushCanvas" Color="#F7F9FC" />
+        <Color x:Key="BoughColorHeader">#F3F4F6</Color>
+        <SolidColorBrush x:Key="BoughBrushHeader" Color="#F3F4F6" />
+        <Color x:Key="BoughColorSubheader">#F3F4F6</Color>
+        <SolidColorBrush x:Key="BoughBrushSubheader" Color="#F3F4F6" />
+        <Color x:Key="BoughColorSidebar">#F5F5F5</Color>
+        <SolidColorBrush x:Key="BoughBrushSidebar" Color="#F5F5F5" />
+        <Color x:Key="BoughColorCanvas">#F7F7F8</Color>
+        <SolidColorBrush x:Key="BoughBrushCanvas" Color="#F7F7F8" />
         <Color x:Key="BoughColorSurface">#FFFFFF</Color>
         <SolidColorBrush x:Key="BoughBrushSurface" Color="#FFFFFF" />
-        <Color x:Key="BoughColorRaised">#EEF3F8</Color>
-        <SolidColorBrush x:Key="BoughBrushRaised" Color="#EEF3F8" />
-        <Color x:Key="BoughColorInset">#F3F6FA</Color>
-        <SolidColorBrush x:Key="BoughBrushInset" Color="#F3F6FA" />
+        <Color x:Key="BoughColorRaised">#F1F2F4</Color>
+        <SolidColorBrush x:Key="BoughBrushRaised" Color="#F1F2F4" />
+        <Color x:Key="BoughColorInset">#F5F5F5</Color>
+        <SolidColorBrush x:Key="BoughBrushInset" Color="#F5F5F5" />
         <Color x:Key="BoughColorInput">#FFFFFF</Color>
         <SolidColorBrush x:Key="BoughBrushInput" Color="#FFFFFF" />
         <Color x:Key="BoughColorBorder">#D5DFEA</Color>
@@ -297,22 +297,22 @@
         <SolidColorBrush x:Key="BoughBrushGraphEight" Color="#2D8777" />
       </ResourceDictionary>
       <ResourceDictionary x:Key="Dark">
-        <Color x:Key="BoughColorHeader">#202C3B</Color>
-        <SolidColorBrush x:Key="BoughBrushHeader" Color="#202C3B" />
-        <Color x:Key="BoughColorSubheader">#1A2533</Color>
-        <SolidColorBrush x:Key="BoughBrushSubheader" Color="#1A2533" />
-        <Color x:Key="BoughColorSidebar">#192432</Color>
-        <SolidColorBrush x:Key="BoughBrushSidebar" Color="#192432" />
-        <Color x:Key="BoughColorCanvas">#141E2A</Color>
-        <SolidColorBrush x:Key="BoughBrushCanvas" Color="#141E2A" />
-        <Color x:Key="BoughColorSurface">#1D2A39</Color>
-        <SolidColorBrush x:Key="BoughBrushSurface" Color="#1D2A39" />
-        <Color x:Key="BoughColorRaised">#263547</Color>
-        <SolidColorBrush x:Key="BoughBrushRaised" Color="#263547" />
-        <Color x:Key="BoughColorInset">#172230</Color>
-        <SolidColorBrush x:Key="BoughBrushInset" Color="#172230" />
-        <Color x:Key="BoughColorInput">#202F40</Color>
-        <SolidColorBrush x:Key="BoughBrushInput" Color="#202F40" />
+        <Color x:Key="BoughColorHeader">#25272B</Color>
+        <SolidColorBrush x:Key="BoughBrushHeader" Color="#25272B" />
+        <Color x:Key="BoughColorSubheader">#25272B</Color>
+        <SolidColorBrush x:Key="BoughBrushSubheader" Color="#25272B" />
+        <Color x:Key="BoughColorSidebar">#202226</Color>
+        <SolidColorBrush x:Key="BoughBrushSidebar" Color="#202226" />
+        <Color x:Key="BoughColorCanvas">#181A1D</Color>
+        <SolidColorBrush x:Key="BoughBrushCanvas" Color="#181A1D" />
+        <Color x:Key="BoughColorSurface">#202226</Color>
+        <SolidColorBrush x:Key="BoughBrushSurface" Color="#202226" />
+        <Color x:Key="BoughColorRaised">#2A2D32</Color>
+        <SolidColorBrush x:Key="BoughBrushRaised" Color="#2A2D32" />
+        <Color x:Key="BoughColorInset">#1C1E22</Color>
+        <SolidColorBrush x:Key="BoughBrushInset" Color="#1C1E22" />
+        <Color x:Key="BoughColorInput">#25282D</Color>
+        <SolidColorBrush x:Key="BoughBrushInput" Color="#25282D" />
         <Color x:Key="BoughColorBorder">#34465A</Color>
         <SolidColorBrush x:Key="BoughBrushBorder" Color="#34465A" />
         <Color x:Key="BoughColorBorderStrong">#526A84</Color>

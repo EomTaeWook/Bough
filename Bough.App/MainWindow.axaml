@@ -260,7 +260,7 @@
           </Button>
         </StackPanel>
       </Grid>
-      <Border Grid.Row="1" Background="{DynamicResource BoughBrushSubheader}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
+      <Border Grid.Row="1" Background="{DynamicResource BoughBrushCanvas}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0">
         <Grid>
           <views:RemoteOperationsView x:Name="RemoteOperationsPanel" DataContext="{Binding RemoteOperations}" />
         </Grid>
