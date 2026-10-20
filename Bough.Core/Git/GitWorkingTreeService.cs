@@ -19,6 +19,7 @@ namespace Bough.Core.Git
         private static readonly string[] _restoreBatchArguments = new string[] { "restore", "--worktree", "--pathspec-from-file=-", "--pathspec-file-nul" };
         private static readonly string[] _stageBatchArguments = new string[] { "add", "-A", "--pathspec-from-file=-", "--pathspec-file-nul" };
         private static readonly string[] _headMessageArguments = new string[] { "rev-parse", "--verify", "HEAD^{commit}" };
+        private static readonly string[] _commitHeadArguments = new string[] { "rev-parse", "--verify", "--quiet", "HEAD^{commit}" };
         private static readonly string[] _userNameArguments = new string[] { "config", "--get", "user.name" };
         private static readonly string[] _userEmailArguments = new string[] { "config", "--get", "user.email" };
         private static readonly string[] _headArguments = new string[] { "rev-parse", "HEAD" };
@@ -77,6 +78,7 @@ namespace Bough.Core.Git
 
         public async Task<GitWorktreeStatus> GetStatusAsync(GitRepository repository, CancellationToken cancellationToken = default)
         {
+            string headCommitHash = await ReadCommitHeadAsync(repository, cancellationToken);
             GitCommandResult result = await _runner.RunAsync(repository.RootPath, _statusArguments, false, cancellationToken);
             ArrayQueue<GitWorktreeFile> files = [];
             string[] entries = result.Output.Split('\0');
@@ -112,7 +114,28 @@ namespace Bough.Core.Git
             }
 
             string mergeCommitMessage = await ReadMergeCommitMessageAsync(repository, cancellationToken);
-            return new GitWorktreeStatus(files, mergeCommitMessage);
+            GitWorktreeFile[] stagedFiles = files.Where(file => file.IsStaged).ToArray();
+            Dictionary<string, string> indexEntries = await GetDiscardIndexEntriesAsync(repository, stagedFiles, cancellationToken);
+            return new GitWorktreeStatus(files, mergeCommitMessage, headCommitHash, indexEntries);
+        }
+
+        private async Task<string> ReadCommitHeadAsync(GitRepository repository, CancellationToken cancellationToken)
+        {
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath, _commitHeadArguments, true, cancellationToken);
+            if (result.ExitCode == 0)
+            {
+                return result.Output.Trim();
+            }
+            string error = result.Error.Trim();
+            if (error.Length > 0)
+            {
+                throw new GitException(error);
+            }
+            if (result.ExitCode == 1)
+            {
+                return string.Empty;
+            }
+            throw new GitException(GitException.ExitWithoutErrorMessageCode, null, result.ExitCode);
         }
 
         private async Task<string> ReadMergeCommitMessageAsync(GitRepository repository, CancellationToken cancellationToken)
@@ -839,7 +862,16 @@ namespace Bough.Core.Git
                 throw new GitException("WorkingNoPreviousCommit", null, Array.Empty<object>());
             }
 
-            byte[] content = await _runner.RunBytesAsync(repository.RootPath, new string[] { "cat-file", "commit", head.Output.Trim() }, 1048576, cancellationToken);
+            return await GetHeadCommitMessageAsync(repository, head.Output.Trim(), cancellationToken);
+        }
+
+        public async Task<string> GetHeadCommitMessageAsync(GitRepository repository, string commitHash, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(commitHash) == true)
+            {
+                throw new GitException("WorkingNoPreviousCommit", null, Array.Empty<object>());
+            }
+            byte[] content = await _runner.RunBytesAsync(repository.RootPath, new string[] { "cat-file", "commit", commitHash }, 1048576, cancellationToken);
             string raw;
             try
             {
@@ -861,6 +893,12 @@ namespace Bough.Core.Git
 
         public async Task<GitCommitResult> CommitAsync(GitRepository repository, string message, bool amend, CancellationToken cancellationToken = default)
         {
+            GitWorktreeStatus expectedStatus = await GetStatusAsync(repository, cancellationToken);
+            return await CommitAsync(repository, message, amend, expectedStatus, cancellationToken);
+        }
+
+        public async Task<GitCommitResult> CommitAsync(GitRepository repository, string message, bool amend, GitWorktreeStatus expectedStatus, CancellationToken cancellationToken = default)
+        {
             if (string.IsNullOrWhiteSpace(message) == true)
             {
                 throw new GitException("WorkingCommitMessageRequired", null, Array.Empty<object>());
@@ -872,6 +910,8 @@ namespace Bough.Core.Git
                 throw new GitException("WorkingCommitSummaryRequired", null, Array.Empty<object>());
             }
 
+            GitCommandResult name = await _runner.RunAsync(repository.RootPath, _userNameArguments, true, cancellationToken);
+            GitCommandResult email = await _runner.RunAsync(repository.RootPath, _userEmailArguments, true, cancellationToken);
             GitWorktreeStatus status = await GetStatusAsync(repository, cancellationToken);
             if (status.Files.Any(file => file.IsStaged) == false)
             {
@@ -883,9 +923,40 @@ namespace Bough.Core.Git
                 throw new GitException("WorkingResolveBeforeCommit", null, Array.Empty<object>());
             }
 
-            GitCommandResult name = await _runner.RunAsync(repository.RootPath, _userNameArguments, true, cancellationToken);
-            GitCommandResult email = await _runner.RunAsync(repository.RootPath, _userEmailArguments, true, cancellationToken);
-            if (string.IsNullOrWhiteSpace(name.Output) == true || string.IsNullOrWhiteSpace(email.Output) == true)
+            if (expectedStatus == null)
+            {
+                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+            }
+            if (expectedStatus.HeadCommitHash == null)
+            {
+                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+            }
+            if (expectedStatus.HeadCommitHash != status.HeadCommitHash)
+            {
+                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+            }
+            ValidateSelectedFiles(expectedStatus.Files.Where(file => file.IsStaged).ToArray(), status.Files.Where(file => file.IsStaged).ToArray(), true);
+            if (expectedStatus.IndexEntries.Count != status.IndexEntries.Count)
+            {
+                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+            }
+            foreach (KeyValuePair<string, string> entry in expectedStatus.IndexEntries)
+            {
+                if (status.IndexEntries.TryGetValue(entry.Key, out string currentEntry) == false)
+                {
+                    throw new GitException("LocalIndexChanged", null, entry.Key);
+                }
+                if (entry.Value != currentEntry)
+                {
+                    throw new GitException("LocalIndexChanged", null, entry.Key);
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(name.Output) == true)
+            {
+                throw new GitException("WorkingAuthorRequired", null, Array.Empty<object>());
+            }
+            if (string.IsNullOrWhiteSpace(email.Output) == true)
             {
                 throw new GitException("WorkingAuthorRequired", null, Array.Empty<object>());
             }

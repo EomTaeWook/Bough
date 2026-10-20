@@ -60,14 +60,14 @@ namespace Bough.App.Presenters
             return true;
         }
 
-        public async Task SetRepositoryAsync(GitRepository repository, CancellationToken cancellationToken = default)
+        public async Task SetRepositoryAsync(GitRepository repository, CancellationToken cancellationToken = default, bool propagateReadError = false)
         {
             _model.BindRepository(repository);
             if (repository == null)
             {
                 return;
             }
-            await RefreshAsync(cancellationToken);
+            await RefreshAsync(cancellationToken, propagateReadError);
         }
 
         public async Task<bool> ExecuteRequestAsync(RemoteOperationRequest request)
@@ -161,7 +161,7 @@ namespace Bough.App.Presenters
             return true;
         }
 
-        public async Task RefreshAsync(CancellationToken cancellationToken = default)
+        public async Task RefreshAsync(CancellationToken cancellationToken = default, bool propagateReadError = false)
         {
             cancellationToken.ThrowIfCancellationRequested();
             GitRepository repository = _model.CurrentRepository;
@@ -203,9 +203,18 @@ namespace Bough.App.Presenters
             }
             catch (Exception exception)
             {
-                if (request == _requestVersion)
+                if (request != _requestVersion)
                 {
-                    _model.SetLocalizedStatusText(new LocalizedText(exception));
+                    return;
+                }
+                if (ReferenceEquals(_model.CurrentRepository, repository) == false)
+                {
+                    return;
+                }
+                _model.SetLocalizedStatusText(new LocalizedText(exception));
+                if (propagateReadError == true)
+                {
+                    throw;
                 }
             }
             finally

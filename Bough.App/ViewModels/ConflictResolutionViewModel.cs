@@ -712,7 +712,33 @@ namespace Bough.App.ViewModels
             }
             ConflictFileItem nextFile = previousFile ?? ConflictFiles[0];
             SetSelectedFile(nextFile);
-            await _loadPresenter.LoadCoreAsync(nextFile);
+            Task conflictLoadTask = _loadPresenter.LoadCoreAsync(nextFile);
+            int loadVersion = _loadVersion;
+            try
+            {
+                await conflictLoadTask;
+            }
+            catch (Exception exception)
+            {
+                if (request != _requestVersion)
+                {
+                    throw;
+                }
+                if (ReferenceEquals(_repository, repository) == false)
+                {
+                    throw;
+                }
+                if (loadVersion != _loadVersion)
+                {
+                    throw;
+                }
+                if (ReferenceEquals(_selectedFile, nextFile) == false)
+                {
+                    throw;
+                }
+                SetLocalizedStatusMessage(new LocalizedText(exception));
+                throw;
+            }
             if (request != _requestVersion)
             {
                 return false;

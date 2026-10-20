@@ -279,9 +279,11 @@ namespace Bough.Core.Git
                 throw new GitException(GitException.ProcessStartFailedCode, exception, startInfo.FileName);
             }
 
+            Task<string> standardErrorTask = null;
+            bool operationFailed = false;
             try
             {
-                Task<string> errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+                standardErrorTask = process.StandardError.ReadToEndAsync(cancellationToken);
                 using MemoryStream output = new();
                 byte[] buffer = new byte[81920];
                 int count;
@@ -296,31 +298,54 @@ namespace Bough.Core.Git
                 }
 
                 await process.WaitForExitAsync(cancellationToken);
+                string standardError = await standardErrorTask;
                 if (process.ExitCode != 0)
                 {
-                    string error = (await errorTask).Trim();
-                    if (error.Length == 0)
+                    standardError = standardError.Trim();
+                    if (standardError.Length == 0)
                     {
                         throw new GitException(GitException.ExitWithoutErrorMessageCode, null, process.ExitCode);
                     }
 
-                    throw new GitException(error);
+                    throw new GitException(standardError);
                 }
 
                 return output.ToArray();
             }
+            catch
+            {
+                operationFailed = true;
+                throw;
+            }
             finally
             {
-                if (process.HasExited == false)
+                try
                 {
-                    try
+                    if (process.HasExited == false)
                     {
-                        process.Kill(true);
+                        try
+                        {
+                            process.Kill(true);
+                        }
+                        catch (InvalidOperationException)
+                        {
+                        }
+                        await process.WaitForExitAsync(CancellationToken.None);
                     }
-                    catch (InvalidOperationException)
+                }
+                finally
+                {
+                    if (standardErrorTask != null)
                     {
+                        try
+                        {
+                            await standardErrorTask;
+                        }
+                        catch (Exception) when (operationFailed == true)
+                        {
+                            // Preserve the operation error after observing the reader completion.
+                        }
                     }
-                    await process.WaitForExitAsync(CancellationToken.None);
                 }
             }
         }

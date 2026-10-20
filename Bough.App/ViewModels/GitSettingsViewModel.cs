@@ -608,7 +608,23 @@ namespace Bough.App.ViewModels
                         {
                             return;
                         }
-                        await RefreshAccountsAsync(repository, request, remoteName, selectedName, token);
+                        try
+                        {
+                            await RefreshAccountsAsync(repository, request, remoteName, selectedName, token, true);
+                        }
+                        catch (Exception exception)
+                        {
+                            if (request != _requestVersion)
+                            {
+                                return;
+                            }
+                            if (IsCurrentRepository(repository) == false)
+                            {
+                                return;
+                            }
+                            DisplayResult = new GitSettingsDisplayResult(GitSettingsDisplayTarget.AccountSummary, "GitHubAccountSelected", new object[] { remoteName, selectedName }, null, null, exception);
+                            return;
+                        }
                         if (request != _requestVersion)
                         {
                             return;
@@ -868,8 +884,7 @@ namespace Bough.App.ViewModels
             }
         }
 
-        private async Task RefreshAccountsAsync(GitRepository repository, int request, string preserveRemote,
-            string preserveCandidate, CancellationToken cancellationToken)
+        private async Task RefreshAccountsAsync(GitRepository repository, int request, string preserveRemote, string preserveCandidate, CancellationToken cancellationToken, bool propagateReadError = false)
         {
             _gitHubRemotes.Clear();
             ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, "GitHubAccountsLoading");
@@ -931,17 +946,35 @@ namespace Bough.App.ViewModels
             }
             catch (OperationCanceledException)
             {
-                if (request == _requestVersion && _repository == repository)
+                if (request != _requestVersion)
                 {
-                    ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, "GitHubAccountLookupCanceled");
+                    return;
                 }
+                if (_repository != repository)
+                {
+                    return;
+                }
+                if (propagateReadError == true)
+                {
+                    throw;
+                }
+                ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, "GitHubAccountLookupCanceled");
             }
             catch (Exception exception)
             {
-                if (request == _requestVersion && _repository == repository)
+                if (request != _requestVersion)
                 {
-                    ShowDisplayError(GitSettingsDisplayTarget.AccountSummary, exception);
+                    return;
                 }
+                if (_repository != repository)
+                {
+                    return;
+                }
+                if (propagateReadError == true)
+                {
+                    throw;
+                }
+                ShowDisplayError(GitSettingsDisplayTarget.AccountSummary, exception);
             }
         }
 

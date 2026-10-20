@@ -19,12 +19,21 @@ namespace Bough.App.Views
     {
         private ReferenceTreeNode _menuNode;
         private string _menuRepositoryRoot;
+        private int _clipboardRequestVersion;
 
         public ReferenceExplorerView()
         {
             InitializeComponent();
             LanguageChangeBinding.Bind(this, () => (DataContext as ReferenceExplorerViewModel)?.Strings);
             ReferenceTree.AddHandler(InputElement.PointerPressedEvent, TreeNodePointerPressed, RoutingStrategies.Bubble, true);
+            DataContextChanged += (_, _) =>
+            {
+                _clipboardRequestVersion++;
+            };
+            DetachedFromVisualTree += (_, _) =>
+            {
+                _clipboardRequestVersion++;
+            };
         }
 
         private void TreeNodeTapped(object sender, TappedEventArgs eventArgs)
@@ -303,6 +312,7 @@ namespace Bough.App.Views
             items[8].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
             items[8].IsEnabled = true;
             items[9].IsVisible = node.IsEmpty == false;
+            items[9].CommandParameter = viewModel.CurrentRepository;
             items[10].IsVisible = node.Kind == ReferenceTreeNodeKind.Tag;
             items[10].IsEnabled = true;
             items[10].CommandParameter = viewModel.CurrentRepository;
@@ -812,30 +822,77 @@ namespace Bough.App.Views
 
         private async void CopyTreeNameClicked(object sender, RoutedEventArgs eventArgs)
         {
-            IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-            if (clipboard == null)
+            if (DataContext is not ReferenceExplorerViewModel viewModel)
             {
                 return;
             }
-            ReferenceTreeNode node = _menuNode;
-            if (node == null)
+            if (sender is not MenuItem menuItem)
             {
-                if (sender is MenuItem item)
+                return;
+            }
+            if (menuItem.CommandParameter is not GitRepository menuRepository)
+            {
+                return;
+            }
+            ReferenceTreeNode menuNode = _menuNode;
+            if (menuNode == null)
+            {
+                menuNode = menuItem.DataContext as ReferenceTreeNode;
+            }
+            if (menuNode == null)
+            {
+                return;
+            }
+            GitRepository repository = viewModel.CurrentRepository;
+            if (repository == null)
+            {
+                return;
+            }
+            string referenceName = menuNode.Label;
+            if (menuNode.Target is GitRemoteBranch remoteBranch)
+            {
+                referenceName = remoteBranch.FullName;
+            }
+            ReferenceTreeNode selectedTreeNode = viewModel.SelectedTreeNode;
+            int bindingVersion = viewModel.ReferenceBindingVersion;
+            int clipboardRequestVersion = ++_clipboardRequestVersion;
+            try
+            {
+                if (repository.RootPath != menuRepository.RootPath)
                 {
-                    node = item.DataContext as ReferenceTreeNode;
+                    throw new GitException("ReferenceSwitchMenuRepositoryChanged", null, Array.Empty<object>());
                 }
+                IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard == null)
+                {
+                    return;
+                }
+                await clipboard.SetTextAsync(referenceName);
             }
-            if (node == null)
+            catch (Exception exception)
             {
-                return;
+                if (ReferenceEquals(DataContext, viewModel) == false)
+                {
+                    return;
+                }
+                if (clipboardRequestVersion != _clipboardRequestVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.CurrentRepository, repository) == false)
+                {
+                    return;
+                }
+                if (bindingVersion != viewModel.ReferenceBindingVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.SelectedTreeNode, selectedTreeNode) == false)
+                {
+                    return;
+                }
+                viewModel.ReportActionError(exception);
             }
-
-            string name = node.Label;
-            if (node.Target is GitRemoteBranch branch)
-            {
-                name = branch.FullName;
-            }
-            await clipboard.SetTextAsync(name);
         }
     }
 }

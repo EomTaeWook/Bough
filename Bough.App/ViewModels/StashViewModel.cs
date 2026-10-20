@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Bough.App.Commands;
+using Bough.App.Interfaces;
 using Bough.App.Localization;
 using Bough.Core.Git;
 using Bough.App.ViewModels.Models;
@@ -501,19 +502,19 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(CanSaveStash));
         }
 
-        public Task<StashMutationResult> SaveAsync()
+        public Task<StashMutationResult> SaveAsync(IStashMutationCompletion completion = null)
         {
-            return RunMutationAsync(StashMutationKind.Save, null);
+            return RunMutationAsync(StashMutationKind.Save, null, completion);
         }
 
-        public Task<StashMutationResult> ApplyAsync()
+        public Task<StashMutationResult> ApplyAsync(IStashMutationCompletion completion = null)
         {
-            return RunMutationAsync(StashMutationKind.Apply, SelectedStash);
+            return RunMutationAsync(StashMutationKind.Apply, SelectedStash, completion);
         }
 
-        public Task<StashMutationResult> PopAsync()
+        public Task<StashMutationResult> PopAsync(IStashMutationCompletion completion = null)
         {
-            return RunMutationAsync(StashMutationKind.Pop, SelectedStash);
+            return RunMutationAsync(StashMutationKind.Pop, SelectedStash, completion);
         }
 
         private void RequestDrop()
@@ -524,11 +525,11 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(CanConfirmDropStash));
         }
 
-        public Task<StashMutationResult> ConfirmDropAsync()
+        public Task<StashMutationResult> ConfirmDropAsync(IStashMutationCompletion completion = null)
         {
             GitStashEntry entry = _pendingDrop;
             CancelDrop();
-            return RunMutationAsync(StashMutationKind.Drop, entry);
+            return RunMutationAsync(StashMutationKind.Drop, entry, completion);
         }
 
         private void CancelDrop()
@@ -544,7 +545,7 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(CanConfirmDropStash));
         }
 
-        private async Task<StashMutationResult> RunMutationAsync(StashMutationKind kind, GitStashEntry entry)
+        private async Task<StashMutationResult> RunMutationAsync(StashMutationKind kind, GitStashEntry entry, IStashMutationCompletion completion)
         {
             GitRepository repository = _repository;
             if (repository == null)
@@ -574,12 +575,12 @@ namespace Bough.App.ViewModels
             string message = StashMessage;
             bool includeUntracked = IncludeUntracked;
             GitWorktreeFile[] expectedFiles = _workingStatus?.Files.ToArray();
-            return await _mutationPresenter.RunAsync(this, repository, kind, entry, message, includeUntracked, expectedFiles, operationName);
+            return await _mutationPresenter.RunAsync(this, repository, kind, entry, message, includeUntracked, expectedFiles, operationName, completion);
         }
 
-        public Task<StashMutationResult> RetrySaveRefreshAsync(StashMutationResult savedResult)
+        public Task<StashMutationResult> RetrySaveRefreshAsync(StashMutationResult savedResult, IStashMutationCompletion completion = null)
         {
-            return _mutationPresenter.RetrySaveRefreshAsync(this, savedResult);
+            return _mutationPresenter.RetrySaveRefreshAsync(this, savedResult, completion);
         }
 
         internal int BeginSavedRefresh(GitRepository repository)

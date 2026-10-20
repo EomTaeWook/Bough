@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Bough.App.Interfaces;
-using Bough.App.Localization;
 using Bough.App.ViewModels;
 using Bough.App.ViewModels.Models;
-using Bough.Core.Git;
 
 namespace Bough.App.Presenters
 {
@@ -36,8 +32,7 @@ namespace Bough.App.Presenters
             StashMutationResult result = null;
             try
             {
-                result = await _screen.SaveAsync();
-                result = await CompleteAsync(completion, result);
+                result = await _screen.SaveAsync(completion);
                 _state.CompleteSave(result, null);
             }
             catch (Exception exception)
@@ -66,8 +61,7 @@ namespace Bough.App.Presenters
                     StashMutationResult result = target;
                     try
                     {
-                        result = await _screen.RetrySaveRefreshAsync(target);
-                        result = await CompleteAsync(completion, result);
+                        result = await _screen.RetrySaveRefreshAsync(target, completion);
                         _state.CompleteRefresh(result, null);
                     }
                     catch (Exception exception)
@@ -82,49 +76,5 @@ namespace Bough.App.Presenters
             }
         }
 
-        private async Task<StashMutationResult> CompleteAsync(IStashMutationCompletion completion, StashMutationResult result)
-        {
-            if (result == null)
-            {
-                throw new GitException("StashSaveCompletionResultMissing", null, Array.Empty<object>());
-            }
-            if (completion == null)
-            {
-                return result;
-            }
-
-            StashMutationResult completed = await completion.CompleteStashSaveAsync(result);
-            if (completed == null)
-            {
-                throw new GitException("StashSaveCompletionResultMissing", null, Array.Empty<object>());
-            }
-            List<LocalizedText> errors = result.Errors.ToList();
-            foreach (LocalizedText error in completed.Errors)
-            {
-                if (errors.Contains(error) == false)
-                {
-                    errors.Add(error);
-                }
-            }
-            if (result.Errors.Count == 0)
-            {
-                if (string.IsNullOrEmpty(result.ErrorText) == false)
-                {
-                    errors.Add(new LocalizedText(new GitException(result.ErrorText)));
-                }
-            }
-            if (completed.Errors.Count == 0)
-            {
-                if (string.IsNullOrEmpty(completed.ErrorText) == false)
-                {
-                    if (completed.ErrorText != result.ErrorText)
-                    {
-                        errors.Add(new LocalizedText(new GitException(completed.ErrorText)));
-                    }
-                }
-            }
-            string errorText = string.Join(Environment.NewLine, errors.Select(error => error.GetText(_screen.Strings)));
-            return new StashMutationResult(result.Repository, result.Kind, result.Succeeded, result.WorktreeMayHaveChanged, result.StashesMayHaveChanged, completed.WorktreeStatus ?? result.WorktreeStatus, errorText, errors);
-        }
     }
 }

@@ -3,7 +3,6 @@ using Avalonia.Interactivity;
 using Bough.App.Interfaces;
 using Bough.App.Localization;
 using Bough.App.ViewModels;
-using Bough.App.ViewModels.Models;
 
 namespace Bough.App.Views
 {
@@ -60,11 +59,7 @@ namespace Bough.App.Views
                 completion = owner.DataContext as IStashMutationCompletion;
             }
 
-            StashMutationResult result = await viewModel.ApplyAsync();
-            if (completion != null)
-            {
-                await completion.CompleteStashApplyAsync(result);
-            }
+            await viewModel.ApplyAsync(completion);
         }
 
         private async void PopClicked(object sender, RoutedEventArgs eventArgs)
@@ -85,11 +80,7 @@ namespace Bough.App.Views
                 completion = owner.DataContext as IStashMutationCompletion;
             }
 
-            StashMutationResult result = await viewModel.PopAsync();
-            if (completion != null)
-            {
-                await completion.CompleteStashPopAsync(result);
-            }
+            await viewModel.PopAsync(completion);
         }
 
         private async void ConfirmDropClicked(object sender, RoutedEventArgs eventArgs)
@@ -110,11 +101,7 @@ namespace Bough.App.Views
                 completion = owner.DataContext as IStashMutationCompletion;
             }
 
-            StashMutationResult result = await viewModel.ConfirmDropAsync();
-            if (completion != null)
-            {
-                await completion.CompleteStashDropAsync(result);
-            }
+            await viewModel.ConfirmDropAsync(completion);
         }
     }
 }

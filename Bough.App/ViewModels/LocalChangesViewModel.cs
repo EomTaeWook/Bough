@@ -60,6 +60,7 @@ namespace Bough.App.ViewModels
         private string _statusText;
         private string _commitMessage;
         private string _draftCommitMessage;
+        private string _amendHeadCommitHash;
         private string _automaticMergeCommitMessage = string.Empty;
         private bool _amend;
         private bool _isLoadingAmend;
@@ -447,11 +448,13 @@ namespace Bough.App.ViewModels
                 {
                     ErrorText = string.Empty;
                     _draftCommitMessage = CommitMessage;
+                    _amendHeadCommitHash = _workingStatus?.HeadCommitHash;
                     SetAmendLoading(true);
-                    _ = LoadAmendMessageAsync(_repository, _amendVersion);
+                    _ = LoadAmendMessageAsync(_repository, _amendVersion, _amendHeadCommitHash);
                 }
                 else
                 {
+                    _amendHeadCommitHash = null;
                     SetAmendLoading(false);
                     CommitMessage = _draftCommitMessage ?? string.Empty;
                     _draftCommitMessage = null;
@@ -690,6 +693,7 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(HasRepository));
             _draftCommitMessage = null;
             _automaticMergeCommitMessage = string.Empty;
+            _amendHeadCommitHash = null;
             SetProperty(ref _amend, false, nameof(Amend));
             SetAmendLoading(false);
             CommitMessage = string.Empty;
@@ -1489,8 +1493,17 @@ namespace Bough.App.ViewModels
 
             string message = CommitMessage;
             bool amend = Amend;
-            GitWorktreeFile[] expectedFiles = _stagedFiles.ToArray();
-            return _mutationPresenter.CommitAsync(this, repository, message, amend, expectedFiles, new LocalizedText("CommitButton"));
+            GitWorktreeStatus expectedStatus = _workingStatus;
+            if (expectedStatus == null)
+            {
+                SetLocalizedErrorText(new LocalizedText("LocalSelectionSetChanged"));
+                return Task.CompletedTask;
+            }
+            if (amend == true)
+            {
+                expectedStatus = new GitWorktreeStatus(expectedStatus.Files, expectedStatus.MergeCommitMessage, _amendHeadCommitHash, expectedStatus.IndexEntries);
+            }
+            return _mutationPresenter.CommitAsync(this, repository, message, amend, expectedStatus, new LocalizedText("CommitButton"));
         }
 
         internal void ClearCommittedDraft(GitRepository repository, string message, bool amend)
@@ -1662,7 +1675,7 @@ namespace Bough.App.ViewModels
             ResolveRequested?.Invoke(file.Path);
         }
 
-        private async Task LoadAmendMessageAsync(GitRepository repository, int amendVersion)
+        private async Task LoadAmendMessageAsync(GitRepository repository, int amendVersion, string commitHash)
         {
             if (repository == null)
             {
@@ -1672,7 +1685,7 @@ namespace Bough.App.ViewModels
 
             try
             {
-                string message = await _workingTreeService.GetHeadCommitMessageAsync(repository);
+                string message = await _workingTreeService.GetHeadCommitMessageAsync(repository, commitHash);
                 if (amendVersion != _amendVersion)
                 {
                     return;

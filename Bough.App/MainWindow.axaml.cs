@@ -351,23 +351,18 @@ namespace Bough.App
         private async Task CompleteMainWindowCloseAsync(WindowClosingEventArgs eventArgs)
         {
             TaskCompletionSource<bool> updateRequest = _updateCloseRequest;
-            if (updateRequest != null)
+            try
             {
-                try
+                if (updateRequest != null)
                 {
                     _updateCloseCancellation.ThrowIfCancellationRequested();
-                    EnsureUpdateCanClose();
                 }
-                catch (Exception exception)
-                {
-                    eventArgs.Cancel = true;
-                    updateRequest.TrySetException(exception);
-                    return;
-                }
+                EnsureUpdateCanClose();
             }
-            if (_viewModel.GitSettings.CanChangeAutoFetchSettings == false)
+            catch (Exception exception)
             {
                 eventArgs.Cancel = true;
+                updateRequest?.TrySetException(exception);
                 return;
             }
             if (_closeConfirmed)
@@ -429,16 +424,19 @@ namespace Bough.App
                 {
                     return;
                 }
-                try
+            }
+            try
+            {
+                if (updateRequest != null)
                 {
                     _updateCloseCancellation.ThrowIfCancellationRequested();
-                    EnsureUpdateCanClose();
                 }
-                catch (Exception exception)
-                {
-                    updateRequest.TrySetException(exception);
-                    return;
-                }
+                EnsureUpdateCanClose();
+            }
+            catch (Exception exception)
+            {
+                updateRequest?.TrySetException(exception);
+                return;
             }
             _closeConfirmed = true;
             _conflictWindow.CloseAfterConfirmation();

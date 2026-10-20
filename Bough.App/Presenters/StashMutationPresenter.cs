@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Internals;
+using Bough.App.Interfaces;
 using Bough.App.Localization;
 using Bough.App.Threading;
 using Bough.App.ViewModels;
@@ -25,12 +27,11 @@ namespace Bough.App.Presenters
             _operationQueue = operationQueue;
         }
 
-        public async Task<StashMutationResult> RunAsync(StashViewModel screen, GitRepository repository, StashMutationKind kind, GitStashEntry entry, string message, bool includeUntracked, IReadOnlyList<GitWorktreeFile> expectedFiles, string operationName)
+        public async Task<StashMutationResult> RunAsync(StashViewModel screen, GitRepository repository, StashMutationKind kind, GitStashEntry entry, string message, bool includeUntracked, IReadOnlyList<GitWorktreeFile> expectedFiles, string operationName, IStashMutationCompletion completion = null)
         {
             try
             {
-                return await _operationQueue.EnqueueAsync(repository.RootPath, operationName,
-                    cancellationToken => UiQueuedOperation.RunAsync(() => ExecuteAsync(screen, repository, kind, entry, message, includeUntracked, expectedFiles, cancellationToken)));
+                return await _operationQueue.EnqueueAsync(repository.RootPath, operationName, cancellationToken => UiQueuedOperation.RunAsync(() => ExecuteAsync(screen, repository, kind, entry, message, includeUntracked, expectedFiles, completion, cancellationToken)));
             }
             catch (Exception exception)
             {
@@ -41,7 +42,7 @@ namespace Bough.App.Presenters
             }
         }
 
-        public async Task<StashMutationResult> RetrySaveRefreshAsync(StashViewModel screen, StashMutationResult savedResult)
+        public async Task<StashMutationResult> RetrySaveRefreshAsync(StashViewModel screen, StashMutationResult savedResult, IStashMutationCompletion completion = null)
         {
             GitRepository repository = savedResult.Repository;
             int requestVersion = screen.BeginSavedRefresh(repository);
@@ -89,7 +90,8 @@ namespace Bough.App.Presenters
                     errors = new LocalizedText[] { new LocalizedText(failure) };
                 }
                 screen.ApplySavedRefreshError(repository, requestVersion, errors);
-                return new StashMutationResult(repository, savedResult.Kind, savedResult.Succeeded, savedResult.WorktreeMayHaveChanged, savedResult.StashesMayHaveChanged, status, errorText, errors);
+                StashMutationResult result = new(repository, savedResult.Kind, savedResult.Succeeded, savedResult.WorktreeMayHaveChanged, savedResult.StashesMayHaveChanged, status, errorText, errors);
+                return await CompleteAsync(screen, completion, result);
             }
             finally
             {
@@ -97,17 +99,87 @@ namespace Bough.App.Presenters
             }
         }
 
-        private async Task<StashMutationResult> ExecuteAsync(StashViewModel screen, GitRepository repository, StashMutationKind kind, GitStashEntry entry, string message, bool includeUntracked, IReadOnlyList<GitWorktreeFile> expectedFiles, CancellationToken cancellationToken)
+        private async Task<StashMutationResult> ExecuteAsync(StashViewModel screen, GitRepository repository, StashMutationKind kind, GitStashEntry entry, string message, bool includeUntracked, IReadOnlyList<GitWorktreeFile> expectedFiles, IStashMutationCompletion completion, CancellationToken cancellationToken)
         {
             bool active = screen.BeginMutation(repository);
             try
             {
-                return await ExecuteCoreAsync(screen, repository, kind, entry, message, includeUntracked, expectedFiles, cancellationToken);
+                StashMutationResult result = await ExecuteCoreAsync(screen, repository, kind, entry, message, includeUntracked, expectedFiles, cancellationToken);
+                return await CompleteAsync(screen, completion, result);
             }
             finally
             {
                 screen.EndMutation(repository, active);
             }
+        }
+
+        private async Task<StashMutationResult> CompleteAsync(StashViewModel screen, IStashMutationCompletion completion, StashMutationResult result)
+        {
+            if (completion == null)
+            {
+                return result;
+            }
+
+            List<LocalizedText> errors = result.Errors.ToList();
+            if (result.Errors.Count == 0)
+            {
+                if (string.IsNullOrEmpty(result.ErrorText) == false)
+                {
+                    errors.Add(new LocalizedText(new GitException(result.ErrorText)));
+                }
+            }
+            GitWorktreeStatus status = result.WorktreeStatus;
+            try
+            {
+                switch (result.Kind)
+                {
+                    case StashMutationKind.Save:
+                        StashMutationResult completed = await completion.CompleteStashSaveAsync(result);
+                        if (completed == null)
+                        {
+                            throw new GitException("StashSaveCompletionResultMissing", null, Array.Empty<object>());
+                        }
+                        status = completed.WorktreeStatus ?? status;
+                        foreach (LocalizedText error in completed.Errors)
+                        {
+                            if (errors.Contains(error) == false)
+                            {
+                                errors.Add(error);
+                            }
+                        }
+                        if (completed.Errors.Count == 0)
+                        {
+                            if (string.IsNullOrEmpty(completed.ErrorText) == false)
+                            {
+                                if (completed.ErrorText != result.ErrorText)
+                                {
+                                    errors.Add(new LocalizedText(new GitException(completed.ErrorText)));
+                                }
+                            }
+                        }
+                        break;
+                    case StashMutationKind.Apply:
+                        await completion.CompleteStashApplyAsync(result);
+                        break;
+                    case StashMutationKind.Pop:
+                        await completion.CompleteStashPopAsync(result);
+                        break;
+                    case StashMutationKind.Drop:
+                        await completion.CompleteStashDropAsync(result);
+                        break;
+                }
+            }
+            catch (Exception exception)
+            {
+                errors.Add(new LocalizedText(exception));
+            }
+
+            string errorText = string.Join(Environment.NewLine, errors.Select(error => error.GetText(screen.Strings)));
+            if (errors.Count > 0)
+            {
+                screen.ApplyMutationError(result.Repository, errors);
+            }
+            return new StashMutationResult(result.Repository, result.Kind, result.Succeeded, result.WorktreeMayHaveChanged, result.StashesMayHaveChanged, status, errorText, errors);
         }
 
         private async Task<StashMutationResult> ExecuteCoreAsync(StashViewModel screen, GitRepository repository, StashMutationKind kind, GitStashEntry entry, string message, bool includeUntracked, IReadOnlyList<GitWorktreeFile> expectedFiles, CancellationToken cancellationToken)

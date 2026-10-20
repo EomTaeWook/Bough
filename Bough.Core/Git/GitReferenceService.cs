@@ -258,10 +258,11 @@ namespace Bough.Core.Git
                 }
             }
             await _runner.RunAsync(repository.RootPath, new string[] { "switch", "--no-guess", branchName }, false, cancellationToken);
-            GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellationToken);
+            GitRepository updated = await ReadCreatedBranchRepositoryAsync(repository.RootPath, cancellationToken);
             if (updated.CurrentBranch != branchName)
             {
-                throw new GitException("ReferenceBranchSwitchMismatch", null, branchName, updated.CurrentBranch);
+                GitException branchMismatch = new("ReferenceBranchSwitchMismatch", null, branchName, updated.CurrentBranch);
+                throw new GitException(GitCommitActionService.StateReadFailedCode, branchMismatch, Array.Empty<object>());
             }
             return updated;
         }
@@ -463,7 +464,8 @@ namespace Bough.Core.Git
             GitRepository updated = await ReadCreatedBranchRepositoryAsync(repository.RootPath, cancellationToken);
             if (updated.CurrentBranch != branchName)
             {
-                throw new GitException("ReferenceSwitchUnexpectedCurrent", null, branchName, updated.CurrentBranch);
+                GitException branchMismatch = new("ReferenceSwitchUnexpectedCurrent", null, branchName, updated.CurrentBranch);
+                throw new GitException(GitCommitActionService.StateReadFailedCode, branchMismatch, Array.Empty<object>());
             }
             return updated;
         }

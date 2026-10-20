@@ -103,6 +103,10 @@ namespace Bough.App.ViewModels
         internal int ReferenceBindingVersion { get { return _referenceBindingVersion; } }
         public StringHelper Strings { get { return _stringHelper; } }
 
+        internal void ReportActionError(Exception exception)
+        {
+            StatusMessage = _errorLocalizer.GetDisplayMessage(exception);
+        }
         public string ReferenceText(string name)
         {
             return _stringHelper.GetString(name);
@@ -423,7 +427,7 @@ namespace Bough.App.ViewModels
 
         private async Task<bool> QueueBranchSwitchAsync(GitRepository repository, string branchName, string successMessage)
         {
-            int operation = -1;
+            int bindingVersion = _referenceBindingVersion;
             GitOperationQueueState state = _branchPresenter.GetQueueState(repository.RootPath);
             if (state.IsRunning)
             {
@@ -435,98 +439,36 @@ namespace Bough.App.ViewModels
             BranchSwitchFailureMessage = string.Empty;
             try
             {
-                return await _branchPresenter.SwitchAsync(repository, branchName,
-                    _stringHelper.Format("ReferenceSwitchOperationRunning", branchName), () =>
-                    {
-                        if (IsCurrentRepository(repository.RootPath) == false)
-                        {
-                            return;
-                        }
-                        operation = ++_branchChangeVersion;
-                        _branchChangeInProgress = true;
-                        _branchChangeTarget = branchName;
-                        _snapshotPresenter.Invalidate();
-                        IsBusy = true;
-                        StatusMessage = _stringHelper.Format("ReferenceSwitchInProgress", branchName);
-                    }, async updated =>
-                    {
-                        if (IsCurrentRepository(repository.RootPath) == false)
-                        {
-                            return true;
-                        }
-                        if (operation != _branchChangeVersion)
-                        {
-                            return true;
-                        }
-
-                        _repository = updated;
-                        Task<bool> refresh = RefreshCoreAsync();
-                        int refreshRequest = _snapshotPresenter.RequestVersion;
-                        bool refreshed = await refresh;
-                        if (IsCurrentRepository(repository.RootPath) == false)
-                        {
-                            return true;
-                        }
-                        if (operation != _branchChangeVersion)
-                        {
-                            return true;
-                        }
-                        if (refreshRequest != _snapshotPresenter.RequestVersion)
-                        {
-                            return true;
-                        }
-                        if (refreshed)
-                        {
-                            StatusMessage = successMessage;
-                        }
-                        else
-                        {
-                            BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchRefreshFailed", branchName, StatusMessage);
-                            StatusMessage = BranchSwitchFailureMessage;
-                        }
-                        RepositoryChanged?.Invoke(updated);
-                        return refreshed;
-                    }, () =>
-                    {
-                        if (IsCurrentRepository(repository.RootPath) == false)
-                        {
-                            return;
-                        }
-                        if (operation != _branchChangeVersion)
-                        {
-                            return;
-                        }
-                        _branchChangeInProgress = false;
-                        _branchChangeTarget = null;
-                        IsBusy = _snapshotPresenter.HasActiveLoad;
-                    });
+                return await _branchPresenter.SwitchAsync(repository, branchName, _stringHelper.Format("ReferenceSwitchOperationRunning", branchName), action => RunBranchChangeCoreAsync(action, successMessage, branchName, repository, bindingVersion));
             }
             catch (Exception exception)
             {
+                bool mutationSucceeded = false;
+                Exception error = exception;
+                if (exception is GitException gitException)
+                {
+                    if (gitException.ErrorCode == GitCommitActionService.StateReadFailedCode)
+                    {
+                        mutationSucceeded = true;
+                        error = gitException.InnerException ?? gitException;
+                        ReferenceRefreshRequired?.Invoke(repository.RootPath);
+                    }
+                }
                 if (IsCurrentRepository(repository.RootPath) == false)
                 {
-                    return false;
+                    return mutationSucceeded;
                 }
-                if (operation != _branchChangeVersion)
+                if (bindingVersion != _referenceBindingVersion)
                 {
-                    return false;
+                    return mutationSucceeded;
                 }
-                Task<bool> refresh = RefreshCoreAsync();
-                int refreshRequest = _snapshotPresenter.RequestVersion;
-                await refresh;
-                if (IsCurrentRepository(repository.RootPath) == false)
+                if (mutationSucceeded)
                 {
-                    return false;
+                    BranchSwitchFailureMessage = _stringHelper.Format("MutationCompletedReadFailed", _errorLocalizer.GetDisplayMessage(error));
+                    StatusMessage = BranchSwitchFailureMessage;
+                    return true;
                 }
-                if (operation != _branchChangeVersion)
-                {
-                    return false;
-                }
-                if (refreshRequest != _snapshotPresenter.RequestVersion)
-                {
-                    return false;
-                }
-                BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", branchName, CurrentBranchDisplay, _errorLocalizer.GetDisplayMessage(exception));
+                BranchSwitchFailureMessage = _stringHelper.Format("ReferenceSwitchFailed", branchName, CurrentBranchDisplay, _errorLocalizer.GetDisplayMessage(error));
                 StatusMessage = BranchSwitchFailureMessage;
                 return false;
             }
@@ -534,14 +476,16 @@ namespace Bough.App.ViewModels
             {
                 if (IsCurrentRepository(repository.RootPath))
                 {
-                    if (operation == _branchChangeVersion)
+                    if (bindingVersion == _referenceBindingVersion)
                     {
-                        PendingBranchSwitchMessage = string.Empty;
+                        if (_branchChangeInProgress == false)
+                        {
+                            PendingBranchSwitchMessage = string.Empty;
+                        }
                     }
                 }
             }
         }
-
         private bool IsCurrentRepository(string repositoryRoot)
         {
             if (_repository == null)

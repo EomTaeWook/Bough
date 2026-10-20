@@ -332,9 +332,9 @@ namespace Bough.App.ViewModels
                 NotifyState();
             }
         }
-        public Task SetRepositoryAsync(GitRepository repository, CancellationToken cancellationToken = default)
+        public Task SetRepositoryAsync(GitRepository repository, CancellationToken cancellationToken = default, bool propagateReadError = false)
         {
-            return _executionPresenter.SetRepositoryAsync(repository, cancellationToken);
+            return _executionPresenter.SetRepositoryAsync(repository, cancellationToken, propagateReadError);
         }
 
         public void BindRepository(GitRepository repository)

@@ -38,6 +38,7 @@ namespace Bough.App.Views
         private TaskCompletionSource<bool> _previewMenusClosed;
         private bool _previewRightClickPending;
         private int _previewPointerVersion;
+        private int _clipboardRequestVersion;
 
         public HistoryView()
         {
@@ -49,6 +50,7 @@ namespace Bough.App.Views
             HistoryCommitList.TemplateApplied += (_, _) => AttachCommitScrollViewer();
             DataContextChanged += (_, _) =>
             {
+                _clipboardRequestVersion++;
                 _layoutViewModel?.ExternalFileOpen.Invalidate();
                 _layoutViewModel?.FilePreview.Suspend();
                 ResetPreviewMenuGate();
@@ -62,6 +64,7 @@ namespace Bough.App.Views
             };
             DetachedFromVisualTree += (_, _) =>
             {
+                _clipboardRequestVersion++;
                 (DataContext as HistoryViewModel)?.ExternalFileOpen.Invalidate();
                 (DataContext as HistoryViewModel)?.FilePreview.Suspend();
                 ResetPreviewMenuGate();
@@ -305,19 +308,58 @@ namespace Bough.App.Views
             {
                 return;
             }
-            if (viewModel.SelectedCommit == null)
+            HistoryCommitItem selectedCommit = viewModel.SelectedCommit;
+            if (selectedCommit == null)
             {
                 return;
             }
-
-            IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-            if (clipboard == null)
+            GitRepository repository = viewModel.CurrentRepository;
+            if (repository == null)
             {
                 return;
             }
-            await clipboard.SetTextAsync(viewModel.SelectedCommit.Hash);
+            string commitHash = selectedCommit.Hash;
+            int inspectionRequestVersion = viewModel.PreviewInspectionVersion;
+            string comparisonParent = viewModel.SelectedParent;
+            int clipboardRequestVersion = ++_clipboardRequestVersion;
+            try
+            {
+                IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard == null)
+                {
+                    return;
+                }
+                await clipboard.SetTextAsync(commitHash);
+            }
+            catch (Exception exception)
+            {
+                if (ReferenceEquals(DataContext, viewModel) == false)
+                {
+                    return;
+                }
+                if (clipboardRequestVersion != _clipboardRequestVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.CurrentRepository, repository) == false)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.SelectedCommit, selectedCommit) == false)
+                {
+                    return;
+                }
+                if (inspectionRequestVersion != viewModel.PreviewInspectionVersion)
+                {
+                    return;
+                }
+                if (comparisonParent != viewModel.SelectedParent)
+                {
+                    return;
+                }
+                viewModel.ReportActionError(exception);
+            }
         }
-
         private void CommitContextOpened(object sender, RoutedEventArgs eventArgs)
         {
             _menuCommitHash = null;
@@ -372,18 +414,67 @@ namespace Bough.App.Views
 
         private async void CopyCommitShaClicked(object sender, RoutedEventArgs eventArgs)
         {
-            if (_menuCommitHash == null)
+            if (DataContext is not HistoryViewModel viewModel)
             {
                 return;
             }
-            IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-            if (clipboard == null)
+            string commitHash = _menuCommitHash;
+            if (commitHash == null)
             {
                 return;
             }
-            await clipboard.SetTextAsync(_menuCommitHash);
+            GitRepository repository = viewModel.CurrentRepository;
+            if (repository == null)
+            {
+                return;
+            }
+            string repositoryRoot = _menuRepositoryRoot;
+            HistoryCommitItem selectedCommit = viewModel.SelectedCommit;
+            int inspectionRequestVersion = viewModel.PreviewInspectionVersion;
+            string comparisonParent = viewModel.SelectedParent;
+            int clipboardRequestVersion = ++_clipboardRequestVersion;
+            try
+            {
+                if (repository.RootPath != repositoryRoot)
+                {
+                    throw new GitException("HistoryMenuRepositoryChanged", null, Array.Empty<object>());
+                }
+                IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard == null)
+                {
+                    return;
+                }
+                await clipboard.SetTextAsync(commitHash);
+            }
+            catch (Exception exception)
+            {
+                if (ReferenceEquals(DataContext, viewModel) == false)
+                {
+                    return;
+                }
+                if (clipboardRequestVersion != _clipboardRequestVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.CurrentRepository, repository) == false)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.SelectedCommit, selectedCommit) == false)
+                {
+                    return;
+                }
+                if (inspectionRequestVersion != viewModel.PreviewInspectionVersion)
+                {
+                    return;
+                }
+                if (comparisonParent != viewModel.SelectedParent)
+                {
+                    return;
+                }
+                viewModel.ReportActionError(exception);
+            }
         }
-
         private async void CreateCommitBranchClicked(object sender, RoutedEventArgs eventArgs)
         {
             if (DataContext is not HistoryViewModel viewModel)
@@ -600,18 +691,61 @@ namespace Bough.App.Views
             {
                 return;
             }
-            if (button.DataContext is not string hash)
+            if (button.DataContext is not string commitHash)
             {
                 return;
             }
-            IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-            if (clipboard == null)
+            if (DataContext is not HistoryViewModel viewModel)
             {
                 return;
             }
-            await clipboard.SetTextAsync(hash);
+            GitRepository repository = viewModel.CurrentRepository;
+            if (repository == null)
+            {
+                return;
+            }
+            HistoryCommitItem selectedCommit = viewModel.SelectedCommit;
+            int inspectionRequestVersion = viewModel.PreviewInspectionVersion;
+            string comparisonParent = viewModel.SelectedParent;
+            int clipboardRequestVersion = ++_clipboardRequestVersion;
+            try
+            {
+                IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard == null)
+                {
+                    return;
+                }
+                await clipboard.SetTextAsync(commitHash);
+            }
+            catch (Exception exception)
+            {
+                if (ReferenceEquals(DataContext, viewModel) == false)
+                {
+                    return;
+                }
+                if (clipboardRequestVersion != _clipboardRequestVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.CurrentRepository, repository) == false)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.SelectedCommit, selectedCommit) == false)
+                {
+                    return;
+                }
+                if (inspectionRequestVersion != viewModel.PreviewInspectionVersion)
+                {
+                    return;
+                }
+                if (comparisonParent != viewModel.SelectedParent)
+                {
+                    return;
+                }
+                viewModel.ReportActionError(exception);
+            }
         }
-
         private async void DiffExpanded(object sender, RoutedEventArgs eventArgs)
         {
             if (sender is not Expander expander)
@@ -1079,16 +1213,39 @@ namespace Bough.App.Views
             {
                 return;
             }
+            string filePath = context.Path;
+            int clipboardRequestVersion = ++_clipboardRequestVersion;
             try
             {
                 IClipboard clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-                if (clipboard != null)
+                if (clipboard == null)
                 {
-                    await clipboard.SetTextAsync(context.Path);
+                    return;
                 }
+                await clipboard.SetTextAsync(filePath);
             }
             catch (Exception exception)
             {
+                if (ReferenceEquals(DataContext, viewModel) == false)
+                {
+                    return;
+                }
+                if (clipboardRequestVersion != _clipboardRequestVersion)
+                {
+                    return;
+                }
+                if (ReferenceEquals(viewModel.CurrentRepository, repository) == false)
+                {
+                    return;
+                }
+                try
+                {
+                    viewModel.RequireFileActionRepository(context);
+                }
+                catch (GitException)
+                {
+                    return;
+                }
                 viewModel.ReportActionError(exception);
             }
         }

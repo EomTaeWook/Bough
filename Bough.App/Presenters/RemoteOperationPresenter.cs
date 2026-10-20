@@ -50,7 +50,7 @@ namespace Bough.App.Presenters
             return _queue.EnqueueAsync(_repository.RootPath, $"{operationName} · {target}", async token =>
             {
                 token.ThrowIfCancellationRequested();
-                await _session.SetRepositoryAsync(_repository, token);
+                await _session.SetRepositoryAsync(_repository, token, propagateReadError: true);
                 token.ThrowIfCancellationRequested();
                 _session.SelectedRemote = _remote;
                 _session.Prune = _prune;

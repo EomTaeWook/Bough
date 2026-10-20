@@ -21,21 +21,12 @@ namespace Bough.App.Presenters
             return _operationQueue.GetState(repositoryRoot);
         }
 
-        public Task<bool> SwitchAsync(GitRepository repository, string branchName, string operationName,
-            Action onStarted, Func<GitRepository, Task<bool>> applyResult, Action onFinished)
+        public Task<bool> SwitchAsync(GitRepository repository, string branchName, string operationName, ReferenceBranchRunner runAndApply)
         {
             return _operationQueue.EnqueueAsync(repository.RootPath, operationName, async token =>
             {
-                onStarted();
-                try
-                {
-                    GitRepository updated = await _referenceService.SwitchBranchAsync(repository, branchName, token);
-                    return await applyResult(updated);
-                }
-                finally
-                {
-                    onFinished();
-                }
+                token.ThrowIfCancellationRequested();
+                return await runAndApply(() => _referenceService.SwitchBranchAsync(repository, branchName, token));
             });
         }
     }
