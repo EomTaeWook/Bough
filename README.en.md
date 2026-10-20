@@ -8,15 +8,15 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-Stable patch release **v1.0.2** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
+Stable patch release **v1.0.3** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
 
-[Download Bough v1.0.2 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.2/Bough-v1.0.2-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.2)
+[Download Bough v1.0.3 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.3/Bough-v1.0.3-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.3)
 
 Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. Windows x64 is the current release platform. Running on macOS has not yet been verified.
 
 ## Preview
 
-The History and Settings screenshots show the latest development source with neutral backgrounds and sidebar navigation. Some visual details differ from the published v1.0.2 release.
+The History and Settings screenshots were captured from a development build with the neutral backgrounds and sidebar navigation included in v1.0.3. The development version and commit shown in Settings differ from the stable release.
 
 ### Conflict resolution
 
@@ -80,9 +80,9 @@ Bough is designed to show the source of each conflicting change and preview the 
 - **Conflict resolution:** Inspect merge, rebase, or revert changes; choose sections, edit and save individual files, or apply, save, and stage the remaining sections across all conflicted files.
 - **Application updates:** Check official stable releases from Settings, download with progress and cancellation, then replace the single executable and restart after a normal shutdown. Beta and prerelease versions are excluded.
 
-Version 1.0.2 improves sidebar navigation, update buttons, the untracked-file menu, query lifetimes, event cleanup, error preservation, and the logging dependency. [Implementation status](Docs/CurrentStatus.md) separates the latest source from the contents of published packages.
+Version 1.0.3 refines neutral backgrounds, History and reference styling, and progress placement, and improves Commit/Amend target checks, Stash completion order, normal closing, and follow-up error handling. [Implementation status](Docs/CurrentStatus.md) separates the latest source from the contents of published packages.
 
-The stable release includes application updates, automatic remote checks, opening submodule repositories, update progress in the lower left, and a GitHub release icon button in Settings. The current source keeps only the status summary and progress in the lower left; Fetch/Pull/Push details remain in the corresponding operation dialog. This display change follows the published v1.0.2 release.
+The stable release includes application updates, automatic remote checks, opening submodule repositories, update progress in the lower left, and a GitHub release icon button in Settings. The current source keeps only the status summary and progress in the lower left; Fetch/Pull/Push details remain in the corresponding operation dialog. This display change is included in v1.0.3.
 
 In-app updates consider only official stable releases. The complete update download, replacement, and recovery flow and execution of the latest source have not been verified.
 

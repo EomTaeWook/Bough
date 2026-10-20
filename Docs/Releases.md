@@ -1,5 +1,22 @@
 # 릴리스
 
+## v1.0.3 정식 패치 릴리스 게시 완료
+
+- 생성·배포일: 2026-10-20
+- 소스 커밋: `41a1a5a59b635b50c13a600b0da6668289f51739`
+- 대상: Windows x64 자체 포함 단일 `Bough-v1.0.3-win-x64.exe`
+- 상태: 코드 main 푸시·GitHub v1.0.3 최신 정식 릴리스 게시 완료
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.3) · [단일 실행 파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.3/Bough-v1.0.3-win-x64.exe)
+- 생성 위치: `.codex-build/release-v1.0.3/Bough-v1.0.3-win-x64.exe`
+- GitHub 게시 크기: 103,814,697바이트
+- GitHub 제공 SHA-256: `c086b7220c1b34a195b9e88d0862be955f5cb2ce01fd2c52a84165d4d6416f1f`
+
+중립 배경·히스토리 탭·참조 트리·헤더·여백과 좌하단 단일 진행 표시를 반영했다. Commit/Amend의 원래 HEAD·인덱스 고정, Stash의 FIFO 내 상위 완료, 일반 종료 보호, 충돌 저장 후 오류 표시, 브랜치 성공·원래 root 통지, 계정 저장/조회 오류 분리, 원격 준비 오류 전파, 복사 오류 수명, Git 바이트 stderr 완료를 보완했다.
+
+기존 작업자 3의 `dotnet publish` 제작 1회가 exit 0으로 끝났다. Version 1.0.3·win-x64·자체 포함·단일 파일·네이티브 포함·비트리밍이며 SourceCommit/RepositoryCommit/SourceRevisionId를 위 SHA에 고정했다. 별도 .NET·DLL·Datas 설치는 필요 없고 Git은 별도로 설치한다.
+
+한국어·영어 설명과 exe를 GitHub draft에 업로드한 뒤 정식으로 게시했다. 크기·digest는 게시 응답 메타데이터이며 로컬 해시 대조 결과가 아니다. 별도 테스트·앱 실행·UI·실제 원격 Git·업데이트 설치/복원 검증은 수행하지 않았다. 기존 릴리스와 사용자 데이터는 보존했다. 이번 문서 변경은 사용자의 지시에 따라 커밋·푸시하지 않는다.
+
 ## v1.0.2 정식 패치 릴리스 게시 완료
 
 - 생성·배포일: 2026-10-20
