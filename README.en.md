@@ -16,6 +16,8 @@ Run the downloaded single `.exe` file. No archive extraction or separate .NET in
 
 ## Preview
 
+The History and Settings screenshots show the latest development source with neutral backgrounds and sidebar navigation. Some visual details differ from the published v1.0.2 release.
+
 ### Conflict resolution
 
 ![Bough conflict window showing both changes, individual and batch choices, and the final file preview](Docs/images/conflict.png)
@@ -24,9 +26,15 @@ This screen shows a reproduced text merge conflict. Compare both sources, resolv
 
 ### History
 
-![Bough History showing the commit graph, changed files, and code preview](Docs/images/history.png)
+![Latest Bough History showing sidebar navigation, the commit graph, and selected merge commit details](Docs/images/history.png)
 
-See the branch graph alongside local branch, remote branch, and tag badges, then inspect the selected merge commit and its changed files.
+Switch to History from the left sidebar and see the branch graph, reference badges, and selected merge commit details together.
+
+### Settings and application updates
+
+![Latest Bough Settings showing update checks, language, the light theme, and the default Pull strategy](Docs/images/settings.png)
+
+Configure application update checks, language, appearance, and the default Pull strategy in one screen. Remote buttons are disabled because this demo has no configured remote. No update check or download was started during capture.
 
 ### File history
 
@@ -40,7 +48,7 @@ Right-click a changed file and choose History to open a dedicated window with it
 
 Browse staged changes and working files separately, and read diffs with previous and current line numbers. Prepare a commit message in the area below the preview.
 
-All screenshots show actual application content using demo repositories with the light theme and English UI. Operating system title bars are omitted.
+All screenshots show actual application content using demo repositories, without operating system title bars. History and Settings show the latest source with the light theme and Korean UI. Conflict resolution, File history, and Local changes use earlier English UI screenshots as feature examples; their colors and layout may differ from the current source.
 
 ## Why Bough?
 
