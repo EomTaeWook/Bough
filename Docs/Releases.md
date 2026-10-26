@@ -1,5 +1,22 @@
 # 릴리스
 
+## v1.0.4 정식 패치 릴리스 게시 완료
+
+- 생성·배포일: 2026-10-26
+- 소스 커밋: `34e15d365bd90314a26db4a70694568a367f2662`
+- 대상: Windows x64 자체 포함 단일 `Bough-v1.0.4-win-x64.exe`
+- 상태: GitHub v1.0.4 최신 정식 릴리스 게시 완료
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.4) · [단일 실행 파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.4/Bough-v1.0.4-win-x64.exe)
+- 생성 위치: `.codex-build/release-v1.0.4/Bough-v1.0.4-win-x64.exe`
+- GitHub 게시 크기: 103,810,601바이트
+- GitHub 제공 SHA-256: `8231115d70024cf6a7c59cd40324f6c1f47ecd2bacb4e181444ce5b1a12c3232`
+
+Dignus.Log 3.0.0과 실제 의존 Dignus 1.4.3, 해당 내장 라이선스 경로를 반영했다. 기본 로그 설정을 하나의 Async 로거가 콘솔·파일 target을 참조하는 새 형식으로 맞췄으며 기존 로그 레벨·파일 경로·일 단위 보관 설정은 유지했다. 저장소 선택 버튼의 마우스 강조에 기존 선택 배경을 적용했고 Avalonia 12.1.4는 유지했다.
+
+요청된 `dotnet publish` 제작 1회가 exit 0으로 끝났다. Version 1.0.4·win-x64·자체 포함·단일 파일·네이티브 포함·비트리밍이며 SourceCommit/RepositoryCommit/SourceRevisionId를 위 SHA에 고정했다. 별도 .NET·DLL·Datas 설치는 필요 없고 Git은 별도로 설치한다.
+
+한국어·영어 설명과 exe를 draft에 업로드한 뒤 정식으로 게시했다. 크기·digest는 GitHub 게시 응답 메타데이터이며 로컬 해시 대조 결과가 아니다. 로그 연결의 소스·패키지 계약 읽기와 기존 패키지 복원 외에 별도 테스트·앱 실행·실제 로그 출력·보관·UI·실제 원격 Git·업데이트 설치/복원 검증은 수행하지 않았다. 기존 릴리스와 사용자 데이터는 보존했다. 사용자 승인에 따라 한영 README의 다운로드 안내와 릴리스 기록을 함께 갱신했다.
+
 ## v1.0.3 정식 패치 릴리스 게시 완료
 
 - 생성·배포일: 2026-10-20

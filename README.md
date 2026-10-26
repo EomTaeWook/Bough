@@ -8,9 +8,9 @@
 
 ## 다운로드
 
-정식 패치 버전 **v1.0.3**을 제공합니다. [현재 기능과 상태](Docs/CurrentStatus.md) · [릴리스 기록](Docs/Releases.md)
+정식 패치 버전 **v1.0.4**를 제공합니다. [현재 기능과 상태](Docs/CurrentStatus.md) · [릴리스 기록](Docs/Releases.md)
 
-[Bough v1.0.3 Windows x64 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.3/Bough-v1.0.3-win-x64.exe) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.3)
+[Bough v1.0.4 Windows x64 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.4/Bough-v1.0.4-win-x64.exe) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.4)
 
 다운로드한 단일 `.exe` 파일을 실행하세요. 압축 해제나 .NET 설치는 필요 없지만 Git은 설치돼 있어야 합니다. 현재 배포 대상은 Windows x64입니다. macOS 실행은 아직 확인하지 않았습니다.
 
