@@ -52,6 +52,15 @@ namespace Bough.App.Views
             : this(plan, viewModel.IgnoreConfirmTitleText, viewModel.GetIgnoreDescription(plan), viewModel.IgnoreConfirmButtonText, viewModel.DiscardCancelText)
         {
             ArgumentNullException.ThrowIfNull(preparePlan);
+            if (plan.DirectoryPath == null)
+            {
+                if (plan.Entries.Count == 1)
+                {
+                    string selectedFilePath = plan.Entries[0].Path;
+                    _preparedInput = selectedFilePath;
+                    DirectoryPathInput.Text = selectedFilePath;
+                }
+            }
             _viewModel = viewModel;
             _preparePlan = preparePlan;
             DirectoryInputPanel.IsVisible = true;
@@ -126,6 +135,10 @@ namespace Bough.App.Views
                 return;
             }
             if (_closed == true)
+            {
+                return;
+            }
+            if ((DirectoryPathInput.Text ?? string.Empty) == _preparedInput)
             {
                 return;
             }

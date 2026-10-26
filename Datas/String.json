@@ -7076,14 +7076,14 @@
   {
     "Id": 3279,
     "Name": "IgnoreDirectoryPathLabel",
-    "Kor": "폴더 경로 (선택)",
-    "Eng": "Folder path (optional)"
+    "Kor": "무시할 경로",
+    "Eng": "Path to ignore"
   },
   {
     "Id": 3280,
     "Name": "IgnoreDirectoryPathHint",
-    "Kor": "비워두면 선택한 파일만 무시합니다. 폴더를 입력하면 해당 폴더와 하위의 미추적 항목 및 앞으로 추가할 파일을 무시합니다. 예: Design/Deliverables/",
-    "Eng": "Leave empty to ignore only the selected files. Enter a folder to ignore its untracked contents and future files. Example: Design/Deliverables/"
+    "Kor": "선택한 파일 경로를 폴더 경로로 바꾸면 폴더 전체를 무시합니다. 비워두면 선택한 파일들을 그대로 무시합니다.",
+    "Eng": "Change the selected file path to a folder path to ignore the entire folder. Leave empty to ignore the selected files."
   },
   {
     "Id": 3281,

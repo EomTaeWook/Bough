@@ -291,7 +291,15 @@ namespace Bough.App.Presenters
                     }
 
                     GitIgnorePlan result;
-                    if (string.IsNullOrEmpty(directoryPath) == true)
+                    bool useSelectedFiles = string.IsNullOrEmpty(directoryPath);
+                    if (files.Count == 1)
+                    {
+                        if (string.Equals(directoryPath, files[0].Path, StringComparison.Ordinal) == true)
+                        {
+                            useSelectedFiles = true;
+                        }
+                    }
+                    if (useSelectedFiles == true)
                     {
                         result = await Task.Run(() => _workingTreeService.Ignore.PrepareAsync(repository, files, location, preparationToken), preparationToken);
                     }
