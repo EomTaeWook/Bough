@@ -58,8 +58,8 @@
     <EmbeddedResource Include="..\Datas\*.json" LogicalName="Bough.Datas.%(Filename)%(Extension)" />
     <EmbeddedResource Include="DignusLog.config" LogicalName="Bough.DignusLog.config" />
     <EmbeddedResource Include="..\LICENSE" LogicalName="Bough.Licenses.Bough.txt" />
-    <EmbeddedResource Include="$(NuGetPackageRoot)dignus\1.4.1\LICENSE" LogicalName="Bough.Licenses.Dignus.txt" Condition="Exists('$(NuGetPackageRoot)dignus\1.4.1\LICENSE')" />
-    <EmbeddedResource Include="$(NuGetPackageRoot)dignus.log\2.0.1\LICENSE" LogicalName="Bough.Licenses.Dignus.Log.txt" Condition="Exists('$(NuGetPackageRoot)dignus.log\2.0.1\LICENSE')" />
+    <EmbeddedResource Include="$(NuGetPackageRoot)dignus\1.4.3\LICENSE" LogicalName="Bough.Licenses.Dignus.txt" Condition="Exists('$(NuGetPackageRoot)dignus\1.4.3\LICENSE')" />
+    <EmbeddedResource Include="$(NuGetPackageRoot)dignus.log\3.0.0\LICENSE" LogicalName="Bough.Licenses.Dignus.Log.txt" Condition="Exists('$(NuGetPackageRoot)dignus.log\3.0.0\LICENSE')" />
     <EmbeddedResource Include="Assets\Licenses\*.txt" LogicalName="Bough.Licenses.%(Filename)%(Extension)" />
   </ItemGroup>
 
