@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -121,6 +122,37 @@ namespace Bough.Core.Git
             return await PrepareRulePlanAsync(location, targetPath, entries, false, cancellationToken, relativePath);
         }
 
+        public async Task<GitIgnorePlan> PreparePatternAsync(GitRepository repository, string pattern, GitIgnoreLocation location, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (string.IsNullOrEmpty(pattern) == true)
+            {
+                throw new GitException("IgnorePatternInvalid", null, Array.Empty<object>());
+            }
+
+            foreach (char character in pattern)
+            {
+                if (char.IsControl(character) == true)
+                {
+                    throw new GitException("IgnorePatternInvalid", null, Array.Empty<object>());
+                }
+                UnicodeCategory category = char.GetUnicodeCategory(character);
+                if (category == UnicodeCategory.LineSeparator)
+                {
+                    throw new GitException("IgnorePatternInvalid", null, Array.Empty<object>());
+                }
+                if (category == UnicodeCategory.ParagraphSeparator)
+                {
+                    throw new GitException("IgnorePatternInvalid", null, Array.Empty<object>());
+                }
+            }
+
+            string targetPath = await GetTargetPathAsync(repository, location, cancellationToken);
+            GitIgnoreEntry[] entries = [new GitIgnoreEntry(pattern, pattern)];
+            return await PrepareRulePlanAsync(location, targetPath, entries, false, cancellationToken, null, pattern);
+        }
+
         internal async Task<GitIgnorePlan> PrepareStopTrackingAsync(GitRepository repository, IReadOnlyList<GitDiscardPlan> files, CancellationToken cancellationToken)
         {
             string targetPath = await GetTargetPathAsync(repository, GitIgnoreLocation.Repository, cancellationToken);
@@ -140,7 +172,7 @@ namespace Bough.Core.Git
             return await PrepareRulePlanAsync(GitIgnoreLocation.Repository, targetPath, entries, true, cancellationToken);
         }
 
-        private static async Task<GitIgnorePlan> PrepareRulePlanAsync(GitIgnoreLocation location, string targetPath, IReadOnlyList<GitIgnoreEntry> entries, bool allowExistingRules, CancellationToken cancellationToken, string directoryPath = null)
+        private static async Task<GitIgnorePlan> PrepareRulePlanAsync(GitIgnoreLocation location, string targetPath, IReadOnlyList<GitIgnoreEntry> entries, bool allowExistingRules, CancellationToken cancellationToken, string directoryPath = null, string pattern = null)
         {
             byte[] originalBytes = await ReadTargetAsync(targetPath, cancellationToken);
             string content = DecodeIgnoreFile(originalBytes);
@@ -171,7 +203,7 @@ namespace Bough.Core.Git
                 }
             }
 
-            return new GitIgnorePlan(location, targetPath, additions, originalBytes, newLine, directoryPath);
+            return new GitIgnorePlan(location, targetPath, additions, originalBytes, newLine, directoryPath, pattern);
         }
 
         public async Task ApplyAsync(GitRepository repository, GitIgnorePlan plan, CancellationToken cancellationToken = default)
@@ -179,7 +211,11 @@ namespace Bough.Core.Git
             ArgumentNullException.ThrowIfNull(repository);
             ArgumentNullException.ThrowIfNull(plan);
             GitIgnorePlan current;
-            if (plan.DirectoryPath != null)
+            if (plan.Pattern != null)
+            {
+                current = await PreparePatternAsync(repository, plan.Pattern, plan.Location, cancellationToken);
+            }
+            else if (plan.DirectoryPath != null)
             {
                 current = await PrepareDirectoryAsync(repository, plan.DirectoryPath, plan.Location, cancellationToken);
             }
@@ -194,6 +230,10 @@ namespace Bough.Core.Git
 
         internal static void ValidatePlan(GitIgnorePlan plan, GitIgnorePlan current)
         {
+            if (current.Pattern != plan.Pattern)
+            {
+                throw new GitException("IgnoreSelectedFilesChanged", null, Array.Empty<object>());
+            }
             if (current.DirectoryPath != plan.DirectoryPath)
             {
                 throw new GitException("IgnoreSelectedFilesChanged", null, Array.Empty<object>());

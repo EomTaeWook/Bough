@@ -5,7 +5,7 @@ namespace Bough.Core.Git.Models
 {
     public class GitIgnorePlan
     {
-        public GitIgnorePlan(GitIgnoreLocation location, string targetPath, IReadOnlyList<GitIgnoreEntry> entries, byte[] originalBytes, string newLine, string directoryPath = null)
+        public GitIgnorePlan(GitIgnoreLocation location, string targetPath, IReadOnlyList<GitIgnoreEntry> entries, byte[] originalBytes, string newLine, string directoryPath = null, string pattern = null)
         {
             Location = location;
             TargetPath = targetPath;
@@ -13,6 +13,7 @@ namespace Bough.Core.Git.Models
             OriginalBytes = originalBytes;
             NewLine = newLine;
             DirectoryPath = directoryPath;
+            Pattern = pattern;
         }
 
         public GitIgnoreLocation Location { get; }
@@ -26,5 +27,7 @@ namespace Bough.Core.Git.Models
         public string NewLine { get; }
 
         public string DirectoryPath { get; }
+
+        public string Pattern { get; }
     }
 }

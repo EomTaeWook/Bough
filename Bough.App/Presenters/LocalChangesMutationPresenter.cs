@@ -277,7 +277,7 @@ namespace Bough.App.Presenters
 
                 GitIgnorePlan preparedPlan = plan;
                 int preparationVersion = 0;
-                async Task<GitIgnorePlan> PrepareIgnorePlanAsync(string directoryPath, CancellationToken preparationToken)
+                async Task<GitIgnorePlan> PrepareIgnorePlanAsync(string pattern, CancellationToken preparationToken)
                 {
                     int version = ++preparationVersion;
                     preparedPlan = null;
@@ -291,10 +291,10 @@ namespace Bough.App.Presenters
                     }
 
                     GitIgnorePlan result;
-                    bool useSelectedFiles = string.IsNullOrEmpty(directoryPath);
+                    bool useSelectedFiles = string.IsNullOrEmpty(pattern);
                     if (files.Count == 1)
                     {
-                        if (string.Equals(directoryPath, files[0].Path, StringComparison.Ordinal) == true)
+                        if (string.Equals(pattern, plan.Entries[0].Rule, StringComparison.Ordinal) == true)
                         {
                             useSelectedFiles = true;
                         }
@@ -305,7 +305,7 @@ namespace Bough.App.Presenters
                     }
                     else
                     {
-                        result = await Task.Run(() => _workingTreeService.Ignore.PrepareDirectoryAsync(repository, directoryPath, location, preparationToken), preparationToken);
+                        result = await Task.Run(() => _workingTreeService.Ignore.PreparePatternAsync(repository, pattern, location, preparationToken), preparationToken);
                     }
                     preparationToken.ThrowIfCancellationRequested();
                     if (version != preparationVersion)

@@ -292,6 +292,10 @@ namespace Bough.App.ViewModels
                 location = IgnoreLocalText;
             }
 
+            if (plan.Pattern != null)
+            {
+                return _stringHelper.Format("IgnorePatternConfirmDescription", plan.Pattern, location);
+            }
             if (plan.DirectoryPath != null)
             {
                 return _stringHelper.Format("IgnoreDirectoryConfirmDescription", plan.DirectoryPath + "/", location);

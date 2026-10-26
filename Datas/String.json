@@ -7076,14 +7076,14 @@
   {
     "Id": 3279,
     "Name": "IgnoreDirectoryPathLabel",
-    "Kor": "무시할 경로",
-    "Eng": "Path to ignore"
+    "Kor": "무시 패턴",
+    "Eng": "Ignore pattern"
   },
   {
     "Id": 3280,
     "Name": "IgnoreDirectoryPathHint",
-    "Kor": "선택한 파일 경로를 폴더 경로로 바꾸면 폴더 전체를 무시합니다. 비워두면 선택한 파일들을 그대로 무시합니다.",
-    "Eng": "Change the selected file path to a folder path to ignore the entire folder. Leave empty to ignore the selected files."
+    "Kor": "Git 무시 패턴을 한 줄로 입력하세요(*, **, ?, [] 등). 비워두면 선택 파일을 무시합니다. 맨 앞 !는 재포함, #은 주석입니다.",
+    "Eng": "Enter one Git ignore pattern (*, **, ?, [] etc.). Leave empty to ignore the selected files. A leading ! re-includes; a leading # is a comment."
   },
   {
     "Id": 3281,
@@ -7102,5 +7102,17 @@
     "Name": "IgnoreDirectoryUnavailable",
     "Kor": "폴더를 사용할 수 없습니다. 저장소 안에 있는 실제 폴더 경로를 입력하세요: {0}",
     "Eng": "The folder is unavailable. Enter an existing folder path inside the repository: {0}"
+  },
+  {
+    "Id": 3284,
+    "Name": "IgnorePatternConfirmDescription",
+    "Kor": "기록할 Git 무시 패턴: {0}\n적용 위치: {1}\nGit이 입력한 패턴을 그대로 해석합니다.",
+    "Eng": "Git ignore pattern to write: {0}\nWrite to: {1}\nGit interprets the pattern as entered."
+  },
+  {
+    "Id": 3285,
+    "Name": "IgnorePatternInvalid",
+    "Kor": "무시 패턴은 비어 있지 않은 한 줄이어야 하며 제어 문자를 포함할 수 없습니다.",
+    "Eng": "Enter one nonempty ignore pattern without line breaks or control characters."
   }
 ]

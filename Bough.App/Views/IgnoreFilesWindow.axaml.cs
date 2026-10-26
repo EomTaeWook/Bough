@@ -56,9 +56,9 @@ namespace Bough.App.Views
             {
                 if (plan.Entries.Count == 1)
                 {
-                    string selectedFilePath = plan.Entries[0].Path;
-                    _preparedInput = selectedFilePath;
-                    DirectoryPathInput.Text = selectedFilePath;
+                    string selectedFileRule = plan.Entries[0].Rule;
+                    _preparedInput = selectedFileRule;
+                    DirectoryPathInput.Text = selectedFileRule;
                 }
             }
             _viewModel = viewModel;
