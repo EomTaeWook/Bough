@@ -7072,5 +7072,35 @@
     "Name": "MainStatusCopyFailed",
     "Kor": "상태 메시지를 복사하지 못했습니다. 텍스트를 선택해 복사하세요.",
     "Eng": "Could not copy the status message. Select the text and copy it."
+  },
+  {
+    "Id": 3279,
+    "Name": "IgnoreDirectoryPathLabel",
+    "Kor": "폴더 경로 (선택)",
+    "Eng": "Folder path (optional)"
+  },
+  {
+    "Id": 3280,
+    "Name": "IgnoreDirectoryPathHint",
+    "Kor": "비워두면 선택한 파일만 무시합니다. 폴더를 입력하면 해당 폴더와 하위의 미추적 항목 및 앞으로 추가할 파일을 무시합니다. 예: Design/Deliverables/",
+    "Eng": "Leave empty to ignore only the selected files. Enter a folder to ignore its untracked contents and future files. Example: Design/Deliverables/"
+  },
+  {
+    "Id": 3281,
+    "Name": "IgnoreDirectoryConfirmDescription",
+    "Kor": "폴더 전체: {0}\n적용 위치: {1}\n하위 미추적 항목과 앞으로 추가할 파일을 무시합니다. 이미 추적 중인 파일은 유지됩니다.",
+    "Eng": "Entire folder: {0}\nIgnore location: {1}\nUntracked contents and future files will be ignored. Already tracked files are unchanged."
+  },
+  {
+    "Id": 3282,
+    "Name": "IgnoreDirectoryPreparing",
+    "Kor": "무시할 범위와 규칙을 준비하고 있습니다.",
+    "Eng": "Preparing the ignore scope and rule."
+  },
+  {
+    "Id": 3283,
+    "Name": "IgnoreDirectoryUnavailable",
+    "Kor": "폴더를 사용할 수 없습니다. 저장소 안에 있는 실제 폴더 경로를 입력하세요: {0}",
+    "Eng": "The folder is unavailable. Enter an existing folder path inside the repository: {0}"
   }
 ]

@@ -380,23 +380,28 @@ namespace Bough.App.Views
             }
         }
 
-        private async Task<bool> ConfirmIgnoreAsync(GitIgnorePlan plan, CancellationToken cancellationToken)
+        private async Task<GitIgnorePlan> ConfirmIgnoreAsync(GitIgnorePlan plan, Func<string, CancellationToken, Task<GitIgnorePlan>> prepare, CancellationToken cancellationToken)
         {
             if (DataContext is not LocalChangesViewModel viewModel)
             {
-                return false;
+                return null;
             }
 
             if (TopLevel.GetTopLevel(this) is not Window owner)
             {
-                return false;
+                return null;
             }
 
-            IgnoreFilesWindow window = new(plan, viewModel.IgnoreConfirmTitleText, viewModel.GetIgnoreDescription(plan), viewModel.IgnoreConfirmButtonText, viewModel.DiscardCancelText);
+            IgnoreFilesWindow window = new(viewModel, plan, prepare);
             StashDialogOpening?.Invoke();
             try
             {
-                return await window.ShowForAsync(owner, cancellationToken);
+                bool accepted = await window.ShowForAsync(owner, cancellationToken);
+                if (accepted == false)
+                {
+                    return null;
+                }
+                return window.ConfirmedPlan;
             }
             finally
             {

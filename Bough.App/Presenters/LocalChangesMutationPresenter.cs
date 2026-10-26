@@ -254,21 +254,88 @@ namespace Bough.App.Presenters
             bool active = screen.BeginMutation(repository);
             try
             {
-                GitIgnorePlan plan = await _workingTreeService.Ignore.PrepareAsync(repository, files, location, cancellationToken);
-                Func<GitIgnorePlan, CancellationToken, Task<bool>> confirm = screen.IgnoreConfirmation;
+                if (screen.IsCurrentRepository(repository) == false)
+                {
+                    throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+                }
+                GitRepository binding = screen.CurrentRepository;
+                int requestVersion = screen.WorktreeRequestVersion;
+                GitIgnorePlan plan = await Task.Run(() => _workingTreeService.Ignore.PrepareAsync(repository, files, location, cancellationToken), cancellationToken);
+                if (ReferenceEquals(binding, screen.CurrentRepository) == false)
+                {
+                    throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+                }
+                if (requestVersion != screen.WorktreeRequestVersion)
+                {
+                    throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+                }
+                Func<GitIgnorePlan, Func<string, CancellationToken, Task<GitIgnorePlan>>, CancellationToken, Task<GitIgnorePlan>> confirm = screen.IgnoreConfirmation;
                 if (confirm == null)
                 {
                     throw new GitException("LocalIgnoreRequiresConfirmation", null, Array.Empty<object>());
                 }
 
-                bool accepted = await confirm(plan, cancellationToken);
-                if (accepted == false)
+                GitIgnorePlan preparedPlan = plan;
+                int preparationVersion = 0;
+                async Task<GitIgnorePlan> PrepareIgnorePlanAsync(string directoryPath, CancellationToken preparationToken)
+                {
+                    int version = ++preparationVersion;
+                    preparedPlan = null;
+                    if (ReferenceEquals(binding, screen.CurrentRepository) == false)
+                    {
+                        throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+                    }
+                    if (requestVersion != screen.WorktreeRequestVersion)
+                    {
+                        throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+                    }
+
+                    GitIgnorePlan result;
+                    if (string.IsNullOrEmpty(directoryPath) == true)
+                    {
+                        result = await Task.Run(() => _workingTreeService.Ignore.PrepareAsync(repository, files, location, preparationToken), preparationToken);
+                    }
+                    else
+                    {
+                        result = await Task.Run(() => _workingTreeService.Ignore.PrepareDirectoryAsync(repository, directoryPath, location, preparationToken), preparationToken);
+                    }
+                    preparationToken.ThrowIfCancellationRequested();
+                    if (version != preparationVersion)
+                    {
+                        throw new GitException("IgnoreSelectedFilesChanged", null, Array.Empty<object>());
+                    }
+                    if (ReferenceEquals(binding, screen.CurrentRepository) == false)
+                    {
+                        throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+                    }
+                    if (requestVersion != screen.WorktreeRequestVersion)
+                    {
+                        throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+                    }
+                    preparedPlan = result;
+                    return result;
+                }
+
+                GitIgnorePlan confirmedPlan = await confirm(plan, PrepareIgnorePlanAsync, cancellationToken);
+                if (confirmedPlan == null)
                 {
                     return;
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
-                await _workingTreeService.Ignore.ApplyAsync(repository, plan, cancellationToken);
+                if (ReferenceEquals(binding, screen.CurrentRepository) == false)
+                {
+                    throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+                }
+                if (requestVersion != screen.WorktreeRequestVersion)
+                {
+                    throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+                }
+                if (ReferenceEquals(preparedPlan, confirmedPlan) == false)
+                {
+                    throw new GitException("IgnoreSelectedFilesChanged", null, Array.Empty<object>());
+                }
+                await Task.Run(() => _workingTreeService.Ignore.ApplyAsync(repository, confirmedPlan, cancellationToken), cancellationToken);
                 await screen.RefreshAfterMutationAsync(repository, null, false);
             }
             finally

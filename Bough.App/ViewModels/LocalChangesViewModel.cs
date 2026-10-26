@@ -137,11 +137,11 @@ namespace Bough.App.ViewModels
 
         public event Func<IReadOnlyList<GitDiscardPlan>, CancellationToken, Task<bool>> ConfirmStopTrackingRequested;
 
-        public event Func<GitIgnorePlan, CancellationToken, Task<bool>> ConfirmIgnoreRequested;
+        public event Func<GitIgnorePlan, Func<string, CancellationToken, Task<GitIgnorePlan>>, CancellationToken, Task<GitIgnorePlan>> ConfirmIgnoreRequested;
 
         internal Func<IReadOnlyList<GitDiscardPlan>, CancellationToken, Task<bool>> DiscardConfirmation { get { return ConfirmDiscardRequested; } }
         internal Func<IReadOnlyList<GitDiscardPlan>, CancellationToken, Task<bool>> StopTrackingConfirmation { get { return ConfirmStopTrackingRequested; } }
-        internal Func<GitIgnorePlan, CancellationToken, Task<bool>> IgnoreConfirmation { get { return ConfirmIgnoreRequested; } }
+        internal Func<GitIgnorePlan, Func<string, CancellationToken, Task<GitIgnorePlan>>, CancellationToken, Task<GitIgnorePlan>> IgnoreConfirmation { get { return ConfirmIgnoreRequested; } }
 
         public StashViewModel Stashes { get; }
 
@@ -292,6 +292,10 @@ namespace Bough.App.ViewModels
                 location = IgnoreLocalText;
             }
 
+            if (plan.DirectoryPath != null)
+            {
+                return _stringHelper.Format("IgnoreDirectoryConfirmDescription", plan.DirectoryPath + "/", location);
+            }
             return _stringHelper.Format("IgnoreConfirmDescription", plan.Entries.Count, location);
         }
 
