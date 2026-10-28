@@ -8,9 +8,9 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-Stable patch release **v1.0.4** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
+Stable patch release **v1.0.5** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
 
-[Download Bough v1.0.4 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.4/Bough-v1.0.4-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.4)
+[Download Bough v1.0.5 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.5/Bough-v1.0.5-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.5)
 
 Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. Windows x64 is the current release platform. Running on macOS has not yet been verified.
 
@@ -48,7 +48,7 @@ Right-click a changed file and choose History to open a dedicated window with it
 
 Browse staged changes and working files separately, and read diffs with previous and current line numbers. Prepare a commit message in the area below the preview.
 
-All screenshots show actual application content using demo repositories, without operating system title bars. History and Settings show the latest source with the light theme and Korean UI. Conflict resolution, File history, and Local changes use earlier English UI screenshots as feature examples; their colors and layout may differ from the current source.
+All screenshots show actual application content using demo repositories, without operating system title bars. History and Settings show the light theme and Korean UI before the spacing refinements in v1.0.5. Conflict resolution, File history, and Local changes use earlier English UI screenshots as feature examples; their colors and layout may differ from the current source.
 
 ## Why Bough?
 
@@ -79,6 +79,8 @@ Bough is designed to show the source of each conflicting change and preview the 
 - **Open submodule repositories:** Open a child repository from the reference tree and use its existing Fetch, Pull, and Push actions.
 - **Conflict resolution:** Inspect merge, rebase, or revert changes; choose sections, edit and save individual files, or apply, save, and stage the remaining sections across all conflicted files.
 - **Application updates:** Check official stable releases from Settings, download with progress and cancellation, then replace the single executable and restart after a normal shutdown. Beta and prerelease versions are excluded.
+
+Version 1.0.5 adds direct Git ignore-pattern input and the selected file's default rule, aligns History metadata and copy actions, and refines Settings spacing and the top Settings button alignment. Existing colors and font sizes are preserved.
 
 Version 1.0.3 refines neutral backgrounds, History and reference styling, and progress placement, and improves Commit/Amend target checks, Stash completion order, normal closing, and follow-up error handling. [Implementation status](Docs/CurrentStatus.md) separates the latest source from the contents of published packages.
 

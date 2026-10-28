@@ -1,5 +1,22 @@
 # 릴리스
 
+## v1.0.5 정식 패치 릴리스 게시 완료
+
+- 생성·배포일: 2026-10-29
+- 소스 커밋: `e194d6fa459c4b5894d80c65810d9b35ac312265`
+- 대상: Windows x64 자체 포함 단일 `Bough-v1.0.5-win-x64.exe`
+- 상태: 소스 main 푸시·GitHub v1.0.5 최신 정식 릴리스 게시 완료
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.5) · [단일 실행 파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.5/Bough-v1.0.5-win-x64.exe)
+- 생성 위치: `.codex-build/release-v1.0.5/Bough-v1.0.5-win-x64.exe`
+- GitHub 게시 크기: 103,826,985바이트
+- GitHub 제공 SHA-256: `sha256:0aba16f9ccc37d214825e4a2cefc5c2f2f9ae76c644aba95c6dfae1e11414ece`
+
+무시 확인창에서 선택 파일의 기본 규칙을 표시하고 Git 표준 패턴을 직접 입력하도록 반영했다. 폴더·와일드카드·재포함·주석 등 원문 의미와 기존 저장소/로컬 적용 위치를 유지하며, 빈 입력은 기존 선택 파일 집합을 사용한다. 정규식 입력이나 일치 파일 목록 미리보기는 제공하지 않는다. 히스토리 작성자·날짜·SHA·부모 SHA와 복사 동작의 정렬, 설정 섹션·언어 선택 간격과 상단 설정 버튼의 세로 정렬도 정돈했다. 기존 색상과 글씨 크기는 유지했다.
+
+요청된 `dotnet publish` 제작 1회가 exit 0으로 끝났다. Version 1.0.5·win-x64·자체 포함·단일 파일·네이티브 포함·비트리밍이며 SourceCommit/RepositoryCommit/SourceRevisionId를 위 SHA에 고정했다. 별도 .NET·DLL·Datas 설치는 필요 없고 Git은 별도로 설치한다.
+
+한국어·영어 설명과 exe를 draft에 업로드한 뒤 정식으로 게시했다. 크기·digest는 GitHub 게시 응답 메타데이터이며 로컬 해시 대조 결과가 아니다. 릴리스 파일 제작 외 별도 테스트·앱 실행·UI·실제 Git 작업·업데이트 설치/복원 검증은 수행하지 않았다. 한영 README의 다운로드 링크·포함 변경과 기존 이미지의 촬영 범위를 갱신했다. 기존 릴리스와 사용자 데이터는 보존했다.
+
 ## v1.0.4 정식 패치 릴리스 게시 완료
 
 - 생성·배포일: 2026-10-26
