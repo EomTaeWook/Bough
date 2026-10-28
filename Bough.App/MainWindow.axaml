@@ -234,7 +234,7 @@
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
           <Button Command="{Binding ShowGitSettingsCommand}" Classes="navigation toolbar"
                   AutomationProperties.Name="{Binding SettingsNavigationText}" Classes.active="{Binding IsGitSettingsView}">
-            <StackPanel Orientation="Horizontal" Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
               <PathIcon Data="{StaticResource BoughIconSettings}" Classes="boughIcon" />
               <TextBlock Text="{Binding SettingsNavigationText}" FontSize="14" VerticalAlignment="Center"
                          Foreground="{ReflectionBinding $parent[Button].Foreground}" />

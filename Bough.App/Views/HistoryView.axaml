@@ -377,34 +377,40 @@
                       HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
             <TabItem Header="{Binding Labels.TabCommit}">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="16" Spacing="12">
-                  <Grid ColumnDefinitions="*">
-                    <StackPanel Spacing="5">
-                      <SelectableTextBlock Text="{Binding SelectedMessage}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
-                      <SelectableTextBlock Text="{Binding AuthorDescription}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
-                      <SelectableTextBlock Text="{Binding AuthoredAtText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" />
-                    </StackPanel>
-                  </Grid>
-                  <SelectableTextBlock Text="{Binding ReferencesText}" FontSize="12" Foreground="{DynamicResource BoughBrushSuccess}" TextWrapping="Wrap" />
-                  <Grid ColumnDefinitions="*,Auto">
-                    <SelectableTextBlock Text="{Binding Inspection.Hash}" FontFamily="Cascadia Mono, Menlo, monospace"
-                                         FontSize="14" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Inspection.Hash}" />
-                    <Button Grid.Column="1" Content="{Binding Labels.CopySha}" Click="CopyHashClicked" Padding="12,4" MinHeight="32" FontSize="12" />
-                  </Grid>
-                  <ItemsControl ItemsSource="{Binding Inspection.Parents}" IsVisible="{Binding HasParents}">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="x:String">
-                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,4">
-                          <Button Content="{Binding}" Click="ParentClicked" Padding="8,4" MinHeight="32" FontSize="14"
-                                  FontFamily="Cascadia Mono, Menlo, monospace" ToolTip.Tip="{Binding DataContext.Labels.ParentTooltip, ElementName=HistoryRoot, x:CompileBindings=False}" />
-                          <Button Content="{Binding DataContext.Labels.Copy, ElementName=HistoryRoot, x:CompileBindings=False}" Click="CopyParentClicked" Padding="12,4" MinHeight="32" FontSize="12" />
-                        </StackPanel>
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                  <ComboBox ItemsSource="{Binding Inspection.Parents}" SelectedItem="{Binding SelectedParent, Mode=TwoWay}"
-                            IsVisible="{Binding HasMultipleParents}" />
-                  <TextBlock Text="{Binding ComparisonText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+                <StackPanel Margin="16" Spacing="16">
+                  <StackPanel Spacing="8">
+                    <SelectableTextBlock Text="{Binding SelectedMessage}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                      <SelectableTextBlock Text="{Binding AuthorDescription}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}"
+                                           TextWrapping="Wrap" VerticalAlignment="Center" />
+                      <SelectableTextBlock Grid.Column="1" Text="{Binding AuthoredAtText}" FontSize="12"
+                                           Foreground="{DynamicResource BoughBrushTextMuted}" VerticalAlignment="Center" />
+                    </Grid>
+                    <SelectableTextBlock Text="{Binding ReferencesText}" FontSize="12" Foreground="{DynamicResource BoughBrushSuccess}" TextWrapping="Wrap" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                      <SelectableTextBlock Text="{Binding Inspection.Hash}" FontFamily="Cascadia Mono, Menlo, monospace"
+                                           FontSize="14" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Inspection.Hash}"
+                                           VerticalAlignment="Center" />
+                      <Button Grid.Column="1" Content="{Binding Labels.CopySha}" Click="CopyHashClicked" Padding="12,4"
+                              MinHeight="32" FontSize="12" VerticalAlignment="Center" />
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding Inspection.Parents}" IsVisible="{Binding HasParents}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
+                            <Button Content="{Binding}" Click="ParentClicked" Padding="8,4" MinHeight="32" FontSize="14"
+                                    HorizontalAlignment="Left" FontFamily="Cascadia Mono, Menlo, monospace"
+                                    ToolTip.Tip="{Binding DataContext.Labels.ParentTooltip, ElementName=HistoryRoot, x:CompileBindings=False}" />
+                            <Button Grid.Column="1" Content="{Binding DataContext.Labels.Copy, ElementName=HistoryRoot, x:CompileBindings=False}"
+                                    Click="CopyParentClicked" Padding="12,4" MinHeight="32" FontSize="12" />
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <ComboBox ItemsSource="{Binding Inspection.Parents}" SelectedItem="{Binding SelectedParent, Mode=TwoWay}"
+                              IsVisible="{Binding HasMultipleParents}" />
+                    <TextBlock Text="{Binding ComparisonText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+                  </StackPanel>
                   <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button Content="{Binding Labels.ExpandAll}" Click="ExpandAllClicked" Padding="12,4" MinHeight="32" FontSize="12" />
                     <Button Content="{Binding Labels.CollapseAll}" Click="CollapseAllClicked" Padding="12,4" MinHeight="32" FontSize="12" />

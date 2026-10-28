@@ -34,7 +34,7 @@
     </Border>
 
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-      <StackPanel Margin="16" Spacing="16" MaxWidth="700" HorizontalAlignment="Left">
+      <StackPanel Margin="16" Spacing="8" MaxWidth="700" HorizontalAlignment="Left">
         <views:AppUpdateView DataContext="{Binding AppUpdate}" />
         <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
         <StackPanel Spacing="8">
@@ -42,7 +42,7 @@
                      Foreground="{DynamicResource BoughBrushText}" />
           <TextBlock Text="{Binding LanguageDescription}" FontSize="12" TextWrapping="Wrap"
                      Foreground="{DynamicResource BoughBrushTextSubtle}" />
-          <StackPanel Orientation="Horizontal" Spacing="16">
+          <StackPanel Orientation="Horizontal" Spacing="8">
             <RadioButton Content="{Binding KoreanLanguageLabel}" GroupName="AppLanguage"
                          IsChecked="{Binding IsKoreanLanguage, Mode=OneWay}" Click="KoreanLanguageClicked"
                          AutomationProperties.Name="{Binding KoreanLanguageLabel}" />
