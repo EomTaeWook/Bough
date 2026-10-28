@@ -16,9 +16,11 @@
     </Border>
     <TextBlock x:Name="StatusText" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" />
     <TextBlock x:Name="ErrorText" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushError}" />
-    <StackPanel IsVisible="{Binding IsDownloading}" Spacing="8">
-      <TextBlock x:Name="DownloadText" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}" />
-    </StackPanel>
+    <WrapPanel IsVisible="{Binding IsBusy}" HorizontalAlignment="Left">
+      <TextBlock x:Name="DownloadText" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextMuted}"
+                 IsVisible="{Binding IsDownloading}" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <Button x:Name="CancelButton" MinHeight="32" MinWidth="80" CornerRadius="6" IsVisible="{Binding CanCancel}" Click="CancelClicked" />
+    </WrapPanel>
     <WrapPanel>
       <Button x:Name="CheckButton" MinHeight="32" MinWidth="80" CornerRadius="6" Margin="0,0,8,8" IsEnabled="{Binding CanCheck}" Click="CheckClicked" />
       <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,8,8">
@@ -27,7 +29,6 @@
           <PathIcon Data="{StaticResource BoughIconGitHub}" Classes="boughIcon" />
         </Button>
       </StackPanel>
-      <Button x:Name="CancelButton" MinHeight="32" MinWidth="80" CornerRadius="6" Margin="0,0,0,8" IsVisible="{Binding CanCancel}" Click="CancelClicked" />
     </WrapPanel>
   </StackPanel>
 </UserControl>
