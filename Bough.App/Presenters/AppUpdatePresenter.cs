@@ -240,6 +240,10 @@ namespace Bough.App.Presenters
             }
             catch (OperationCanceledException)
             {
+                if (cancellationToken.IsCancellationRequested == true)
+                {
+                    return;
+                }
                 if (IsCurrent(requestVersion, viewVersion))
                 {
                     _screen.Status = new LocalizedText("AppUpdateCancelled");
@@ -247,6 +251,10 @@ namespace Bough.App.Presenters
             }
             catch (Exception exception)
             {
+                if (cancellationToken.IsCancellationRequested == true)
+                {
+                    return;
+                }
                 if (IsCurrent(requestVersion, viewVersion))
                 {
                     string key = "AppUpdateDownloadFailed";
