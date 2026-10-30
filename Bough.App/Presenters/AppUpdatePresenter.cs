@@ -23,6 +23,7 @@ namespace Bough.App.Presenters
         private bool _active;
         private bool _restartPending;
         private bool _handedOff;
+        private bool _checkingOnStartup;
 
         public AppUpdatePresenter(ApplicationUpdateService service, IApplicationUpdateRestart restart, AppUpdateViewModel screen)
         {
@@ -51,6 +52,10 @@ namespace Bough.App.Presenters
             }
             _active = false;
             _viewVersion++;
+            if (_checkingOnStartup == true)
+            {
+                return;
+            }
             if (_screen.IsBusy)
             {
                 if (_restartPending == false)
@@ -69,6 +74,23 @@ namespace Bough.App.Presenters
                 _ = ReleaseDetachedAsync(++_requestVersion);
             }
             RefreshAvailability();
+        }
+
+        public async Task CheckOnStartupAsync(CancellationToken cancellationToken)
+        {
+            if (_screen.IsBusy == true)
+            {
+                return;
+            }
+            _checkingOnStartup = true;
+            try
+            {
+                await RunAsync(true, cancellationToken);
+            }
+            finally
+            {
+                _checkingOnStartup = false;
+            }
         }
 
         public Task CheckAsync()
@@ -99,11 +121,11 @@ namespace Bough.App.Presenters
             _screen.CanCancel = false;
         }
 
-        private async Task RunAsync(bool checking)
+        private async Task RunAsync(bool checking, CancellationToken cancellationToken = default)
         {
             int requestVersion = ++_requestVersion;
             int viewVersion = _viewVersion;
-            CancellationTokenSource cancellation = new();
+            CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _cancellation = cancellation;
             bool restarting = false;
             _screen.IsBusy = true;
@@ -300,11 +322,15 @@ namespace Bough.App.Presenters
 
         private bool IsCurrent(int requestVersion, int viewVersion)
         {
-            if (_active == false)
+            if (requestVersion != _requestVersion)
             {
                 return false;
             }
-            if (requestVersion != _requestVersion)
+            if (_checkingOnStartup == true)
+            {
+                return true;
+            }
+            if (_active == false)
             {
                 return false;
             }

@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Interfaces;
 using Bough.App.Infrastructure.Updates;
@@ -94,6 +95,18 @@ namespace Bough.App
                 if (Program.UpdateStartupErrorCode != null)
                 {
                     viewModel.ReportApplicationUpdateStartupFailure(Program.UpdateStartupErrorCode);
+                }
+                CancellationTokenSource startupUpdateCancellation = new();
+                mainWindow.Opened += CheckStartupUpdate;
+                mainWindow.Closed += (sender, eventArguments) =>
+                {
+                    startupUpdateCancellation.Cancel();
+                    startupUpdateCancellation.Dispose();
+                };
+                async void CheckStartupUpdate(object sender, EventArgs eventArguments)
+                {
+                    mainWindow.Opened -= CheckStartupUpdate;
+                    await viewModel.GitSettings.AppUpdate.CheckOnStartupAsync(startupUpdateCancellation.Token);
                 }
                 desktop.MainWindow = mainWindow;
             }

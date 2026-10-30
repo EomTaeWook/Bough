@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Interfaces;
 using Bough.App.Localization;
@@ -44,6 +45,11 @@ namespace Bough.App.ViewModels
 
         public void Activate() { _presenter.Activate(); }
         public void Deactivate() { _presenter.Deactivate(); }
+        public Task CheckOnStartupAsync(CancellationToken cancellationToken)
+        {
+            return _presenter.CheckOnStartupAsync(cancellationToken);
+        }
+
         public Task CheckAsync() { return _presenter.CheckAsync(); }
         public Task UpdateAsync() { return _presenter.UpdateAsync(); }
         public void Cancel() { _presenter.Cancel(); }
