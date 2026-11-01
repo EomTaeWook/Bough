@@ -1,5 +1,22 @@
 # 릴리스
 
+## v1.0.6 정식 패치 릴리스 게시 완료
+
+- 생성·배포일: 2026-11-01 (KST)
+- 소스 커밋: `e4fb2dd183d522f8f3145d64b8dda124e90bce0e`
+- 대상: Windows x64 자체 포함 단일 `Bough-v1.0.6-win-x64.exe`
+- 상태: v1.0.6 태그 푸시·GitHub 최신 정식 릴리스 게시 완료
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.6) · [단일 실행 파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.6/Bough-v1.0.6-win-x64.exe)
+- 생성 위치: `.codex-build/release-v1.0.6/Bough-v1.0.6-win-x64.exe`
+- GitHub 게시 크기: 105,399,849바이트
+- GitHub 제공 SHA-256: `sha256:9c5e307d35a4e1e5f036d92896cca9ef0a18f2b56b52ad408a52a7c99b934b77`
+
+제품명·제작자 마크를 담은 평면 AppIcon을 적용했다. 앱 시작 시 정식 업데이트를 한 번 비동기로 조회하고 창 종료 시 취소하며, 종료 뒤 늦은 취소·오류가 표시 상태를 덮지 않도록 보완했다. 조회는 초기 화면·저장소 열기를 기다리게 하지 않으며 자동 다운로드·설치를 추가하지 않는다. 상단 오른쪽은 열기 → 콘솔 → 구분선 → 설정 순서로 옮겼고 업데이트 취소는 다운로드 용량 옆에 둔다.
+
+AppIcon 커밋의 작성일·커밋일은 2026-10-31 11:37:42(KST)로 유지했다. 릴리스 제작·게시와 이 문서의 배포일은 2026-11-01이다. 요청된 `dotnet publish` 제작 1회가 exit 0으로 끝났으며 Version 1.0.6·win-x64·자체 포함·단일 파일·네이티브 포함·비트리밍과 SourceCommit/RepositoryCommit/SourceRevisionId를 위 SHA에 고정했다. 별도 .NET·DLL·Datas 설치는 필요 없고 Git은 별도로 설치한다.
+
+한국어·영어 설명과 exe를 draft에 업로드한 뒤 정식으로 게시했다. 크기·digest는 GitHub 게시 응답 메타데이터이며 로컬 해시 대조 결과가 아니다. 릴리스 제작 외 별도 테스트·앱 실행·UI·실제 Git 작업·업데이트 설치/복원 검증은 수행하지 않았다. README 다운로드 링크·포함 변경과 기존 이미지의 촬영 범위를 갱신했으며 기존 릴리스와 사용자 데이터는 보존했다.
+
 ## v1.0.5 정식 패치 릴리스 게시 완료
 
 - 생성·배포일: 2026-10-29
