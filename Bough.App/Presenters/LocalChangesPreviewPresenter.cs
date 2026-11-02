@@ -50,9 +50,13 @@ namespace Bough.App.Presenters
             }
         }
 
-        public void Invalidate()
+        public void Invalidate(bool clearHunks = true)
         {
             _version++;
+            if (clearHunks == true)
+            {
+                _screen.ClearPreviewHunks();
+            }
             _pendingFile = null;
             _pendingRepository = null;
             _resumeNeeded = false;
@@ -66,7 +70,7 @@ namespace Bough.App.Presenters
             {
                 resumeNeeded = true;
             }
-            Invalidate();
+            Invalidate(false);
             _suspended = true;
             _resumeNeeded = resumeNeeded;
         }

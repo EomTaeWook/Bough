@@ -25,6 +25,9 @@ namespace Bough.Core.Git
         private static readonly string[] _headArguments = new string[] { "rev-parse", "HEAD" };
         private static readonly string[] _verifyHeadArguments = new string[] { "rev-parse", "--verify", "HEAD" };
         private static readonly string[] _mergeMessagePathArguments = new string[] { "rev-parse", "--git-path", "MERGE_MSG" };
+        private static readonly string[] _hunkDiffOptions = new string[] { "--patch", "--no-textconv", "--full-index", "--unified=3", "--inter-hunk-context=0", "--diff-algorithm=myers", "--no-indent-heuristic", "--no-renames", "--src-prefix=a/", "--dst-prefix=b/", "--no-relative", "--submodule=short" };
+        private static readonly string[] _stageHunkArguments = new string[] { "-c", "apply.ignoreWhitespace=no", "apply", "--cached", "--whitespace=nowarn", "-p1", "-" };
+        private static readonly string[] _unstageHunkArguments = new string[] { "-c", "apply.ignoreWhitespace=no", "apply", "--cached", "--reverse", "--whitespace=nowarn", "-p1", "-" };
         private static readonly Encoding _mergeMessageEncoding = new UTF8Encoding(false, true);
         private readonly GitCommandRunner _runner;
 
@@ -193,7 +196,15 @@ namespace Bough.Core.Git
             }
 
             List<string> arguments = ["diff", "--no-ext-diff", "--no-color"];
-            List<string> numstatArguments = ["diff", "--numstat", "--no-ext-diff"];
+            List<string> numstatArguments = ["diff", "--numstat", "--no-ext-diff", "--no-textconv", "--no-color"];
+            bool hunkCandidate = IsHunkFile(file, staged);
+            string headCommitHash = null;
+            string indexEntry = null;
+            string worktreeHash = null;
+            if (hunkCandidate == true)
+            {
+                arguments.AddRange(_hunkDiffOptions);
+            }
             if (staged == true)
             {
                 arguments.Add("--cached");
@@ -210,7 +221,6 @@ namespace Bough.Core.Git
                 numstatArguments.Add(LiteralPath(file.OriginalPath));
             }
 
-            GitCommandResult result = await _runner.RunAsync(repository.RootPath, arguments, false, cancellationToken);
             GitCommandResult numstat = await _runner.RunAsync(repository.RootPath, numstatArguments, false, cancellationToken);
             bool isBinary = numstat.Output.StartsWith("-\t-\t", StringComparison.Ordinal);
             long size = GetWorkingFileSize(repository, file.Path);
@@ -218,13 +228,326 @@ namespace Bough.Core.Git
             {
                 return new GitFilePreview(string.Empty, "WorktreePreviewBinaryChanged", true, size, size);
             }
+            if (hunkCandidate == true)
+            {
+                headCommitHash = await ReadCommitHeadAsync(repository, cancellationToken);
+                indexEntry = await ReadHunkIndexEntryAsync(repository, file, cancellationToken);
+                worktreeHash = await ReadHunkWorktreeHashAsync(repository, file.Path, cancellationToken);
+            }
 
-            if (result.Output.Length == 0)
+            string diffText;
+            bool exactText = true;
+            if (hunkCandidate == true)
+            {
+                byte[] patchBytes = await _runner.RunBytesAsync(repository.RootPath, arguments, int.MaxValue, cancellationToken);
+                try
+                {
+                    diffText = _mergeMessageEncoding.GetString(patchBytes);
+                }
+                catch (DecoderFallbackException)
+                {
+                    diffText = Encoding.UTF8.GetString(patchBytes);
+                    exactText = false;
+                }
+            }
+            else
+            {
+                GitCommandResult result = await _runner.RunAsync(repository.RootPath, arguments, false, cancellationToken);
+                diffText = result.Output;
+            }
+            if (diffText.Length == 0)
             {
                 return new GitFilePreview(string.Empty, "WorktreePreviewNoTextDiff", false, size);
             }
 
-            return new GitFilePreview(result.Output, $"{file.StatusCode}Preview", false, size, size);
+            GitFilePreview preview = new(diffText, $"{file.StatusCode}Preview", false, size, size);
+            if (hunkCandidate == false)
+            {
+                return preview;
+            }
+            if (exactText == false)
+            {
+                return preview;
+            }
+            if (string.IsNullOrEmpty(headCommitHash) == true)
+            {
+                return preview;
+            }
+            if (indexEntry == null)
+            {
+                return preview;
+            }
+            if (worktreeHash == null)
+            {
+                return preview;
+            }
+
+            IReadOnlyList<GitDiffHunk> hunks = ReadDiffHunks(diffText);
+            if (hunks.Count == 0)
+            {
+                return preview;
+            }
+            List<string> summaryArguments = ["diff", "--summary", "--no-ext-diff", "--no-textconv", "--no-renames", headCommitHash, "--", LiteralPath(file.Path)];
+            GitCommandResult summary = await _runner.RunAsync(repository.RootPath, summaryArguments, false, cancellationToken);
+            if (summary.Output.Length != 0)
+            {
+                return preview;
+            }
+            if (headCommitHash != await ReadCommitHeadAsync(repository, cancellationToken))
+            {
+                throw new GitException("LocalSelectedFileChanged", null, file.Path);
+            }
+            if (indexEntry != await ReadHunkIndexEntryAsync(repository, file, cancellationToken))
+            {
+                throw new GitException("LocalSelectedFileChanged", null, file.Path);
+            }
+            if (worktreeHash != await ReadHunkWorktreeHashAsync(repository, file.Path, cancellationToken))
+            {
+                throw new GitException("LocalSelectedFileChanged", null, file.Path);
+            }
+            preview.RepositoryRoot = repository.RootPath;
+            preview.File = file;
+            preview.IsStaged = staged;
+            preview.HeadCommitHash = headCommitHash;
+            preview.IndexEntry = indexEntry;
+            preview.WorktreeHash = worktreeHash;
+            preview.Hunks = hunks;
+            return preview;
+        }
+
+        public async Task ApplyHunkAsync(GitRepository repository, GitFilePreview preview, GitDiffHunk hunk, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(repository);
+            ArgumentNullException.ThrowIfNull(preview);
+            ArgumentNullException.ThrowIfNull(hunk);
+            if (preview.RepositoryRoot != repository.RootPath)
+            {
+                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+            }
+            if (preview.File == null)
+            {
+                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+            }
+            if (preview.Hunks.Contains(hunk) == false)
+            {
+                throw new GitException("LocalSelectedFileChanged", null, preview.File.Path);
+            }
+
+            GitWorktreeStatus status = await GetStatusAsync(repository, cancellationToken);
+            GitWorktreeFile currentFile = status.Files.FirstOrDefault(file => file.Path == preview.File.Path);
+            if (currentFile == null)
+            {
+                throw new GitException("LocalSelectedFileChanged", null, preview.File.Path);
+            }
+            ValidateSelectedFiles([preview.File], [currentFile], preview.IsStaged);
+            GitFilePreview current = await GetPreviewAsync(repository, currentFile, preview.IsStaged, cancellationToken);
+            if (current.Hunks.Count == 0)
+            {
+                throw new GitException("LocalSelectedFileChanged", null, preview.File.Path);
+            }
+            if (preview.HeadCommitHash != current.HeadCommitHash)
+            {
+                throw new GitException("LocalSelectedFileChanged", null, preview.File.Path);
+            }
+            if (preview.IndexEntry != current.IndexEntry)
+            {
+                throw new GitException("LocalSelectedFileChanged", null, preview.File.Path);
+            }
+            if (preview.WorktreeHash != current.WorktreeHash)
+            {
+                throw new GitException("LocalSelectedFileChanged", null, preview.File.Path);
+            }
+            if (preview.Text != current.Text)
+            {
+                throw new GitException("LocalSelectedFileChanged", null, preview.File.Path);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            string[] arguments = _stageHunkArguments;
+            if (preview.IsStaged == true)
+            {
+                arguments = _unstageHunkArguments;
+            }
+            await _runner.RunWithInputAsync(repository.RootPath, arguments, hunk.Patch, cancellationToken);
+        }
+
+        private static bool IsHunkFile(GitWorktreeFile file, bool staged)
+        {
+            if (file.IsConflict == true)
+            {
+                return false;
+            }
+            if (file.IsUntracked == true)
+            {
+                return false;
+            }
+            if (string.IsNullOrEmpty(file.OriginalPath) == false)
+            {
+                return false;
+            }
+            if (file.IndexStatus != ' ')
+            {
+                if (file.IndexStatus != 'M')
+                {
+                    return false;
+                }
+            }
+            if (file.WorktreeStatus != ' ')
+            {
+                if (file.WorktreeStatus != 'M')
+                {
+                    return false;
+                }
+            }
+            if (staged == true)
+            {
+                return file.IndexStatus == 'M';
+            }
+            return file.WorktreeStatus == 'M';
+        }
+
+        private async Task<string> ReadHunkIndexEntryAsync(GitRepository repository, GitWorktreeFile file, CancellationToken cancellationToken)
+        {
+            Dictionary<string, string> entries = await GetDiscardIndexEntriesAsync(repository, [file], cancellationToken);
+            if (entries.TryGetValue(file.Path, out string entry) == false)
+            {
+                return null;
+            }
+            int separator = entry.IndexOf('\t');
+            if (separator < 0)
+            {
+                return null;
+            }
+            string[] fields = entry.Substring(0, separator).Split(' ');
+            if (fields.Length != 3)
+            {
+                return null;
+            }
+            if (fields[2] != "0")
+            {
+                return null;
+            }
+            if (fields[0] != "100644")
+            {
+                if (fields[0] != "100755")
+                {
+                    return null;
+                }
+            }
+            return entry;
+        }
+
+        private static async Task<string> ReadHunkWorktreeHashAsync(GitRepository repository, string path, CancellationToken cancellationToken)
+        {
+            string fullPath = ResolveDiscardPath(repository, path);
+            FileInfo information = new(fullPath);
+            if (information.Exists == false)
+            {
+                return null;
+            }
+            if ((information.Attributes & FileAttributes.ReparsePoint) != 0)
+            {
+                return null;
+            }
+            using FileStream stream = File.OpenRead(fullPath);
+            return Convert.ToHexString(await SHA256.HashDataAsync(stream, cancellationToken));
+        }
+
+        private static IReadOnlyList<GitDiffHunk> ReadDiffHunks(string text)
+        {
+            if (text.IndexOf('\0') >= 0)
+            {
+                return Array.Empty<GitDiffHunk>();
+            }
+            List<int> starts = [];
+            bool hasFileHeader = false;
+            bool hasIndexHeader = false;
+            bool hasPreviousPath = false;
+            bool hasCurrentPath = false;
+            int position = 0;
+            while (position < text.Length)
+            {
+                int end = text.IndexOf('\n', position);
+                if (end < 0)
+                {
+                    end = text.Length;
+                }
+                ReadOnlySpan<char> line = text.AsSpan(position, end - position);
+                if (line.StartsWith("diff --git ", StringComparison.Ordinal) == true)
+                {
+                    if (hasFileHeader == true)
+                    {
+                        return Array.Empty<GitDiffHunk>();
+                    }
+                    hasFileHeader = true;
+                }
+                else if (line.StartsWith("@@ -", StringComparison.Ordinal) == true)
+                {
+                    starts.Add(position);
+                }
+                else if (starts.Count == 0)
+                {
+                    if (line.StartsWith("index ", StringComparison.Ordinal) == true)
+                    {
+                        bool regularMode = line.EndsWith(" 100644", StringComparison.Ordinal);
+                        if (line.EndsWith(" 100755", StringComparison.Ordinal) == true)
+                        {
+                            regularMode = true;
+                        }
+                        if (regularMode == false)
+                        {
+                            return Array.Empty<GitDiffHunk>();
+                        }
+                        hasIndexHeader = true;
+                    }
+                    else if (line.StartsWith("--- ", StringComparison.Ordinal) == true)
+                    {
+                        hasPreviousPath = true;
+                    }
+                    else if (line.StartsWith("+++ ", StringComparison.Ordinal) == true)
+                    {
+                        hasCurrentPath = true;
+                    }
+                    else
+                    {
+                        return Array.Empty<GitDiffHunk>();
+                    }
+                }
+                position = end + 1;
+            }
+            if (hasFileHeader == false)
+            {
+                return Array.Empty<GitDiffHunk>();
+            }
+            if (hasIndexHeader == false)
+            {
+                return Array.Empty<GitDiffHunk>();
+            }
+            if (hasPreviousPath == false)
+            {
+                return Array.Empty<GitDiffHunk>();
+            }
+            if (hasCurrentPath == false)
+            {
+                return Array.Empty<GitDiffHunk>();
+            }
+            if (starts.Count == 0)
+            {
+                return Array.Empty<GitDiffHunk>();
+            }
+
+            string header = text.Substring(0, starts[0]);
+            List<GitDiffHunk> hunks = [];
+            for (int index = 0; index < starts.Count; index++)
+            {
+                int end = text.Length;
+                if (index + 1 < starts.Count)
+                {
+                    end = starts[index + 1];
+                }
+                hunks.Add(new GitDiffHunk(header + text.Substring(starts[index], end - starts[index])));
+            }
+            return hunks.AsReadOnly();
         }
 
         public async Task StageAsync(GitRepository repository, GitWorktreeFile file, CancellationToken cancellationToken = default)

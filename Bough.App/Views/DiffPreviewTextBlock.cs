@@ -14,17 +14,23 @@ namespace Bough.App.Views
     {
         public static readonly StyledProperty<string> DiffTextProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, string>(nameof(DiffText), string.Empty);
         public static readonly StyledProperty<bool> IsUnifiedDiffProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, bool>(nameof(IsUnifiedDiff));
+        public static readonly StyledProperty<bool> ShowHunkActionsProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, bool>(nameof(ShowHunkActions));
         public static readonly StyledProperty<string> PreviousLineNumbersTextProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, string>(nameof(PreviousLineNumbersText), string.Empty);
         public static readonly StyledProperty<string> CurrentLineNumbersTextProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, string>(nameof(CurrentLineNumbersText), string.Empty);
 
         private readonly List<int> _lineStarts = [];
         private readonly List<int> _lineEnds = [];
+        private readonly List<int> _hunkActionLines = [];
         private Point _pointerPressPosition;
         private bool _pointerPressed;
         private bool _pointerExtendSelection;
         private bool _selectionByUser;
         private int _anchorLineIndex = -1;
         private int _selectedLineIndex = -1;
+
+        public event EventHandler HunkLayoutChanged;
+
+        public IReadOnlyList<int> HunkActionLines { get { return _hunkActionLines; } }
 
         public DiffPreviewTextBlock()
         {
@@ -41,6 +47,12 @@ namespace Bough.App.Views
         {
             get { return GetValue(IsUnifiedDiffProperty); }
             set { SetValue(IsUnifiedDiffProperty, value); }
+        }
+
+        public bool ShowHunkActions
+        {
+            get { return GetValue(ShowHunkActionsProperty); }
+            set { SetValue(ShowHunkActionsProperty, value); }
         }
 
         public string PreviousLineNumbersText
@@ -65,6 +77,12 @@ namespace Bough.App.Views
                 return;
             }
             if (change.Property == IsUnifiedDiffProperty)
+            {
+                ResetLineSelection();
+                UpdateInlines();
+                return;
+            }
+            if (change.Property == ShowHunkActionsProperty)
             {
                 ResetLineSelection();
                 UpdateInlines();
@@ -245,6 +263,7 @@ namespace Bough.App.Views
             InlineCollection inlines = [];
             _lineStarts.Clear();
             _lineEnds.Clear();
+            _hunkActionLines.Clear();
             string text = DiffText;
             if (string.IsNullOrEmpty(text) == true)
             {
@@ -252,6 +271,7 @@ namespace Bough.App.Views
                 CurrentLineNumbersText = string.Empty;
                 Inlines = inlines;
                 RestoreSelection(selectionStart, selectionEnd, restoreLineSelection);
+                HunkLayoutChanged?.Invoke(this, EventArgs.Empty);
                 return;
             }
 
@@ -284,6 +304,7 @@ namespace Bough.App.Views
                 inlines.Add(new Run(text));
                 Inlines = inlines;
                 RestoreSelection(selectionStart, selectionEnd, restoreLineSelection);
+                HunkLayoutChanged?.Invoke(this, EventArgs.Empty);
                 return;
             }
 
@@ -325,6 +346,19 @@ namespace Bough.App.Views
 
                 if (TryReadHunkHeader(text, position, lineLength, out int previousStart, out _, out int currentStart, out _))
                 {
+                    if (ShowHunkActions == true)
+                    {
+                        _hunkActionLines.Add(_lineStarts.Count);
+                        for (int actionLine = 0; actionLine < 2; actionLine++)
+                        {
+                            segment.Append('\n');
+                            previousNumbers.Append('\n');
+                            currentNumbers.Append('\n');
+                            _lineStarts.Add(-1);
+                            _lineEnds.Add(-1);
+                            displayPosition++;
+                        }
+                    }
                     inHunk = true;
                     previousLine = previousStart;
                     currentLine = currentStart;
@@ -397,6 +431,7 @@ namespace Bough.App.Views
             CurrentLineNumbersText = currentNumbers.ToString();
             Inlines = inlines;
             RestoreSelection(selectionStart, selectionEnd, restoreLineSelection);
+            HunkLayoutChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private bool IsSelectedLineRange(int selectionStart, int selectionEnd)

@@ -7114,5 +7114,23 @@
     "Name": "IgnorePatternInvalid",
     "Kor": "무시 패턴은 비어 있지 않은 한 줄이어야 하며 제어 문자를 포함할 수 없습니다.",
     "Eng": "Enter one nonempty ignore pattern without line breaks or control characters."
+  },
+  {
+    "Id": 3286,
+    "Name": "LocalStageHunkAction",
+    "Kor": "이 구간 스테이징",
+    "Eng": "Stage this hunk"
+  },
+  {
+    "Id": 3287,
+    "Name": "LocalUnstageHunkAction",
+    "Kor": "이 구간 스테이징 해제",
+    "Eng": "Unstage this hunk"
+  },
+  {
+    "Id": 3288,
+    "Name": "LocalHunkAppliedRefreshFailed",
+    "Kor": "변경 구간의 인덱스 반영은 완료했지만 새로 고침하지 못했습니다. 구간을 다시 적용하지 말고 새로 고침하세요. {0}",
+    "Eng": "The hunk was applied to the index, but refresh failed. Refresh without applying the hunk again. {0}"
   }
 ]

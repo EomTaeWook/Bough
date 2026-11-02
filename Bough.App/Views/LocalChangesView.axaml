@@ -226,10 +226,14 @@
               </Grid>
             </Border>
             <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+              <Grid>
               <views:DiffPreviewTextBlock x:Name="PreviewCode" DiffText="{Binding PreviewText}" IsUnifiedDiff="{Binding PreviewIsUnifiedDiff}"
+                                          ShowHunkActions="{Binding HasPreviewHunks}" HunkLayoutChanged="PreviewHunkLayoutChanged"
                                           FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14" LineHeight="22" TextWrapping="NoWrap"
                                           Foreground="{DynamicResource BoughBrushText}" SelectionBrush="{DynamicResource BoughBrushSelection}"
                                           SelectionForegroundBrush="{DynamicResource BoughBrushSelectionText}" Padding="10,0,14,0" />
+                <Panel x:Name="PreviewHunkActions" IsVisible="{Binding HasPreviewHunks}" />
+              </Grid>
             </ScrollViewer>
           </Grid>
         </ScrollViewer>

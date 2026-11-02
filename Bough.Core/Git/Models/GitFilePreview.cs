@@ -27,5 +27,31 @@ namespace Bough.Core.Git.Models
         public bool IsBinary { get; }
 
         public long Size { get; }
+
+        public IReadOnlyList<GitDiffHunk> Hunks { get; internal set; } = Array.Empty<GitDiffHunk>();
+
+        public bool IsStaged { get; internal set; }
+
+        public string Path
+        {
+            get
+            {
+                if (File == null)
+                {
+                    return string.Empty;
+                }
+                return File.Path;
+            }
+        }
+
+        internal string RepositoryRoot { get; set; }
+
+        internal GitWorktreeFile File { get; set; }
+
+        internal string HeadCommitHash { get; set; }
+
+        internal string IndexEntry { get; set; }
+
+        internal string WorktreeHash { get; set; }
     }
 }

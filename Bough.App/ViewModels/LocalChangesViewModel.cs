@@ -55,6 +55,8 @@ namespace Bough.App.ViewModels
         private GitWorktreeFile _selectedConflictFile;
         private string _previewText;
         private bool _previewIsUnifiedDiff;
+        private GitFilePreview _hunkPreview;
+        private GitRepository _hunkRepository;
         private string _previewDescription;
         private string _errorText;
         private string _statusText;
@@ -162,6 +164,7 @@ namespace Bough.App.ViewModels
             }
             OnPropertyChanged(nameof(StatusText));
             OnPropertyChanged(nameof(ErrorText));
+            OnPropertyChanged(nameof(PreviewHunkActionText));
             base.RefreshLocalization();
         }
 
@@ -378,6 +381,35 @@ namespace Bough.App.ViewModels
         {
             get { return _previewIsUnifiedDiff; }
             private set { SetProperty(ref _previewIsUnifiedDiff, value); }
+        }
+
+        public IReadOnlyList<GitDiffHunk> PreviewHunks
+        {
+            get
+            {
+                if (_hunkPreview == null)
+                {
+                    return Array.Empty<GitDiffHunk>();
+                }
+                return _hunkPreview.Hunks;
+            }
+        }
+
+        public bool HasPreviewHunks { get { return PreviewHunks.Count > 0; } }
+
+        public string PreviewHunkActionText
+        {
+            get
+            {
+                if (_hunkPreview != null)
+                {
+                    if (_hunkPreview.IsStaged == true)
+                    {
+                        return _stringHelper.GetString("LocalUnstageHunkAction");
+                    }
+                }
+                return _stringHelper.GetString("LocalStageHunkAction");
+            }
         }
 
         public string PreviewDescription
@@ -830,7 +862,7 @@ namespace Bough.App.ViewModels
             return RefreshAsync(null, false);
         }
 
-        private Task RefreshAsync(string preferredPath, bool preferStaged)
+        private Task RefreshAsync(string preferredPath, bool preferStaged, bool propagateReadError = false)
         {
             GitRepository repository = _repository;
             if (repository == null)
@@ -839,7 +871,7 @@ namespace Bough.App.ViewModels
             }
 
             _requestVersion++;
-            _worktreeLoadTask = RefreshCoreAsync(repository, _requestVersion, preferredPath, preferStaged);
+            _worktreeLoadTask = RefreshCoreAsync(repository, _requestVersion, preferredPath, preferStaged, propagateReadError);
             return _worktreeLoadTask;
         }
 
@@ -1036,9 +1068,56 @@ namespace Bough.App.ViewModels
 
         internal void ApplyPreviewDisplay(GitWorktreeFile file, GitFilePreview preview)
         {
+            _hunkRepository = _repository;
+            _hunkPreview = preview;
             PreviewIsUnifiedDiff = file.IsUntracked == false;
             PreviewText = preview.Text;
             SetLocalizedPreviewDescription(new LocalizedText(preview.DescriptionCode, preview.DescriptionArguments.ToArray()));
+            OnPropertyChanged(nameof(PreviewHunks));
+            OnPropertyChanged(nameof(HasPreviewHunks));
+            OnPropertyChanged(nameof(PreviewHunkActionText));
+        }
+
+        internal void ClearPreviewHunks()
+        {
+            _hunkPreview = null;
+            _hunkRepository = null;
+            OnPropertyChanged(nameof(PreviewHunks));
+            OnPropertyChanged(nameof(HasPreviewHunks));
+            OnPropertyChanged(nameof(PreviewHunkActionText));
+        }
+
+        public Task ApplyPreviewHunkAsync(GitDiffHunk hunk)
+        {
+            GitRepository repository = _hunkRepository;
+            GitFilePreview preview = _hunkPreview;
+            if (repository == null)
+            {
+                ShowMutationCommandError(new GitException("LocalSelectionSetChanged", null, Array.Empty<object>()));
+                return Task.CompletedTask;
+            }
+            if (ReferenceEquals(repository, _repository) == false)
+            {
+                ShowMutationCommandError(new GitException("LocalSelectionSetChanged", null, Array.Empty<object>()));
+                return Task.CompletedTask;
+            }
+            if (preview == null)
+            {
+                ShowMutationCommandError(new GitException("LocalSelectionSetChanged", null, Array.Empty<object>()));
+                return Task.CompletedTask;
+            }
+            if (preview.Hunks.Contains(hunk) == false)
+            {
+                ShowMutationCommandError(new GitException("LocalSelectionSetChanged", null, Array.Empty<object>()));
+                return Task.CompletedTask;
+            }
+
+            string key = "LocalStageHunkAction";
+            if (preview.IsStaged == true)
+            {
+                key = "LocalUnstageHunkAction";
+            }
+            return _mutationPresenter.ApplyHunkAsync(this, repository, preview, hunk, new LocalizedText(key));
         }
 
         internal void ApplyPreviewError(Exception exception)
@@ -1575,14 +1654,14 @@ namespace Bough.App.ViewModels
             return active;
         }
 
-        internal Task RefreshAfterMutationAsync(GitRepository repository, string preferredPath, bool preferStaged)
+        internal Task RefreshAfterMutationAsync(GitRepository repository, string preferredPath, bool preferStaged, bool propagateReadError = false)
         {
             if (IsCurrentRepository(repository) == false)
             {
                 return Task.CompletedTask;
             }
 
-            return RefreshAsync(preferredPath, preferStaged);
+            return RefreshAsync(preferredPath, preferStaged, propagateReadError);
         }
 
         internal void EndMutation(GitRepository repository, bool active)
@@ -1628,6 +1707,10 @@ namespace Bough.App.ViewModels
         {
             if (exception is GitException gitException)
             {
+                if (gitException.ErrorCode == "LocalHunkAppliedRefreshFailed")
+                {
+                    return new LocalizedText(gitException.ErrorCode, new LocalizedText(gitException.InnerException));
+                }
                 if (gitException.ErrorCode == "WorkingStopTrackingPartialFailure")
                 {
                     return new LocalizedText(gitException.ErrorCode, new LocalizedText(gitException.InnerException));
