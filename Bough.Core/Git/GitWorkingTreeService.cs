@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -315,11 +316,12 @@ namespace Bough.Core.Git
             return preview;
         }
 
-        public async Task ApplyHunkAsync(GitRepository repository, GitFilePreview preview, GitDiffHunk hunk, CancellationToken cancellationToken = default)
+        public async Task ApplySelectedLinesAsync(GitRepository repository, GitFilePreview preview, IReadOnlyList<int> selectedLineOffsets, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(repository);
             ArgumentNullException.ThrowIfNull(preview);
-            ArgumentNullException.ThrowIfNull(hunk);
+            ArgumentNullException.ThrowIfNull(selectedLineOffsets);
+            cancellationToken.ThrowIfCancellationRequested();
             if (preview.RepositoryRoot != repository.RootPath)
             {
                 throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
@@ -328,10 +330,11 @@ namespace Bough.Core.Git
             {
                 throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
             }
-            if (preview.Hunks.Contains(hunk) == false)
+            if (preview.Hunks.Count == 0)
             {
                 throw new GitException("LocalSelectedFileChanged", null, preview.File.Path);
             }
+            string patch = BuildSelectedLinesPatch(preview, selectedLineOffsets, cancellationToken);
 
             GitWorktreeStatus status = await GetStatusAsync(repository, cancellationToken);
             GitWorktreeFile currentFile = status.Files.FirstOrDefault(file => file.Path == preview.File.Path);
@@ -368,7 +371,7 @@ namespace Bough.Core.Git
             {
                 arguments = _unstageHunkArguments;
             }
-            await _runner.RunWithInputAsync(repository.RootPath, arguments, hunk.Patch, cancellationToken);
+            await _runner.RunWithInputAsync(repository.RootPath, arguments, patch, cancellationToken);
         }
 
         private static bool IsHunkFile(GitWorktreeFile file, bool staged)
@@ -536,7 +539,6 @@ namespace Bough.Core.Git
                 return Array.Empty<GitDiffHunk>();
             }
 
-            string header = text.Substring(0, starts[0]);
             List<GitDiffHunk> hunks = [];
             for (int index = 0; index < starts.Count; index++)
             {
@@ -545,9 +547,283 @@ namespace Bough.Core.Git
                 {
                     end = starts[index + 1];
                 }
-                hunks.Add(new GitDiffHunk(header + text.Substring(starts[index], end - starts[index])));
+                hunks.Add(new GitDiffHunk(starts[index], end - starts[index]));
             }
             return hunks.AsReadOnly();
+        }
+
+        private static string BuildSelectedLinesPatch(GitFilePreview preview, IReadOnlyList<int> selectedLineOffsets, CancellationToken cancellationToken)
+        {
+            HashSet<int> remaining = new(selectedLineOffsets);
+            if (remaining.Count == 0)
+            {
+                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+            }
+
+            string text = preview.Text;
+            StringBuilder patch = new(text.Substring(0, preview.Hunks[0].Start));
+            long accumulatedChange = 0;
+            int includedHunks = 0;
+            foreach (GitDiffHunk hunk in preview.Hunks)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                int hunkEnd = hunk.Start + hunk.Length;
+                int headerEnd = text.IndexOf('\n', hunk.Start);
+                if (headerEnd < 0)
+                {
+                    throw new GitException("LocalSelectedFileChanged", null, preview.Path);
+                }
+                if (TryReadSelectedHunkHeader(text, hunk.Start, headerEnd, out int originalPreviousStart, out int originalPreviousCount, out int originalCurrentStart, out int originalCurrentCount, out int suffixStart) == false)
+                {
+                    throw new GitException("LocalSelectedFileChanged", null, preview.Path);
+                }
+
+                StringBuilder body = new();
+                int previousCount = 0;
+                int currentCount = 0;
+                int originalPreviousLines = 0;
+                int originalCurrentLines = 0;
+                bool hasChanges = false;
+                bool previousEnded = false;
+                bool currentEnded = false;
+                bool invalidEnding = false;
+                char lastEmittedKind = '\0';
+                int position = headerEnd + 1;
+                while (position < hunkEnd)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    int lineEnd = text.IndexOf('\n', position);
+                    if (lineEnd < 0)
+                    {
+                        lineEnd = hunkEnd;
+                    }
+                    int nextPosition = lineEnd;
+                    if (nextPosition < hunkEnd)
+                    {
+                        nextPosition++;
+                    }
+                    char kind = text[position];
+                    if (kind == '\\')
+                    {
+                        if (text.AsSpan(position, lineEnd - position).StartsWith("\\ No newline at end of file", StringComparison.Ordinal) == false)
+                        {
+                            throw new GitException("LocalSelectedFileChanged", null, preview.Path);
+                        }
+                        if (lastEmittedKind != '\0')
+                        {
+                            body.Append(text, position, nextPosition - position);
+                            if (lastEmittedKind != '+')
+                            {
+                                previousEnded = true;
+                            }
+                            if (lastEmittedKind != '-')
+                            {
+                                currentEnded = true;
+                            }
+                        }
+                        lastEmittedKind = '\0';
+                        position = nextPosition;
+                        continue;
+                    }
+                    if (kind != ' ')
+                    {
+                        if (kind != '+')
+                        {
+                            if (kind != '-')
+                            {
+                                throw new GitException("LocalSelectedFileChanged", null, preview.Path);
+                            }
+                        }
+                    }
+                    if (kind != '+')
+                    {
+                        originalPreviousLines++;
+                    }
+                    if (kind != '-')
+                    {
+                        originalCurrentLines++;
+                    }
+
+                    bool selected = remaining.Remove(position);
+                    if (selected == true)
+                    {
+                        if (kind == ' ')
+                        {
+                            throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+                        }
+                        hasChanges = true;
+                    }
+                    char emittedKind = kind;
+                    if (selected == false)
+                    {
+                        if (preview.IsStaged == true)
+                        {
+                            if (kind == '-')
+                            {
+                                emittedKind = '\0';
+                            }
+                            if (kind == '+')
+                            {
+                                emittedKind = ' ';
+                            }
+                        }
+                        else
+                        {
+                            if (kind == '+')
+                            {
+                                emittedKind = '\0';
+                            }
+                            if (kind == '-')
+                            {
+                                emittedKind = ' ';
+                            }
+                        }
+                    }
+
+                    lastEmittedKind = emittedKind;
+                    if (emittedKind != '\0')
+                    {
+                        if (emittedKind != '+')
+                        {
+                            if (previousEnded == true)
+                            {
+                                invalidEnding = true;
+                            }
+                            previousCount++;
+                        }
+                        if (emittedKind != '-')
+                        {
+                            if (currentEnded == true)
+                            {
+                                invalidEnding = true;
+                            }
+                            currentCount++;
+                        }
+                        body.Append(emittedKind);
+                        body.Append(text, position + 1, nextPosition - position - 1);
+                    }
+                    position = nextPosition;
+                }
+                if (originalPreviousLines != originalPreviousCount)
+                {
+                    throw new GitException("LocalSelectedFileChanged", null, preview.Path);
+                }
+                if (originalCurrentLines != originalCurrentCount)
+                {
+                    throw new GitException("LocalSelectedFileChanged", null, preview.Path);
+                }
+                if (hasChanges == false)
+                {
+                    continue;
+                }
+                if (invalidEnding == true)
+                {
+                    throw new GitException("LocalSelectedLinesInvalid", null, Array.Empty<object>());
+                }
+
+                long previousZeroStart = originalPreviousStart;
+                long currentZeroStart = originalCurrentStart;
+                if (originalPreviousCount > 0)
+                {
+                    previousZeroStart--;
+                }
+                if (originalCurrentCount > 0)
+                {
+                    currentZeroStart--;
+                }
+                if (preview.IsStaged == true)
+                {
+                    previousZeroStart = currentZeroStart + accumulatedChange;
+                    accumulatedChange += previousCount - currentCount;
+                }
+                else
+                {
+                    currentZeroStart = previousZeroStart + accumulatedChange;
+                    accumulatedChange += currentCount - previousCount;
+                }
+                if (previousCount > 0)
+                {
+                    previousZeroStart++;
+                }
+                if (currentCount > 0)
+                {
+                    currentZeroStart++;
+                }
+                patch.Append("@@ -").Append(previousZeroStart.ToString(CultureInfo.InvariantCulture)).Append(',').Append(previousCount.ToString(CultureInfo.InvariantCulture));
+                patch.Append(" +").Append(currentZeroStart.ToString(CultureInfo.InvariantCulture)).Append(',').Append(currentCount.ToString(CultureInfo.InvariantCulture)).Append(" @@");
+                patch.Append(text, suffixStart, headerEnd - suffixStart).Append('\n');
+                patch.Append(body);
+                includedHunks++;
+            }
+            if (remaining.Count != 0)
+            {
+                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+            }
+            if (includedHunks == 0)
+            {
+                throw new GitException("LocalSelectionSetChanged", null, Array.Empty<object>());
+            }
+            return patch.ToString();
+        }
+
+        private static bool TryReadSelectedHunkHeader(string text, int start, int end, out int previousStart, out int previousCount, out int currentStart, out int currentCount, out int suffixStart)
+        {
+            previousStart = 0;
+            previousCount = 0;
+            currentStart = 0;
+            currentCount = 0;
+            suffixStart = 0;
+            int previousEnd = text.IndexOf(' ', start + 4, end - start - 4);
+            if (previousEnd < 0)
+            {
+                return false;
+            }
+            if (previousEnd + 1 >= end)
+            {
+                return false;
+            }
+            if (text[previousEnd + 1] != '+')
+            {
+                return false;
+            }
+            int currentEnd = text.IndexOf(' ', previousEnd + 2, end - previousEnd - 2);
+            if (currentEnd < 0)
+            {
+                return false;
+            }
+            if (currentEnd + 3 > end)
+            {
+                return false;
+            }
+            if (string.CompareOrdinal(text, currentEnd, " @@", 0, 3) != 0)
+            {
+                return false;
+            }
+            if (TryReadSelectedHunkRange(text.AsSpan(start + 4, previousEnd - start - 4), out previousStart, out previousCount) == false)
+            {
+                return false;
+            }
+            if (TryReadSelectedHunkRange(text.AsSpan(previousEnd + 2, currentEnd - previousEnd - 2), out currentStart, out currentCount) == false)
+            {
+                return false;
+            }
+            suffixStart = currentEnd + 3;
+            return true;
+        }
+
+        private static bool TryReadSelectedHunkRange(ReadOnlySpan<char> range, out int start, out int count)
+        {
+            count = 1;
+            int separator = range.IndexOf(',');
+            if (separator < 0)
+            {
+                return int.TryParse(range, NumberStyles.None, CultureInfo.InvariantCulture, out start);
+            }
+            if (int.TryParse(range.Slice(0, separator), NumberStyles.None, CultureInfo.InvariantCulture, out start) == false)
+            {
+                return false;
+            }
+            return int.TryParse(range.Slice(separator + 1), NumberStyles.None, CultureInfo.InvariantCulture, out count);
         }
 
         public async Task StageAsync(GitRepository repository, GitWorktreeFile file, CancellationToken cancellationToken = default)

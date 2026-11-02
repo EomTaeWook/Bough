@@ -127,14 +127,14 @@ namespace Bough.App.Presenters
             }, preferredPath, true, cancellationToken));
         }
 
-        public Task ApplyHunkAsync(LocalChangesViewModel screen, GitRepository repository, GitFilePreview preview, GitDiffHunk hunk, LocalizedText operationName)
+        public Task ApplySelectedLinesAsync(LocalChangesViewModel screen, GitRepository repository, GitFilePreview preview, IReadOnlyList<int> selectedLineOffsets, LocalizedText operationName)
         {
             return EnqueueAsync(screen, repository, operationName, async cancellationToken =>
             {
                 bool active = screen.BeginMutation(repository);
                 try
                 {
-                    await Task.Run(() => _workingTreeService.ApplyHunkAsync(repository, preview, hunk, cancellationToken), cancellationToken);
+                    await Task.Run(() => _workingTreeService.ApplySelectedLinesAsync(repository, preview, selectedLineOffsets, cancellationToken), cancellationToken);
                     try
                     {
                         await screen.RefreshAfterMutationAsync(repository, preview.Path, preview.IsStaged, true);

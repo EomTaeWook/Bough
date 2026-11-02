@@ -209,7 +209,13 @@
 
       <Grid Grid.Column="2" RowDefinitions="Auto,*" Background="{DynamicResource BoughBrushInset}">
         <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,0,0,1" Padding="12,8">
-          <TextBlock Text="{Binding PreviewDescription}" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+          <StackPanel Spacing="8">
+            <TextBlock Text="{Binding PreviewDescription}" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+            <Button x:Name="PreviewSelectionButton" Content="{Binding PreviewSelectionActionText}" Click="PreviewSelectionClicked"
+                    IsVisible="{Binding HasPreviewHunks}" IsEnabled="{Binding HasSelectedChangeLines, ElementName=PreviewCode, x:CompileBindings=False}"
+                    MinHeight="32" HorizontalAlignment="Left" ToolTip.Tip="{Binding PreviewSelectionHintText}"
+                    AutomationProperties.Name="{Binding PreviewSelectionActionText}" AutomationProperties.HelpText="{Binding PreviewSelectionHintText}" />
+          </StackPanel>
         </Border>
         <ScrollViewer Grid.Row="1" Background="{DynamicResource BoughBrushInset}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
           <Grid ColumnDefinitions="Auto,*">
@@ -226,14 +232,11 @@
               </Grid>
             </Border>
             <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-              <Grid>
               <views:DiffPreviewTextBlock x:Name="PreviewCode" DiffText="{Binding PreviewText}" IsUnifiedDiff="{Binding PreviewIsUnifiedDiff}"
-                                          ShowHunkActions="{Binding HasPreviewHunks}" HunkLayoutChanged="PreviewHunkLayoutChanged"
+                                          SelectWholeLines="{Binding HasPreviewHunks}"
                                           FontFamily="Cascadia Mono, Menlo, monospace" FontSize="14" LineHeight="22" TextWrapping="NoWrap"
                                           Foreground="{DynamicResource BoughBrushText}" SelectionBrush="{DynamicResource BoughBrushSelection}"
                                           SelectionForegroundBrush="{DynamicResource BoughBrushSelectionText}" Padding="10,0,14,0" />
-                <Panel x:Name="PreviewHunkActions" IsVisible="{Binding HasPreviewHunks}" />
-              </Grid>
             </ScrollViewer>
           </Grid>
         </ScrollViewer>

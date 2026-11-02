@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -93,91 +92,26 @@ namespace Bough.App.Views
             {
                 return;
             }
-            if (_previewSource != null)
-            {
-                _previewSource.PropertyChanged -= PreviewHunkStateChanged;
-            }
             _previewSource = next;
-            if (_previewSource != null)
-            {
-                _previewSource.PropertyChanged += PreviewHunkStateChanged;
-            }
             _previewSource?.ResumePreview();
-            RefreshPreviewHunkActions();
         }
 
         private void UnbindPreview()
         {
-            if (_previewSource != null)
-            {
-                _previewSource.PropertyChanged -= PreviewHunkStateChanged;
-            }
             _previewSource?.SuspendPreview();
             _previewSource = null;
-            PreviewHunkActions.Children.Clear();
         }
 
-        private void PreviewHunkLayoutChanged(object sender, EventArgs eventArgs)
+        private async void PreviewSelectionClicked(object sender, RoutedEventArgs eventArgs)
         {
-            RefreshPreviewHunkActions();
-        }
-
-        private void PreviewHunkStateChanged(object sender, PropertyChangedEventArgs eventArgs)
-        {
-            if (eventArgs.PropertyName == nameof(LocalChangesViewModel.PreviewHunks))
-            {
-                RefreshPreviewHunkActions();
-                return;
-            }
-            if (eventArgs.PropertyName == nameof(LocalChangesViewModel.PreviewHunkActionText))
-            {
-                RefreshPreviewHunkActions();
-            }
-        }
-
-        private void RefreshPreviewHunkActions()
-        {
-            if (PreviewHunkActions == null)
-            {
-                return;
-            }
-            PreviewHunkActions.Children.Clear();
-            if (PreviewCode == null)
-            {
-                return;
-            }
-            if (_previewAttached == false)
-            {
-                return;
-            }
             if (DataContext is not LocalChangesViewModel viewModel)
             {
                 return;
             }
 
-            int count = viewModel.PreviewHunks.Count;
-            if (count != PreviewCode.HunkActionLines.Count)
-            {
-                return;
-            }
-            for (int index = 0; index < count; index++)
-            {
-                GitDiffHunk hunk = viewModel.PreviewHunks[index];
-                double top = PreviewCode.HunkActionLines[index] * PreviewCode.LineHeight;
-                Button button = new()
-                {
-                    Content = viewModel.PreviewHunkActionText,
-                    MinHeight = 32,
-                    FontSize = 14,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
-                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
-                    Margin = new Thickness(10, top + 6, 14, 0)
-                };
-                button.SetValue(Avalonia.Automation.AutomationProperties.NameProperty, viewModel.PreviewHunkActionText);
-                ToolTip.SetTip(button, viewModel.PreviewHunkActionText);
-                button.Click += async (sender, eventArgs) => await viewModel.ApplyPreviewHunkAsync(hunk);
-                PreviewHunkActions.Children.Add(button);
-            }
+            string sourceText = PreviewCode.DiffText;
+            IReadOnlyList<int> selectedLineOffsets = PreviewCode.GetSelectedChangeOffsets();
+            await viewModel.ApplyPreviewSelectionAsync(sourceText, selectedLineOffsets);
         }
 
         private void PreviewNumberGutterPressed(object sender, PointerPressedEventArgs eventArgs)

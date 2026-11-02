@@ -14,23 +14,21 @@ namespace Bough.App.Views
     {
         public static readonly StyledProperty<string> DiffTextProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, string>(nameof(DiffText), string.Empty);
         public static readonly StyledProperty<bool> IsUnifiedDiffProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, bool>(nameof(IsUnifiedDiff));
-        public static readonly StyledProperty<bool> ShowHunkActionsProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, bool>(nameof(ShowHunkActions));
+        public static readonly StyledProperty<bool> SelectWholeLinesProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, bool>(nameof(SelectWholeLines));
+        public static readonly StyledProperty<bool> HasSelectedChangeLinesProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, bool>(nameof(HasSelectedChangeLines));
         public static readonly StyledProperty<string> PreviousLineNumbersTextProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, string>(nameof(PreviousLineNumbersText), string.Empty);
         public static readonly StyledProperty<string> CurrentLineNumbersTextProperty = AvaloniaProperty.Register<DiffPreviewTextBlock, string>(nameof(CurrentLineNumbersText), string.Empty);
 
         private readonly List<int> _lineStarts = [];
         private readonly List<int> _lineEnds = [];
-        private readonly List<int> _hunkActionLines = [];
+        private readonly List<int> _rawLineStarts = [];
         private Point _pointerPressPosition;
         private bool _pointerPressed;
         private bool _pointerExtendSelection;
         private bool _selectionByUser;
+        private bool _updatingSelection;
         private int _anchorLineIndex = -1;
         private int _selectedLineIndex = -1;
-
-        public event EventHandler HunkLayoutChanged;
-
-        public IReadOnlyList<int> HunkActionLines { get { return _hunkActionLines; } }
 
         public DiffPreviewTextBlock()
         {
@@ -49,10 +47,16 @@ namespace Bough.App.Views
             set { SetValue(IsUnifiedDiffProperty, value); }
         }
 
-        public bool ShowHunkActions
+        public bool SelectWholeLines
         {
-            get { return GetValue(ShowHunkActionsProperty); }
-            set { SetValue(ShowHunkActionsProperty, value); }
+            get { return GetValue(SelectWholeLinesProperty); }
+            set { SetValue(SelectWholeLinesProperty, value); }
+        }
+
+        public bool HasSelectedChangeLines
+        {
+            get { return GetValue(HasSelectedChangeLinesProperty); }
+            private set { SetValue(HasSelectedChangeLinesProperty, value); }
         }
 
         public string PreviousLineNumbersText
@@ -82,11 +86,20 @@ namespace Bough.App.Views
                 UpdateInlines();
                 return;
             }
-            if (change.Property == ShowHunkActionsProperty)
+            if (change.Property == SelectWholeLinesProperty)
             {
                 ResetLineSelection();
                 UpdateInlines();
                 return;
+            }
+            if (change.Property == SelectionStartProperty)
+            {
+                UpdateSelectedChangeLines();
+                return;
+            }
+            if (change.Property == SelectionEndProperty)
+            {
+                UpdateSelectedChangeLines();
             }
         }
 
@@ -94,6 +107,36 @@ namespace Bough.App.Views
         {
             base.OnAttachedToVisualTree(eventArgs);
             UpdateInlines();
+        }
+
+        protected override void OnLostFocus(FocusChangedEventArgs eventArgs)
+        {
+            if (SelectWholeLines == false)
+            {
+                base.OnLostFocus(eventArgs);
+                return;
+            }
+
+            int selectionStart = SelectionStart;
+            int selectionEnd = SelectionEnd;
+            _updatingSelection = true;
+            try
+            {
+                base.OnLostFocus(eventArgs);
+                if (_selectionByUser == true)
+                {
+                    if (selectionStart != selectionEnd)
+                    {
+                        SelectionStart = selectionStart;
+                        SelectionEnd = selectionEnd;
+                    }
+                }
+            }
+            finally
+            {
+                _updatingSelection = false;
+                UpdateSelectedChangeLines();
+            }
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs eventArgs)
@@ -124,12 +167,14 @@ namespace Bough.App.Views
             {
                 _anchorLineIndex = -1;
                 _selectionByUser = SelectionStart != SelectionEnd;
+                NormalizeLineSelection();
                 return;
             }
             if (Math.Abs(releasedPosition.Y - _pointerPressPosition.Y) > 3)
             {
                 _anchorLineIndex = -1;
                 _selectionByUser = SelectionStart != SelectionEnd;
+                NormalizeLineSelection();
                 return;
             }
 
@@ -143,6 +188,7 @@ namespace Bough.App.Views
             {
                 _selectionByUser = true;
             }
+            UpdateSelectedChangeLines();
         }
 
         public void SelectLineAt(double position, bool extendSelection)
@@ -195,6 +241,7 @@ namespace Bough.App.Views
             _pointerExtendSelection = false;
             SelectionStart = 0;
             SelectionEnd = 0;
+            HasSelectedChangeLines = false;
         }
 
         private void SelectLineRange()
@@ -203,6 +250,154 @@ namespace Bough.App.Views
             int lastLine = Math.Max(_anchorLineIndex, _selectedLineIndex);
             SelectionStart = _lineStarts[firstLine];
             SelectionEnd = _lineEnds[lastLine];
+        }
+
+        private void NormalizeLineSelection()
+        {
+            if (SelectWholeLines == false)
+            {
+                return;
+            }
+            if (TryGetSelectedLineRange(out int firstLine, out int lastLine) == false)
+            {
+                UpdateSelectedChangeLines();
+                return;
+            }
+
+            _anchorLineIndex = firstLine;
+            _selectedLineIndex = lastLine;
+            if (SelectionStart > SelectionEnd)
+            {
+                _anchorLineIndex = lastLine;
+                _selectedLineIndex = firstLine;
+            }
+            _selectionByUser = true;
+            SelectLineRange();
+            UpdateSelectedChangeLines();
+        }
+
+        public IReadOnlyList<int> GetSelectedChangeOffsets()
+        {
+            if (SelectWholeLines == false)
+            {
+                return Array.Empty<int>();
+            }
+            if (IsUnifiedDiff == false)
+            {
+                return Array.Empty<int>();
+            }
+            if (TryGetSelectedLineRange(out int firstLine, out int lastLine) == false)
+            {
+                return Array.Empty<int>();
+            }
+
+            List<int> offsets = [];
+            for (int index = firstLine; index <= lastLine; index++)
+            {
+                int rawStart = _rawLineStarts[index];
+                if (rawStart < 0)
+                {
+                    continue;
+                }
+                char kind = DiffText[rawStart];
+                if (kind == '+')
+                {
+                    offsets.Add(rawStart);
+                    continue;
+                }
+                if (kind == '-')
+                {
+                    offsets.Add(rawStart);
+                }
+            }
+            return offsets.AsReadOnly();
+        }
+
+        private void UpdateSelectedChangeLines()
+        {
+            if (_updatingSelection == true)
+            {
+                return;
+            }
+            if (SelectWholeLines == false)
+            {
+                HasSelectedChangeLines = false;
+                return;
+            }
+            if (IsUnifiedDiff == false)
+            {
+                HasSelectedChangeLines = false;
+                return;
+            }
+            if (TryGetSelectedLineRange(out int firstLine, out int lastLine) == false)
+            {
+                HasSelectedChangeLines = false;
+                return;
+            }
+
+            for (int index = firstLine; index <= lastLine; index++)
+            {
+                int rawStart = _rawLineStarts[index];
+                if (rawStart < 0)
+                {
+                    continue;
+                }
+                char kind = DiffText[rawStart];
+                if (kind == '+')
+                {
+                    HasSelectedChangeLines = true;
+                    return;
+                }
+                if (kind == '-')
+                {
+                    HasSelectedChangeLines = true;
+                    return;
+                }
+            }
+            HasSelectedChangeLines = false;
+        }
+
+        private bool TryGetSelectedLineRange(out int firstLine, out int lastLine)
+        {
+            firstLine = 0;
+            lastLine = -1;
+            int start = Math.Min(SelectionStart, SelectionEnd);
+            int end = Math.Max(SelectionStart, SelectionEnd);
+            if (start == end)
+            {
+                return false;
+            }
+
+            int lower = 0;
+            int upper = _lineEnds.Count;
+            while (lower < upper)
+            {
+                int middle = lower + (upper - lower) / 2;
+                if (_lineEnds[middle] <= start)
+                {
+                    lower = middle + 1;
+                }
+                else
+                {
+                    upper = middle;
+                }
+            }
+            firstLine = lower;
+            upper = _lineStarts.Count;
+            while (lower < upper)
+            {
+                int middle = lower + (upper - lower) / 2;
+                if (_lineStarts[middle] < end)
+                {
+                    lower = middle + 1;
+                }
+                else
+                {
+                    upper = middle;
+                }
+            }
+            lastLine = lower - 1;
+            return firstLine <= lastLine;
         }
 
         public bool TryGetSelectedCodeLine(out string codeText)
@@ -263,7 +458,7 @@ namespace Bough.App.Views
             InlineCollection inlines = [];
             _lineStarts.Clear();
             _lineEnds.Clear();
-            _hunkActionLines.Clear();
+            _rawLineStarts.Clear();
             string text = DiffText;
             if (string.IsNullOrEmpty(text) == true)
             {
@@ -271,7 +466,7 @@ namespace Bough.App.Views
                 CurrentLineNumbersText = string.Empty;
                 Inlines = inlines;
                 RestoreSelection(selectionStart, selectionEnd, restoreLineSelection);
-                HunkLayoutChanged?.Invoke(this, EventArgs.Empty);
+                UpdateSelectedChangeLines();
                 return;
             }
 
@@ -295,6 +490,7 @@ namespace Bough.App.Views
 
                     _lineStarts.Add(untrackedPosition);
                     _lineEnds.Add(nextPosition);
+                    _rawLineStarts.Add(-1);
                     AppendLineNumber(untrackedNumbers, lineNumber, lineEnd < text.Length);
                     lineNumber++;
                     untrackedPosition = nextPosition;
@@ -304,7 +500,7 @@ namespace Bough.App.Views
                 inlines.Add(new Run(text));
                 Inlines = inlines;
                 RestoreSelection(selectionStart, selectionEnd, restoreLineSelection);
-                HunkLayoutChanged?.Invoke(this, EventArgs.Empty);
+                UpdateSelectedChangeLines();
                 return;
             }
 
@@ -346,19 +542,6 @@ namespace Bough.App.Views
 
                 if (TryReadHunkHeader(text, position, lineLength, out int previousStart, out _, out int currentStart, out _))
                 {
-                    if (ShowHunkActions == true)
-                    {
-                        _hunkActionLines.Add(_lineStarts.Count);
-                        for (int actionLine = 0; actionLine < 2; actionLine++)
-                        {
-                            segment.Append('\n');
-                            previousNumbers.Append('\n');
-                            currentNumbers.Append('\n');
-                            _lineStarts.Add(-1);
-                            _lineEnds.Add(-1);
-                            displayPosition++;
-                        }
-                    }
                     inHunk = true;
                     previousLine = previousStart;
                     currentLine = currentStart;
@@ -411,6 +594,7 @@ namespace Bough.App.Views
                     currentLine++;
                 }
                 _lineStarts.Add(displayPosition);
+                _rawLineStarts.Add(position);
                 AppendLineNumber(previousNumbers, previousNumber, lineEnd < text.Length);
                 AppendLineNumber(currentNumbers, currentNumber, lineEnd < text.Length);
                 if (lineEnd < text.Length)
@@ -431,7 +615,7 @@ namespace Bough.App.Views
             CurrentLineNumbersText = currentNumbers.ToString();
             Inlines = inlines;
             RestoreSelection(selectionStart, selectionEnd, restoreLineSelection);
-            HunkLayoutChanged?.Invoke(this, EventArgs.Empty);
+            UpdateSelectedChangeLines();
         }
 
         private bool IsSelectedLineRange(int selectionStart, int selectionEnd)

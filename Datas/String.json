@@ -7118,19 +7118,31 @@
   {
     "Id": 3286,
     "Name": "LocalStageHunkAction",
-    "Kor": "이 구간 스테이징",
-    "Eng": "Stage this hunk"
+    "Kor": "선택한 줄 스테이징",
+    "Eng": "Stage selected lines"
   },
   {
     "Id": 3287,
     "Name": "LocalUnstageHunkAction",
-    "Kor": "이 구간 스테이징 해제",
-    "Eng": "Unstage this hunk"
+    "Kor": "선택한 줄 스테이징 해제",
+    "Eng": "Unstage selected lines"
   },
   {
     "Id": 3288,
     "Name": "LocalHunkAppliedRefreshFailed",
-    "Kor": "변경 구간의 인덱스 반영은 완료했지만 새로 고침하지 못했습니다. 구간을 다시 적용하지 말고 새로 고침하세요. {0}",
-    "Eng": "The hunk was applied to the index, but refresh failed. Refresh without applying the hunk again. {0}"
+    "Kor": "선택한 줄의 인덱스 반영은 완료했지만 새로 고침하지 못했습니다. 다시 적용하지 말고 새로 고침하세요. {0}",
+    "Eng": "The selected lines were applied to the index, but refresh failed. Refresh without applying them again. {0}"
+  },
+  {
+    "Id": 3289,
+    "Name": "LocalSelectedLinesHint",
+    "Kor": "선택 범위에 닿는 추가·삭제 줄 전체를 적용합니다. 문맥 줄은 제외합니다.",
+    "Eng": "Applies whole added or deleted lines touched by the selection. Context lines are excluded."
+  },
+  {
+    "Id": 3290,
+    "Name": "LocalSelectedLinesInvalid",
+    "Kor": "선택한 줄만으로는 변경을 적용할 수 없습니다. 개행과 문맥을 유지하도록 관련 추가·삭제 줄을 함께 선택하세요.",
+    "Eng": "The selected lines cannot be applied on their own. Select the related added or deleted lines needed to preserve line endings and context."
   }
 ]

@@ -164,7 +164,8 @@ namespace Bough.App.ViewModels
             }
             OnPropertyChanged(nameof(StatusText));
             OnPropertyChanged(nameof(ErrorText));
-            OnPropertyChanged(nameof(PreviewHunkActionText));
+            OnPropertyChanged(nameof(PreviewSelectionActionText));
+            OnPropertyChanged(nameof(PreviewSelectionHintText));
             base.RefreshLocalization();
         }
 
@@ -383,21 +384,19 @@ namespace Bough.App.ViewModels
             private set { SetProperty(ref _previewIsUnifiedDiff, value); }
         }
 
-        public IReadOnlyList<GitDiffHunk> PreviewHunks
+        public bool HasPreviewHunks
         {
             get
             {
                 if (_hunkPreview == null)
                 {
-                    return Array.Empty<GitDiffHunk>();
+                    return false;
                 }
-                return _hunkPreview.Hunks;
+                return _hunkPreview.Hunks.Count > 0;
             }
         }
 
-        public bool HasPreviewHunks { get { return PreviewHunks.Count > 0; } }
-
-        public string PreviewHunkActionText
+        public string PreviewSelectionActionText
         {
             get
             {
@@ -411,6 +410,8 @@ namespace Bough.App.ViewModels
                 return _stringHelper.GetString("LocalStageHunkAction");
             }
         }
+
+        public string PreviewSelectionHintText { get { return _stringHelper.GetString("LocalSelectedLinesHint"); } }
 
         public string PreviewDescription
         {
@@ -1073,22 +1074,28 @@ namespace Bough.App.ViewModels
             PreviewIsUnifiedDiff = file.IsUntracked == false;
             PreviewText = preview.Text;
             SetLocalizedPreviewDescription(new LocalizedText(preview.DescriptionCode, preview.DescriptionArguments.ToArray()));
-            OnPropertyChanged(nameof(PreviewHunks));
             OnPropertyChanged(nameof(HasPreviewHunks));
-            OnPropertyChanged(nameof(PreviewHunkActionText));
+            OnPropertyChanged(nameof(PreviewSelectionActionText));
         }
 
         internal void ClearPreviewHunks()
         {
             _hunkPreview = null;
             _hunkRepository = null;
-            OnPropertyChanged(nameof(PreviewHunks));
             OnPropertyChanged(nameof(HasPreviewHunks));
-            OnPropertyChanged(nameof(PreviewHunkActionText));
+            OnPropertyChanged(nameof(PreviewSelectionActionText));
         }
 
-        public Task ApplyPreviewHunkAsync(GitDiffHunk hunk)
+        public Task ApplyPreviewSelectionAsync(string sourceText, IReadOnlyList<int> selectedLineOffsets)
         {
+            if (selectedLineOffsets == null)
+            {
+                return Task.CompletedTask;
+            }
+            if (selectedLineOffsets.Count == 0)
+            {
+                return Task.CompletedTask;
+            }
             GitRepository repository = _hunkRepository;
             GitFilePreview preview = _hunkPreview;
             if (repository == null)
@@ -1106,7 +1113,12 @@ namespace Bough.App.ViewModels
                 ShowMutationCommandError(new GitException("LocalSelectionSetChanged", null, Array.Empty<object>()));
                 return Task.CompletedTask;
             }
-            if (preview.Hunks.Contains(hunk) == false)
+            if (preview.Hunks.Count == 0)
+            {
+                ShowMutationCommandError(new GitException("LocalSelectionSetChanged", null, Array.Empty<object>()));
+                return Task.CompletedTask;
+            }
+            if (string.Equals(sourceText, preview.Text, StringComparison.Ordinal) == false)
             {
                 ShowMutationCommandError(new GitException("LocalSelectionSetChanged", null, Array.Empty<object>()));
                 return Task.CompletedTask;
@@ -1117,7 +1129,8 @@ namespace Bough.App.ViewModels
             {
                 key = "LocalUnstageHunkAction";
             }
-            return _mutationPresenter.ApplyHunkAsync(this, repository, preview, hunk, new LocalizedText(key));
+            int[] selectedOffsets = selectedLineOffsets.ToArray();
+            return _mutationPresenter.ApplySelectedLinesAsync(this, repository, preview, selectedOffsets, new LocalizedText(key));
         }
 
         internal void ApplyPreviewError(Exception exception)

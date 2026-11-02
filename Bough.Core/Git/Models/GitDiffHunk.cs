@@ -2,11 +2,14 @@ namespace Bough.Core.Git.Models
 {
     public class GitDiffHunk
     {
-        internal GitDiffHunk(string patch)
+        internal GitDiffHunk(int start, int length)
         {
-            Patch = patch;
+            Start = start;
+            Length = length;
         }
 
-        internal string Patch { get; }
+        internal int Start { get; }
+
+        internal int Length { get; }
     }
 }
