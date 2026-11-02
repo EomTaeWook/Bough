@@ -38,6 +38,8 @@
 
 - Local Changes: 변경 목록, diff·줄 번호·선택·복사, Stage/Unstage, 커밋·Amend, 변경 버리기·미추적 파일 삭제·추적 중지·무시, 큰 파일 확인, 목록·미리보기·커밋 영역 크기 저장.
 - Unstaged 선택 스테이징은 입력 시 선택된 모든 파일을 고정하고 한 FIFO에서 기존 StagePlan 준비·상태 재검사·큰 파일 집합 확인·후속 갱신을 수행한다. 한 파일 선택과 전체 스테이징 계약을 유지하고 선택하지 않은 파일로 승인 범위를 넓히지 않는다.
+- 선택 줄 부분 Stage/Unstage: 기존 `GitFilePreview`·`GitDiffHunk`의 raw 범위와 기준 상태를 유지하고 원본 diff의 선택 추가/삭제 행 오프셋을 고정한다. `GitWorkingTreeService.ApplySelectedLinesAsync`가 면별 미선택 줄·구간 시작/개수·누적 차이·EOF를 반영한 patch를 준비하고 기존 Mutation Presenter/FIFO에서 인덱스에 적용한다. HEAD·인덱스·작업 파일·raw diff 재검사와 한 번의 완료 갱신·후속 읽기 오류 계약을 유지한다. 지원/제외와 UI 계약은 [Local Changes](../Design/GitClientWorkflow.md)를 따른다.
+- Local Changes만 `DiffPreviewTextBlock.SelectWholeLines`를 켜고 `GetSelectedChangeOffsets`로 실제 선택한 추가/삭제 행을 전달한다. `HasSelectedChangeLines`로 고정 머리글 버튼을 제어하고 VM의 `ApplyPreviewSelectionAsync`에서 원본 대응·배열 복사로 입력을 고정한다. 기존 hunk 전체 입력 API·반복 버튼·빈 행은 이 경로로 대체하며 History·Stash의 기본 false 모드와 기존 파일/전체 작업을 유지한다. 새 DI·Main 연결은 추가하지 않는다.
 - Staged 목록의 Ctrl/Shift 다중 선택은 선택 스테이징 해제의 전체 대상이다. 버튼·우클릭 입력 시 저장소·선택 파일을 고정하고 기존 Presenter·Core의 배치 해제와 한 FIFO·한 번의 후속 갱신을 사용한다. 단일 파일·전체 해제, 이름 변경 경로와 미리보기 수명을 유지한다.
 - Stash: 보관 입력 창과 대상 고정, 목록·미리보기, Apply/Pop/Drop, 부분 실패와 작업 트리 변경 여부에 따른 갱신 계약. 취소·Drop에서 작업 트리를 불필요하게 다시 읽지 않는다.
 - Local Changes·Stash의 선택 미리보기는 기능별 Presenter에서 실행 중 조회 하나와 최신 대기 요청 하나를 유지한다. 이전 조회를 취소하고 종료를 기다린 뒤 최신 선택을 읽으며 선택 해제·저장소·목록 교체는 늦은 성공과 오류를 무효화한다. Stash 내용은 고정 객체 OID로 조회한다. 읽기 요청을 변경 FIFO에 넣지 않는다.
