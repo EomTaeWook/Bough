@@ -45,6 +45,7 @@ namespace Bough.App
         private int _activationVersion;
         private int _submoduleOpenRequestVersion;
         private CancellationTokenSource _submoduleOpenCancellation;
+        private CancellationTokenSource _startupUpdateCheckCancellation;
         private DateTime _lastActivationRefreshUtc;
 
         private void RefreshLocalizedLabels()
@@ -130,6 +131,7 @@ namespace Bough.App
             Closed += delegate
             {
                 _mainWindowClosed = true;
+                _startupUpdateCheckCancellation?.Cancel();
                 _viewModel.StopTagPushCandidates();
                 RemoteOperationsPanel.TagPushRequestedAsync = null;
                 _viewModel.RemoteOperations.PropertyChanged -= OnRemoteOperationsPropertyChanged;
@@ -146,9 +148,20 @@ namespace Bough.App
             Opened += async delegate
             {
                 _viewModel.StartAutoFetch();
+                Task openRepositoryTask = Task.CompletedTask;
                 if (string.IsNullOrWhiteSpace(_viewModel.RepositoryList.LastActivePath) == false)
                 {
-                    await _viewModel.OpenRepositoryAsync(_viewModel.RepositoryList.LastActivePath);
+                    openRepositoryTask = _viewModel.OpenRepositoryAsync(_viewModel.RepositoryList.LastActivePath);
+                }
+                using CancellationTokenSource startupUpdateCheckCancellation = new();
+                _startupUpdateCheckCancellation = startupUpdateCheckCancellation;
+                try
+                {
+                    await Task.WhenAll(openRepositoryTask, _viewModel.GitSettings.AppUpdate.CheckOnStartupAsync(startupUpdateCheckCancellation.Token));
+                }
+                finally
+                {
+                    _startupUpdateCheckCancellation = null;
                 }
             };
             Deactivated += delegate
