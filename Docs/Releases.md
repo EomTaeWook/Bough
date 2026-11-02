@@ -1,5 +1,24 @@
 # 릴리스
 
+## v1.0.7 정식 릴리스 게시 완료
+
+- 생성·배포일: 2026-11-03 (KST)
+- 소스 커밋: `fa95c90b9fa1387903aeeafcf91dc29909da1ad3`
+- 대상: Windows x64 자체 포함 단일 `Bough-v1.0.7-win-x64.exe`
+- 상태: 소스 main·v1.0.7 태그 및 GitHub 최신 정식 릴리스 게시 완료
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.7) · [단일 실행 파일 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.7/Bough-v1.0.7-win-x64.exe)
+- 생성 위치: `.codex-build/release-v1.0.7/Bough-v1.0.7-win-x64.exe`
+- GitHub 게시 크기: 103,900,713바이트
+- GitHub 제공 SHA-256: `sha256:c7e8929051c3d4b225fd709bc24151d052c0a423601960400e5c01c2a47298bc`
+
+Local Changes의 기존 부분 스테이징 경로를 선택한 추가·삭제 줄 기준으로 바꿨다. 클릭·Shift·드래그에 닿는 전체 줄을 대상으로 하고 문맥만 선택하면 비활성화한다. 미리보기 머리글의 고정 액션으로 반복 구간 버튼을 대체했으며 미선택 변경·작업 파일과 기존 파일/전체 작업은 보존한다. 인덱스 적용 성공과 후속 조회 실패를 구분한다. 추적 중인 일반 텍스트 수정·손실 없는 UTF-8 patch가 대상이며 기존 제외 종류는 파일 단위 동작을 사용한다.
+
+파란 둥근 바탕과 흰 분기 심벌의 새 Bough 아이콘을 적용했다. 앱 시작 업데이트 확인을 마지막 저장소 열기와 병렬로 연결하고 창 종료 시 시작 조회에 취소를 요청한다. 자동 다운로드·설치는 추가하지 않는다.
+
+사용자가 만든 테스트 커밋은 남은 기획·실행 계약 문서를 포함해 amend했다. 위 SHA의 Version 1.0.7·win-x64·자체 포함·단일 파일·네이티브 포함·비트리밍 산출물을 요청된 dotnet publish 1회로 생성했다. SourceCommit/RepositoryCommit/SourceRevisionId를 위 SHA에 고정했다. 별도 .NET·DLL·Datas 설치는 필요 없고 Git은 별도로 설치한다.
+
+한국어·영어 설명과 exe를 draft에 올린 뒤 정식으로 게시했다. 크기·digest는 GitHub 게시 응답의 메타데이터이며 로컬 해시 대조 결과가 아니다. 릴리스 제작 외 별도 빌드 검증·테스트·앱 실행·UI/실제 Git 회귀·업데이트 다운로드/설치/복원 검증은 수행하지 않았다. README의 다운로드·포함 변경과 기존 이미지의 범위를 갱신했고 이전 릴리스·사용자 데이터는 보존했다.
+
 ## v1.0.6 정식 패치 릴리스 게시 완료
 
 - 생성·배포일: 2026-11-01 (KST)

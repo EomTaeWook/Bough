@@ -8,9 +8,9 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-Stable patch release **v1.0.6** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
+Stable patch release **v1.0.7** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
 
-[Download Bough v1.0.6 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.6/Bough-v1.0.6-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.6)
+[Download Bough v1.0.7 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.7/Bough-v1.0.7-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.7)
 
 Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. Windows x64 is the current release platform. Running on macOS has not yet been verified.
 
@@ -46,7 +46,7 @@ Right-click a changed file and choose History to open a dedicated window with it
 
 ![Bough Local Changes showing staged and working files, a diff with previous and current line numbers, and the commit area](Docs/images/local-changes.png)
 
-Browse staged changes and working files separately, and read diffs with previous and current line numbers. Prepare a commit message in the area below the preview.
+Browse staged changes and working files separately, and read diffs with previous and current line numbers. Prepare a commit message in the area below the preview. For modifications to tracked regular text files, select changed lines in the diff and use the preview-header action to stage or unstage them.
 
 All screenshots show actual application content using demo repositories, without operating system title bars. History and Settings show the light theme and Korean UI before the spacing refinements in v1.0.5 and the icon and button-placement changes in v1.0.6. Conflict resolution, File history, and Local changes use earlier English UI screenshots as feature examples; their colors and layout may differ from the current source.
 
@@ -72,13 +72,15 @@ Bough is designed to show the source of each conflicting change and preview the 
 ## Features
 
 - **Open and clone repositories:** Open an existing local repository, or clone a remote URL or local path into a new path or an empty folder and add it to the repository list.
-- **Local changes:** Inspect changed files and diffs with line numbers, stage and unstage, commit, discard changes, stop tracking files, and ignore untracked files.
+- **Local changes:** Inspect changed files and diffs with line numbers, stage and unstage files or selected changed lines, commit, discard changes, stop tracking files, and ignore untracked files.
 - **History and references:** Browse the commit graph, file changes, and file history; revert a selected commit; create, switch, delete, and rename branches; create, delete, and rename tags.
 - **Remotes and stashes:** Fetch, Pull, and Push; configure the default Pull strategy or choose one for a single Pull; save, apply, and delete stashes.
 - **Automatic remote checks:** Enable periodic checks in Settings and see new incoming commits for the open repository. Pull remains a manual action.
 - **Open submodule repositories:** Open a child repository from the reference tree and use its existing Fetch, Pull, and Push actions.
 - **Conflict resolution:** Inspect merge, rebase, or revert changes; choose sections, edit and save individual files, or apply, save, and stage the remaining sections across all conflicted files.
 - **Application updates:** Check official stable updates once at startup or manually from Settings. Download with progress and cancellation, then replace the single executable and restart after a normal shutdown when requested. Beta and prerelease versions are excluded.
+
+Version 1.0.7 was published on 2026-11-03. It adds staging and unstaging of selected added/deleted lines through a fixed preview action and includes the new blue branching application icon. The startup update check runs alongside opening the last repository and receives a cancellation request when the window closes. Existing screenshots do not show the selected-line action or branching icon from v1.0.7.
 
 Version 1.0.6 was published on 2026-11-01. It includes the new flat application icon, a single update check at startup, and suppression of late errors after closing. Top-right actions are ordered Open → Console → separator → Settings, and update cancellation sits next to the download-size text.
 
