@@ -484,6 +484,10 @@ namespace Bough.App.Infrastructure.Updates
             {
                 throw new ApplicationUpdateException("AppUpdateCoreDeploymentRequired", null, Array.Empty<object>());
             }
+            if (OperatingSystem.IsWindows() == true)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreDeploymentRequired", null, Array.Empty<object>());
+            }
             if ((File.GetUnixFileMode(executable) & UnixFileMode.UserExecute) == 0)
             {
                 throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
@@ -517,6 +521,10 @@ namespace Bough.App.Infrastructure.Updates
                 throw new ApplicationUpdateException("AppUpdateCoreDeploymentRequired", null, Array.Empty<object>());
             }
             ValidatePlainFile(path);
+            if (OperatingSystem.IsWindows() == true)
+            {
+                throw new ApplicationUpdateException("AppUpdateCoreDeploymentRequired", null, Array.Empty<object>());
+            }
             File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
         }
 
