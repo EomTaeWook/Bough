@@ -480,17 +480,16 @@ namespace Bough.App.Infrastructure.Updates
             {
                 throw new ApplicationUpdateException("AppUpdateCoreReleaseInvalid", null, Array.Empty<object>());
             }
-            if (OperatingSystem.IsMacOS() == false)
+            if (OperatingSystem.IsMacOS())
+            {
+                if ((File.GetUnixFileMode(executable) & UnixFileMode.UserExecute) == 0)
+                {
+                    throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
+                }
+            }
+            else
             {
                 throw new ApplicationUpdateException("AppUpdateCoreDeploymentRequired", null, Array.Empty<object>());
-            }
-            if (OperatingSystem.IsWindows() == true)
-            {
-                throw new ApplicationUpdateException("AppUpdateCoreDeploymentRequired", null, Array.Empty<object>());
-            }
-            if ((File.GetUnixFileMode(executable) & UnixFileMode.UserExecute) == 0)
-            {
-                throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
             }
             using FileStream binary = File.OpenRead(executable);
             byte[] header = new byte[16];
@@ -516,16 +515,15 @@ namespace Bough.App.Infrastructure.Updates
 
         private static void SetExecutable(string path)
         {
-            if (OperatingSystem.IsMacOS() == false)
+            if (OperatingSystem.IsMacOS())
+            {
+                ValidatePlainFile(path);
+                File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+            }
+            else
             {
                 throw new ApplicationUpdateException("AppUpdateCoreDeploymentRequired", null, Array.Empty<object>());
             }
-            ValidatePlainFile(path);
-            if (OperatingSystem.IsWindows() == true)
-            {
-                throw new ApplicationUpdateException("AppUpdateCoreDeploymentRequired", null, Array.Empty<object>());
-            }
-            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
         }
 
         private static async Task VerifyBundleHashAsync(string bundle, string expected)
