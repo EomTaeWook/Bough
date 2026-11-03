@@ -8,11 +8,13 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-Stable patch release **v1.0.7** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
+Stable patch release **v1.0.8** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
 
-[Download Bough v1.0.7 for Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.7/Bough-v1.0.7-win-x64.exe) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.7)
+[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-osx-x64.app.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.8)
 
-Run the downloaded single `.exe` file. No archive extraction or separate .NET installation is needed; Git must be installed. Windows x64 is the current release platform. Running on macOS has not yet been verified.
+On Windows, run the single `.exe`. On Mac, extract the ZIP for your CPU and move `Bough.app` to an application folder you can write to (targets macOS 14 or later). No separate .NET installation is needed; install Git separately.
+
+Mac packages have no Developer ID signature or Apple notarization and may be blocked by security policies. Actual Mac execution and Windows/Mac update installation and rollback have not been verified.
 
 ## Preview
 
@@ -97,7 +99,7 @@ Additional screens and workflows are described in the [design notes](Design/READ
 ## Technology
 
 - **Language:** C# / .NET
-- **Current release platform:** Windows x64
+- **Current release platform:** Windows x64, macOS Apple Silicon and Intel (Mac execution unverified)
 - **UI:** Avalonia
 
 Stable releases provide the implemented basic Git features. [Implementation status](Docs/CurrentStatus.md) (Korean) separates implemented features from behavior still unconfirmed. See [development docs](Docs/README.md) and [design notes](Design/README.md) for more detail.
@@ -108,8 +110,8 @@ Bough is an architecture reference for desktop applications such as Eidolon. See
 
 ### Run the release
 
-1. Install Git. If Bough cannot find it, set the `git.exe` path under **Settings → Git executable**.
-2. Save the Windows x64 `.exe` from the download link above in a folder of your choice and run it. No archive extraction, separate .NET installation, or copying of DLLs, data, or configuration files is required.
+1. Install Git. If Bough cannot find it, set the Git executable path under **Settings → Git executable**.
+2. On Windows, save and run the `.exe`. On Mac, extract the ZIP for your CPU and move `Bough.app` to an application folder you can write to. No separate .NET, DLL, data, or configuration installation is required. See the download section for Mac signing, notarization, and execution status.
 3. Use **+ → Open repository** in the top toolbar to select an existing repository, or **+ → Clone** to enter a remote URL or local path and a destination folder. The destination can be a new path or an empty folder.
 4. Select the current repository in the header to switch between recent repositories. Review files and diffs under **Local changes**, stage files, and commit. Use **History** to browse past commits.
 5. Choose Korean or English under **Settings → Language**. Korean is the default; changes apply immediately and are saved for the next launch.

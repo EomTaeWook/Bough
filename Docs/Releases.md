@@ -1,5 +1,21 @@
 # 릴리스
 
+## v1.0.8 정식 릴리스 게시 완료
+
+- 생성·배포일: 2026-11-03 (KST)
+- 소스 커밋: `a64e526f8930d7aca1f5a98cbff0f413b35e9417`
+- 대상: Windows x64 자체 포함 exe, macOS arm64/x64 자체 포함 `.app.zip`
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.8)
+- [Bough-v1.0.8-win-x64.exe](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-win-x64.exe): 103925289바이트; GitHub digest `sha256:1757a4f179f682eff7d808f0450e3f6250b6b6d202e02dec88a62ae0e9b1d32b`
+- [Bough-v1.0.8-osx-arm64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-osx-arm64.app.zip): 44346610바이트; GitHub digest `sha256:ae0eb83ffb50ca72d2f58846dd5fb7c1683c4ba8beb9b2186d5eee8ff4048f5b`
+- [Bough-v1.0.8-osx-x64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-osx-x64.app.zip): 46339042바이트; GitHub digest `sha256:edab1a7fb2100ef142bd1c77aec44ee400ee4a052ce548d9985e97babdeae37d`
+
+OS별 설치 구현을 App DI에서 선택한다. 정식 릴리스 조회·버전 비교·다운로드·digest 확인은 공통이며 Windows는 기존 exe 교체, Mac은 실행 중인 아키텍처의 `.app` 전체 교체·복구를 맡는다. 시작 조회·사용자 요청 다운로드·취소·정상 종료와 Git 작업/충돌 초안 보호는 기존 흐름을 유지한다.
+
+위 소스를 Version 1.0.8 및 SourceCommit/RepositoryCommit/SourceRevisionId에 고정하고 플랫폼별 dotnet publish로 제작했다. Mac ZIP에는 Bough.app의 Info.plist·기존 분기 아이콘의 ICNS·실행 권한을 포함한다. Bundle ID는 io.github.eomtaewook.bough, 대상은 macOS 14 이상이다. 별도 .NET 설치는 필요 없고 Git은 별도로 설치한다.
+
+Mac Developer ID 서명·Apple 공증은 하지 않았으며 보안 정책에 따라 실행이 차단될 수 있다. 실제 Mac 실행과 Windows/Mac 업데이트 설치·복원은 미확인이다. 배포 제작 외 테스트·앱 실행·UI·별도 검증을 수행하지 않았다. 크기와 digest는 GitHub 응답 메타데이터이며 로컬 해시 비교 결과가 아니다. 한영 설명과 세 파일을 draft에 업로드한 뒤 정식으로 게시하며 v1.0.7과 이전 배포는 보존했다.
+
 ## v1.0.7 정식 릴리스 게시 완료
 
 - 생성·배포일: 2026-11-03 (KST)

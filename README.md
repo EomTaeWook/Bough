@@ -8,11 +8,13 @@
 
 ## 다운로드
 
-정식 패치 버전 **v1.0.7**을 제공합니다. [현재 기능과 상태](Docs/CurrentStatus.md) · [릴리스 기록](Docs/Releases.md)
+정식 패치 버전 **v1.0.8**을 제공합니다. [현재 기능과 상태](Docs/CurrentStatus.md) · [릴리스 기록](Docs/Releases.md)
 
-[Bough v1.0.7 Windows x64 다운로드](https://github.com/EomTaeWook/Bough/releases/download/v1.0.7/Bough-v1.0.7-win-x64.exe) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.7)
+[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-osx-x64.app.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.8)
 
-다운로드한 단일 `.exe` 파일을 실행하세요. 압축 해제나 .NET 설치는 필요 없지만 Git은 설치돼 있어야 합니다. 현재 배포 대상은 Windows x64입니다. macOS 실행은 아직 확인하지 않았습니다.
+Windows는 단일 `.exe`를 실행하세요. Mac은 CPU에 맞는 ZIP을 풀고 `Bough.app`을 쓰기 가능한 응용프로그램 폴더에 옮기세요(macOS 14 이상 대상). 별도 .NET 설치는 필요 없고 Git은 설치돼 있어야 합니다.
+
+Mac 패키지에는 Developer ID 서명·Apple 공증이 없으며 보안 정책에 따라 실행이 차단될 수 있습니다. Mac 실제 실행과 Windows/Mac 업데이트 설치·복원은 확인하지 않았습니다.
 
 ## 화면 미리보기
 
@@ -78,7 +80,9 @@ Bough는 충돌한 변경의 출처를 분명히 표시하고, 사용자가 선�
 - **원격 자동 확인**: 설정에서 켜기·확인 주기를 정하고 현재 저장소의 받을 새 커밋 수를 표시. Pull은 직접 실행
 - **서브모듈 저장소 열기**: 참조 트리에서 하위 저장소를 열고 해당 저장소의 Fetch·Pull·Push 사용
 - **충돌 해결**: 병합·리베이스·Revert의 양쪽 변경 확인, 구간별 선택·직접 편집·파일별 저장과 모든 충돌 파일의 남은 구간 일괄 적용·저장·스테이징
-- **앱 업데이트**: 앱 시작 시 정식 업데이트를 한 번 확인하고 설정에서 수동 재확인. 다운로드 진행·취소와 정상 종료 후 단일 실행 파일 교체·재시작은 직접 요청. 베타·사전 릴리스는 제외
+- **앱 업데이트**: 앱 시작 시 정식 업데이트를 한 번 확인하고 설정에서 수동 재확인. 다운로드 진행·취소와 정상 종료 후 Windows exe·Mac 앱 번들 교체와 재시작은 직접 요청. 베타·사전 릴리스는 제외
+
+v1.0.8은 2026-11-03에 Windows x64·Mac Apple Silicon·Intel용으로 게시했습니다. OS별 업데이트 설치 구현을 DI에서 선택하며 공통 릴리스 조회·다운로드·digest 확인과 기존 정상 종료 보호를 유지합니다. Mac은 `.app` 전체를 교체합니다. Developer ID 서명·공증과 실제 Mac 실행·업데이트 설치/복원은 확인하지 않았습니다.
 
 v1.0.7은 2026-11-03에 게시했습니다. 선택한 추가·삭제 줄만 적용하는 부분 스테이징·해제와 고정 미리보기 액션, 파란 분기 앱 아이콘을 포함합니다. 앱 시작 업데이트 조회는 마지막 저장소 열기와 함께 진행하며 창 종료 시 취소를 요청합니다. 기존 스크린샷에는 v1.0.7의 선택 줄 동작과 새 분기 아이콘이 반영되어 있지 않습니다.
 
@@ -97,7 +101,7 @@ v1.0.5에는 Git 무시 패턴 직접 입력과 선택 파일의 기본 규칙 �
 ## 기술 방향
 
 - **언어**: C# / .NET
-- **현재 배포 플랫폼**: Windows x64
+- **현재 배포 플랫폼**: Windows x64, macOS Apple Silicon·Intel (Mac 실행 미확인)
 - **UI**: Avalonia
 
 기본 Git 기능을 제공하는 정식 버전을 배포합니다. 현재 기능과 확인되지 않은 동작은 [구현 현황](Docs/CurrentStatus.md)에 구분해 기록합니다. 개발 문서와 기획 문서는 각각 [Docs](Docs/README.md), [Design](Design/README.md)에서 볼 수 있습니다.
@@ -108,8 +112,8 @@ Bough는 Eidolon 같은 데스크톱 응용프로그램의 아키텍처 기준 �
 
 ### 배포 파일 실행
 
-1. Git을 설치합니다. Git을 찾지 못하면 Bough의 **설정 → Git 실행 파일**에서 `git.exe` 경로를 지정합니다.
-2. 위 다운로드 링크의 Windows x64 `.exe`를 원하는 폴더에 저장하고 실행합니다. 압축 해제, 별도 .NET 설치, DLL·데이터·설정 파일 복사는 필요 없습니다.
+1. Git을 설치합니다. Git을 찾지 못하면 Bough의 **설정 → Git 실행 파일**에서 Git 실행 파일 경로를 지정합니다.
+2. Windows는 `.exe`를 저장하고 실행합니다. Mac은 CPU에 맞는 ZIP을 풀고 `Bough.app`을 쓰기 가능한 응용프로그램 폴더에 옮깁니다. 별도 .NET·DLL·데이터·설정 파일 설치는 필요 없습니다. Mac 서명·공증 및 실행 확인 상태는 위 다운로드 안내를 참고하세요.
 3. 상단 **+ → 저장소 열기**에서 기존 저장소 폴더를 선택하거나 **+ → 복제**에서 원격 URL·로컬 경로와 목적지 폴더를 지정합니다. 복제 목적지는 새 경로나 빈 폴더를 사용할 수 있습니다.
 4. 상단의 현재 저장소를 눌러 최근 저장소로 전환합니다. **로컬 변경**에서 파일과 diff를 확인하고 스테이징한 뒤 커밋합니다. **히스토리**에서 과거 커밋을 살펴볼 수 있습니다.
 5. **설정 → 언어**에서 한국어·영어를 선택합니다. 기본값은 한국어이며 변경 즉시 화면에 적용되고 다음 실행에도 유지됩니다.
