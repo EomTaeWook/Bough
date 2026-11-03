@@ -6710,8 +6710,8 @@
   {
     "Id": 3218,
     "Name": "AppUpdateCoreDeploymentRequired",
-    "Kor": "자동 업데이트는 배포된 Windows x64 단일 실행 파일에서만 사용할 수 있습니다. 릴리스 페이지에서 새 버전을 다운로드하세요.",
-    "Eng": "Automatic updates are available only in the published Windows x64 single executable. Download the new version from the release page."
+    "Kor": "자동 업데이트는 배포된 Windows x64 단일 실행 파일 또는 현재 아키텍처의 macOS Bough.app에서만 사용할 수 있습니다. 릴리스 페이지에서 새 버전을 다운로드하세요.",
+    "Eng": "Automatic updates require the published Windows x64 executable or a macOS Bough.app matching this architecture. Download the new version from the release page."
   },
   {
     "Id": 3219,
@@ -6740,8 +6740,8 @@
   {
     "Id": 3223,
     "Name": "AppUpdateCoreAssetUnavailable",
-    "Kor": "이 정식 릴리스에서 Windows x64 단일 실행 파일을 찾을 수 없습니다. 릴리스 페이지를 확인하세요.",
-    "Eng": "The Windows x64 single executable is unavailable in this stable release. Check the release page."
+    "Kor": "이 정식 릴리스에서 현재 운영체제와 아키텍처에 맞는 배포 파일을 찾을 수 없습니다. 릴리스 페이지를 확인하세요.",
+    "Eng": "A package for this operating system and architecture is unavailable in this stable release. Check the release page."
   },
   {
     "Id": 3224,
@@ -6770,8 +6770,8 @@
   {
     "Id": 3228,
     "Name": "AppUpdateCorePrepareFailed",
-    "Kor": "업데이트 재시작을 준비하지 못했습니다. 현재 앱과 실행 파일은 유지됩니다.",
-    "Eng": "Could not prepare the update restart. The current application and executable are retained."
+    "Kor": "업데이트 재시작을 준비하지 못했습니다. 현재 앱과 설치 파일은 유지됩니다.",
+    "Eng": "Could not prepare the update restart. The current application and installed files are retained."
   },
   {
     "Id": 3229,
@@ -6788,14 +6788,14 @@
   {
     "Id": 3231,
     "Name": "AppUpdateCoreReplaceFailed",
-    "Kor": "업데이트 파일을 교체하지 못해 기존 앱을 다시 열었습니다. 실행 파일의 접근 권한과 다른 실행 중인 Bough를 확인하세요.",
-    "Eng": "The update could not replace the executable, so the previous application was reopened. Check file permissions and other running instances of Bough."
+    "Kor": "업데이트 파일을 교체하지 못해 기존 앱을 다시 열었습니다. 설치 위치의 접근 권한과 다른 실행 중인 Bough를 확인하세요.",
+    "Eng": "The update could not replace the installed application, so the previous application was reopened. Check installation permissions and other running instances of Bough."
   },
   {
     "Id": 3232,
     "Name": "AppUpdateCoreRollbackFailed",
-    "Kor": "업데이트 실패 후 기존 실행 파일 복원을 완료하지 못했습니다. 설치 폴더에 보존된 백업과 접근 권한을 확인하세요.",
-    "Eng": "Restoring the previous executable after the update failure could not be completed. Check the preserved backup and permissions in the installation folder."
+    "Kor": "업데이트 실패 후 기존 앱 복원을 완료하지 못했습니다. 설치 위치에 보존된 백업과 접근 권한을 확인하세요.",
+    "Eng": "Restoring the previous application after the update failure could not be completed. Check the preserved backup and permissions in the installation location."
   },
   {
     "Id": 3233,
@@ -6806,8 +6806,8 @@
   {
     "Id": 3234,
     "Name": "AppUpdateLaunchFailed",
-    "Kor": "새 버전을 실행하지 못해 기존 실행 파일을 복원했습니다. 기존 앱을 계속 사용할 수 있습니다.",
-    "Eng": "The new version could not be started, so the previous executable was restored. You can continue using the previous application."
+    "Kor": "새 버전을 실행하지 못해 기존 앱을 복원했습니다. 기존 앱을 계속 사용할 수 있습니다.",
+    "Eng": "The new version could not be started, so the previous application was restored. You can continue using the previous application."
   },
   {
     "Id": 3235,

@@ -45,9 +45,7 @@ namespace Bough.App
                 AppearanceThemeService appearanceTheme = new(this);
                 _serviceContainer.RegisterType(appearanceTheme);
                 _serviceContainer.RegisterType(GitExecutableSettings.Default);
-                _serviceContainer.RegisterType(CreateUpdateEnvironment());
-                _serviceContainer.RegisterType<ApplicationUpdateService, ApplicationUpdateService>(LifeScope.Singleton);
-                _serviceContainer.RegisterType<ApplicationUpdateInstaller, ApplicationUpdateInstaller>(LifeScope.Singleton);
+                RegisterApplicationUpdateServices(_serviceContainer);
                 _serviceContainer.RegisterType<ApplicationUpdateRestartPresenter, ApplicationUpdateRestartPresenter>(LifeScope.Singleton);
                 _serviceContainer.RegisterType<IApplicationUpdateRestart>(
                     provider => (ApplicationUpdateRestartPresenter)provider.GetService(typeof(ApplicationUpdateRestartPresenter)),
@@ -79,6 +77,11 @@ namespace Bough.App
                 _serviceContainer.RegisterDependencies(typeof(StringHelper).Assembly);
 
                 IServiceProvider serviceProvider = _serviceContainer.Build();
+                if (Program.UpdateCleanupDirectory != null)
+                {
+                    ApplicationUpdateInstaller installer = serviceProvider.GetService<ApplicationUpdateInstaller>();
+                    _ = installer.CleanupAfterHelperAsync(Program.UpdateCleanupDirectory, Program.UpdateCleanupHelperPid);
+                }
 
                 StringHelper stringHelper = serviceProvider.GetService<StringHelper>();
                 Strings = stringHelper;
@@ -131,6 +134,19 @@ namespace Bough.App
             }
         }
 
+        internal static void RegisterApplicationUpdateServices(ServiceContainer serviceContainer)
+        {
+            serviceContainer.RegisterType(CreateUpdateEnvironment());
+            if (OperatingSystem.IsMacOS() == true)
+            {
+                serviceContainer.RegisterType<ApplicationUpdateInstaller, MacOsApplicationUpdateInstaller>(LifeScope.Singleton);
+            }
+            else
+            {
+                serviceContainer.RegisterType<ApplicationUpdateInstaller, WindowsApplicationUpdateInstaller>(LifeScope.Singleton);
+            }
+            serviceContainer.RegisterType<ApplicationUpdateService, ApplicationUpdateService>(LifeScope.Singleton);
+        }
         private static ApplicationUpdateEnvironment CreateUpdateEnvironment()
         {
             Assembly assembly = typeof(App).Assembly;

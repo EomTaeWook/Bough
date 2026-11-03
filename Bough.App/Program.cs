@@ -5,12 +5,16 @@ using System;
 using System.IO;
 using System.Globalization;
 using Bough.App.Infrastructure.Updates;
+using Dignus.DependencyInjection;
+using Dignus.DependencyInjection.Extensions;
 
 namespace Bough.App
 {
     internal static class Program
     {
         internal static string UpdateStartupErrorCode { get; private set; }
+        internal static string UpdateCleanupDirectory { get; private set; }
+        internal static int UpdateCleanupHelperPid { get; private set; }
 
         [STAThread]
         public static void Main(string[] args)
@@ -26,7 +30,11 @@ namespace Bough.App
                         Environment.ExitCode = 1;
                         return;
                     }
-                    Environment.ExitCode = ApplicationUpdateInstaller.RunHelperAsync(args[1]).GetAwaiter().GetResult();
+                    ServiceContainer updateServices = new();
+                    App.RegisterApplicationUpdateServices(updateServices);
+                    IServiceProvider updateProvider = updateServices.Build();
+                    ApplicationUpdateInstaller installer = updateProvider.GetService<ApplicationUpdateInstaller>();
+                    Environment.ExitCode = installer.RunHelperAsync(args[1]).GetAwaiter().GetResult();
                     return;
                 }
                 if (args[0] == "--bough-update-cleanup")
@@ -35,7 +43,8 @@ namespace Bough.App
                     {
                         if (int.TryParse(args[2], NumberStyles.None, CultureInfo.InvariantCulture, out int helperPid))
                         {
-                            _ = ApplicationUpdateInstaller.CleanupAfterHelperAsync(args[1], helperPid);
+                            UpdateCleanupDirectory = args[1];
+                            UpdateCleanupHelperPid = helperPid;
                         }
                     }
                     if (args.Length == 4)

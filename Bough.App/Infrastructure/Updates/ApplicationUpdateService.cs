@@ -20,10 +20,12 @@ namespace Bough.App.Infrastructure.Updates
         private const long _maximumAssetSize = 1024L * 1024 * 1024;
         private static readonly HttpClient _client = CreateClient();
         private readonly ApplicationUpdateEnvironment _environment;
+        private readonly ApplicationUpdateInstaller _installer;
 
-        public ApplicationUpdateService(ApplicationUpdateEnvironment environment)
+        public ApplicationUpdateService(ApplicationUpdateEnvironment environment, ApplicationUpdateInstaller installer)
         {
             _environment = environment;
+            _installer = installer;
         }
 
         public string CurrentVersion { get { return _environment.Version; } }
@@ -47,52 +49,8 @@ namespace Bough.App.Infrastructure.Updates
 
         internal string GetInstallBlockedCode()
         {
-            if (OperatingSystem.IsWindows() == false)
-            {
-                return "AppUpdateCoreDeploymentRequired";
-            }
-            if (RuntimeInformation.ProcessArchitecture != Architecture.X64)
-            {
-                return "AppUpdateCoreDeploymentRequired";
-            }
-            if (_environment.PublishedSingleFile == false)
-            {
-                return "AppUpdateCoreDeploymentRequired";
-            }
-            if (Debugger.IsAttached)
-            {
-                return "AppUpdateCoreDeploymentRequired";
-            }
-            string path = _environment.ExecutablePath;
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return "AppUpdateCoreDeploymentRequired";
-            }
-            if (Path.IsPathFullyQualified(path) == false)
-            {
-                return "AppUpdateCoreDeploymentRequired";
-            }
-            string name = Path.GetFileNameWithoutExtension(path);
-            if (name.Equals("dotnet", StringComparison.OrdinalIgnoreCase))
-            {
-                return "AppUpdateCoreDeploymentRequired";
-            }
-            if (Path.GetExtension(path).Equals(".exe", StringComparison.OrdinalIgnoreCase) == false)
-            {
-                return "AppUpdateCoreDeploymentRequired";
-            }
-            string directory = Path.GetDirectoryName(path);
-            if (File.Exists(Path.Combine(directory, "Bough.dll")))
-            {
-                return "AppUpdateCoreDeploymentRequired";
-            }
-            if (File.Exists(Path.Combine(directory, "Bough.deps.json")))
-            {
-                return "AppUpdateCoreDeploymentRequired";
-            }
-            return null;
+            return _installer.GetInstallBlockedCode();
         }
-
         internal void ValidateInstallEnvironment()
         {
             string blocked = GetInstallBlockedCode();
@@ -189,15 +147,14 @@ namespace Bough.App.Infrastructure.Updates
             }
         }
 
-        private static ApplicationUpdateRelease ReadAsset(JsonElement root, string tag, string version, Uri page)
+        private ApplicationUpdateRelease ReadAsset(JsonElement root, string tag, string version, Uri page)
         {
-            string expectedName = "Bough-" + tag + "-win-x64.exe";
             JsonElement selected = default;
             int matches = 0;
             foreach (JsonElement asset in root.GetProperty("assets").EnumerateArray())
             {
                 string name = asset.GetProperty("name").GetString();
-                if (name != expectedName && name != "Bough.exe")
+                if (_installer.MatchesAssetName(name, tag) == false)
                 {
                     continue;
                 }
@@ -264,6 +221,15 @@ namespace Bough.App.Infrastructure.Updates
                 {
                     throw new ApplicationUpdateException("AppUpdateCoreReleaseInvalid", null, Array.Empty<object>());
                 }
+                if (candidate.IsStable == false)
+                {
+                    throw new ApplicationUpdateException("AppUpdateCoreReleaseInvalid", null, Array.Empty<object>());
+                }
+                string assetName = Uri.UnescapeDataString(Path.GetFileName(release.AssetUrl.AbsolutePath));
+                if (_installer.MatchesAssetName(assetName, release.Tag) == false)
+                {
+                    throw new ApplicationUpdateException("AppUpdateCoreAssetUnavailable", null, Array.Empty<object>());
+                }
                 if (candidate.CompareTo(current) <= 0)
                 {
                     throw new ApplicationUpdateException("AppUpdateCoreReleaseInvalid", null, Array.Empty<object>());
@@ -306,7 +272,7 @@ namespace Bough.App.Infrastructure.Updates
                         throw new ApplicationUpdateException("AppUpdateCoreDownloadIncomplete", null, Array.Empty<object>());
                     }
                 }
-                string verified = Path.Combine(directory, "verified.exe");
+                string verified = Path.Combine(directory, _installer.CandidateFileName);
                 await ApplicationUpdateInstaller.VerifyHashAsync(partial, release.Sha256, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 File.Move(partial, verified);

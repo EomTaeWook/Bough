@@ -91,7 +91,7 @@
 - Revert 진행 상태를 저장소 진입·갱신·변경 완료에서 읽어 계속·중단 진입을 제공한다. 충돌은 기존 해결 창으로 연결하고 미해결 파일이 있으면 계속을 막는다. 작업자 2의 실제 Core/Presenter 계약을 소비하며 새 범용 결과·공통 읽기 API는 추가하지 않는다. 중단 영향 확인과 기존 미저장 초안/창 수명 및 독립 저장소·요청 guard를 유지한다.
 - [복제](../Design/RepositoryClone.md)의 단일 목적지, 시작 신호, 고정 오류 분류와 현재 목적지 상태 안내. 실패 이유와 폴더 상태를 구분하고 원문 stderr를 노출하지 않는다.
 - [단일 파일 배포 정책](ReleasePolicy.md)에 따른 필수 리소스 포함과 로더·시작 연결. 릴리스 파일 생성·게시와 README 편집은 총괄이 맡는다.
-- 앱 업데이트 인프라·시작·종료 연결: `Bough.App/Infrastructure/Updates`에서 공식 GitHub의 정식 릴리스만 조회하고 현재 버전과 비교해 Windows x64 asset을 다운로드·확인한다. 버전·릴리스·다운로드·설치 모델은 `Infrastructure/Models/Updates`에 타입별 파일로 두며 Core에서 참조하지 않는다. 임시 보조 프로세스로 정상 종료 뒤 고정 경로 exe를 교체·재실행하며 기존 닫기·초안·Git 진행 작업을 보호한다. 실제 API·모델을 먼저 총괄에 인계해 설정 담당이 연결하게 한다. [정식 릴리스 업데이트](../Design/ApplicationUpdate.md)를 따른다.
+- 앱 업데이트 인프라·시작·종료 연결: `Bough.App/Infrastructure/Updates`에서 공식 GitHub의 정식 릴리스만 조회하고 현재 버전과 비교해 Windows x64 또는 macOS arm64/x64 asset을 다운로드·확인한다. App의 DI에서 OS별 설치 구현을 선택하고 조회·버전 비교·다운로드·digest 확인은 공통으로 유지한다. 버전·릴리스·다운로드·설치 모델은 `Infrastructure/Models/Updates`에 타입별 파일로 두며 Core에서 참조하지 않는다. 같은 OS 등록 기준의 임시 보조 프로세스로 정상 종료 뒤 고정 경로에서 Windows는 exe, Mac은 `.app` 전체를 교체·재실행하며 기존 닫기·초안·Git 진행 작업을 보호한다. 실제 API·모델을 먼저 총괄에 인계해 설정 담당이 연결하게 한다. [정식 릴리스 업데이트](../Design/ApplicationUpdate.md)를 따른다.
 
 ## 완료 기능: 서브모듈 저장소 열기
 

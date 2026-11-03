@@ -9,17 +9,64 @@ using Bough.App.Infrastructure.Models.Updates;
 
 namespace Bough.App.Infrastructure.Updates
 {
-    public class ApplicationUpdateInstaller
+    public abstract class ApplicationUpdateInstaller
     {
-        private static readonly string[] _ownedNames = { "download.partial", "verified.exe", "helper.exe", "install.json", "ready", "authorized", "cancel" };
+        private static readonly string[] _ownedNames = { "download.partial", "verified.exe", "verified.zip", "helper.exe", "helper", "install.json", "ready", "authorized", "cancel" };
         private static readonly string _updateRoot = Path.Combine(Path.GetTempPath(), "Bough", "application-update");
-        private readonly ApplicationUpdateService _updates;
+        private readonly ApplicationUpdateEnvironment _environment;
 
-        public ApplicationUpdateInstaller(ApplicationUpdateService updates)
+        protected ApplicationUpdateInstaller(ApplicationUpdateEnvironment environment)
         {
-            _updates = updates;
+            _environment = environment;
         }
 
+        internal abstract string CandidateFileName { get; }
+        protected abstract string HelperFileName { get; }
+        protected ApplicationUpdateEnvironment Environment { get { return _environment; } }
+        public abstract bool MatchesAssetName(string name, string tag);
+        protected abstract string GetPlatformBlockedCode();
+        protected abstract void ValidatePlatformManifest(ApplicationUpdateInstallManifest manifest);
+        protected abstract Task InstallAndRestartAsync(ApplicationUpdateInstallManifest manifest, string directory);
+
+        protected virtual Task PreparePackageAsync(ApplicationUpdateInstallManifest manifest, string directory, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        internal string GetInstallBlockedCode()
+        {
+            if (_environment.PublishedSingleFile == false)
+            {
+                return "AppUpdateCoreDeploymentRequired";
+            }
+            if (Debugger.IsAttached == true)
+            {
+                return "AppUpdateCoreDeploymentRequired";
+            }
+            string path = _environment.ExecutablePath;
+            if (string.IsNullOrWhiteSpace(path) == true)
+            {
+                return "AppUpdateCoreDeploymentRequired";
+            }
+            if (Path.IsPathFullyQualified(path) == false)
+            {
+                return "AppUpdateCoreDeploymentRequired";
+            }
+            if (Path.GetFileNameWithoutExtension(path).Equals("dotnet", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                return "AppUpdateCoreDeploymentRequired";
+            }
+            string directory = Path.GetDirectoryName(path);
+            if (File.Exists(Path.Combine(directory, "Bough.dll")) == true)
+            {
+                return "AppUpdateCoreDeploymentRequired";
+            }
+            if (File.Exists(Path.Combine(directory, "Bough.deps.json")) == true)
+            {
+                return "AppUpdateCoreDeploymentRequired";
+            }
+            return GetPlatformBlockedCode();
+        }
         public Task<ApplicationUpdateInstallPlan> PrepareAsync(VerifiedApplicationUpdate update, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(update);
@@ -28,7 +75,11 @@ namespace Bough.App.Infrastructure.Updates
                 string directory = null;
                 try
                 {
-                    _updates.ValidateInstallEnvironment();
+                    string blocked = GetInstallBlockedCode();
+                    if (blocked != null)
+                    {
+                        throw new ApplicationUpdateException(blocked, null, Array.Empty<object>());
+                    }
                     ValidateOwnedDirectory(update.Directory);
                     ValidatePlainFile(update.FilePath);
                     await VerifyHashAsync(update.FilePath, update.Release.Sha256, cancellationToken).ConfigureAwait(false);
@@ -36,14 +87,14 @@ namespace Bough.App.Infrastructure.Updates
                     {
                         throw new ApplicationUpdateException("AppUpdateCoreDownloadIncomplete", null, Array.Empty<object>());
                     }
-                    string installed = Path.GetFullPath(_updates.Environment.ExecutablePath);
+                    string installed = Path.GetFullPath(_environment.ExecutablePath);
                     ValidatePlainFile(installed);
                     using Process original = Process.GetCurrentProcess();
                     string installedHash = await GetHashAsync(installed, cancellationToken).ConfigureAwait(false);
                     directory = CreateOwnedDirectory();
-                    string candidate = Path.Combine(directory, "verified.exe");
+                    string candidate = Path.Combine(directory, CandidateFileName);
                     File.Copy(update.FilePath, candidate, false);
-                    File.Copy(installed, Path.Combine(directory, "helper.exe"), false);
+                    File.Copy(installed, Path.Combine(directory, HelperFileName), false);
                     cancellationToken.ThrowIfCancellationRequested();
                     ApplicationUpdateInstallManifest manifest = new();
                     manifest.OriginalPid = original.Id;
@@ -54,6 +105,8 @@ namespace Bough.App.Infrastructure.Updates
                     manifest.CandidateSize = update.Release.Size;
                     manifest.Nonce = Guid.NewGuid().ToString("N");
                     manifest.WorkingDirectory = Path.GetDirectoryName(installed);
+                    manifest.CandidateVersion = update.Release.Version;
+                    await PreparePackageAsync(manifest, directory, cancellationToken).ConfigureAwait(false);
                     await File.WriteAllTextAsync(Path.Combine(directory, "install.json"), JsonSerializer.Serialize(manifest), cancellationToken).ConfigureAwait(false);
                     return new ApplicationUpdateInstallPlan(directory, manifest.Nonce, update);
                 }
@@ -88,7 +141,7 @@ namespace Bough.App.Infrastructure.Updates
                 {
                     ValidateOwnedDirectory(plan.Directory);
                     cancellationToken.ThrowIfCancellationRequested();
-                    ProcessStartInfo start = new(Path.Combine(plan.Directory, "helper.exe"));
+                    ProcessStartInfo start = new(Path.Combine(plan.Directory, HelperFileName));
                     start.UseShellExecute = false;
                     start.CreateNoWindow = true;
                     start.WorkingDirectory = plan.Directory;
@@ -189,25 +242,23 @@ namespace Bough.App.Infrastructure.Updates
             });
         }
 
-        public static async Task<int> RunHelperAsync(string manifestPath)
+        public async Task<int> RunHelperAsync(string manifestPath)
         {
-            string directory = null;
-            ApplicationUpdateInstallManifest manifest = null;
-            string backup = null;
-            string incoming = null;
-            bool replaced = false;
-            bool canRestart = false;
-            string failureCode = null;
             try
             {
-                directory = Path.GetDirectoryName(Path.GetFullPath(manifestPath));
+                string directory = Path.GetDirectoryName(Path.GetFullPath(manifestPath));
                 ValidateOwnedDirectory(directory);
                 if (Path.GetFileName(manifestPath) != "install.json")
                 {
                     return 1;
                 }
-                string helperPath = Path.Combine(directory, "helper.exe");
-                if (string.Equals(Environment.ProcessPath, helperPath, StringComparison.OrdinalIgnoreCase) == false)
+                string helperPath = Path.Combine(directory, HelperFileName);
+                StringComparison pathComparison = StringComparison.Ordinal;
+                if (OperatingSystem.IsWindows() == true)
+                {
+                    pathComparison = StringComparison.OrdinalIgnoreCase;
+                }
+                if (string.Equals(System.Environment.ProcessPath, helperPath, pathComparison) == false)
                 {
                     return 1;
                 }
@@ -216,7 +267,7 @@ namespace Bough.App.Infrastructure.Updates
                 {
                     return 1;
                 }
-                manifest = JsonSerializer.Deserialize<ApplicationUpdateInstallManifest>(await File.ReadAllTextAsync(manifestPath).ConfigureAwait(false));
+                ApplicationUpdateInstallManifest manifest = JsonSerializer.Deserialize<ApplicationUpdateInstallManifest>(await File.ReadAllTextAsync(manifestPath).ConfigureAwait(false));
                 ValidateManifest(manifest, directory);
                 await VerifyHashAsync(helperPath, manifest.InstalledSha256, CancellationToken.None).ConfigureAwait(false);
                 using Process original = Process.GetProcessById(manifest.OriginalPid);
@@ -228,7 +279,7 @@ namespace Bough.App.Infrastructure.Updates
                 {
                     return 1;
                 }
-                if (string.Equals(original.MainModule.FileName, manifest.InstallPath, StringComparison.OrdinalIgnoreCase) == false)
+                if (string.Equals(original.MainModule.FileName, manifest.InstallPath, pathComparison) == false)
                 {
                     return 1;
                 }
@@ -238,7 +289,7 @@ namespace Bough.App.Infrastructure.Updates
                 DateTime deadline = DateTime.UtcNow.AddMinutes(10);
                 while (original.HasExited == false)
                 {
-                    if (File.Exists(Path.Combine(directory, "cancel")))
+                    if (File.Exists(Path.Combine(directory, "cancel")) == true)
                     {
                         return 0;
                     }
@@ -257,88 +308,27 @@ namespace Bough.App.Infrastructure.Updates
                 {
                     return 1;
                 }
-                if (File.Exists(Path.Combine(directory, "cancel")))
+                if (File.Exists(Path.Combine(directory, "cancel")) == true)
                 {
                     return 0;
                 }
-                canRestart = true;
-                // Fixed target must still be the original executable, not a replaced path or link.
-                ValidatePlainFile(manifest.InstallPath);
-                await VerifyHashAsync(manifest.InstallPath, manifest.InstalledSha256, CancellationToken.None).ConfigureAwait(false);
-                string candidate = Path.Combine(directory, "verified.exe");
-                ValidatePlainFile(candidate);
-                if (new FileInfo(candidate).Length != manifest.CandidateSize)
-                {
-                    throw new ApplicationUpdateException("AppUpdateCoreDownloadIncomplete", null, Array.Empty<object>());
-                }
-                await VerifyHashAsync(candidate, manifest.CandidateSha256, CancellationToken.None).ConfigureAwait(false);
-                string unique = Guid.NewGuid().ToString("N");
-                incoming = Path.Combine(manifest.WorkingDirectory, ".bough-update-" + unique + ".new");
-                backup = Path.Combine(manifest.WorkingDirectory, ".bough-update-" + unique + ".backup");
-                File.Copy(candidate, incoming, false);
-                await VerifyHashAsync(incoming, manifest.CandidateSha256, CancellationToken.None).ConfigureAwait(false);
-                File.Replace(incoming, manifest.InstallPath, backup);
-                replaced = true;
-                StartInstalled(manifest, directory, null);
-                // Keep the original until launching the replacement has succeeded.
-                TryDeleteFile(backup);
-                backup = null;
+                await InstallAndRestartAsync(manifest, directory).ConfigureAwait(false);
                 return 0;
             }
             catch (Exception)
             {
-                failureCode = "AppUpdateCoreReplaceFailed";
-                if (replaced)
-                {
-                    failureCode = "AppUpdateLaunchFailed";
-                    try
-                    {
-                        File.Replace(backup, manifest.InstallPath, null);
-                        backup = null;
-                    }
-                    catch (Exception)
-                    {
-                        // Retain the original backup if the OS prevents restoration.
-                        failureCode = "AppUpdateCoreRollbackFailed";
-                    }
-                }
-                if (canRestart)
-                {
-                    if (failureCode != "AppUpdateCoreRollbackFailed")
-                    {
-                        try
-                        {
-                            ValidatePlainFile(manifest.InstallPath);
-                            await VerifyHashAsync(manifest.InstallPath, manifest.InstalledSha256, CancellationToken.None).ConfigureAwait(false);
-                            StartInstalled(manifest, directory, failureCode);
-                        }
-                        catch (Exception)
-                        {
-                            // No arbitrary alternate executable, elevation, or reboot scheduling.
-                        }
-                    }
-                }
+                // Never expose updater paths/diagnostics through the global logger.
                 return 1;
             }
-            finally
-            {
-                if (incoming != null)
-                {
-                    TryDeleteFile(incoming);
-                }
-                // The running helper cannot delete itself on Windows. The relaunched app removes
-                // this fixed request directory after the helper PID exits; no shared temp sweep.
-            }
         }
-
-        public static Task CleanupAfterHelperAsync(string directory, int helperPid)
+        public Task CleanupAfterHelperAsync(string directory, int helperPid)
         {
             return Task.Run(async () =>
             {
                 try
                 {
                     ValidateOwnedDirectory(directory);
-                    if (helperPid == Environment.ProcessId)
+                    if (helperPid == System.Environment.ProcessId)
                     {
                         return;
                     }
@@ -388,6 +378,24 @@ namespace Bough.App.Infrastructure.Updates
             {
                 TryDeleteFile(Path.Combine(directory, name));
             }
+            string bundle = Path.Combine(directory, "Bough.app");
+            if (Directory.Exists(bundle) == true)
+            {
+                try
+                {
+                    DeletePlainDirectoryTree(bundle);
+                }
+                catch (IOException)
+                {
+                }
+                catch (UnauthorizedAccessException)
+                {
+                }
+                catch (ApplicationUpdateException)
+                {
+                    // Do not follow a replaced link just to complete request cleanup.
+                }
+            }
             try
             {
                 Directory.Delete(directory, false);
@@ -400,6 +408,20 @@ namespace Bough.App.Infrastructure.Updates
             }
         }
 
+        protected static void DeletePlainDirectoryTree(string directory)
+        {
+            ValidateNoLink(directory);
+            foreach (string file in Directory.EnumerateFiles(directory))
+            {
+                ValidateNoLink(file);
+                File.Delete(file);
+            }
+            foreach (string child in Directory.EnumerateDirectories(directory))
+            {
+                DeletePlainDirectoryTree(child);
+            }
+            Directory.Delete(directory, false);
+        }
         internal static async Task VerifyHashAsync(string path, string expected, CancellationToken cancellationToken)
         {
             string hash = await GetHashAsync(path, cancellationToken).ConfigureAwait(false);
@@ -409,7 +431,7 @@ namespace Bough.App.Infrastructure.Updates
             }
         }
 
-        private static async Task<string> GetHashAsync(string path, CancellationToken cancellationToken)
+        protected static async Task<string> GetHashAsync(string path, CancellationToken cancellationToken)
         {
             using FileStream file = new(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true);
             byte[] hash = await SHA256.HashDataAsync(file, cancellationToken).ConfigureAwait(false);
@@ -432,7 +454,7 @@ namespace Bough.App.Infrastructure.Updates
             ValidateNoLink(_updateRoot);
         }
 
-        private static void ValidatePlainFile(string path)
+        protected static void ValidatePlainFile(string path)
         {
             if (File.Exists(path) == false)
             {
@@ -442,7 +464,7 @@ namespace Bough.App.Infrastructure.Updates
             ValidateNoLink(Path.GetDirectoryName(path));
         }
 
-        private static void ValidateNoLink(string path)
+        protected static void ValidateNoLink(string path)
         {
             if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
             {
@@ -450,7 +472,7 @@ namespace Bough.App.Infrastructure.Updates
             }
         }
 
-        private static void ValidateManifest(ApplicationUpdateInstallManifest manifest, string directory)
+        private void ValidateManifest(ApplicationUpdateInstallManifest manifest, string directory)
         {
             if (manifest == null)
             {
@@ -460,7 +482,7 @@ namespace Bough.App.Infrastructure.Updates
             {
                 throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
             }
-            if (manifest.OriginalPid == Environment.ProcessId)
+            if (manifest.OriginalPid == System.Environment.ProcessId)
             {
                 throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
             }
@@ -468,14 +490,11 @@ namespace Bough.App.Infrastructure.Updates
             {
                 throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
             }
-            if (Path.GetExtension(manifest.InstallPath).Equals(".exe", StringComparison.OrdinalIgnoreCase) == false)
+            if (string.IsNullOrWhiteSpace(manifest.CandidateVersion) == true)
             {
                 throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
             }
-            if (string.Equals(Path.GetDirectoryName(manifest.InstallPath), manifest.WorkingDirectory, StringComparison.OrdinalIgnoreCase) == false)
-            {
-                throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
-            }
+            ValidatePlatformManifest(manifest);
             if (manifest.InstallPath.StartsWith(_updateRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
@@ -496,17 +515,17 @@ namespace Bough.App.Infrastructure.Updates
             {
                 throw new ApplicationUpdateException("AppUpdateCorePrepareFailed", null, Array.Empty<object>());
             }
-            ValidatePlainFile(Path.Combine(directory, "verified.exe"));
+            ValidatePlainFile(Path.Combine(directory, CandidateFileName));
         }
 
-        private static void StartInstalled(ApplicationUpdateInstallManifest manifest, string directory, string failureCode)
+        protected static void StartInstalled(ApplicationUpdateInstallManifest manifest, string directory, string failureCode)
         {
             ProcessStartInfo start = new(manifest.InstallPath);
             start.UseShellExecute = false;
             start.WorkingDirectory = manifest.WorkingDirectory;
             start.ArgumentList.Add("--bough-update-cleanup");
             start.ArgumentList.Add(directory);
-            start.ArgumentList.Add(Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            start.ArgumentList.Add(System.Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture));
             if (failureCode != null)
             {
                 start.ArgumentList.Add(failureCode);
@@ -518,7 +537,7 @@ namespace Bough.App.Infrastructure.Updates
             }
         }
 
-        private static void TryDeleteFile(string path)
+        protected static void TryDeleteFile(string path)
         {
             try
             {

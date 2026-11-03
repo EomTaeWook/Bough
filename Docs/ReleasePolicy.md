@@ -12,6 +12,7 @@
 - 사용자별 설정, 작업 데이터와 실행 로그는 프로젝트의 기존 저장 정책을 따른다. 실행 중 생성되는 사용자 데이터를 릴리스 파일 안에 저장하려고 하지 않는다.
 - 라이선스·저작권 고지는 실행 파일의 리소스와 릴리스 문서 등 적절한 전달 경로에 포함한다.
 - 압축 파일을 제공하는 경우 실행에 필요한 배포물은 단일 실행 파일로 구성한다. 디버그 심볼은 기본 사용자 배포물과 분리한다.
+- Bough의 macOS 배포는 Apple Silicon·Intel별 `.app.zip`으로 제공한다. `Bough.app/Contents/MacOS/Bough`에 자체 포함 단일 실행 파일을 두고 `Contents/Info.plist`와 기존 아이콘의 ICNS를 포함한다. ZIP에 Unix 실행 권한을 기록한다. Bundle ID `io.github.eomtaewook.bough`를 업데이트에서도 유지한다.
 
 ## 앱 내부 업데이트를 제공하는 경우
 
@@ -19,6 +20,7 @@
 - 업데이트 후보의 배포 채널과 공식 원본을 명시한다. Bough는 공식 GitHub의 게시된 정식 릴리스만 사용하며 초안·사전 릴리스는 제외한다.
 - Bough의 베타 허용은 사용자가 승인한 격리 테스트 사본에 한정한다. 테스트용 후보를 사용한 사실이 제품의 정식 전용 정책을 바꾸지는 않는다.
 - 릴리스 태그와 실행 파일의 실제 버전을 일치시키고 내부 업데이트가 선택하는 플랫폼·아키텍처별 파일명을 사용한다. Bough의 Windows x64 asset은 `Bough-{tag}-win-x64.exe` 또는 `Bough.exe`다.
+- Mac asset은 `Bough-{tag}-osx-arm64.app.zip` 또는 `Bough-{tag}-osx-x64.app.zip`이다. App DI에서 설치 구현을 선택하고 릴리스 조회·다운로드·digest 확인은 공통으로 유지한다. Mac은 실제 실행 중인 번들 경계에서 `.app` 전체를 교체·복구한다.
 - 게시된 asset의 SHA-256 digest로 다운로드 길이·내용을 확인한 뒤에만 자동 교체한다. 공식 digest가 없거나 일치하지 않으면 자동 교체를 차단하고 릴리스 페이지를 안내한다.
 - 실행·대기 작업과 미저장 초안을 보호하는 정상 종료를 거쳐 교체한다. 기존 파일을 유지하거나 복원할 수 있게 하고 사용자 설정·작업 데이터는 기존 위치에 보존한다.
 
@@ -42,3 +44,4 @@
 - 릴리스에는 버전, 대상 플랫폼·아키텍처, 실행 파일명과 실제 다운로드 링크를 적는다. 게시 후 README의 다운로드·실행 안내를 함께 갱신한다.
 - Bough의 GitHub 릴리스 설명은 한국어와 영어를 함께 작성한다. 같은 버전의 변경 사항·실행 방법·필수 설치 항목과 확인하지 않은 범위를 두 언어에 동일하게 담는다.
 - 게시된 버전의 배포 형식을 바꾸는 변경은 새 버전으로 제공한다. 기존 버전의 파일을 임의로 덮어쓰지 않는다.
+- Mac의 Developer ID 서명·공증·실제 실행 확인 상태를 구분해 공개한다. 서명·공증이 없는 파일은 보안 정책에 따라 실행이 차단될 수 있다. macOS의 실행 파일·권한·번들 배치는 [Avalonia macOS 배포](https://docs.avaloniaui.net/docs/deployment/macos/), 서명·JIT entitlement는 [.NET macOS 배포](https://learn.microsoft.com/en-us/dotnet/core/deploying/macos)를 따른다. macOS 14 이상을 배포 대상으로 사용하며 [.NET 지원 OS](https://learn.microsoft.com/en-us/dotnet/core/install/macos)를 참고한다.

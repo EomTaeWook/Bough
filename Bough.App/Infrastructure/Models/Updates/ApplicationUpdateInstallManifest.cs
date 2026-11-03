@@ -1,6 +1,6 @@
 namespace Bough.App.Infrastructure.Models.Updates
 {
-    internal class ApplicationUpdateInstallManifest
+    public class ApplicationUpdateInstallManifest
     {
         public ApplicationUpdateInstallManifest()
         {
@@ -14,5 +14,8 @@ namespace Bough.App.Infrastructure.Models.Updates
         public string CandidateSha256 { get; set; }
         public long CandidateSize { get; set; }
         public string Nonce { get; set; }
+        public string CandidateVersion { get; set; }
+        public string InstalledBundleSha256 { get; set; }
+        public string PreparedBundleSha256 { get; set; }
     }
 }
