@@ -61,14 +61,14 @@
           <Border IsVisible="{Binding HasDropConfirmation}" BorderBrush="{DynamicResource BoughBrushError}" Background="{DynamicResource BoughBrushErrorSurface}" BorderThickness="1" Padding="12" CornerRadius="8">
             <StackPanel Spacing="8">
               <TextBlock Text="{Binding DropConfirmationText}" Foreground="{DynamicResource BoughBrushError}" TextWrapping="Wrap" />
-              <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Width="168" HorizontalAlignment="Right">
-                <Button Command="{Binding CancelDropCommand}" MinWidth="80" HorizontalAlignment="Stretch" AutomationProperties.Name="{Binding CancelDropText}">
-                  <TextBlock Text="{Binding CancelDropText}" TextWrapping="Wrap" TextAlignment="Center" />
+              <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8" ItemsAlignment="End" HorizontalAlignment="Right">
+                <Button Command="{Binding CancelDropCommand}" MinWidth="80" AutomationProperties.Name="{Binding CancelDropText}">
+                  <TextBlock Text="{Binding CancelDropText}" TextWrapping="NoWrap" TextTrimming="None" TextAlignment="Center" />
                 </Button>
-                <Button Grid.Column="1" Click="ConfirmDropClicked" IsEnabled="{Binding CanConfirmDropStash}" MinWidth="80" HorizontalAlignment="Stretch" AutomationProperties.Name="{Binding ConfirmDropText}" Classes="danger">
-                  <TextBlock Text="{Binding ConfirmDropText}" TextWrapping="Wrap" TextAlignment="Center" />
+                <Button Click="ConfirmDropClicked" IsEnabled="{Binding CanConfirmDropStash}" MinWidth="80" AutomationProperties.Name="{Binding ConfirmDropText}" Classes="danger">
+                  <TextBlock Text="{Binding ConfirmDropText}" TextWrapping="NoWrap" TextTrimming="None" TextAlignment="Center" />
                 </Button>
-              </Grid>
+              </WrapPanel>
             </StackPanel>
           </Border>
         </StackPanel>
