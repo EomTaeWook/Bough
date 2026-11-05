@@ -8,9 +8,11 @@
 
 ## 다운로드
 
-정식 패치 버전 **v1.0.8**을 제공합니다. [현재 기능과 상태](Docs/CurrentStatus.md) · [릴리스 기록](Docs/Releases.md)
+정식 패치 버전 **v1.0.9**를 제공합니다. [현재 기능과 상태](Docs/CurrentStatus.md) · [릴리스 기록](Docs/Releases.md)
 
-[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-osx-x64.app.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.8)
+[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-osx-x64.app.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.9)
+
+v1.0.9는 2026-11-05에 게시했습니다. 원격 커밋 수·작업 결과 피드백, Stash·서브모듈 아이콘과 삭제 확인 버튼 배치를 개선했습니다. 기존 스크린샷은 이번 UI 변경 이전 화면입니다.
 
 Windows는 단일 `.exe`를 실행하세요. Mac은 CPU에 맞는 ZIP을 풀고 `Bough.app`을 쓰기 가능한 응용프로그램 폴더에 옮기세요(macOS 14 이상 대상). 별도 .NET 설치는 필요 없고 Git은 설치돼 있어야 합니다.
 

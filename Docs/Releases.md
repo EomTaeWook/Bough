@@ -1,5 +1,23 @@
 # 릴리스
 
+## v1.0.9 정식 릴리스 게시 완료
+
+- 생성·배포일: 2026-11-05 (KST)
+- 소스 커밋: `e95645c1932082931b69e027ca9dade352f7d3f4`
+- 대상: Windows x64 자체 포함 exe, macOS arm64/x64 자체 포함 `.app.zip`
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.9)
+- [Bough-v1.0.9-win-x64.exe](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-win-x64.exe): 103933481바이트; GitHub digest `sha256:5e0ffce47cd6167a97c03b9bafb67fa5465e7459f00e29db744ba0f4db73508e`
+- [Bough-v1.0.9-osx-arm64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-osx-arm64.app.zip): 44353798바이트; GitHub digest `sha256:0dadc2e4a3aff1d38710d4799f9ed6110d91c1cc37f6d05fd06665594a5c0c17`
+- [Bough-v1.0.9-osx-x64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-osx-x64.app.zip): 46338062바이트; GitHub digest `sha256:7ee235ddf469dcb890d09f9c8404fba6a44cf9b057acd0e9004d65635153c3a2`
+
+원격 동기화 상태를 보낼·받을 커밋 수로 풀어 14px 강조 글씨로 표시하고 좁은 폭에서 줄바꿈한다. 별도 원격 작업 세션의 최종 결과를 현재 메인 툴바에 전달하며 성공·부분 성공·취소·후속 조회 실패를 구분한다. 결과는 다음 수동 요청 또는 저장소 전환 때 해제하며, 늦은 자동 조회가 현재 수동 결과를 덮지 않도록 연결했다.
+
+Stash 목록·서브모듈 헤더에 16px 단색 벡터 아이콘을 연결했다. Stash 삭제 확인은 고정 너비·동일 비율 열을 자연 폭의 버튼 행으로 바꾸고 글자를 한 줄로 유지한다. 좁은 폭에서는 버튼 전체를 다음 줄로 배치한다. 기존 명령·삭제 확인·지역화·접근성과 위험 스타일은 유지했다.
+
+위 소스를 Version 1.0.9 및 SourceCommit/RepositoryCommit/SourceRevisionId에 고정해 플랫폼별 dotnet publish로 제작했다. Mac ZIP의 앱 번들·버전·실행 권한·기존 분기 아이콘을 포함한다. 별도 .NET 설치는 필요 없고 Git은 별도로 설치한다. 기존 Windows/Mac 업데이트와 이전 릴리스는 보존했다.
+
+Mac Developer ID 서명·Apple 공증은 없으며 보안 정책에 따라 실행이 차단될 수 있다. 배포 파일 제작 외 별도 테스트·앱/UI 실행·실제 원격 Git·Windows/Mac 업데이트 설치·복원 검증은 수행하지 않았다. 크기와 digest는 GitHub 게시 메타데이터이며 로컬 해시 비교 결과가 아니다. 한영 설명과 세 파일을 draft에 업로드한 뒤 정식으로 게시했다.
+
 ## v1.0.8 정식 릴리스 게시 완료
 
 - 생성·배포일: 2026-11-03 (KST)

@@ -8,9 +8,11 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-Stable patch release **v1.0.8** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
+Stable patch release **v1.0.9** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
 
-[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.8/Bough-v1.0.8-osx-x64.app.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.8)
+[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-osx-x64.app.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.9)
+
+v1.0.9 was published on 2026-11-05. It improves remote commit-count and operation-result feedback, Stash and submodule icons, and Stash deletion confirmation buttons. Existing screenshots predate these UI changes.
 
 On Windows, run the single `.exe`. On Mac, extract the ZIP for your CPU and move `Bough.app` to an application folder you can write to (targets macOS 14 or later). No separate .NET installation is needed; install Git separately.
 
