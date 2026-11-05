@@ -39,6 +39,16 @@ namespace Bough.App.Presenters
             get { return _model.IsBusy && _cancellation != null && _cancellation.IsCancellationRequested == false; }
         }
 
+        internal void BeginOperationFeedback()
+        {
+            if (_model.IsBusy == true)
+            {
+                return;
+            }
+            _requestVersion++;
+            _loadCancellation?.Cancel();
+            _model.IsLoading = false;
+        }
         internal int ReadVersion { get { return _requestVersion; } }
 
         internal bool ApplyAutoFetchState(GitRepository repository, int readVersion, GitRemoteState state)
@@ -157,7 +167,10 @@ namespace Bough.App.Presenters
             _model.ApplyState(snapshot.State);
             _model.AutoFetchError = null;
             _model.LatestOperationStateSnapshot = snapshot;
-            _model.StatusText = string.Empty;
+            if (_model.HasOperationFeedback == false)
+            {
+                _model.StatusText = string.Empty;
+            }
             return true;
         }
 
@@ -178,7 +191,10 @@ namespace Bough.App.Presenters
             _loadCancellation = cancellation;
             int request = ++_requestVersion;
             _model.IsLoading = true;
-            _model.SetLocalizedStatusText(new LocalizedText("RemoteLoadingState"));
+            if (_model.HasOperationFeedback == false)
+            {
+                _model.SetLocalizedStatusText(new LocalizedText("RemoteLoadingState"));
+            }
             try
             {
                 GitRemoteState state = await _service.GetStateAsync(repository, cancellation.Token);
@@ -192,10 +208,13 @@ namespace Bough.App.Presenters
                     return;
                 }
                 _model.ApplyState(state);
-                if (state.Remotes.Count == 0) { _model.SetLocalizedStatusText(new LocalizedText("RemoteNoRemotesConfigured")); }
-                else if (state.IsDetached == true) { _model.SetLocalizedStatusText(new LocalizedText("RemoteDetachedHint")); }
-                else if (state.HasUpstream == false) { _model.SetLocalizedStatusText(new LocalizedText("RemoteNoUpstreamHint")); }
-                else { _model.SetLocalizedStatusText(new LocalizedText("RemoteStateRefreshed")); }
+                if (_model.HasOperationFeedback == false)
+                {
+                    if (state.Remotes.Count == 0) { _model.SetLocalizedStatusText(new LocalizedText("RemoteNoRemotesConfigured")); }
+                    else if (state.IsDetached == true) { _model.SetLocalizedStatusText(new LocalizedText("RemoteDetachedHint")); }
+                    else if (state.HasUpstream == false) { _model.SetLocalizedStatusText(new LocalizedText("RemoteNoUpstreamHint")); }
+                    else { _model.SetLocalizedStatusText(new LocalizedText("RemoteStateRefreshed")); }
+                }
             }
             catch (OperationCanceledException)
             {
@@ -269,11 +288,11 @@ namespace Bough.App.Presenters
                     message += _strings.Format("RemoteFetchFailures", string.Join("; ", failures));
                     if (result.SucceededRemotes.Count > 0)
                     {
-                        return new OperationExecutionResult(_strings.Format("RemoteFetchFailedSummary", string.Join(", ", result.FailedRemotes.Select(failure => failure.Remote))), RemoteOperationOutcome.PartiallySucceeded, message);
+                        return new OperationExecutionResult(new LocalizedText("RemoteFetchFailedSummary", string.Join(", ", result.FailedRemotes.Select(failure => failure.Remote))), RemoteOperationOutcome.PartiallySucceeded, message);
                     }
-                    return new OperationExecutionResult(_strings.Format("RemoteFetchFailedSummary", string.Join(", ", result.FailedRemotes.Select(failure => failure.Remote))), RemoteOperationOutcome.Failed, message);
+                    return new OperationExecutionResult(new LocalizedText("RemoteFetchFailedSummary", string.Join(", ", result.FailedRemotes.Select(failure => failure.Remote))), RemoteOperationOutcome.Failed, message);
                 }
-                return new OperationExecutionResult(message, RemoteOperationOutcome.Succeeded);
+                return new OperationExecutionResult(new LocalizedText("RemoteFetchResult", succeeded, updated), RemoteOperationOutcome.Succeeded);
             });
         }
 
@@ -315,7 +334,7 @@ namespace Bough.App.Presenters
             return await RunAsync(_strings.Format("RemotePullingFrom", remote, branch), async (repository, state, token) =>
             {
                 await _service.PullWithProgressAsync(repository, state, remote, branch, strategy, progress, token);
-                string resultText = _strings.Format("RemotePullCompleted", FormatStrategy(strategy), remote, branch);
+                LocalizedText resultText = new("RemotePullCompleted", FormatStrategy(strategy), remote, branch);
                 return new OperationExecutionResult(resultText, RemoteOperationOutcome.Succeeded);
             });
         }
@@ -327,9 +346,9 @@ namespace Bough.App.Presenters
                 bool pushed = await _service.PushAsync(repository, state, remote, branch, targetConfirmed, token);
                 if (pushed == false)
                 {
-                    return new OperationExecutionResult(_strings.GetString("RemotePushNoNewCommits"), RemoteOperationOutcome.NoNewCommits);
+                    return new OperationExecutionResult(new LocalizedText("RemotePushNoNewCommits"), RemoteOperationOutcome.NoNewCommits);
                 }
-                return new OperationExecutionResult(_strings.Format("RemotePushCompleted", remote, branch), RemoteOperationOutcome.Succeeded);
+                return new OperationExecutionResult(new LocalizedText("RemotePushCompleted", remote, branch), RemoteOperationOutcome.Succeeded);
             });
         }
 
@@ -465,7 +484,7 @@ namespace Bough.App.Presenters
         internal void ReportCompletionFailure(Exception exception)
         {
             LocalizedText error = new(exception);
-            string completedMessage = _model.StatusText;
+            object completedMessage = _model.StatusTextArgument;
             _model.SetLocalizedStatusText(new LocalizedText("RemoteStateRefreshFailed", completedMessage, error));
             if (_model.LastOperationOutcome == RemoteOperationOutcome.Succeeded)
             {
@@ -572,7 +591,7 @@ namespace Bough.App.Presenters
                 _model.CurrentRepository = updated;
                 _model.ApplyState(updatedState);
                 _model.LatestOperationStateSnapshot = new RemoteOperationStateSnapshot(updated, updatedState);
-                _model.StatusText = completedResult.Message;
+                _model.SetLocalizedStatusText(completedResult.Message);
                 _model.LastOperationOutcome = completedResult.Outcome;
                 if (completedResult.Outcome == RemoteOperationOutcome.NoNewCommits)
                 {
@@ -602,7 +621,7 @@ namespace Bough.App.Presenters
                     {
                         return false;
                     }
-                    string refreshError = await RefreshAfterOutcomeAsync(repository, request);
+                    LocalizedText refreshError = await RefreshAfterOutcomeAsync(repository, request);
                     if (request != _requestVersion)
                     {
                         return false;
@@ -628,9 +647,9 @@ namespace Bough.App.Presenters
                         _model.SetLocalizedStatusText(new LocalizedText("RemoteStateCheckCanceled", completedResult.Message));
                         _model.LastOperationOutcome = RemoteOperationOutcome.RefreshFailed;
                     }
-                    if (refreshError.Length > 0)
+                    if (refreshError != null)
                     {
-                        _model.StatusText += _strings.Format("RemoteRefreshFailedSuffix", refreshError);
+                        _model.SetLocalizedStatusText(new LocalizedText("RemoteStateRefreshFailed", _model.StatusTextArgument, refreshError));
                     }
                 }
                 return false;
@@ -643,7 +662,7 @@ namespace Bough.App.Presenters
                     {
                         return false;
                     }
-                    string refreshError = await RefreshAfterOutcomeAsync(repository, request);
+                    LocalizedText refreshError = await RefreshAfterOutcomeAsync(repository, request);
                     if (request != _requestVersion)
                     {
                         return false;
@@ -670,12 +689,12 @@ namespace Bough.App.Presenters
                     }
                     else
                     {
-                        _model.SetLocalizedStatusText(new LocalizedText("RemoteStateRefreshFailed", completedResult.Message, _errors.GetDisplayMessage(exception)));
+                        _model.SetLocalizedStatusText(new LocalizedText("RemoteStateRefreshFailed", completedResult.Message, new LocalizedText(exception)));
                         _model.LastOperationOutcome = RemoteOperationOutcome.RefreshFailed;
                     }
-                    if (refreshError.Length > 0)
+                    if (refreshError != null)
                     {
-                        _model.StatusText += _strings.Format("RemoteRefreshFailedSuffix", refreshError);
+                        _model.SetLocalizedStatusText(new LocalizedText("RemoteStateRefreshFailed", _model.StatusTextArgument, refreshError));
                     }
                     if (IsPullDivergence(exception))
                     {
@@ -698,59 +717,59 @@ namespace Bough.App.Presenters
             }
         }
 
-        private async Task<string> RefreshAfterOutcomeAsync(GitRepository repository, int request)
+        private async Task<LocalizedText> RefreshAfterOutcomeAsync(GitRepository repository, int request)
         {
             try
             {
                 GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath);
                 if (request != _requestVersion)
                 {
-                    return string.Empty;
+                    return null;
                 }
                 if (ReferenceEquals(_model.CurrentRepository, repository) == false)
                 {
-                    return string.Empty;
+                    return null;
                 }
                 GitRemoteState state = await _service.GetStateAsync(updated);
                 if (request != _requestVersion)
                 {
-                    return string.Empty;
+                    return null;
                 }
                 if (_model.CurrentRepository != repository)
                 {
-                    return string.Empty;
+                    return null;
                 }
                 _model.CurrentRepository = updated;
                 _model.ApplyState(state);
                 _model.LatestOperationStateSnapshot = new RemoteOperationStateSnapshot(updated, state);
                 _model.NotifyOperationCompleted(updated);
-                return string.Empty;
+                return null;
             }
             catch (Exception exception)
             {
                 if (request != _requestVersion)
                 {
-                    return string.Empty;
+                    return null;
                 }
                 if (ReferenceEquals(_model.CurrentRepository, repository) == false)
                 {
-                    return string.Empty;
+                    return null;
                 }
-                return _errors.GetDisplayMessage(exception);
+                return new LocalizedText(exception);
             }
         }
 
-        private string FormatStrategy(GitPullStrategy strategy)
+        private LocalizedText FormatStrategy(GitPullStrategy strategy)
         {
             if (strategy == GitPullStrategy.Merge)
             {
-                return _strings.GetString("RemoteStrategyMerge");
+                return new LocalizedText("RemoteStrategyMerge");
             }
             if (strategy == GitPullStrategy.Rebase)
             {
-                return _strings.GetString("RemoteStrategyRebase");
+                return new LocalizedText("RemoteStrategyRebase");
             }
-            return _strings.GetString("RemoteStrategyFastForward");
+            return new LocalizedText("RemoteStrategyFastForward");
         }
 
         private static bool IsPullDivergence(Exception exception)
@@ -780,14 +799,14 @@ namespace Bough.App.Presenters
 
         private class OperationExecutionResult
         {
-            public OperationExecutionResult(string message, RemoteOperationOutcome outcome, string details = "")
+            public OperationExecutionResult(LocalizedText message, RemoteOperationOutcome outcome, string details = "")
             {
                 Message = message;
                 Outcome = outcome;
                 Details = details;
             }
 
-            public string Message { get; }
+            public LocalizedText Message { get; }
             public RemoteOperationOutcome Outcome { get; }
             public string Details { get; }
         }

@@ -6878,8 +6878,8 @@
   {
     "Id": 3246,
     "Name": "RemoteIncomingCommits",
-    "Kor": "받을 새 커밋 {0}개",
-    "Eng": "{0} new commits to pull"
+    "Kor": "↓ 받을 커밋 {0}개",
+    "Eng": "↓ {0} commits to pull"
   },
   {
     "Id": 3247,
@@ -7144,5 +7144,23 @@
     "Name": "LocalSelectedLinesInvalid",
     "Kor": "선택한 줄만으로는 변경을 적용할 수 없습니다. 개행과 문맥을 유지하도록 관련 추가·삭제 줄을 함께 선택하세요.",
     "Eng": "The selected lines cannot be applied on their own. Select the related added or deleted lines needed to preserve line endings and context."
+  },
+  {
+    "Id": 3291,
+    "Name": "RemoteOutgoingCommits",
+    "Kor": "↑ 보낼 커밋 {0}개",
+    "Eng": "↑ {0} commits to push"
+  },
+  {
+    "Id": 3292,
+    "Name": "RemoteFetchCompleted",
+    "Kor": "Fetch가 완료되었습니다.",
+    "Eng": "Fetch completed."
+  },
+  {
+    "Id": 3293,
+    "Name": "RemoteOperationFeedback",
+    "Kor": "{0} · {1}: {2}",
+    "Eng": "{0} · {1}: {2}"
   }
 ]

@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Bough.App.Internals;
+using Bough.App.Localization;
 using Bough.App.ViewModels;
 using Bough.App.ViewModels.Models;
 using Bough.Core.Git;
@@ -44,49 +45,77 @@ namespace Bough.App.Presenters
             _session.Prune = _prune;
         }
 
-        public Task<bool> ExecuteAsync(RemoteOperationKind kind, bool fetchAll, string operationName, string target,
-            Func<RemoteOperationsViewModel, Task<bool>> operation, bool worktreeMayChange, CancellationToken cancellationToken)
+        public async Task<bool> ExecuteAsync(RemoteOperationKind kind, bool fetchAll, string operationName, string target, Func<RemoteOperationsViewModel, Task<bool>> operation, bool worktreeMayChange, CancellationToken cancellationToken)
         {
-            return _queue.EnqueueAsync(_repository.RootPath, $"{operationName} · {target}", async token =>
+            try
             {
-                token.ThrowIfCancellationRequested();
-                await _session.SetRepositoryAsync(_repository, token, propagateReadError: true);
-                token.ThrowIfCancellationRequested();
-                _session.SelectedRemote = _remote;
-                _session.Prune = _prune;
-                ValidateSession(kind, fetchAll);
-                bool succeeded = false;
-                try
+                return await _queue.EnqueueAsync(_repository.RootPath, $"{operationName} · {target}", async token =>
                 {
-                    succeeded = await operation(_session);
-                }
-                finally
-                {
-                    GitRepository completedRepository = _session.CurrentRepository;
-                    if (completedRepository != null)
+                    token.ThrowIfCancellationRequested();
+                    await _session.SetRepositoryAsync(_repository, token, propagateReadError: true);
+                    token.ThrowIfCancellationRequested();
+                    _session.SelectedRemote = _remote;
+                    _session.Prune = _prune;
+                    ValidateSession(kind, fetchAll);
+                    bool succeeded = false;
+                    try
                     {
-                        if (string.Equals(completedRepository.RootPath, _repository.RootPath, _pathComparison))
+                        succeeded = await operation(_session);
+                    }
+                    finally
+                    {
+                        GitRepository completedRepository = _session.CurrentRepository;
+                        if (completedRepository != null)
                         {
-                            if (_operationFinished != null)
+                            if (string.Equals(completedRepository.RootPath, _repository.RootPath, _pathComparison))
                             {
-                                try
+                                if (_operationFinished != null)
                                 {
-                                    await _operationFinished(completedRepository, _session.LatestOperationStateSnapshot,
-                                        worktreeMayChange, _repositoryRequestVersion);
-                                }
-                                catch (Exception exception)
-                                {
-                                    _session.ReportCompletionFailure(exception);
-                                    succeeded = false;
+                                    try
+                                    {
+                                        await _operationFinished(completedRepository, _session.LatestOperationStateSnapshot, worktreeMayChange, _repositoryRequestVersion);
+                                    }
+                                    catch (Exception exception)
+                                    {
+                                        _session.ReportCompletionFailure(exception);
+                                        succeeded = false;
+                                    }
                                 }
                             }
                         }
                     }
+                    return succeeded;
+                }, cancellationToken: cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                if (_session.LastOperationOutcome == RemoteOperationOutcome.None)
+                {
+                    _session.SetLocalizedStatusText(new LocalizedText("RemoteOperationCanceled"));
+                    _session.LastOperationOutcome = RemoteOperationOutcome.Canceled;
                 }
-                return succeeded;
-            }, cancellationToken: cancellationToken);
+                if (_session.LastOperationOutcome == RemoteOperationOutcome.Running)
+                {
+                    _session.SetLocalizedStatusText(new LocalizedText("RemoteOperationCanceled"));
+                    _session.LastOperationOutcome = RemoteOperationOutcome.Canceled;
+                }
+                throw;
+            }
+            catch (Exception exception)
+            {
+                if (_session.LastOperationOutcome == RemoteOperationOutcome.None)
+                {
+                    _session.SetLocalizedStatusText(new LocalizedText(exception));
+                    _session.LastOperationOutcome = RemoteOperationOutcome.Failed;
+                }
+                if (_session.LastOperationOutcome == RemoteOperationOutcome.Running)
+                {
+                    _session.SetLocalizedStatusText(new LocalizedText(exception));
+                    _session.LastOperationOutcome = RemoteOperationOutcome.Failed;
+                }
+                throw;
+            }
         }
-
         private void ValidateSession(RemoteOperationKind kind, bool fetchAll)
         {
             GitRepository sessionRepository = _session.CurrentRepository;

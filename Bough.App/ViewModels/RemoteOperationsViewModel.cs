@@ -99,7 +99,10 @@ namespace Bough.App.ViewModels
         }
         public bool HasAutoFetchError { get { return _autoFetchError != null; } }
         public bool HasIncomingCommits { get { return _state != null && _state.HasUpstream == true && _state.Behind > 0 && HasAutoFetchError == false; } }
-        public int IncomingCommitCount { get { return _state?.Behind ?? 0; } }
+        public int IncomingCommitCount { get { return _state?.Behind ?? -1; } }
+        public int OutgoingCommitCount { get { return _state?.Ahead ?? -1; } }
+        public bool HasOutgoingCommits { get { return OutgoingCommitCount > 0; } }
+        internal bool HasOperationFeedback { get { return LastOperationOutcome != RemoteOperationOutcome.None; } }
 
         internal bool ApplyAutoFetchState(GitRepository repository, int readVersion, GitRemoteState state)
         {
@@ -111,6 +114,73 @@ namespace Bough.App.ViewModels
             set { _showPullStrategies = value; }
         }
 
+        internal object StatusTextArgument
+        {
+            get
+            {
+                if (_statusTextLocalization != null)
+                {
+                    return _statusTextLocalization;
+                }
+                return StatusText;
+            }
+        }
+
+        internal void BeginOperationFeedback(RemoteOperationKind kind)
+        {
+            _executionPresenter.BeginOperationFeedback();
+            AutoFetchError = null;
+            LastOperationOutcome = RemoteOperationOutcome.Running;
+            SetLocalizedStatusText(new LocalizedText("RemoteOperationFeedback", new LocalizedText(GetOperationActionKey(kind)), _operationOutcomeTextLocalization, new LocalizedText("RemoteLoadingState")));
+        }
+
+        internal void ApplyOperationFeedback(RemoteOperationsViewModel session, RemoteOperationKind kind)
+        {
+            if (_repository == null)
+            {
+                return;
+            }
+            if (session.CurrentRepository == null)
+            {
+                return;
+            }
+            if (_selectedRemotesByRepository.Comparer.Equals(_repository.RootPath, session.CurrentRepository.RootPath) == false)
+            {
+                return;
+            }
+            RemoteOperationOutcome outcome = session.LastOperationOutcome;
+            if (outcome == RemoteOperationOutcome.None)
+            {
+                outcome = RemoteOperationOutcome.Failed;
+            }
+            if (outcome == RemoteOperationOutcome.Running)
+            {
+                outcome = RemoteOperationOutcome.Failed;
+            }
+            LastOperationOutcome = outcome;
+            if (kind == RemoteOperationKind.Fetch)
+            {
+                if (outcome == RemoteOperationOutcome.Succeeded)
+                {
+                    SetLocalizedStatusText(new LocalizedText("RemoteFetchCompleted"));
+                    return;
+                }
+            }
+            SetLocalizedStatusText(new LocalizedText("RemoteOperationFeedback", new LocalizedText(GetOperationActionKey(kind)), _operationOutcomeTextLocalization, session.StatusTextArgument));
+        }
+
+        private static string GetOperationActionKey(RemoteOperationKind kind)
+        {
+            if (kind == RemoteOperationKind.Pull)
+            {
+                return "RemotePullAction";
+            }
+            if (kind == RemoteOperationKind.Push)
+            {
+                return "RemotePushAction";
+            }
+            return "RemoteFetchAction";
+        }
         internal void NotifyOperationCompleted(GitRepository repository)
         {
             OperationCompleted?.Invoke(repository);
@@ -449,6 +519,8 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(UpstreamBranch));
             OnPropertyChanged(nameof(AheadBehindText));
             OnPropertyChanged(nameof(IncomingCommitCount));
+            OnPropertyChanged(nameof(OutgoingCommitCount));
+            OnPropertyChanged(nameof(HasOutgoingCommits));
             OnPropertyChanged(nameof(HasIncomingCommits));
             OnPropertyChanged(nameof(HasUpstream));
             OnPropertyChanged(nameof(CanFetch));

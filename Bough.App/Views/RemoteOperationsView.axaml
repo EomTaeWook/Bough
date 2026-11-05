@@ -20,10 +20,22 @@
     <Style Selector="Button.remoteActionSegment:disabled">
       <Setter Property="Foreground" Value="{DynamicResource BoughBrushDisabledText}" />
     </Style>
+    <Style Selector="TextBlock#OutgoingCommitsLabel">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="TextBlock#IncomingCommitsLabel">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushText}" />
+    </Style>
+    <Style Selector="TextBlock#OutgoingCommitsLabel.hasChanges">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="TextBlock#IncomingCommitsLabel.hasChanges">
+      <Setter Property="Foreground" Value="{DynamicResource BoughBrushWarning}" />
+    </Style>
   </UserControl.Styles>
   <Grid RowDefinitions="Auto,Auto" Margin="16,8" RowSpacing="8">
     <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="16">
-    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
       <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="6" Background="{DynamicResource BoughBrushRaised}" ClipToBounds="True">
         <Grid ColumnDefinitions="Auto,1,Auto">
           <Button x:Name="FetchButton" Grid.Column="0" Classes="remoteActionSegment" Click="FetchClicked"
@@ -76,19 +88,25 @@
         </Grid>
       </Border>
     </StackPanel>
-    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="8">
-      <TextBlock x:Name="UpstreamLabel" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
-      <TextBlock Text="{Binding UpstreamText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}"
-                 MaxWidth="220" TextTrimming="CharacterEllipsis" />
-      <TextBlock Text="{Binding AheadBehindText}" FontSize="12" IsVisible="{Binding HasUpstream}" Foreground="{DynamicResource BoughBrushTextMuted}" />
+    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" HorizontalAlignment="Right">
+        <TextBlock x:Name="UpstreamLabel" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+        <TextBlock Grid.Column="1" Text="{Binding UpstreamText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}"
+                   MaxWidth="220" TextTrimming="CharacterEllipsis" />
+      </Grid>
+      <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" IsVisible="{Binding HasUpstream}">
+        <TextBlock x:Name="OutgoingCommitsLabel" Classes.hasChanges="{Binding HasOutgoingCommits}" Margin="0,0,8,0"
+                   FontSize="14" FontWeight="SemiBold" />
+        <TextBlock x:Name="IncomingCommitsLabel" Classes.hasChanges="{Binding HasIncomingCommits}"
+                   FontSize="14" FontWeight="SemiBold" />
+      </WrapPanel>
     </StackPanel>
     </Grid>
     <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="12">
       <StackPanel Spacing="8">
-        <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource BoughBrushTextSubtle}" FontSize="12"
-                   TextTrimming="CharacterEllipsis" />
-        <TextBlock x:Name="IncomingCommitsLabel" IsVisible="{Binding HasIncomingCommits}"
-                   Foreground="{DynamicResource BoughBrushWarning}" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" />
+        <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource BoughBrushText}" FontSize="14"
+                   TextWrapping="Wrap" />
+
         <TextBlock x:Name="AutoFetchFailureLabel" IsVisible="{Binding HasAutoFetchError}"
                    Foreground="{DynamicResource BoughBrushWarning}" FontSize="12" TextWrapping="Wrap" />
       </StackPanel>

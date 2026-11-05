@@ -26,6 +26,7 @@ namespace Bough.App.Views
         private readonly LanguageChangeBinding _languageBinding;
         private RemoteOperationsViewModel _boundIncomingModel;
         private bool _attached;
+        private int _operationFeedbackVersion;
         public StringHelper StringHelper
         {
             get { return _stringHelper; }
@@ -93,6 +94,7 @@ namespace Bough.App.Views
         private void OnIncomingViewDetached(object sender, VisualTreeAttachmentEventArgs eventArgs)
         {
             _attached = false;
+            _operationFeedbackVersion++;
             if (_settingsService != null)
             {
                 _settingsService.DefaultPullStrategyChanged -= OnDefaultPullStrategyChanged;
@@ -102,6 +104,7 @@ namespace Bough.App.Views
 
         private void OnIncomingDataContextChanged(object sender, EventArgs eventArgs)
         {
+            _operationFeedbackVersion++;
             BindIncomingModel();
         }
 
@@ -125,10 +128,16 @@ namespace Bough.App.Views
 
         private void OnIncomingStateChanged(object sender, PropertyChangedEventArgs eventArgs)
         {
-            if (eventArgs.PropertyName == nameof(RemoteOperationsViewModel.IncomingCommitCount) ||
-                eventArgs.PropertyName == nameof(RemoteOperationsViewModel.AutoFetchError) || string.IsNullOrEmpty(eventArgs.PropertyName) == true)
+            switch (eventArgs.PropertyName)
             {
-                UpdateIncomingPresentation();
+                case nameof(RemoteOperationsViewModel.IncomingCommitCount):
+                case nameof(RemoteOperationsViewModel.OutgoingCommitCount):
+                case nameof(RemoteOperationsViewModel.HasUpstream):
+                case nameof(RemoteOperationsViewModel.AutoFetchError):
+                case null:
+                case "":
+                    UpdateIncomingPresentation();
+                    break;
             }
         }
 
@@ -138,17 +147,30 @@ namespace Bough.App.Views
             {
                 return;
             }
+            OutgoingCommitsLabel.Text = string.Empty;
             IncomingCommitsLabel.Text = string.Empty;
-            if (DataContext is RemoteOperationsViewModel model)
-            {
-                if (model.HasIncomingCommits == true)
-                {
-                    IncomingCommitsLabel.Text = _stringHelper.Format("RemoteIncomingCommits", model.IncomingCommitCount);
-                }
-            }
             AutoFetchFailureLabel.Text = _stringHelper.GetString("RemoteAutoFetchFailed");
+            if (DataContext is not RemoteOperationsViewModel model)
+            {
+                return;
+            }
+            if (model.HasUpstream == false)
+            {
+                return;
+            }
+            if (model.OutgoingCommitCount < 0)
+            {
+                OutgoingCommitsLabel.Text = _stringHelper.GetString("RemoteAheadBehindUnavailable");
+                return;
+            }
+            if (model.IncomingCommitCount < 0)
+            {
+                OutgoingCommitsLabel.Text = _stringHelper.GetString("RemoteAheadBehindUnavailable");
+                return;
+            }
+            OutgoingCommitsLabel.Text = _stringHelper.Format("RemoteOutgoingCommits", model.OutgoingCommitCount);
+            IncomingCommitsLabel.Text = _stringHelper.Format("RemoteIncomingCommits", model.IncomingCommitCount);
         }
-
         private void RefreshLocalizedLabels()
         {
             if (_stringHelper == null)
@@ -697,8 +719,30 @@ namespace Bough.App.Views
             RemoteOperationPresenter presenter = new(OperationQueue, requestedRepository, session,
                 repositoryRequestVersion, requestedBranch, requestedRemote, requestedPrune, OperationFinishedAsync);
             using CancellationTokenSource cancellation = new();
-            Func<Task<bool>> observedOperation = () => presenter.ExecuteAsync(kind, fetchAll, operationName, target,
-                activeSession => operation(activeSession, cancellation.Token), worktreeMayChange, cancellation.Token);
+            int feedbackVersion = ++_operationFeedbackVersion;
+            viewModel.BeginOperationFeedback(kind);
+            Func<Task<bool>> observedOperation = async () =>
+            {
+                try
+                {
+                    return await presenter.ExecuteAsync(kind, fetchAll, operationName, target, activeSession => operation(activeSession, cancellation.Token), worktreeMayChange, cancellation.Token);
+                }
+                finally
+                {
+                    if (feedbackVersion == _operationFeedbackVersion)
+                    {
+                        GitRepository feedbackRepository = session.CurrentRepository;
+                        if (ReferenceEquals(viewModel.CurrentRepository, requestedRepository) == true)
+                        {
+                            feedbackRepository = requestedRepository;
+                        }
+                        if (IsCurrentPushRequest(viewModel, feedbackRepository, repositoryRequestVersion) == true)
+                        {
+                            viewModel.ApplyOperationFeedback(session, kind);
+                        }
+                    }
+                }
+            };
             RemoteOperationWindow dialog = new(session, operationName, target, observedOperation, closeOnSuccess, StringHelper, ErrorLocalizer, cancellation, OperationQueue, requestedRepository.RootPath);
             dialog.CloseOnNoNewCommits = closeOnNoNewCommits;
             InternalDialogOpening?.Invoke();
