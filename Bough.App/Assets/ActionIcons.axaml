@@ -1,6 +1,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <StreamGeometry x:Key="BoughIconFolder">F0 M3 5 H9 L11 7 H21 V20 H3 Z M5 7 V18 H19 V9 H10 L8 7 Z</StreamGeometry>
+  <StreamGeometry x:Key="BoughIconStash">F0 M6 3 H18 V7 H16 V5 H8 V7 H6 Z M3 7 H21 V11 H3 Z M4 11 H20 V21 H4 Z M6 13 V19 H18 V13 Z M9 14 H15 V16 H9 Z</StreamGeometry>
+  <StreamGeometry x:Key="BoughIconSubmodule">F0 M2 4 H10 L12 6 H22 V21 H2 Z M4 6 V19 H20 V8 H11 L9 6 Z M7 10 H12 V15 H7 Z M9 12 V13 H10 V12 Z M14 12 H18 V16 H14 Z M15 13 V15 H17 V13 Z M12 13 H14 V14 H12 Z</StreamGeometry>
   <StreamGeometry x:Key="BoughIconOpenFolder">F0 M2 5 H9 L11 7 H20 V10 H23 L19 20 H2 Z M6 12 L3.6 18 H17.6 L20.2 12 Z M4 7 V15.5 L5.6 10 H18 V9 H10 L8 7 Z</StreamGeometry>
   <StreamGeometry x:Key="BoughIconClone">F0 M8 8 H22 V22 H8 Z M10 10 V20 H20 V10 Z M2 2 H16 V6 H14 V4 H4 V14 H6 V16 H2 Z</StreamGeometry>
   <StreamGeometry x:Key="BoughIconChanges">F0 M3 2 H15 L21 8 V22 H3 Z M5 4 V20 H19 V9 H14 V4 Z M7 10 H17 V12 H7 Z M7 15 H17 V17 H7 Z</StreamGeometry>

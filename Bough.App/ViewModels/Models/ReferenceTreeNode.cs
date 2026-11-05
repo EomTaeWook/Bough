@@ -46,6 +46,36 @@ namespace Bough.App.ViewModels.Models
         public string CurrentBranchText { get; private set; }
         public string AccessibleLabel { get; private set; }
         public bool IsStashSection { get { return Kind == ReferenceTreeNodeKind.Section && Key == "stashes"; } }
+        public bool IsSubmoduleSection
+        {
+            get
+            {
+                if (Kind != ReferenceTreeNodeKind.Section)
+                {
+                    return false;
+                }
+
+                return Key == "submodules";
+            }
+        }
+
+        public bool IsTextIconVisible
+        {
+            get
+            {
+                if (IsStashSection == true)
+                {
+                    return false;
+                }
+
+                if (IsSubmoduleSection == true)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
         public bool IsEmpty { get { return Kind == ReferenceTreeNodeKind.Empty; } }
         public ObservableCollection<ReferenceTreeNode> Children { get; }
 

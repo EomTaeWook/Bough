@@ -129,8 +129,14 @@
               </ContextMenu>
             </Border.ContextMenu>
             <Grid ColumnDefinitions="20,*,Auto" MinWidth="0" MinHeight="24">
-              <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="14"
+              <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="14" IsVisible="{Binding IsTextIconVisible}"
                          HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource BoughBrushTextMuted}" />
+              <PathIcon Grid.Column="0" Data="{StaticResource BoughIconStash}" Classes="boughIcon"
+                        IsVisible="{Binding IsStashSection}" Foreground="{DynamicResource BoughBrushTextMuted}"
+                        HorizontalAlignment="Center" />
+              <PathIcon Grid.Column="0" Data="{StaticResource BoughIconSubmodule}" Classes="boughIcon"
+                        IsVisible="{Binding IsSubmoduleSection}" Foreground="{DynamicResource BoughBrushTextMuted}"
+                        HorizontalAlignment="Center" />
               <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="14"
                          MinWidth="0" Margin="4,0,0,0" ToolTip.Tip="{Binding ToolTipText}"
                          Classes.referenceSection="{Binding IsSection}"
