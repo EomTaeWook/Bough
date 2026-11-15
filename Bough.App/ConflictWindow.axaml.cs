@@ -116,11 +116,15 @@ namespace Bough.App
             _errors = errors;
             DataContext = viewModel;
             _viewModel.ConfirmFileChangeAsync = ConfirmFileChangeAsync;
+            _viewModel.ConfirmChoiceEditDiscardAsync = ConfirmChoiceEditDiscardAsync;
+            _viewModel.ConfirmBatchRemoveAsync = ConfirmBatchRemoveAsync;
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
             Closed += delegate
             {
                 _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
                 _viewModel.ConfirmFileChangeAsync = null;
+                _viewModel.ConfirmChoiceEditDiscardAsync = null;
+                _viewModel.ConfirmBatchRemoveAsync = null;
             };
             UpdateStageStatus();
         }
@@ -130,6 +134,35 @@ namespace Bough.App
             return GitActionDialogs.ConfirmAsync(this, _viewModel.DiscardResolutionTitle,
                 _strings.Format("DiscardResolutionSwitchFileMessage", file.RelativePath),
                 _viewModel.DiscardResolutionConfirmText, _strings);
+        }
+
+        private Task<bool> ConfirmChoiceEditDiscardAsync()
+        {
+            string message = _strings.GetString("ConflictChoiceDiscardEditsMessage");
+            return ConfirmResolutionActionAsync(_viewModel.DiscardResolutionTitle, message, _viewModel.DiscardResolutionConfirmText);
+        }
+
+        private Task<bool> ConfirmBatchRemoveAsync(int fileCount)
+        {
+            string action = _viewModel.ConflictBatchRemoveButtonText;
+            return ConfirmResolutionActionAsync(action, _strings.Format("ConflictBatchRemoveAndStageMessage", fileCount), action);
+        }
+
+        private async Task<bool> ConfirmResolutionActionAsync(string title, string message, string confirmText)
+        {
+            if (_confirmationPending == true)
+            {
+                return false;
+            }
+            _confirmationPending = true;
+            try
+            {
+                return await GitActionDialogs.ConfirmAsync(this, title, message, confirmText, _strings);
+            }
+            finally
+            {
+                _confirmationPending = false;
+            }
         }
 
         private async void SaveAndStageClicked(object sender, RoutedEventArgs eventArgs)
@@ -190,7 +223,12 @@ namespace Bough.App
             };
             foreach (ConflictStageResult file in result.Files)
             {
-                lines.Add(_strings.Format("ConflictBatchStageFileResult", file.Path, GetStageMessage(file)));
+                string message = GetStageMessage(file);
+                if (file.RefreshException != null)
+                {
+                    message = $"{message} {_errors.GetDisplayMessage(file.RefreshException)}";
+                }
+                lines.Add(_strings.Format("ConflictBatchStageFileResult", file.Path, message));
             }
             foreach (KeyValuePair<string, LocalizedText> file in result.Excluded)
             {
@@ -213,6 +251,12 @@ namespace Bough.App
                     return _strings.Format("ConflictStageNoLongerConflicted", result.Path);
                 case ConflictStageOutcome.FileChanged:
                     return _strings.Format("ConflictStageFileChanged", result.Path);
+                case ConflictStageOutcome.IndexChanged:
+                    return _strings.Format("ConflictStageIndexChanged", result.Path);
+                case ConflictStageOutcome.SavedNotStaged:
+                    return _strings.Format("ConflictStageSavedNotStaged", result.Path, _errors.GetDisplayMessage(result.Exception));
+                case ConflictStageOutcome.DeletedNotStaged:
+                    return _strings.Format("ConflictStageDeletedNotStaged", result.Path, _errors.GetDisplayMessage(result.Exception));
                 case ConflictStageOutcome.IncompleteResolution:
                     return _strings.GetString("IncompleteConflictMarkers");
                 case ConflictStageOutcome.UnresolvedResolution:

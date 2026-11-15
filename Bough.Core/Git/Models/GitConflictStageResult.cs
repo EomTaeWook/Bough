@@ -8,7 +8,10 @@ namespace Bough.Core.Git.Models
         NoLongerConflicted,
         FileChanged,
         IncompleteMarkers,
-        UnresolvedMarkers
+        UnresolvedMarkers,
+        IndexChanged,
+        SavedNotStaged,
+        DeletedNotStaged
     }
 
     public class GitConflictStageResult

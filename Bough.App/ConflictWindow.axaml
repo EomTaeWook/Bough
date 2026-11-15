@@ -132,7 +132,7 @@
               <Button Content="{Binding UseBothLabel}" IsEnabled="{Binding CanApplyRemaining}"
                       ToolTip.Tip="{Binding UseBothTooltip}"
                       Click="ApplyRemainingBoth" />
-              <Button Content="{Binding RemoveBothLabel}" IsEnabled="{Binding CanApplyRemaining}"
+              <Button Classes="danger" Content="{Binding ConflictBatchRemoveButtonText}" IsEnabled="{Binding CanApplyRemaining}"
                       Click="ApplyRemainingRemove" />
             </StackPanel>
             <ScrollViewer Grid.Row="2" MaxHeight="80" IsVisible="{Binding HasBatchStageResult}"

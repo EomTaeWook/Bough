@@ -103,33 +103,21 @@ namespace Bough.Core.Git
             {
                 throw new GitException("RepositoryConflictInvalidUtf8", exception, relativePath);
             }
-            GitCommandResult stageResult = await _runner.RunAsync(repository.RootPath,
-                new string[] { "ls-files", "--unmerged", "-z", "--", relativePath }, false, cancellationToken);
-            HashSet<string> stages = stageResult.Output.Split('\0', StringSplitOptions.RemoveEmptyEntries)
-                .Select(entry => entry[..entry.IndexOf('\t')].Split(' ')[2])
-                .ToHashSet(StringComparer.Ordinal);
-            bool hasOurs = stages.Contains("2");
-            bool hasTheirs = stages.Contains("3");
-            string baseText = string.Empty;
-            string oursText = string.Empty;
-            string theirsText = string.Empty;
-            if (stages.Contains("1"))
+            string gitPath = GetConflictGitPath(relativePath);
+            string[] stages = await ReadConflictStagesAsync(repository, gitPath, cancellationToken);
+            if (stages.Length == 0)
             {
-                baseText = await ReadStageAsync(repository, 1, relativePath, cancellationToken);
+                throw new GitException("ConflictStageNoLongerConflicted", null, relativePath);
             }
-            if (hasOurs)
-            {
-                oursText = await ReadStageAsync(repository, 2, relativePath, cancellationToken);
-            }
-            if (hasTheirs)
-            {
-                theirsText = await ReadStageAsync(repository, 3, relativePath, cancellationToken);
-            }
+            string baseText = await ReadStageAsync(repository, stages, 1, cancellationToken);
+            string oursText = await ReadStageAsync(repository, stages, 2, cancellationToken);
+            string theirsText = await ReadStageAsync(repository, stages, 3, cancellationToken);
+
             string oursSource = await DescribeRevisionAsync(repository, "HEAD", currentSourceLabel, cancellationToken);
             string theirsSource = await DescribeIncomingRevisionAsync(repository, incomingChangeLabel, incomingIndexStageLabel, cancellationToken);
 
-            return new GitConflictFile(relativePath, workingText, baseText, oursText, theirsText, oursSource, theirsSource,
-                Convert.ToHexString(SHA256.HashData(originalBytes)), hasUtf8Bom, hasOurs, hasTheirs, workingFileExists);
+            return new GitConflictFile(relativePath, workingText, baseText ?? string.Empty, oursText ?? string.Empty, theirsText ?? string.Empty, oursSource, theirsSource,
+                Convert.ToHexString(SHA256.HashData(originalBytes)), hasUtf8Bom, stages, oursText != null, theirsText != null, workingFileExists);
         }
 
         public async Task<bool> IsRebaseInProgressAsync(GitRepository repository, CancellationToken cancellationToken = default)
@@ -185,19 +173,14 @@ namespace Bough.Core.Git
             string resolvedText, bool deleteFile, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            IReadOnlyList<string> conflictPaths = await GetConflictPathsAsync(repository, cancellationToken);
-            StringComparison pathComparison = StringComparison.Ordinal;
-            if (OperatingSystem.IsWindows())
+            string fullPath = ResolvePath(repository.RootPath, conflict.RelativePath);
+            string gitPath = GetConflictGitPath(conflict.RelativePath);
+            GitConflictStageOutcome indexOutcome = await CompareConflictStagesAsync(repository, conflict, gitPath, cancellationToken);
+            if (indexOutcome != GitConflictStageOutcome.Succeeded)
             {
-                pathComparison = StringComparison.OrdinalIgnoreCase;
-            }
-            bool stillConflicted = conflictPaths.Any(path => string.Equals(path, conflict.RelativePath, pathComparison));
-            if (stillConflicted == false)
-            {
-                return new GitConflictStageResult(GitConflictStageOutcome.NoLongerConflicted);
+                return new GitConflictStageResult(indexOutcome);
             }
 
-            string fullPath = ResolvePath(repository.RootPath, conflict.RelativePath);
             if (await IsConflictFileUnchangedAsync(fullPath, conflict, cancellationToken) == false)
             {
                 return new GitConflictStageResult(GitConflictStageOutcome.FileChanged);
@@ -218,10 +201,16 @@ namespace Bough.Core.Git
                 return new GitConflictStageResult(GitConflictStageOutcome.UnresolvedMarkers);
             }
 
+            indexOutcome = await CompareConflictStagesAsync(repository, conflict, gitPath, cancellationToken);
+            if (indexOutcome != GitConflictStageOutcome.Succeeded)
+            {
+                return new GitConflictStageResult(indexOutcome);
+            }
             if (await IsConflictFileUnchangedAsync(fullPath, conflict, cancellationToken) == false)
             {
                 return new GitConflictStageResult(GitConflictStageOutcome.FileChanged);
             }
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (deleteFile)
             {
@@ -233,15 +222,90 @@ namespace Bough.Core.Git
                 UTF8Encoding encoding = new(conflict.HasUtf8Bom, true);
                 await File.WriteAllTextAsync(fullPath, resolvedText, encoding, cancellationToken);
             }
-            await _runner.RunAsync(repository.RootPath, new string[] { "add", "--", conflict.RelativePath }, false, cancellationToken);
+            try
+            {
+                if (Directory.Exists(fullPath))
+                {
+                    throw new GitException("RepositoryConflictFileChanged", null, conflict.RelativePath);
+                }
+                await _runner.RunAsync(repository.RootPath, new string[] { "add", "--", ":(literal)" + gitPath }, false, cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                if (deleteFile)
+                {
+                    return new GitConflictStageResult(GitConflictStageOutcome.DeletedNotStaged, exception);
+                }
+                return new GitConflictStageResult(GitConflictStageOutcome.SavedNotStaged, exception);
+            }
             return new GitConflictStageResult(GitConflictStageOutcome.Succeeded);
         }
 
-        private async Task<string> ReadStageAsync(GitRepository repository, int stage, string relativePath, CancellationToken cancellationToken)
+        private async Task<GitConflictStageOutcome> CompareConflictStagesAsync(GitRepository repository, GitConflictFile conflict, string gitPath, CancellationToken cancellationToken)
         {
-            string gitPath = relativePath.Replace('\\', '/');
-            GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "show", $":{stage}:{gitPath}" }, false, cancellationToken);
-            return result.Output;
+            string[] currentStages = await ReadConflictStagesAsync(repository, gitPath, cancellationToken);
+            if (currentStages.Length == 0)
+            {
+                return GitConflictStageOutcome.NoLongerConflicted;
+            }
+            if (currentStages.SequenceEqual(conflict.IndexStages, StringComparer.Ordinal) == false)
+            {
+                return GitConflictStageOutcome.IndexChanged;
+            }
+            return GitConflictStageOutcome.Succeeded;
+        }
+
+        private async Task<string[]> ReadConflictStagesAsync(GitRepository repository, string gitPath, CancellationToken cancellationToken)
+        {
+            GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "ls-files", "--unmerged", "-z", "--", ":(literal)" + gitPath }, false, cancellationToken);
+            List<string> stages = new();
+            foreach (string entry in result.Output.Split('\0', StringSplitOptions.RemoveEmptyEntries))
+            {
+                int separator = entry.IndexOf('\t');
+                if (separator < 0)
+                {
+                    throw new GitException("ConflictStageUnavailable", null, Array.Empty<object>());
+                }
+                if (string.Equals(entry[(separator + 1)..], gitPath, StringComparison.Ordinal) == false)
+                {
+                    continue;
+                }
+                stages.Add(entry[..separator]);
+            }
+            stages.Sort(StringComparer.Ordinal);
+            return stages.ToArray();
+        }
+
+        private async Task<string> ReadStageAsync(GitRepository repository, string[] stages, int stage, CancellationToken cancellationToken)
+        {
+            foreach (string metadata in stages)
+            {
+                string[] fields = metadata.Split(' ');
+                if (fields.Length != 3)
+                {
+                    throw new GitException("ConflictStageUnavailable", null, Array.Empty<object>());
+                }
+                if (int.TryParse(fields[2], out int entryStage) == false)
+                {
+                    throw new GitException("ConflictStageUnavailable", null, Array.Empty<object>());
+                }
+                if (entryStage != stage)
+                {
+                    continue;
+                }
+                GitCommandResult result = await _runner.RunAsync(repository.RootPath, new string[] { "cat-file", "blob", fields[1] }, false, cancellationToken);
+                return result.Output;
+            }
+            return null;
+        }
+
+        private static string GetConflictGitPath(string relativePath)
+        {
+            if (OperatingSystem.IsWindows() == true)
+            {
+                return relativePath.Replace('\\', '/');
+            }
+            return relativePath;
         }
 
         private static async Task<byte[]> ReadConflictBytesAsync(string fullPath, CancellationToken cancellationToken)

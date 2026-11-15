@@ -24,6 +24,13 @@ namespace Bough.App.ViewModels.Models
         public string MessageCode { get; }
         public Exception Exception { get; }
         public Exception RefreshException { get; }
+        public bool WorktreeUpdatedWithoutStage
+        {
+            get
+            {
+                return Outcome is ConflictStageOutcome.SavedNotStaged or ConflictStageOutcome.DeletedNotStaged;
+            }
+        }
         public bool Succeeded { get { return Outcome == ConflictStageOutcome.Succeeded; } }
         public bool WasStaged { get { return Outcome == ConflictStageOutcome.Succeeded || Outcome == ConflictStageOutcome.RefreshFailed; } }
     }

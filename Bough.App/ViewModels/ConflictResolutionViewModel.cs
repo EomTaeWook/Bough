@@ -81,6 +81,8 @@ namespace Bough.App.ViewModels
         private bool _isResultFileDeleted;
         private bool _loadedResultFileDeleted;
         private int _activeSaveCount;
+        private bool _resolutionConfirmationPending;
+        private int _resolutionEditVersion;
 
         public ConflictResolutionViewModel(GitRepositoryService repositoryService, GitOperationQueue operationQueue, ConflictParser parser, StringHelper stringHelper, GitErrorLocalizer errorLocalizer)
         {
@@ -111,20 +113,20 @@ namespace Bough.App.ViewModels
 
             PreviousHunkCommand = new RelayCommand(PreviousHunk, CanMoveToPreviousHunk);
             NextHunkCommand = new RelayCommand(NextHunk, CanMoveToNextHunk);
-            ChooseOursCommand = new RelayCommand(ChooseOurs, CanResolveCurrentHunk);
-            ChooseTheirsCommand = new RelayCommand(ChooseTheirs, CanResolveCurrentHunk);
-            ChooseBothCommand = new RelayCommand(ChooseBoth, CanResolveCurrentHunk);
-            RemoveBothCommand = new RelayCommand(RemoveBoth, CanResolveCurrentHunk);
+            ChooseOursCommand = new AsyncRelayCommand(ChooseOursAsync, CanResolveCurrentHunk);
+            ChooseTheirsCommand = new AsyncRelayCommand(ChooseTheirsAsync, CanResolveCurrentHunk);
+            ChooseBothCommand = new AsyncRelayCommand(ChooseBothAsync, CanResolveCurrentHunk);
+            RemoveBothCommand = new AsyncRelayCommand(RemoveBothAsync, CanResolveCurrentHunk);
         }
 
         public StringHelper Strings { get { return _stringHelper; } }
         public ObservableCollection<ConflictFileItem> ConflictFiles { get; }
         public RelayCommand PreviousHunkCommand { get; }
         public RelayCommand NextHunkCommand { get; }
-        public RelayCommand ChooseOursCommand { get; }
-        public RelayCommand ChooseTheirsCommand { get; }
-        public RelayCommand ChooseBothCommand { get; }
-        public RelayCommand RemoveBothCommand { get; }
+        public AsyncRelayCommand ChooseOursCommand { get; }
+        public AsyncRelayCommand ChooseTheirsCommand { get; }
+        public AsyncRelayCommand ChooseBothCommand { get; }
+        public AsyncRelayCommand RemoveBothCommand { get; }
         public bool IsSaving { get { return _activeSaveCount > 0; } }
         public bool HasStageResult { get { return StageResult != null; } }
         public bool HasGeneralStatus { get { return StageResult == null; } }
@@ -199,6 +201,7 @@ namespace Bough.App.ViewModels
                     return;
                 }
                 SetStageResult(null);
+                _resolutionEditVersion++;
                 OnPropertyChanged(nameof(ResultFileStatusText));
                 OnPropertyChanged(nameof(HasUnsavedConflictEdits));
             }
@@ -284,6 +287,7 @@ namespace Bough.App.ViewModels
         public string ConflictBatchTooltip { get { return _stringHelper.GetString("ConflictBatchStageTooltip"); } }
         public string ConflictBatchReplaceEditsTitle { get { return _stringHelper.GetString("ConflictBatchReplaceEditsTitle"); } }
         public string ConflictBatchReplaceEditsMessage { get { return _stringHelper.GetString("ConflictBatchReplaceEditsMessage"); } }
+        public string ConflictBatchRemoveButtonText { get { return _stringHelper.GetString("ConflictBatchRemoveAndStage"); } }
         public string ConflictBatchApplyButtonText { get { return _stringHelper.GetString("ConflictBatchStageAction"); } }
         public string ConflictSelectionSummaryText
         {
@@ -316,6 +320,10 @@ namespace Bough.App.ViewModels
                     return false;
                 }
                 if (IsBatchStaging)
+                {
+                    return false;
+                }
+                if (_resolutionConfirmationPending == true)
                 {
                     return false;
                 }
@@ -412,6 +420,7 @@ namespace Bough.App.ViewModels
             {
                 if (SetProperty(ref _resultText, value) == true)
                 {
+                    _resolutionEditVersion++;
                     IsResultFileDeleted = false;
                     SetStageResult(null);
                     OnPropertyChanged(nameof(HasUnsavedConflictEdits));
@@ -489,6 +498,8 @@ namespace Bough.App.ViewModels
         }
 
         public Func<ConflictFileItem, Task<bool>> ConfirmFileChangeAsync { get; set; }
+        internal Func<Task<bool>> ConfirmChoiceEditDiscardAsync { get; set; }
+        internal Func<int, Task<bool>> ConfirmBatchRemoveAsync { get; set; }
 
         public ConflictFileItem SelectedFile
         {
@@ -825,25 +836,132 @@ namespace Bough.App.ViewModels
             SetLocalizedStatusMessage(new LocalizedText("ResolveConflictsPrompt", _document.Hunks.Count));
         }
 
-        private void ChooseOurs() { ResolveCurrent(ResolutionChoiceType.Ours); }
-        private void ChooseTheirs() { ResolveCurrent(ResolutionChoiceType.Theirs); }
-        private void ChooseBoth() { ResolveCurrent(ResolutionChoiceType.Both); }
-        private void RemoveBoth() { ResolveCurrent(ResolutionChoiceType.Remove); }
-
-        private void ResolveCurrent(ResolutionChoiceType choice)
+        private Task ChooseOursAsync()
         {
-            if (_document == null)
+            return ResolveCurrentAsync(ResolutionChoiceType.Ours);
+        }
+
+        private Task ChooseTheirsAsync()
+        {
+            return ResolveCurrentAsync(ResolutionChoiceType.Theirs);
+        }
+
+        private Task ChooseBothAsync()
+        {
+            return ResolveCurrentAsync(ResolutionChoiceType.Both);
+        }
+
+        private Task RemoveBothAsync()
+        {
+            return ResolveCurrentAsync(ResolutionChoiceType.Remove);
+        }
+
+        private async Task ResolveCurrentAsync(ResolutionChoiceType choice)
+        {
+            if (CanResolveCurrentHunk() == false)
             {
                 return;
             }
-            ConflictHunk hunk = _document.Hunks[_currentHunkIndex];
+            GitRepository repository = _repository;
+            GitConflictFile conflict = _currentConflict;
+            ConflictFileItem selectedFile = _selectedFile;
+            ConflictDocument document = _document;
+            int hunkIndex = _currentHunkIndex;
+            ConflictHunk hunk = document.Hunks[hunkIndex];
+            int request = _requestVersion;
+            int loadVersion = _loadVersion;
+            int editVersion = _resolutionEditVersion;
+            string draftText = ResultText;
+            bool draftDeleted = IsResultFileDeleted;
+            if (draftText != _renderedResultText)
+            {
+                Func<Task<bool>> confirm = ConfirmChoiceEditDiscardAsync;
+                if (confirm == null)
+                {
+                    return;
+                }
+                SetResolutionConfirmationPending(true);
+                bool confirmed;
+                try
+                {
+                    confirmed = await confirm();
+                }
+                finally
+                {
+                    SetResolutionConfirmationPending(false);
+                }
+                if (confirmed == false)
+                {
+                    return;
+                }
+                if (ReferenceEquals(ConfirmChoiceEditDiscardAsync, confirm) == false)
+                {
+                    return;
+                }
+            }
+            if (CanResolveCurrentHunk() == false)
+            {
+                return;
+            }
+            if (request != _requestVersion)
+            {
+                return;
+            }
+            if (loadVersion != _loadVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return;
+            }
+            if (ReferenceEquals(_currentConflict, conflict) == false)
+            {
+                return;
+            }
+            if (ReferenceEquals(_selectedFile, selectedFile) == false)
+            {
+                return;
+            }
+            if (ReferenceEquals(_document, document) == false)
+            {
+                return;
+            }
+            if (_currentHunkIndex != hunkIndex)
+            {
+                return;
+            }
+            if (ReferenceEquals(_document.Hunks[hunkIndex], hunk) == false)
+            {
+                return;
+            }
+            if (ResultText != draftText)
+            {
+                return;
+            }
+            if (IsResultFileDeleted != draftDeleted)
+            {
+                return;
+            }
+            if (_resolutionEditVersion != editVersion)
+            {
+                return;
+            }
             _choices[hunk.Id] = choice;
-            _renderedResultText = _document.Render(_choices);
+            _resolutionEditVersion++;
+            _renderedResultText = document.Render(_choices);
             ResultText = _renderedResultText;
             IsResultFileDeleted = IsDeletedChoice(choice);
             CurrentChoiceText = GetChoiceName(choice);
             int resolvedCount = _choices.Values.Count(selectedChoice => selectedChoice != ResolutionChoiceType.Unresolved);
-            SetLocalizedStatusMessage(new LocalizedText("ConflictsSelectedNotice", resolvedCount, _document.Hunks.Count));
+            SetLocalizedStatusMessage(new LocalizedText("ConflictsSelectedNotice", resolvedCount, document.Hunks.Count));
+            NotifyBatchState();
+        }
+
+        private void SetResolutionConfirmationPending(bool value)
+        {
+            _resolutionConfirmationPending = value;
+            NotifyCommandStates();
             NotifyBatchState();
         }
 
@@ -868,9 +986,95 @@ namespace Bough.App.ViewModels
             }
         }
 
-        public Task<ConflictBatchStageResult> ApplyRemainingAndStageAsync(ResolutionChoiceType choice, string operationName)
+        public async Task<ConflictBatchStageResult> ApplyRemainingAndStageAsync(ResolutionChoiceType choice, string operationName)
         {
-            return _stagePresenter.ApplyRemainingAndStageAsync(choice, operationName);
+            if (CanApplyRemaining == false)
+            {
+                return null;
+            }
+            if (choice != ResolutionChoiceType.Remove)
+            {
+                return await _stagePresenter.ApplyRemainingAndStageAsync(choice, operationName);
+            }
+            Func<int, Task<bool>> confirm = ConfirmBatchRemoveAsync;
+            if (confirm == null)
+            {
+                return null;
+            }
+            GitRepository repository = _repository;
+            ConflictFileItem[] files = ConflictFiles.ToArray();
+            ConflictFileItem selectedFile = _selectedFile;
+            GitConflictFile conflict = _currentConflict;
+            ConflictDocument document = _document;
+            int request = _requestVersion;
+            int loadVersion = _loadVersion;
+            int editVersion = _resolutionEditVersion;
+            string draftText = ResultText;
+            bool draftDeleted = IsResultFileDeleted;
+
+            SetResolutionConfirmationPending(true);
+            bool confirmed;
+            try
+            {
+                confirmed = await confirm(files.Length);
+            }
+            finally
+            {
+                SetResolutionConfirmationPending(false);
+            }
+            if (confirmed == false)
+            {
+                return null;
+            }
+            if (ReferenceEquals(ConfirmBatchRemoveAsync, confirm) == false)
+            {
+                return null;
+            }
+            if (CanApplyRemaining == false)
+            {
+                return null;
+            }
+            if (request != _requestVersion)
+            {
+                return null;
+            }
+            if (loadVersion != _loadVersion)
+            {
+                return null;
+            }
+            if (ReferenceEquals(_repository, repository) == false)
+            {
+                return null;
+            }
+            if (ConflictFiles.SequenceEqual(files) == false)
+            {
+                return null;
+            }
+            if (ReferenceEquals(_selectedFile, selectedFile) == false)
+            {
+                return null;
+            }
+            if (ReferenceEquals(_currentConflict, conflict) == false)
+            {
+                return null;
+            }
+            if (ReferenceEquals(_document, document) == false)
+            {
+                return null;
+            }
+            if (ResultText != draftText)
+            {
+                return null;
+            }
+            if (IsResultFileDeleted != draftDeleted)
+            {
+                return null;
+            }
+            if (_resolutionEditVersion != editVersion)
+            {
+                return null;
+            }
+            return await _stagePresenter.ApplyRemainingAndStageAsync(choice, operationName);
         }
 
         internal ConflictBatchFileSnapshot CaptureBatchFile()
@@ -1078,6 +1282,7 @@ namespace Bough.App.ViewModels
         private void ClearDocument()
         {
             _document = null;
+            _currentHunkIndex = 0;
             _currentConflict = null;
             OnPropertyChanged(nameof(OursFileStatusText));
             OnPropertyChanged(nameof(TheirsFileStatusText));
@@ -1104,10 +1309,29 @@ namespace Bough.App.ViewModels
             NotifyBatchState();
         }
 
-        private bool CanMoveToPreviousHunk() { return _currentHunkIndex > 0; }
+        private bool CanMoveToPreviousHunk()
+        {
+            if (HasDocument == false)
+            {
+                return false;
+            }
+            if (_document == null)
+            {
+                return false;
+            }
+            if (_currentHunkIndex >= _document.Hunks.Count)
+            {
+                return false;
+            }
+            return _currentHunkIndex > 0;
+        }
 
         private bool CanMoveToNextHunk()
         {
+            if (HasDocument == false)
+            {
+                return false;
+            }
             if (_document == null)
             {
                 return false;
@@ -1115,7 +1339,26 @@ namespace Bough.App.ViewModels
             return _currentHunkIndex < _document.Hunks.Count - 1;
         }
 
-        private bool CanResolveCurrentHunk() { return HasDocument; }
+        private bool CanResolveCurrentHunk()
+        {
+            if (_resolutionConfirmationPending == true)
+            {
+                return false;
+            }
+            if (HasDocument == false)
+            {
+                return false;
+            }
+            if (_document == null)
+            {
+                return false;
+            }
+            if (_currentHunkIndex < 0)
+            {
+                return false;
+            }
+            return _currentHunkIndex < _document.Hunks.Count;
+        }
 
         public bool CanSaveAndStage
         {

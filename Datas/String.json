@@ -7162,5 +7162,41 @@
     "Name": "RemoteOperationFeedback",
     "Kor": "{0} · {1}: {2}",
     "Eng": "{0} · {1}: {2}"
+  },
+  {
+    "Id": 3294,
+    "Name": "ConflictStageIndexChanged",
+    "Kor": "{0}의 미해결 인덱스가 열린 뒤 변경되었습니다. 다시 불러온 후 저장하세요.",
+    "Eng": "The unmerged index for {0} changed after it was opened. Reload it before saving."
+  },
+  {
+    "Id": 3295,
+    "Name": "ConflictStageSavedNotStaged",
+    "Kor": "{0}에 해결 내용을 저장했지만 스테이징이 완료되지 않았습니다. 새로 고쳐 파일과 인덱스를 확인하세요. {1}",
+    "Eng": "The resolution for {0} was written, but staging did not complete. Refresh to check the file and index. {1}"
+  },
+  {
+    "Id": 3296,
+    "Name": "ConflictStageDeletedNotStaged",
+    "Kor": "{0}의 작업 파일은 삭제된 상태지만 스테이징이 완료되지 않았습니다. 새로 고쳐 파일과 인덱스를 확인하세요. {1}",
+    "Eng": "The working file for {0} was removed, but staging did not complete. Refresh to check the file and index. {1}"
+  },
+  {
+    "Id": 3297,
+    "Name": "ConflictChoiceDiscardEditsMessage",
+    "Kor": "구간 선택을 적용하면 최종 파일에 직접 편집한 내용을 폐기합니다. 이미 고른 다른 구간은 유지합니다.",
+    "Eng": "Applying this section choice discards manual edits in the final file. Choices for other sections are kept."
+  },
+  {
+    "Id": 3298,
+    "Name": "ConflictBatchRemoveAndStage",
+    "Kor": "남은 구간 제거·저장·스테이징",
+    "Eng": "Remove remaining sections, save and stage"
+  },
+  {
+    "Id": 3299,
+    "Name": "ConflictBatchRemoveAndStageMessage",
+    "Kor": "모든 충돌 파일({0}개)의 미선택 구간에서 양쪽 내용을 제거하고 즉시 저장·스테이징합니다. 삭제/수정 충돌에서는 실제 작업 파일이 삭제될 수 있습니다. 기존 선택은 유지하고 분리할 수 없는 직접 편집은 제외합니다.",
+    "Eng": "This removes both sides from unselected sections in all {0} conflicted files, then immediately saves and stages them. A delete/modify conflict may cause a working file to be deleted. Existing choices are kept and inseparable manual edits are excluded."
   }
 ]

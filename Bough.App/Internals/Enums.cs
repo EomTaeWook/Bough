@@ -22,7 +22,10 @@ namespace Bough.App.Internals
         UnresolvedResolution,
         Canceled,
         Failed,
-        RefreshFailed
+        RefreshFailed,
+        IndexChanged,
+        SavedNotStaged,
+        DeletedNotStaged
     }
 
     internal enum HistoryReferenceKind

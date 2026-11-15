@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Generic;
+
 namespace Bough.Core.Git.Models
 {
     public class GitConflictFile
     {
-        public GitConflictFile(string relativePath, string workingText, string baseText, string oursText, string theirsText, string oursSource, string theirsSource, string originalContentHash, bool hasUtf8Bom,
+        public GitConflictFile(string relativePath, string workingText, string baseText, string oursText, string theirsText, string oursSource, string theirsSource, string originalContentHash, bool hasUtf8Bom, string[] indexStages,
             bool hasOurs = true, bool hasTheirs = true, bool workingFileExists = true)
         {
             RelativePath = relativePath;
@@ -14,6 +17,7 @@ namespace Bough.Core.Git.Models
             TheirsSource = theirsSource;
             OriginalContentHash = originalContentHash;
             HasUtf8Bom = hasUtf8Bom;
+            IndexStages = Array.AsReadOnly((string[])indexStages.Clone());
             HasOurs = hasOurs;
             HasTheirs = hasTheirs;
             WorkingFileExists = workingFileExists;
@@ -36,6 +40,8 @@ namespace Bough.Core.Git.Models
         public string OriginalContentHash { get; }
 
         public bool HasUtf8Bom { get; }
+
+        internal IReadOnlyList<string> IndexStages { get; }
 
         public bool HasOurs { get; }
 

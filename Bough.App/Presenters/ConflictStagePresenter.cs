@@ -312,7 +312,12 @@ namespace Bough.App.Presenters
                     GitConflictStageResult stage = await _repositoryService.SaveAndStageAsync(repository, file.Conflict,
                         text, deleteFile, cancellationToken);
                     result = CreateResult(repository, file.Conflict.RelativePath, stage);
-                    if (result.WasStaged)
+                    bool worktreeUpdated = result.WasStaged;
+                    if (result.WorktreeUpdatedWithoutStage)
+                    {
+                        worktreeUpdated = true;
+                    }
+                    if (worktreeUpdated)
                     {
                         if (IsCurrentBatch(repository, batch))
                         {
@@ -329,6 +334,11 @@ namespace Bough.App.Presenters
                         {
                             outcome = ConflictStageOutcome.RefreshFailed;
                         }
+                        else if (result.WorktreeUpdatedWithoutStage)
+                        {
+                            results.Add(new ConflictStageResult(repository, file.Conflict.RelativePath, result.Outcome, exception: result.Exception, refreshException: exception));
+                            continue;
+                        }
                     }
                     result = new ConflictStageResult(repository, file.Conflict.RelativePath, outcome, exception: exception);
                 }
@@ -340,6 +350,11 @@ namespace Bough.App.Presenters
                         if (result.WasStaged)
                         {
                             outcome = ConflictStageOutcome.RefreshFailed;
+                        }
+                        else if (result.WorktreeUpdatedWithoutStage)
+                        {
+                            results.Add(new ConflictStageResult(repository, file.Conflict.RelativePath, result.Outcome, exception: result.Exception, refreshException: exception));
+                            continue;
                         }
                     }
                     result = new ConflictStageResult(repository, file.Conflict.RelativePath, outcome, exception: exception);
@@ -483,6 +498,12 @@ namespace Bough.App.Presenters
             {
                 return result;
             }
+            if (result.WorktreeUpdatedWithoutStage)
+            {
+                _model.MarkStageSaved(conflict, resultText, deleteFile);
+                _model.SetStageResult(result);
+                return result;
+            }
             if (result.Succeeded)
             {
                 _model.MarkStageSaved(conflict, resultText, deleteFile);
@@ -544,6 +565,12 @@ namespace Bough.App.Presenters
                     return new ConflictStageResult(repository, path, ConflictStageOutcome.NoLongerConflicted);
                 case GitConflictStageOutcome.FileChanged:
                     return new ConflictStageResult(repository, path, ConflictStageOutcome.FileChanged, exception: stage.Exception);
+                case GitConflictStageOutcome.IndexChanged:
+                    return new ConflictStageResult(repository, path, ConflictStageOutcome.IndexChanged);
+                case GitConflictStageOutcome.SavedNotStaged:
+                    return new ConflictStageResult(repository, path, ConflictStageOutcome.SavedNotStaged, exception: stage.Exception);
+                case GitConflictStageOutcome.DeletedNotStaged:
+                    return new ConflictStageResult(repository, path, ConflictStageOutcome.DeletedNotStaged, exception: stage.Exception);
                 case GitConflictStageOutcome.IncompleteMarkers:
                     return new ConflictStageResult(repository, path, ConflictStageOutcome.IncompleteResolution, exception: stage.Exception);
                 case GitConflictStageOutcome.UnresolvedMarkers:
