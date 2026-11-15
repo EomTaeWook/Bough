@@ -678,13 +678,14 @@ namespace Bough.App.ViewModels
             ClearDocument();
         }
 
-        public async Task<bool> ApplyPathsAsync(GitRepository repository, IReadOnlyList<string> paths)
+        public async Task<bool> ApplyPathsAsync(GitRepository repository, IReadOnlyList<string> paths, Func<GitConflictFile> getConflictToPreserve = null)
         {
             if (ReferenceEquals(_repository, repository) == false)
             {
                 return false;
             }
 
+            GitConflictFile conflictToPreserve = getConflictToPreserve?.Invoke();
             int request = ++_requestVersion;
             _stagePresenter.Invalidate();
             string previousPath = _currentConflict?.RelativePath ?? _selectedFile?.RelativePath ?? string.Empty;
@@ -720,6 +721,17 @@ namespace Bough.App.ViewModels
                     SetLocalizedStatusMessage(new LocalizedText("ConflictResolvedExternallyWithUnsavedEdits"));
                 }
                 return true;
+            }
+            if (conflictToPreserve != null)
+            {
+                if (ReferenceEquals(_currentConflict, conflictToPreserve))
+                {
+                    if (previousFile != null)
+                    {
+                        SetSelectedFile(previousFile);
+                        return true;
+                    }
+                }
             }
             ConflictFileItem nextFile = previousFile ?? ConflictFiles[0];
             SetSelectedFile(nextFile);

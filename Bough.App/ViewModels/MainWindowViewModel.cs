@@ -1793,7 +1793,7 @@ namespace Bough.App.ViewModels
             await GitSettings.SetRepositoryAsync(_repository);
         }
 
-        private async Task RefreshCoreAsync()
+        private async Task RefreshCoreAsync(Func<GitConflictFile> getConflictToPreserve = null)
         {
             if (_repository == null)
             {
@@ -1819,10 +1819,10 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
-            await ApplyConflictPathsAsync(repository, paths);
+            await ApplyConflictPathsAsync(repository, paths, getConflictToPreserve);
         }
 
-        private async Task RefreshConflictsFromLocalChangesAsync(GitRepository repository)
+        private async Task RefreshConflictsFromLocalChangesAsync(GitRepository repository, Func<GitConflictFile> getConflictToPreserve = null)
         {
             if (_repository == null)
             {
@@ -1834,15 +1834,15 @@ namespace Bough.App.ViewModels
             }
             if (LocalChanges.HasError == true)
             {
-                await RefreshCoreAsync();
+                await RefreshCoreAsync(getConflictToPreserve);
                 return;
             }
 
             IReadOnlyList<string> paths = LocalChanges.ConflictFiles.Select(file => file.Path).ToArray();
-            await ApplyConflictPathsAsync(repository, paths);
+            await ApplyConflictPathsAsync(repository, paths, getConflictToPreserve);
         }
 
-        internal async Task ApplyConflictPathsAsync(GitRepository repository, IReadOnlyList<string> paths)
+        internal async Task ApplyConflictPathsAsync(GitRepository repository, IReadOnlyList<string> paths, Func<GitConflictFile> getConflictToPreserve = null)
         {
             if (ReferenceEquals(_repository, repository) == false)
             {
@@ -1850,7 +1850,7 @@ namespace Bough.App.ViewModels
             }
             int request = _repositoryRequestVersion;
             bool hadConflicts = Conflicts.ConflictFiles.Count > 0;
-            bool applied = await Conflicts.ApplyPathsAsync(repository, paths);
+            bool applied = await Conflicts.ApplyPathsAsync(repository, paths, getConflictToPreserve);
             if (request != _repositoryRequestVersion)
             {
                 return;
@@ -1923,7 +1923,7 @@ namespace Bough.App.ViewModels
             SetStatusMessage(_stringHelper.Format("FileStaged", stagedPath), false);
         }
 
-        public async Task RefreshConflictStateAsync(GitRepository repository)
+        public async Task RefreshConflictStateAsync(GitRepository repository, Func<GitConflictFile> getConflictToPreserve = null)
         {
             if (repository == null)
             {
@@ -1961,7 +1961,7 @@ namespace Bough.App.ViewModels
             {
                 return;
             }
-            await RefreshConflictsFromLocalChangesAsync(repository);
+            await RefreshConflictsFromLocalChangesAsync(repository, getConflictToPreserve);
             if (request != _repositoryRequestVersion)
             {
                 return;

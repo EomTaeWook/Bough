@@ -142,6 +142,38 @@ namespace Bough.App.Presenters
             _model.SetBatchStageResult(null);
             _model.SetBatchStaging(true);
             _model.BeginStageRequest(true);
+            int conflictRequest = _model.ConflictRequestVersion;
+            int conflictLoadVersion = _model.ConflictLoadVersion;
+
+            GitConflictFile GetBatchOpenConflict()
+            {
+                if (current == null)
+                {
+                    return null;
+                }
+                if (IsCurrentBatch(repository, batch) == false)
+                {
+                    return null;
+                }
+                if (conflictRequest != _model.ConflictRequestVersion)
+                {
+                    return null;
+                }
+                if (conflictLoadVersion != _model.ConflictLoadVersion)
+                {
+                    return null;
+                }
+                if (ReferenceEquals(_model.StageConflict, current.Conflict) == false)
+                {
+                    return null;
+                }
+                if (_model.SelectedFile?.RelativePath != current.Conflict.RelativePath)
+                {
+                    return null;
+                }
+                return current.Conflict;
+            }
+
             try
             {
                 List<ConflictBatchFileSnapshot> files = await PrepareBatchAsync(repository, paths, current, isRevert, results, excluded);
@@ -150,7 +182,7 @@ namespace Bough.App.Presenters
                     {
                         try
                         {
-                            return await ExecuteBatchAsync(repository, files, choice, batch, results, excluded, token);
+                            return await ExecuteBatchAsync(repository, files, choice, batch, results, excluded, GetBatchOpenConflict, token);
                         }
                         finally
                         {
@@ -281,9 +313,7 @@ namespace Bough.App.Presenters
             });
         }
 
-        private async Task<ConflictBatchStageResult> ExecuteBatchAsync(GitRepository repository,
-            List<ConflictBatchFileSnapshot> files, ResolutionChoiceType choice, int batch,
-            List<ConflictStageResult> results, Dictionary<string, LocalizedText> excluded, CancellationToken cancellationToken)
+        private async Task<ConflictBatchStageResult> ExecuteBatchAsync(GitRepository repository, List<ConflictBatchFileSnapshot> files, ResolutionChoiceType choice, int batch, List<ConflictStageResult> results, Dictionary<string, LocalizedText> excluded, Func<GitConflictFile> getBatchOpenConflict, CancellationToken cancellationToken)
         {
             foreach (ConflictBatchFileSnapshot file in files)
             {
@@ -368,9 +398,18 @@ namespace Bough.App.Presenters
             }
             _model.SetBatchStageResult(completed);
             _model.SetBatchStaging(false);
+            GitConflictFile openConflict = getBatchOpenConflict();
+            Func<GitConflictFile> getConflictToPreserve = null;
+            if (openConflict != null)
+            {
+                if (results.Where(result => result.WorktreeUpdatedWithoutStage).Any(result => result.Path == openConflict.RelativePath))
+                {
+                    getConflictToPreserve = getBatchOpenConflict;
+                }
+            }
             try
             {
-                await _completion.RefreshConflictStateAsync(repository);
+                await _completion.RefreshConflictStateAsync(repository, getConflictToPreserve);
             }
             catch (Exception exception)
             {
