@@ -1,5 +1,19 @@
 # 릴리스
 
+## v1.0.10 정식 릴리스 게시 완료
+
+- 생성·배포일: 2026-11-15 (KST)
+- 소스 커밋: `645583d8a3d1dfa02c18f0a3a5b86d3d2514c537`
+- 대상: Windows x64 자체 포함 exe, macOS arm64/x64 자체 포함 `.app.zip`
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.10)
+- [Bough-v1.0.10-win-x64.exe](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-win-x64.exe): 103945781바이트; GitHub digest `sha256:19bcc21897c7679f44818a4ae4f05b6405fb3a088ab04637782cff032e344329`
+- [Bough-v1.0.10-osx-arm64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-osx-arm64.app.zip): 44358374바이트; GitHub digest `sha256:10e26b924f32b874ee2034c496e13eff103b7f58fb943ea25333b9c34ee44120`
+- [Bough-v1.0.10-osx-x64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-osx-x64.app.zip): 46338781바이트; GitHub digest `sha256:10c7b32a22d9f527f3f142c98692c13d3df6759533f1c5f3e448e880c11a81e1`
+
+충돌 일괄 제거에 적용 범위와 파일 삭제 가능성 확인을 추가했다. 개별 구간 선택으로 직접 편집을 덮기 전에 확인한다. 저장·스테이징 시 경로를 문자 그대로 지정하고 인덱스·작업 파일 변경을 다시 확인한다. 파일 변경 후 스테이징에 실패하면 원래 오류와 파일 상태를 표시하고, 일괄 처리 후에도 현재 파일이 미해결이면 기존 구간 탐색을 유지한다.
+
+같은 소스의 격리된 Windows 개발 빌드에서 일반 텍스트 병합 충돌 버튼 11개와 인덱스 잠금으로 스테이징이 실패한 뒤의 구간 탐색을 확인했다. 게시용 파일은 플랫폼별 dotnet publish로 만들었다. 리베이스·삭제/수정 충돌, 게시 파일 실행·업데이트 설치/복원은 이번 확인에 포함되지 않았다. Mac Developer ID 서명·Apple 공증은 없다. 크기·digest는 GitHub 게시 메타데이터다.
+
 ## v1.0.9 정식 릴리스 게시 완료
 
 - 생성·배포일: 2026-11-05 (KST)

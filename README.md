@@ -8,9 +8,11 @@
 
 ## 다운로드
 
-정식 패치 버전 **v1.0.9**를 제공합니다. [현재 기능과 상태](Docs/CurrentStatus.md) · [릴리스 기록](Docs/Releases.md)
+정식 패치 버전 **v1.0.10**을 제공합니다. [현재 기능과 상태](Docs/CurrentStatus.md) · [릴리스 기록](Docs/Releases.md)
 
-[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.9/Bough-v1.0.9-osx-x64.app.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.9)
+[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-osx-x64.app.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.10)
+
+v1.0.10은 2026-11-15에 게시했습니다. 충돌 해결 시 일괄 제거 확인, 직접 편집 보호, 저장·스테이징 오류 안내를 개선했습니다. 일괄 처리에서 파일 저장은 완료됐지만 스테이징이 실패해도 충돌 중인 파일의 이전·다음 탐색을 유지합니다.
 
 v1.0.9는 2026-11-05에 게시했습니다. 원격 커밋 수·작업 결과 피드백, Stash·서브모듈 아이콘과 삭제 확인 버튼 배치를 개선했습니다. 기존 스크린샷은 이번 UI 변경 이전 화면입니다.
 
