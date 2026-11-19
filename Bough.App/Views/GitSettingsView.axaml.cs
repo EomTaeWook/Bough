@@ -59,7 +59,6 @@ namespace Bough.App.Views
             (nameof(GitSettingsViewModel.SaveGlobalAuthorLabel), "SaveGlobalAuthorLabel"),
             (nameof(GitSettingsViewModel.AccountsHeading), "GitHubAccountsHeading"),
             (nameof(GitSettingsViewModel.AccountsDescription), "GitHubAccountsDescription"),
-            (nameof(GitSettingsViewModel.AccountsPurpose), "GitHubAccountsPurpose"),
             (nameof(GitSettingsViewModel.AccountsQueueHint), "GitHubAccountsQueueHint"),
             (nameof(GitSettingsViewModel.GeneralTabLabel), "GitSettingsGeneralTab"),
             (nameof(GitSettingsViewModel.GitTabLabel), "GitSettingsGitTab"),
@@ -408,7 +407,7 @@ namespace Bough.App.Views
         {
             if (string.IsNullOrWhiteSpace(item.CandidateName))
             {
-                item.SelectionPreviewText = viewModel.Strings.GetString("GitHubUserNameRequired");
+                item.SelectionPreviewText = string.Empty;
                 return;
             }
 
@@ -539,7 +538,7 @@ namespace Bough.App.Views
                     }
                     message = viewModel.Strings.Format(result.Code, viewModel.Strings.GetString(labelCode));
                 }
-                else
+                else if (result.Code != "GitHubAccountScopeHint")
                 {
                     message = viewModel.Strings.Format(result.Code, result.Arguments);
                 }

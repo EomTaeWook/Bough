@@ -1430,8 +1430,8 @@
   {
     "Id": 1605,
     "Name": "GitAuthorSummary",
-    "Kor": "커밋 작성자: {0} <{1}>",
-    "Eng": "Commit author: {0} <{1}>"
+    "Kor": "현재 적용: {0} <{1}>",
+    "Eng": "Currently applied: {0} <{1}>"
   },
   {
     "Id": 1606,
@@ -1820,8 +1820,8 @@
   {
     "Id": 1834,
     "Name": "GitHubAccountsDescription",
-    "Kor": "Bough는 HTTPS 인증에 Git 자격 증명 도우미를, SSH 인증에 기존 SSH 설정을 사용합니다. 비밀번호와 토큰은 여기에 저장하지 않습니다.",
-    "Eng": "Bough uses Git credential helpers for HTTPS and your existing SSH setup. Passwords and tokens are not stored here."
+    "Kor": "GitHub HTTPS는 Git Credential Manager(GCM)를 사용하며, 선택한 계정은 현재 저장소의 해당 원격에만 적용됩니다. SSH는 기존 SSH 설정을 사용합니다.",
+    "Eng": "GitHub HTTPS uses Git Credential Manager (GCM). Account selection applies only to the chosen remote in this repository. SSH uses your existing SSH settings."
   },
   {
     "Id": 1835,

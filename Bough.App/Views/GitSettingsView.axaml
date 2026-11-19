@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="using:Avalonia.Data.Converters"
              xmlns:vm="using:Bough.App.ViewModels"
              xmlns:models="using:Bough.App.ViewModels.Models"
              xmlns:views="using:Bough.App.Views"
@@ -30,12 +31,19 @@
     <Style Selector="TabItem /template/ Border#PART_LayoutRoot">
       <Setter Property="TextElement.FontSize" Value="14" />
     </Style>
+    <Style Selector="TabItem:pointerover, TabItem:pressed">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
+    </Style>
     <Style Selector="TabItem:pointerover /template/ Border#PART_LayoutRoot, TabItem:pressed /template/ Border#PART_LayoutRoot">
-      <Setter Property="Background" Value="{DynamicResource BoughBrushSelection}" />
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
       <Setter Property="TextElement.Foreground" Value="{DynamicResource BoughBrushText}" />
     </Style>
-    <Style Selector="TabItem:selected /template/ Border#PART_LayoutRoot, TabItem:selected:pointerover /template/ Border#PART_LayoutRoot, TabItem:selected:pressed /template/ Border#PART_LayoutRoot">
+    <Style Selector="TabItem:selected /template/ Border#PART_LayoutRoot">
       <Setter Property="Background" Value="{DynamicResource BoughBrushSurface}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource BoughBrushAccent}" />
+    </Style>
+    <Style Selector="TabItem:selected:pointerover /template/ Border#PART_LayoutRoot, TabItem:selected:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource BoughBrushRaised}" />
       <Setter Property="TextElement.Foreground" Value="{DynamicResource BoughBrushAccent}" />
     </Style>
     <Style Selector="TabItem /template/ ContentPresenter#PART_ContentPresenter">
@@ -114,6 +122,52 @@
             <TextBlock Text="{Binding AppearanceStatus}" FontSize="12" TextWrapping="Wrap"
                        Foreground="{DynamicResource BoughBrushError}" />
           </StackPanel>
+
+          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
+
+          <StackPanel Spacing="8">
+            <TextBlock Text="{Binding DefaultPullStrategyHeading}" FontSize="16" FontWeight="SemiBold"
+                       Foreground="{DynamicResource BoughBrushText}" />
+            <TextBlock Text="{Binding DefaultPullStrategyDescription}" FontSize="12" TextWrapping="Wrap"
+                       Foreground="{DynamicResource BoughBrushTextSubtle}" />
+            <WrapPanel Orientation="Horizontal">
+              <RadioButton Content="{Binding PullStrategyFastForwardOnlyLabel}" GroupName="DefaultPullStrategy"
+                           IsChecked="{Binding IsFastForwardOnlyPull, Mode=OneWay}" Click="FastForwardOnlyPullClicked"
+                           AutomationProperties.Name="{Binding PullStrategyFastForwardOnlyLabel}" Margin="0,0,8,0" />
+              <RadioButton Content="{Binding PullStrategyMergeLabel}" GroupName="DefaultPullStrategy"
+                           IsChecked="{Binding IsMergePull, Mode=OneWay}" Click="MergePullClicked"
+                           AutomationProperties.Name="{Binding PullStrategyMergeLabel}" Margin="0,0,8,0" />
+              <RadioButton Content="{Binding PullStrategyRebaseLabel}" GroupName="DefaultPullStrategy"
+                           IsChecked="{Binding IsRebasePull, Mode=OneWay}" Click="RebasePullClicked"
+                           AutomationProperties.Name="{Binding PullStrategyRebaseLabel}" />
+            </WrapPanel>
+          </StackPanel>
+
+          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
+
+          <StackPanel Spacing="8">
+            <TextBlock Text="{Binding AutoFetchHeading}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
+            <TextBlock Text="{Binding AutoFetchDescription}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+            <CheckBox Content="{Binding AutoFetchEnabledLabel}" IsChecked="{Binding AutoFetchEnabled, Mode=OneWay}"
+                      IsEnabled="{Binding CanChangeAutoFetchSettings}"
+                      Click="AutoFetchEnabledClicked" AutomationProperties.Name="{Binding AutoFetchEnabledLabel}"
+                      Foreground="{DynamicResource BoughBrushText}" />
+            <TextBlock Text="{Binding AutoFetchIntervalLabel}" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
+            <WrapPanel Orientation="Horizontal" IsEnabled="{Binding CanChangeAutoFetchSettings}">
+              <RadioButton Content="{Binding AutoFetch1MinuteLabel}" GroupName="AutoFetchInterval" Tag="1"
+                           IsChecked="{Binding IsAutoFetch1Minute, Mode=OneWay}" Click="AutoFetchIntervalClicked" Margin="0,0,8,0"
+                           AutomationProperties.Name="{Binding AutoFetch1MinuteLabel}" />
+              <RadioButton Content="{Binding AutoFetch5MinuteLabel}" GroupName="AutoFetchInterval" Tag="5"
+                           IsChecked="{Binding IsAutoFetch5Minutes, Mode=OneWay}" Click="AutoFetchIntervalClicked" Margin="0,0,8,0"
+                           AutomationProperties.Name="{Binding AutoFetch5MinuteLabel}" />
+              <RadioButton Content="{Binding AutoFetch10MinuteLabel}" GroupName="AutoFetchInterval" Tag="10"
+                           IsChecked="{Binding IsAutoFetch10Minutes, Mode=OneWay}" Click="AutoFetchIntervalClicked" Margin="0,0,8,0"
+                           AutomationProperties.Name="{Binding AutoFetch10MinuteLabel}" />
+              <RadioButton Content="{Binding AutoFetch30MinuteLabel}" GroupName="AutoFetchInterval" Tag="30"
+                           IsChecked="{Binding IsAutoFetch30Minutes, Mode=OneWay}" Click="AutoFetchIntervalClicked"
+                           AutomationProperties.Name="{Binding AutoFetch30MinuteLabel}" />
+            </WrapPanel>
+          </StackPanel>
         </StackPanel>
       </ScrollViewer>
 
@@ -147,65 +201,17 @@
             <TextBox Text="{Binding GlobalEmail, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="user.email" />
             <Button Content="{Binding SaveGlobalAuthorLabel}" Command="{Binding SaveGlobalAuthorCommand}" HorizontalAlignment="Left" />
           </StackPanel>
-
-          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
-
-          <StackPanel Spacing="8">
-            <TextBlock Text="{Binding DefaultPullStrategyHeading}" FontSize="16" FontWeight="SemiBold"
-                       Foreground="{DynamicResource BoughBrushText}" />
-            <TextBlock Text="{Binding DefaultPullStrategyDescription}" FontSize="12" TextWrapping="Wrap"
-                       Foreground="{DynamicResource BoughBrushTextSubtle}" />
-            <WrapPanel Orientation="Horizontal">
-              <RadioButton Content="{Binding PullStrategyFastForwardOnlyLabel}" GroupName="DefaultPullStrategy"
-                           IsChecked="{Binding IsFastForwardOnlyPull, Mode=OneWay}" Click="FastForwardOnlyPullClicked"
-                           AutomationProperties.Name="{Binding PullStrategyFastForwardOnlyLabel}" Margin="0,0,8,0" />
-              <RadioButton Content="{Binding PullStrategyMergeLabel}" GroupName="DefaultPullStrategy"
-                           IsChecked="{Binding IsMergePull, Mode=OneWay}" Click="MergePullClicked"
-                           AutomationProperties.Name="{Binding PullStrategyMergeLabel}" Margin="0,0,8,0" />
-              <RadioButton Content="{Binding PullStrategyRebaseLabel}" GroupName="DefaultPullStrategy"
-                           IsChecked="{Binding IsRebasePull, Mode=OneWay}" Click="RebasePullClicked"
-                           AutomationProperties.Name="{Binding PullStrategyRebaseLabel}" />
-            </WrapPanel>
-          </StackPanel>
         </StackPanel>
       </ScrollViewer>
 
       <ScrollViewer IsVisible="{Binding #RemoteSettingsTab.IsSelected}" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="16" Spacing="8" MaxWidth="700" HorizontalAlignment="Left">
           <StackPanel Spacing="8">
-            <TextBlock Text="{Binding AutoFetchHeading}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
-            <TextBlock Text="{Binding AutoFetchDescription}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextSubtle}" />
-            <CheckBox Content="{Binding AutoFetchEnabledLabel}" IsChecked="{Binding AutoFetchEnabled, Mode=OneWay}"
-                      IsEnabled="{Binding CanChangeAutoFetchSettings}"
-                      Click="AutoFetchEnabledClicked" AutomationProperties.Name="{Binding AutoFetchEnabledLabel}"
-                      Foreground="{DynamicResource BoughBrushText}" />
-            <TextBlock Text="{Binding AutoFetchIntervalLabel}" FontSize="12" Foreground="{DynamicResource BoughBrushTextSubtle}" />
-            <WrapPanel Orientation="Horizontal" IsEnabled="{Binding CanChangeAutoFetchSettings}">
-              <RadioButton Content="{Binding AutoFetch1MinuteLabel}" GroupName="AutoFetchInterval" Tag="1"
-                           IsChecked="{Binding IsAutoFetch1Minute, Mode=OneWay}" Click="AutoFetchIntervalClicked" Margin="0,0,8,0"
-                           AutomationProperties.Name="{Binding AutoFetch1MinuteLabel}" />
-              <RadioButton Content="{Binding AutoFetch5MinuteLabel}" GroupName="AutoFetchInterval" Tag="5"
-                           IsChecked="{Binding IsAutoFetch5Minutes, Mode=OneWay}" Click="AutoFetchIntervalClicked" Margin="0,0,8,0"
-                           AutomationProperties.Name="{Binding AutoFetch5MinuteLabel}" />
-              <RadioButton Content="{Binding AutoFetch10MinuteLabel}" GroupName="AutoFetchInterval" Tag="10"
-                           IsChecked="{Binding IsAutoFetch10Minutes, Mode=OneWay}" Click="AutoFetchIntervalClicked" Margin="0,0,8,0"
-                           AutomationProperties.Name="{Binding AutoFetch10MinuteLabel}" />
-              <RadioButton Content="{Binding AutoFetch30MinuteLabel}" GroupName="AutoFetchInterval" Tag="30"
-                           IsChecked="{Binding IsAutoFetch30Minutes, Mode=OneWay}" Click="AutoFetchIntervalClicked"
-                           AutomationProperties.Name="{Binding AutoFetch30MinuteLabel}" />
-            </WrapPanel>
-          </StackPanel>
-
-          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
-
-          <StackPanel Spacing="8">
             <TextBlock Text="{Binding AccountsHeading}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
             <TextBlock Text="{Binding AccountsDescription}"
                        FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
-            <TextBlock Text="{Binding AccountsPurpose}"
-                       FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding AccountRepositoryText}" FontSize="12" Foreground="{DynamicResource BoughBrushText}" TextWrapping="Wrap" />
-            <TextBlock Text="{Binding AccountStatusText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding AccountStatusText}" IsVisible="{Binding AccountStatusText, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding AccountsQueueHint}"
                        IsVisible="{Binding IsRemoteOperationBusy}" FontSize="12" Foreground="{DynamicResource BoughBrushWarning}" TextWrapping="Wrap" />
             <ItemsControl ItemsSource="{Binding GitHubRemotes}">
@@ -226,7 +232,7 @@
                                   IsEnabled="{Binding CanChange}" PlaceholderText="{Binding ExistingAccountPlaceholder}" />
                         <TextBox Text="{Binding CandidateName, Mode=TwoWay}" IsEnabled="{Binding CanChange}"
                                  PlaceholderText="{Binding UserNamePlaceholder}" AutomationProperties.Name="{Binding RemoteUserNameAutomationName}" />
-                        <TextBlock Text="{Binding SelectionPreviewText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding SelectionPreviewText}" IsVisible="{Binding SelectionPreviewText, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                           <Button Content="{Binding SelectAccountLabel}" Click="ApplyGitHubAccountClicked" IsEnabled="{Binding CanApply}" />
                           <Button Content="{Binding AddAccountLabel}" Click="LoginGitHubAccountClicked" IsEnabled="{Binding CanLogin}" />
