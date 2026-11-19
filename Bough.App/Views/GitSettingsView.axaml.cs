@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -307,10 +308,40 @@ namespace Bough.App.Views
         private static void ShowRemoteUrls(StringHelper strings, GitHubRemoteAccountItem item)
         {
             GitRemotePushUrlSettings settings = item.PushUrlSettings;
+            IReadOnlyList<string> fetchUrls = settings?.FetchUrls ?? Array.Empty<string>();
+            IReadOnlyList<string> pushUrls = settings?.PushUrls ?? Array.Empty<string>();
+            string primaryFetchUrl = fetchUrls.FirstOrDefault();
+            bool knownDifferent = item.UnavailableReasonCode == "GitHubRemoteFetchPushMismatch";
+            bool commonUrls = false;
+            if (knownDifferent == false)
+            {
+                if (fetchUrls.Count > 0)
+                {
+                    commonUrls = fetchUrls.SequenceEqual(pushUrls, StringComparer.Ordinal);
+                }
+            }
+
+            item.RemoteUrlDetailsLabel = strings.GetString("GitRemoteUrlDetails");
             item.RemovePushUrlText = strings.GetString("GitRemoteRemovePushUrl");
-            item.FetchUrlText = strings.Format("GitHubFetchUrlLabel", FormatRemoteUrls(strings, settings?.FetchUrls));
-            item.PushUrlText = strings.Format("GitHubPushUrlLabel", FormatRemoteUrls(strings, settings?.PushUrls));
             List<string> lines = [];
+            string pushSummary = string.Empty;
+            if (commonUrls)
+            {
+                item.FetchUrlText = FormatRemoteUrl(strings, primaryFetchUrl);
+                lines.Add(FormatRemoteUrls(strings, fetchUrls));
+            }
+            else
+            {
+                item.FetchUrlText = strings.Format("GitHubFetchUrlLabel", FormatRemoteUrl(strings, primaryFetchUrl));
+                lines.Add(strings.Format("GitHubFetchUrlLabel", FormatRemoteUrls(strings, fetchUrls)));
+                lines.Add(strings.Format("GitHubPushUrlLabel", FormatRemoteUrls(strings, pushUrls)));
+                if (pushUrls.Count > 0)
+                {
+                    string summaryUrl = pushUrls.FirstOrDefault(url => url != primaryFetchUrl) ?? pushUrls[0];
+                    pushSummary = strings.Format("GitHubPushUrlLabel", FormatRemoteUrl(strings, summaryUrl));
+                }
+            }
+            item.PushUrlText = pushSummary;
             string sourceCode = "GitRemotePushSourceUnknown";
             if (settings != null)
             {
@@ -339,7 +370,7 @@ namespace Bough.App.Views
             {
                 lines.Add(strings.Format("GitRemotePushUrlRewrite", pushRewrite.Rule, pushRewrite.Scope, pushRewrite.Origin));
             }
-            item.PushUrlSourceText = string.Join(Environment.NewLine, lines);
+            item.RemoteUrlDetailsText = string.Join(Environment.NewLine, lines);
         }
 
         private static string FormatRemoteUrls(StringHelper strings, IReadOnlyList<string> urls)

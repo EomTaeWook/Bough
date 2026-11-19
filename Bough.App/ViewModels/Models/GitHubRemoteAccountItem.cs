@@ -10,7 +10,9 @@ namespace Bough.App.ViewModels.Models
         private string _statusText = string.Empty;
         private string _fetchUrlText = string.Empty;
         private string _pushUrlText = string.Empty;
-        private string _pushUrlSourceText = string.Empty;
+        private string _remoteUrlDetailsText = string.Empty;
+        private string _remoteUrlDetailsLabel = string.Empty;
+        private bool _isRemoteUrlDetailsExpanded;
         private string _removePushUrlText = string.Empty;
         private string _selectedAccountText = string.Empty;
         private string _unavailableReason = string.Empty;
@@ -53,8 +55,21 @@ namespace Bough.App.ViewModels.Models
         public string UnavailableReasonCode { get; }
         public IReadOnlyList<string> KnownAccounts { get; }
         public string FetchUrlText { get { return _fetchUrlText; } set { SetProperty(ref _fetchUrlText, value); } }
-        public string PushUrlText { get { return _pushUrlText; } set { SetProperty(ref _pushUrlText, value); } }
-        public string PushUrlSourceText { get { return _pushUrlSourceText; } set { SetProperty(ref _pushUrlSourceText, value); } }
+        public string PushUrlText
+        {
+            get { return _pushUrlText; }
+            set
+            {
+                if (SetProperty(ref _pushUrlText, value))
+                {
+                    OnPropertyChanged(nameof(HasPushUrlSummary));
+                }
+            }
+        }
+        public bool HasPushUrlSummary { get { return PushUrlText.Length > 0; } }
+        public string RemoteUrlDetailsText { get { return _remoteUrlDetailsText; } set { SetProperty(ref _remoteUrlDetailsText, value); } }
+        public string RemoteUrlDetailsLabel { get { return _remoteUrlDetailsLabel; } set { SetProperty(ref _remoteUrlDetailsLabel, value); } }
+        public bool IsRemoteUrlDetailsExpanded { get { return _isRemoteUrlDetailsExpanded; } set { SetProperty(ref _isRemoteUrlDetailsExpanded, value); } }
         public string RemovePushUrlText { get { return _removePushUrlText; } set { SetProperty(ref _removePushUrlText, value); } }
         public string SelectedAccountText { get { return _selectedAccountText; } set { SetProperty(ref _selectedAccountText, value); } }
         public string UnavailableReason

@@ -7282,5 +7282,11 @@
     "Name": "GitRemotePushUrlRefreshFailed",
     "Kor": "제거 후 원격 주소를 다시 확인하지 못했습니다. Git 설정을 새로 고치세요.",
     "Eng": "Could not refresh the remote URLs after removal. Refresh Git Settings."
+  },
+  {
+    "Id": 3314,
+    "Name": "GitRemoteUrlDetails",
+    "Kor": "원격 주소 상세",
+    "Eng": "Remote URL details"
   }
 ]

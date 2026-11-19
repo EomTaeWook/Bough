@@ -171,11 +171,10 @@
                 <Border Background="{DynamicResource BoughBrushSurface}" BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,4">
                   <StackPanel Spacing="8">
                     <TextBlock Text="{Binding RemoteName}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
-                    <TextBlock Text="{Binding FetchUrlText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding PushUrlText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding PushUrlSourceText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
-                    <Button Content="{Binding RemovePushUrlText}" Click="RemovePushUrlClicked" IsVisible="{Binding CanRemovePushUrl}"
-                            AutomationProperties.Name="{Binding RemovePushUrlText}" HorizontalAlignment="Left" Classes="danger" />
+                    <TextBlock Text="{Binding FetchUrlText}" ToolTip.Tip="{Binding FetchUrlText}" FontSize="12"
+                               Foreground="{DynamicResource BoughBrushTextMuted}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding PushUrlText}" IsVisible="{Binding HasPushUrlSummary}" ToolTip.Tip="{Binding PushUrlText}"
+                               FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{Binding SelectedAccountText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding UnavailableReason}" IsVisible="{Binding HasUnavailableReason}"
                                FontSize="12" Foreground="{DynamicResource BoughBrushWarning}" TextWrapping="Wrap" />
@@ -189,6 +188,13 @@
                       <Button Content="{Binding AddAccountLabel}" Click="LoginGitHubAccountClicked" IsEnabled="{Binding CanLogin}" />
                     </StackPanel>
                     <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+                    <Expander Header="{Binding RemoteUrlDetailsLabel}" IsExpanded="{Binding IsRemoteUrlDetailsExpanded, Mode=TwoWay}" HorizontalAlignment="Stretch">
+                      <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding RemoteUrlDetailsText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+                        <Button Content="{Binding RemovePushUrlText}" Click="RemovePushUrlClicked" IsVisible="{Binding CanRemovePushUrl}"
+                                AutomationProperties.Name="{Binding RemovePushUrlText}" HorizontalAlignment="Left" Classes="danger" />
+                      </StackPanel>
+                    </Expander>
                   </StackPanel>
                 </Border>
               </DataTemplate>
