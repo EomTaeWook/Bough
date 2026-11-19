@@ -8,9 +8,11 @@ It aims to keep everyday Git work light and fast while making the context and ou
 
 ## Download
 
-Stable patch release **v1.0.10** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
+Stable patch release **v1.0.11** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
 
-[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-osx-x64.app.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.10)
+[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.11)
+
+v1.0.11 was published on 2026-11-20. Git Settings now shows effective fetch and push URLs and the source of URL rewrites. A separate push URL can be removed when the resulting push destination can be determined.
 
 v1.0.10 was published on 2026-11-15. It improves batch removal confirmation, manual edit protection, and staging errors in conflict resolution. If a batch writes a file but fails to stage it, section navigation remains available while the file is still conflicted.
 

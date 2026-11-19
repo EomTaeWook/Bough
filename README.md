@@ -8,9 +8,11 @@
 
 ## 다운로드
 
-정식 패치 버전 **v1.0.10**을 제공합니다. [현재 기능과 상태](Docs/CurrentStatus.md) · [릴리스 기록](Docs/Releases.md)
+정식 패치 버전 **v1.0.11**을 제공합니다. [현재 기능과 상태](Docs/CurrentStatus.md) · [릴리스 기록](Docs/Releases.md)
 
-[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.10/Bough-v1.0.10-osx-x64.app.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.10)
+[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.11)
+
+v1.0.11은 2026-11-20에 게시했습니다. Git 설정에서 실제 가져오기·푸시 주소와 URL 재작성 출처를 확인할 수 있습니다. 제거 후 푸시 대상을 확정할 수 있을 때 별도 푸시 주소를 제거할 수 있습니다.
 
 v1.0.10은 2026-11-15에 게시했습니다. 충돌 해결 시 일괄 제거 확인, 직접 편집 보호, 저장·스테이징 오류 안내를 개선했습니다. 일괄 처리에서 파일 저장은 완료됐지만 스테이징이 실패해도 충돌 중인 파일의 이전·다음 탐색을 유지합니다.
 
