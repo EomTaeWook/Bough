@@ -4,18 +4,18 @@
 
 - 최초 게시 2026-11-20 (KST), 배포 파일 갱신 2026-11-20 (KST)
 - 태그 커밋 `8cd92c1e5af926d35cef35f8bc74cffeb4208837`
-- 현재 배포 파일 소스 `cbac5622841d307d81dc93e98a4a18152745d88a`
+- 현재 배포 파일 소스 `2b61f7e1c69b7bec696df9d501a4a94a3a53fa89`
 - Windows x64 자체 포함 EXE, macOS Apple Silicon·Intel 자체 포함 앱 ZIP
 - [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.11)
-- [Bough-v1.0.11-win-x64.exe](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · 103982645바이트 · GitHub digest `sha256:79274be0066f21dbb775d0b2992e21fa221c51cd82eac2eccb51c98b50850e26`
-- [Bough-v1.0.11-osx-arm64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · 44360021바이트 · GitHub digest `sha256:3dbea3ed808f61c64808de5dd4cc57d218ae4adfcf6f74326247959679be221f`
-- [Bough-v1.0.11-osx-x64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · 46357314바이트 · GitHub digest `sha256:11c0b6eb05317940f78a388a2ae0d49eb7a75798cb31884e190115e635ff7ceb`
+- [Bough-v1.0.11-win-x64.exe](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · 103986741바이트 · GitHub digest `sha256:83fdf21a7529ecf9a794d947e1ee9344ef580a5d975639284fd86344575b080b`
+- [Bough-v1.0.11-osx-arm64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · 44362822바이트 · GitHub digest `sha256:0f57c8fdd46d7eba538664a998d3dbb871bf3d0134d60b09cf2bcdd9afb258db`
+- [Bough-v1.0.11-osx-x64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · 46359901바이트 · GitHub digest `sha256:2f8ea6619bd200672bcb9d81b677bd1f3b65ef4a5ec7481dbff9065df74b84b0`
 
-Git 설정의 원격 카드에 실제 가져오기·푸시 주소를 표시한다. 공통 주소는 한 번만 표시한다. 기본으로 접힌 원격 주소 상세를 열면 별도 pushurl과 URL 재작성 출처를 볼 수 있다. 공용 Git 설정에 직접 정의된 단일 pushurl은 제거 후 푸시 대상을 확정할 수 있을 때 변경 전후를 확인하고 제거할 수 있다.
+설정을 일반·Git·원격·앱 업데이트 탭으로 나눴다. 기본 Pull 방식과 원격 자동 확인은 일반 탭에 배치했다. 원격 탭은 주소와 인증 계정을 원격마다 한 카드에 모아 공통 주소를 한 번만 보여 준다.
 
-이미 v1.0.11을 설치한 사용자는 이 페이지에서 운영체제에 맞는 파일을 다시 내려받아 설치할 수 있다.
+별도 pushurl과 URL 재작성 출처는 원격 주소 상세에 표시한다. 공용 Git 설정에 직접 정의된 단일 pushurl은 제거 후 푸시 대상을 확정할 수 있을 때 변경 전후를 확인하고 제거할 수 있다.
 
-세 플랫폼의 배포 파일을 제작했다. 별도 테스트·앱 실행·자동 업데이트 설치 확인은 미실시다. macOS 파일은 Developer ID 서명·Apple 공증 없이 게시했다.
+이미 v1.0.11을 설치했다면 현재 파일을 다시 내려받아 설치할 수 있다. 세 플랫폼의 배포 파일을 제작했으며 별도 테스트·앱 실행·자동 업데이트 설치 확인은 미실시다. macOS 파일은 Developer ID 서명·Apple 공증 없이 게시했다.
 
 ## v1.0.10 정식 릴리스 게시 완료
 
