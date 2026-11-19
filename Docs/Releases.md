@@ -2,15 +2,18 @@
 
 ## v1.0.11 정식 릴리스 게시 완료
 
-- 제작·게시일 2026-11-20 (KST)
-- 소스 커밋 `8cd92c1e5af926d35cef35f8bc74cffeb4208837`
+- 최초 게시 2026-11-20 (KST), 배포 파일 갱신 2026-11-20 (KST)
+- 태그 커밋 `8cd92c1e5af926d35cef35f8bc74cffeb4208837`
+- 현재 배포 파일 소스 `cbac5622841d307d81dc93e98a4a18152745d88a`
 - Windows x64 자체 포함 EXE, macOS Apple Silicon·Intel 자체 포함 앱 ZIP
 - [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.11)
-- [Bough-v1.0.11-win-x64.exe](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · 103978549바이트 · GitHub digest `sha256:e00a7794479e2fcbef875f7079ebe14d58649e71e983b020308a6c41369b1b62`
-- [Bough-v1.0.11-osx-arm64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · 44356269바이트 · GitHub digest `sha256:fea330de142364c161b2bd85af0f45edd5ff565e7021dbc5778ea8c0b7f748cc`
-- [Bough-v1.0.11-osx-x64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · 46356156바이트 · GitHub digest `sha256:88fa10ac82df54d5a5d44a2812f002e3cafcb48cee7ed557ac475b4c08a1b2bb`
+- [Bough-v1.0.11-win-x64.exe](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · 103982645바이트 · GitHub digest `sha256:79274be0066f21dbb775d0b2992e21fa221c51cd82eac2eccb51c98b50850e26`
+- [Bough-v1.0.11-osx-arm64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · 44360021바이트 · GitHub digest `sha256:3dbea3ed808f61c64808de5dd4cc57d218ae4adfcf6f74326247959679be221f`
+- [Bough-v1.0.11-osx-x64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · 46357314바이트 · GitHub digest `sha256:11c0b6eb05317940f78a388a2ae0d49eb7a75798cb31884e190115e635ff7ceb`
 
-Git 설정의 원격 카드에 실제 가져오기·푸시 주소와 별도 pushurl 및 URL 재작성 출처를 표시한다. 공용 Git 설정에 직접 정의된 단일 pushurl은 제거 후 푸시 대상을 확정할 수 있을 때 변경 전후를 확인하고 제거할 수 있다.
+Git 설정의 원격 카드에 실제 가져오기·푸시 주소를 표시한다. 공통 주소는 한 번만 표시한다. 기본으로 접힌 원격 주소 상세를 열면 별도 pushurl과 URL 재작성 출처를 볼 수 있다. 공용 Git 설정에 직접 정의된 단일 pushurl은 제거 후 푸시 대상을 확정할 수 있을 때 변경 전후를 확인하고 제거할 수 있다.
+
+이미 v1.0.11을 설치한 사용자는 이 페이지에서 운영체제에 맞는 파일을 다시 내려받아 설치할 수 있다.
 
 세 플랫폼의 배포 파일을 제작했다. 별도 테스트·앱 실행·자동 업데이트 설치 확인은 미실시다. macOS 파일은 Developer ID 서명·Apple 공증 없이 게시했다.
 
