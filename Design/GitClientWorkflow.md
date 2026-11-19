@@ -145,14 +145,14 @@ Bough의 상위 화면은 **Local Changes**, **History**로 나눈다. 저장소
 
 ## Settings: Git과 계정
 
-- **앱 업데이트**는 [정식 릴리스 기반 업데이트](ApplicationUpdate.md)에 따라 사용자가 조회·다운로드·재시작을 요청한다. 업데이트 후 재시작 바로 옆의 릴리스 페이지 버튼은 조회 전에도 공식 GitHub 릴리스 목록을 연다. 진행 막대는 왼쪽 하단에 표시하며 베타는 자동 업데이트 후보에서 제외한다.
-- **화면 모양**에서는 [화면 테마](AppearanceTheme.md)에 따라 **밝음 / 어두움 / 시스템 설정**을 고른다. 기본은 밝음이며 변경은 즉시 모든 창에 적용되고 앱을 다시 열어도 유지된다.
-- Git 실행 파일은 먼저 시스템 `PATH`에서 찾는다. 설정에서 실행 파일 경로를 직접 선택하고 **Test Git**으로 경로와 버전을 확인할 수 있다. 선택 결과와 오류를 보여 준다.
-- **Bough 기본 Pull 방식**은 빠른 전진만·병합·재배치 중에서 고른다. 모든 저장소의 기본 Pull 버튼에 적용되고, Pull 메뉴에서 고른 일회성 방식은 저장값을 바꾸지 않는다. Git CLI의 `pull.rebase`와 `pull.ff` 설정도 변경하지 않는다.
-- **원격 변경 자동 확인**은 기본 꺼짐이며 주기는 1·5·10·30분 중 선택한다. 현재 열린 저장소의 upstream 원격을 Fetch하고 Pull 근처에 받을 새 커밋 수를 표시한다. [자동 확인 기획](RemoteAutoFetch.md)을 따르며 Pull·병합·작업 파일 변경은 자동 실행하지 않는다.
-- 커밋 작성자의 `user.name`과 `user.email`은 현재 저장소 값과 전역 값을 구분해 표시한다. 저장 범위를 사용자가 선택한다. 값이 없으면 커밋 전에 안내한다. [Git config 문서](https://git-scm.com/docs/git-config)
-- **Accounts**는 원격 URL과 GitHub HTTPS 계정 선택, SSH 인증 방식의 차이를 안내한다. Git은 기존 credential helper와 SSH를 사용하지만 Git 설정에서 읽은 `credential.helper` 출처·값 목록을 Bough 설정 화면에 노출하지 않는다. Bough 설정 파일에 암호·토큰을 직접 저장하지 않는다. [Git credentials 문서](https://git-scm.com/docs/gitcredentials)
-- GitHub HTTPS 원격과 Git Credential Manager가 있으면 [GitHub 인증 계정 전환](GitHubAccountSwitching.md)에 따라 **현재 저장소에서 쓸 GitHub 계정**을 선택하거나 추가할 수 있게 한다. 커밋 작성자 설정과 인증 계정은 별도로 표시한다. GitLab 계정 연결과 SSH 키 전환 UI는 제공자별 방식이 정해진 뒤 추가한다. 계정 연결이 없어도 로컬 저장소 작업은 가능하다.
+탭은 **일반 → Git → 원격 → 앱 업데이트** 순서로 표시한다. 처음에는 일반이 선택된다. 선택 탭은 밑줄로 표시하고 탭을 바꿔도 입력값과 진행 중인 작업을 유지한다.
+
+- **일반**에서 언어, 화면 모양, Bough 기본 Pull 방식, 원격 변경 자동 확인을 설정한다. 화면 모양은 밝음·어두움·시스템 설정을 제공하며 기본값은 밝음이다. 테마는 즉시 모든 창에 적용되고 앱을 다시 열어도 유지된다. [화면 테마](AppearanceTheme.md)
+- **기본 Pull 방식**은 빠른 전진만·병합·리베이스 중에서 고른다. 선택값은 Bough 사용자 설정에 저장되며 모든 저장소의 기본 Pull 버튼에 적용된다. Pull 메뉴의 일회성 선택은 해당 작업에만 적용된다.
+- **원격 변경 자동 확인**은 기본 꺼짐이다. 1·5·10·30분 중 주기를 고른다. 열린 저장소의 upstream 원격을 Fetch하고 Pull 근처에 받을 새 커밋 수를 표시한다. 작업 파일을 갱신하려면 Pull을 직접 실행한다. [자동 확인 기획](RemoteAutoFetch.md)
+- **Git**에서 실행 파일과 커밋 작성자를 설정한다. Git 실행 파일은 먼저 시스템 `PATH`에서 찾는다. 직접 지정한 경우 **Test Git**으로 경로와 버전을 확인할 수 있다. 작성자의 현재 적용값을 표시하고 `user.name`과 `user.email`을 저장소 또는 전역 범위에 저장한다. 값이 없으면 커밋 전에 안내한다. [Git config 문서](https://git-scm.com/docs/git-config)
+- **원격**에서 주소와 인증을 원격별 카드 하나에 표시한다. 공통 주소는 한 번만 보여 준다. 추가 주소, 별도 푸시 주소, URL 재작성 출처처럼 확인할 정보가 있으면 **원격 주소 상세**에서 볼 수 있다. [원격 주소와 GitHub 인증](GitHubAccountSwitching.md)
+- **앱 업데이트**에서 현재 버전을 확인하고 정식 릴리스를 조회·다운로드한다. 재시작 옆 GitHub 버튼으로 공식 릴리스 목록을 열 수 있다. 다운로드 진행 막대는 왼쪽 하단에 표시한다. [앱 업데이트](ApplicationUpdate.md)
 
 ## Terminal
 

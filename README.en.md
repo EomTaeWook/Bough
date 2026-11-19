@@ -2,165 +2,66 @@
 
 [한국어](README.md) | **English**
 
-**Bough is a Git GUI that makes merge conflicts easier to understand and resolve.**
+Bough is a desktop Git client for reviewing local changes, browsing commit history, and resolving merge conflicts. Its conflict editor shows where both sides came from and lets you preview how your choices affect the final file.
 
-It aims to keep everyday Git work light and fast while making the context and outcome of conflict resolution clear.
+## Download and install
 
-## Download
+Get the stable release for your operating system from [GitHub Releases](https://github.com/EomTaeWook/Bough/releases). Install Git separately. The release includes the .NET runtime.
 
-Stable patch release **v1.0.11** is available. [Current scope and status](Docs/CurrentStatus.md) · [Release history](Docs/Releases.md)
+Latest stable release **v1.0.11** · [Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.11)
 
-[Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.11)
+| Operating system | How to run |
+| --- | --- |
+| Windows x64 | Download and run the `win-x64.exe` file. |
+| macOS Apple Silicon | Extract `osx-arm64.app.zip`, move `Bough.app` to an Applications folder you can write to, and open it. |
+| macOS Intel | Extract `osx-x64.app.zip` and follow the same steps. |
 
-v1.0.11 was published on 2026-11-20. Git Settings now shows effective fetch and push URLs and the source of URL rewrites. A separate push URL can be removed when the resulting push destination can be determined.
+Mac releases target macOS 14 or later. They are not signed with Developer ID or notarized by Apple, so macOS may block them from opening.
 
-v1.0.10 was published on 2026-11-15. It improves batch removal confirmation, manual edit protection, and staging errors in conflict resolution. If a batch writes a file but fails to stage it, section navigation remains available while the file is still conflicted.
+If you installed v1.0.11 before the packages were replaced, download the current package from the links above.
 
-v1.0.9 was published on 2026-11-05. It improves remote commit-count and operation-result feedback, Stash and submodule icons, and Stash deletion confirmation buttons. Existing screenshots predate these UI changes.
+## Get started
 
-On Windows, run the single `.exe`. On Mac, extract the ZIP for your CPU and move `Bough.app` to an application folder you can write to (targets macOS 14 or later). No separate .NET installation is needed; install Git separately.
+1. If Bough cannot find Git, choose its executable under **Settings → Git**. Change the language and theme under **Settings → General**.
+2. At the top, select **+ → Open repository** and choose a local repository folder. To clone a repository, select **+ → Clone**, enter a remote URL or local source path, and choose a new destination or an empty folder.
+3. Open **Local Changes** in the left sidebar. Review the files and diffs, stage the changes you want, and enter a commit message. For tracked plain-text files, you can stage or unstage selected lines in the diff.
+4. Open **History** to browse the commit graph and inspect changes. Right-click a changed file to view its commits and renames. To switch repositories, click the repository name at the top.
 
-Mac packages have no Developer ID signature or Apple notarization and may be blocked by security policies. Actual Mac execution and Windows/Mac update installation and rollback have not been verified.
+## Resolve conflicts
 
-## Preview
+![Conflict window showing current and incoming changes, resolution choices, and the final file](Docs/images/conflict.png)
 
-The History and Settings screenshots were captured from a development build with the neutral backgrounds and sidebar navigation included in v1.0.3. The development version and commit shown in Settings differ from the stable release.
+If you closed the conflict window, reopen it from the conflicted file list in **Local Changes**.
 
-### Conflict resolution
+- **Resolve one section at a time:** Compare the current and incoming changes, then choose a result for each section. Review or edit the final text before selecting **Save and Stage**.
+- **Apply a batch choice:** Apply one choice to the remaining sections across all conflicted files, then save and stage them immediately. Batch actions keep existing choices and skip manual edits that cannot be separated from those choices.
+- **Check a failure:** If Bough saved or deleted the working file but could not stage it, the message distinguishes those outcomes. After checking the cause, press **F5** to reread the current file state.
+- **Finish the operation:** Once all conflicts are resolved and staged, commit the merge or select **Continue** for a rebase or revert.
 
-![Bough conflict window showing both changes, individual and batch choices, and the final file preview](Docs/images/conflict.png)
+## Remotes and references
 
-This screen shows a reproduced text merge conflict. Compare both sources, resolve individual sections, or edit the final file. The latest batch action applies, saves, and stages the remaining sections across all conflicted files while preserving existing choices. The screenshot predates this batch change.
+- Use **Fetch**, **Pull**, and **Push** at the top. Open the arrow menus to choose a different target or Pull strategy. If an operation fails, its popup shows the details.
+- Set the default Pull behavior and enable automatic remote checks under **Settings → General**. Remote checks report incoming commits. Run Pull to update your working files.
+- Open **Settings → Remote** to see URLs and authentication for each remote. Bough shows separate fetch and push URLs when they differ. Expand **Remote URL details** to inspect a separate push URL setting or a URL rewrite.
+- Manage branches, tags, and stashes under **Git references** in the sidebar. To push a tag on its own, right-click it and choose the remote. To work inside a submodule, right-click it and choose **Open repository**.
 
-### History
+## Application updates
 
-![Latest Bough History showing sidebar navigation, the commit graph, and selected merge commit details](Docs/images/history.png)
+Bough checks for a stable update once on startup. To check again, select **Settings → Application update → Check for updates**. Downloads and restarts require your action. Download progress appears in the lower left.
 
-Switch to History from the left sidebar and see the branch graph, reference badges, and selected merge commit details together.
+## Screenshots
 
-### Settings and application updates
+These screenshots show example repositories. Details may differ by version or settings.
 
-![Latest Bough Settings showing update checks, language, the light theme, and the default Pull strategy](Docs/images/settings.png)
+[Local changes](Docs/images/local-changes.png) · [History](Docs/images/history.png) · [File history](Docs/images/file-history.png) · [Settings](Docs/images/settings.png)
 
-Configure application update checks, language, appearance, and the default Pull strategy in one screen. Remote buttons are disabled because this demo has no configured remote. No update check or download was started during capture.
+## Run from source
 
-### File history
+Install the .NET 10 SDK and Git, then run this from the repository root:
 
-![Bough file history showing file commits, rename history, and numbered diff](Docs/images/file-history.png)
-
-Right-click a changed file and choose History to open a dedicated window with its commits and changes at each revision. Follow renames and select a commit from the list.
-
-### Local changes
-
-![Bough Local Changes showing staged and working files, a diff with previous and current line numbers, and the commit area](Docs/images/local-changes.png)
-
-Browse staged changes and working files separately, and read diffs with previous and current line numbers. Prepare a commit message in the area below the preview. For modifications to tracked regular text files, select changed lines in the diff and use the preview-header action to stage or unstage them.
-
-All screenshots show actual application content using demo repositories, without operating system title bars. History and Settings show the light theme and Korean UI before the spacing refinements in v1.0.5 and the icon and button-placement changes in v1.0.6. Conflict resolution, File history, and Local changes use earlier English UI screenshots as feature examples; their colors and layout may differ from the current source.
-
-## Why Bough?
-
-Conflict resolution in existing Git GUIs can be difficult when:
-
-- It is unclear where each side of a conflict came from.
-- There is too little context to decide which changes to keep.
-- The effect of a choice on the final file is hard to see immediately.
-- Repository tabs pile up across the top, making it harder to see where you are and switch repositories.
-
-Bough is designed to show the source of each conflicting change and preview the resulting file as you make selections.
-
-## Core experience
-
-- **Clear change origins:** Distinguish the branches, commits, and other context behind each change.
-- **Readable conflict comparison:** See conflicting sections alongside surrounding code.
-- **Immediate result preview:** See how each choice changes the final file.
-- **Conflict resolution and batch saving:** Edit and save individual results, or preserve existing choices and apply, save, and stage the remaining sections in one action.
-- **Clear repository navigation:** See and switch the current repository without relying on a row of tabs.
-
-## Features
-
-- **Open and clone repositories:** Open an existing local repository, or clone a remote URL or local path into a new path or an empty folder and add it to the repository list.
-- **Local changes:** Inspect changed files and diffs with line numbers, stage and unstage files or selected changed lines, commit, discard changes, stop tracking files, and ignore untracked files.
-- **History and references:** Browse the commit graph, file changes, and file history; revert a selected commit; create, switch, delete, and rename branches; create, delete, and rename tags.
-- **Remotes and stashes:** Fetch, Pull, and Push; configure the default Pull strategy or choose one for a single Pull; save, apply, and delete stashes.
-- **Automatic remote checks:** Enable periodic checks in Settings and see new incoming commits for the open repository. Pull remains a manual action.
-- **Open submodule repositories:** Open a child repository from the reference tree and use its existing Fetch, Pull, and Push actions.
-- **Conflict resolution:** Inspect merge, rebase, or revert changes; choose sections, edit and save individual files, or apply, save, and stage the remaining sections across all conflicted files.
-- **Application updates:** Check official stable updates once at startup or manually from Settings. Download with progress and cancellation, then replace the single executable and restart after a normal shutdown when requested. Beta and prerelease versions are excluded.
-
-Version 1.0.7 was published on 2026-11-03. It adds staging and unstaging of selected added/deleted lines through a fixed preview action and includes the new blue branching application icon. The startup update check runs alongside opening the last repository and receives a cancellation request when the window closes. Existing screenshots do not show the selected-line action or branching icon from v1.0.7.
-
-Version 1.0.6 was published on 2026-11-01. It includes the new flat application icon, a single update check at startup, and suppression of late errors after closing. Top-right actions are ordered Open → Console → separator → Settings, and update cancellation sits next to the download-size text.
-
-Version 1.0.5 adds direct Git ignore-pattern input and the selected file's default rule, aligns History metadata and copy actions, and refines Settings spacing and the top Settings button alignment. Existing colors and font sizes are preserved.
-
-Version 1.0.3 refines neutral backgrounds, History and reference styling, and progress placement, and improves Commit/Amend target checks, Stash completion order, normal closing, and follow-up error handling. [Implementation status](Docs/CurrentStatus.md) separates the latest source from the contents of published packages.
-
-The stable release includes application updates, automatic remote checks, opening submodule repositories, update progress in the lower left, and a GitHub release icon button in Settings. The current source keeps only the status summary and progress in the lower left; Fetch/Pull/Push details remain in the corresponding operation dialog. This display change is included in v1.0.3.
-
-In-app updates consider only official stable releases. The complete update download, replacement, and recovery flow and execution of the latest source have not been verified.
-
-Additional screens and workflows are described in the [design notes](Design/README.md) (Korean).
-
-## Technology
-
-- **Language:** C# / .NET
-- **Current release platform:** Windows x64, macOS Apple Silicon and Intel (Mac execution unverified)
-- **UI:** Avalonia
-
-Stable releases provide the implemented basic Git features. [Implementation status](Docs/CurrentStatus.md) (Korean) separates implemented features from behavior still unconfirmed. See [development docs](Docs/README.md) and [design notes](Design/README.md) for more detail.
-
-Bough is an architecture reference for desktop applications such as Eidolon. See [desktop application architecture](Docs/DesktopApplicationArchitecture.md) (Korean) for responsibilities, task lifetimes, and the mappings each project must define.
-
-## Run
-
-### Run the release
-
-1. Install Git. If Bough cannot find it, set the Git executable path under **Settings → Git executable**.
-2. On Windows, save and run the `.exe`. On Mac, extract the ZIP for your CPU and move `Bough.app` to an application folder you can write to. No separate .NET, DLL, data, or configuration installation is required. See the download section for Mac signing, notarization, and execution status.
-3. Use **+ → Open repository** in the top toolbar to select an existing repository, or **+ → Clone** to enter a remote URL or local path and a destination folder. The destination can be a new path or an empty folder.
-4. Select the current repository in the header to switch between recent repositories. Review files and diffs under **Local changes**, stage files, and commit. Use **History** to browse past commits.
-5. Choose Korean or English under **Settings → Language**. Korean is the default; changes apply immediately and are saved for the next launch.
-
-User settings and recent repositories are stored in `%LocalAppData%\Bough` on Windows. Replacing the executable with an updated version preserves these settings.
-
-### Run from source
-
-Development requires the .NET 10 SDK and Git. Run the following command from the repository root. There is no macOS package, and running from source on macOS has not yet been verified.
-
-```powershell
+```sh
 dotnet run --project Bough.App/Bough.App.csproj
 ```
-
-### Work with repositories
-
-Bough adds and opens the repository when cloning finishes. The list's remove button appears on hover or keyboard focus. For individual conflict resolution, choose sections, inspect or edit the final file, and select **Save and Stage**. Batch actions apply one choice to all unselected sections across conflicted files, then save and stage them immediately. Existing choices are preserved; inseparable manual edits are excluded with a reason. Merge commits, rebase continue, and revert continue remain explicit actions. Text conflict resolution currently targets UTF-8 files.
-
-When cloning fails, Bough shows the cause identified from Git diagnostics, such as authentication, repository access, connection, storage space, or file writing. Destination status is reported separately. If the folder is empty, you can retry using the same path after resolving the clone error. When the cause cannot be identified, Bough shows a general failure message and the exit code.
-
-Select **History** in the left sidebar to see commits from all local and remote references in a branch graph. Selecting a commit shows its author, date, message, and changed files in the details panel. The first 200 commits are shown; scroll down to load older history. Selecting and inspecting a commit does not change the repository.
-
-Right-click a commit and choose **Revert this commit…** to create a new commit reversing its changes on the current local branch. Confirm the repository, HEAD, and target; explicitly choose the mainline parent for a merge commit. Start with a clean working tree and index and no other Git operation in progress. Resolve any conflicts, save and stage the result, then select **Continue** in the pending revert banner. **Abort** returns to the prior state and may discard conflict resolutions or file edits made during the operation, so review its confirmation first. Use Refresh for read errors after a successful Git change.
-
-Right-click a branch under **Git references** on the left to delete a local or remote branch. Confirm the target before deletion. The checked-out branch and a remote's default branch cannot be deleted, and local branches with unmerged commits are kept. Deleting a remote branch affects the server and other users.
-
-For tags, **Delete tag** opens one dialog to choose local or remote deletion, with local selected by default. Remote deletion inspects the actual tag on the selected server and requires confirmation of its impact; the local tag is preserved. Renaming a local branch or tag does not rename remote references. Annotated and signed tags keep their original tag object. Deletion and renaming run through the repository operation queue after confirmation.
-
-Enable automatic remote checks in Settings to periodically fetch the current repository's upstream and show incoming commit counts near Pull. The default is off with a five-minute interval; choose one, five, ten, or thirty minutes. Checks do not pull or merge automatically.
-
-Right-click a submodule in the reference tree and choose **Open repository**, then use the existing Fetch, Pull, and Push actions. Perform parent and submodule operations in their respective repositories. Uninitialized submodules are reported rather than initialized automatically.
-
-Application updates in Settings consider only official stable releases. Beta and prerelease versions are excluded from in-app update candidates.
-
-Beta-enabled update tests use isolated test copies only; the application keeps its stable-only update policy.
-
-Update download progress appears in the lower left. The release-page button beside **Update and restart** opens GitHub Releases even before checking for an update.
-
-## Data generation
-
-UI strings originate in `Excel/String.xlsx`, with runtime data in `Datas/String.json`. Debug runs read JSON from the output directory; Release builds read JSON embedded in the executable. Choose Korean or English under **Settings → Language**. Korean is the default, changes apply immediately, and the selection is saved for subsequent runs.
-
-Existing Excel and JSON entries are not fully synchronized, so regenerating all data immediately can remove existing keys. Follow the [data conversion guide](<Docs/데이터 변환 도구 사용법.md>) (Korean) for source editing, conversion steps, Git LFS, and converter limitations.
 
 ## License
 

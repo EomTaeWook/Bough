@@ -1,8 +1,6 @@
 # Bough 기획
 
-이 폴더는 Bough의 제품 화면과 작업 흐름을 기획한다. 스크린샷은 배치와 작업 흐름의 참고 자료다. 문서에는 구현 중인 요구도 포함되므로 실제 반영 여부는 [구현 현황](../Docs/CurrentStatus.md)에서 확인한다.
-
-첫 정식 v0.1.0은 현재 구현한 기본 Git 기능을 범위로 삼는다. 아래의 후속 기획이나 지원 후보를 구현 완료로 계산하지 않으며 생성·게시 상태는 [릴리스 기록](../Docs/Releases.md)을 따른다.
+이 폴더는 Bough의 화면과 작업 흐름을 설명한다. 스크린샷은 배치 참고용이며 문서에는 계획 중인 기능도 포함된다. 배포된 기능과 파일은 [릴리스 기록](../Docs/Releases.md)에서 확인한다.
 
 | 문서 | 내용 |
 | --- | --- |
@@ -18,7 +16,7 @@
 | [원격 작업과 Stash](RemoteAndStash.md) | Fetch, Pull, Push, Stash의 화면·실행·갱신 흐름 |
 | [원격 변경 자동 확인](RemoteAutoFetch.md) | 설정한 주기의 백그라운드 Fetch와 받을 새 커밋 표시 |
 | [서브모듈 저장소 열기](SubmoduleNavigation.md) | 실제 하위 저장소 확인·전환과 해당 저장소의 Fetch·Pull·Push 사용 |
-| [GitHub 인증 계정 전환](GitHubAccountSwitching.md) | 저장소별 GitHub HTTPS 인증 계정 선택과 GCM 로그인 |
+| [원격 주소와 GitHub 인증](GitHubAccountSwitching.md) | 원격 카드, 주소 출처, 별도 푸시 주소 제거 및 GCM 로그인 |
 | [화면 테마](AppearanceTheme.md) | 기본 밝은 테마와 어두움·시스템 설정 전환 |
 | [앱 업데이트](ApplicationUpdate.md) | 정식 릴리스 조회·다운로드·교체, 좌하단 진행과 GitHub 페이지 버튼 |
 | [저장소 전환 응답성](RepositorySwitchResponsiveness.md) | 저장소 선택 직후 보여 줄 상태와 영역별 로딩 순서 |
