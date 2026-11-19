@@ -11,6 +11,7 @@ using Bough.App.Localization;
 using Bough.App.ViewModels.Models;
 using Bough.App.ViewModels;
 using Bough.App.Internals;
+using Bough.Core.Git.Models;
 using Bough.Core.Internals;
 
 namespace Bough.App.Views
@@ -277,18 +278,7 @@ namespace Bough.App.Views
 
         private static void ShowAccountItem(GitSettingsViewModel viewModel, GitHubRemoteAccountItem item)
         {
-            string fetchUrl = item.FetchUrl;
-            if (fetchUrl.Length == 0)
-            {
-                fetchUrl = viewModel.Strings.GetString("GitHubRemoteUrlNeedsReview");
-            }
-            string pushUrl = item.PushUrl;
-            if (pushUrl.Length == 0)
-            {
-                pushUrl = viewModel.Strings.GetString("GitHubRemoteUrlNeedsReview");
-            }
-            item.FetchUrlText = viewModel.Strings.Format("GitHubFetchUrlLabel", fetchUrl);
-            item.PushUrlText = viewModel.Strings.Format("GitHubPushUrlLabel", pushUrl);
+            ShowRemoteUrls(viewModel.Strings, item);
             item.UnavailableReason = string.Empty;
             if (item.UnavailableReasonCode.Length > 0)
             {
@@ -312,6 +302,75 @@ namespace Bough.App.Views
             item.SelectAccountLabel = viewModel.Strings.GetString("GitHubSelectAccountLabel");
             item.AddAccountLabel = viewModel.Strings.GetString("GitHubAddAccountLabel");
             ShowAccountSelectionPreview(viewModel, item);
+        }
+
+        private static void ShowRemoteUrls(StringHelper strings, GitHubRemoteAccountItem item)
+        {
+            GitRemotePushUrlSettings settings = item.PushUrlSettings;
+            item.RemovePushUrlText = strings.GetString("GitRemoteRemovePushUrl");
+            item.FetchUrlText = strings.Format("GitHubFetchUrlLabel", FormatRemoteUrls(strings, settings?.FetchUrls));
+            item.PushUrlText = strings.Format("GitHubPushUrlLabel", FormatRemoteUrls(strings, settings?.PushUrls));
+            List<string> lines = [];
+            string sourceCode = "GitRemotePushSourceUnknown";
+            if (settings != null)
+            {
+                sourceCode = settings.PushSourceCode;
+            }
+            if (sourceCode != null)
+            {
+                lines.Add(strings.GetString(sourceCode));
+            }
+            if (settings?.ExplicitPushUrls != null)
+            {
+                if (settings.ExplicitPushUrls.Count == 0)
+                {
+                    lines.Add(strings.GetString("GitRemotePushNoExplicitUrl"));
+                }
+                foreach ((string scope, string origin, string url) in settings.ExplicitPushUrls)
+                {
+                    lines.Add(strings.Format("GitRemotePushConfiguredUrl", scope, origin, FormatRemoteUrl(strings, url)));
+                }
+            }
+            if (settings?.FetchRewrite is { } fetchRewrite)
+            {
+                lines.Add(strings.Format("GitRemoteFetchUrlRewrite", fetchRewrite.Rule, fetchRewrite.Scope, fetchRewrite.Origin));
+            }
+            if (settings?.PushRewrite is { } pushRewrite)
+            {
+                lines.Add(strings.Format("GitRemotePushUrlRewrite", pushRewrite.Rule, pushRewrite.Scope, pushRewrite.Origin));
+            }
+            item.PushUrlSourceText = string.Join(Environment.NewLine, lines);
+        }
+
+        private static string FormatRemoteUrls(StringHelper strings, IReadOnlyList<string> urls)
+        {
+            if (urls == null)
+            {
+                return strings.GetString("GitHubRemoteUrlNeedsReview");
+            }
+            if (urls.Count == 0)
+            {
+                return strings.GetString("GitHubRemoteUrlNeedsReview");
+            }
+            List<string> values = [];
+            foreach (string url in urls)
+            {
+                values.Add(FormatRemoteUrl(strings, url));
+            }
+            return string.Join(Environment.NewLine, values);
+        }
+
+        private static string FormatRemoteUrl(StringHelper strings, string url)
+        {
+            if (url == null)
+            {
+                return strings.GetString("GitHubRemoteUrlNeedsReview");
+            }
+            if (url.Length == 0)
+            {
+                return strings.GetString("GitRemoteUrlConfiguredEmpty");
+            }
+            return url;
         }
 
         private static void ShowAccountSelectionPreview(GitSettingsViewModel viewModel, GitHubRemoteAccountItem item)
@@ -549,6 +608,59 @@ namespace Bough.App.Views
             }
 
             viewModel.SelectDefaultPullStrategy(GitPullStrategy.Rebase);
+        }
+
+        private async void RemovePushUrlClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (sender is not Button button)
+            {
+                return;
+            }
+            if (button.DataContext is not GitHubRemoteAccountItem remote)
+            {
+                return;
+            }
+            if (DataContext is not GitSettingsViewModel viewModel)
+            {
+                return;
+            }
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
+            GitRepository repository = viewModel.CurrentRepository;
+            if (repository == null)
+            {
+                return;
+            }
+            if (remote.CanRemovePushUrl == false)
+            {
+                return;
+            }
+
+            GitRemotePushUrlSettings settings = remote.PushUrlSettings;
+            string title = viewModel.Strings.GetString("GitRemoteRemovePushUrl");
+            string message = viewModel.Strings.Format("GitRemoteRemovePushUrlConfirm", repository.RootPath, remote.RemoteName, settings.PushUrls[0], settings.PushUrlAfterRemoval, settings.SharedConfigPath);
+            bool confirmed;
+            InternalDialogOpening?.Invoke();
+            try
+            {
+                confirmed = await GitActionDialogs.ConfirmAsync(owner, title, message, title, viewModel.Strings);
+            }
+            finally
+            {
+                InternalDialogClosed?.Invoke();
+            }
+
+            if (confirmed == false)
+            {
+                return;
+            }
+            if (ReferenceEquals(DataContext, viewModel) == false)
+            {
+                return;
+            }
+            await viewModel.RemovePushUrlAsync(repository, remote);
         }
 
         private async void ApplyGitHubAccountClicked(object sender, RoutedEventArgs eventArgs)

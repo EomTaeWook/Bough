@@ -173,6 +173,9 @@
                     <TextBlock Text="{Binding RemoteName}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
                     <TextBlock Text="{Binding FetchUrlText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding PushUrlText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding PushUrlSourceText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
+                    <Button Content="{Binding RemovePushUrlText}" Click="RemovePushUrlClicked" IsVisible="{Binding CanRemovePushUrl}"
+                            AutomationProperties.Name="{Binding RemovePushUrlText}" HorizontalAlignment="Left" Classes="danger" />
                     <TextBlock Text="{Binding SelectedAccountText}" FontSize="12" Foreground="{DynamicResource BoughBrushTextMuted}" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding UnavailableReason}" IsVisible="{Binding HasUnavailableReason}"
                                FontSize="12" Foreground="{DynamicResource BoughBrushWarning}" TextWrapping="Wrap" />

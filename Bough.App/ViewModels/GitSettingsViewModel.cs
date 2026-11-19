@@ -30,6 +30,7 @@ namespace Bough.App.ViewModels
         private readonly LanguageSelectionPresenter _languagePresenter;
         private readonly GitOperationQueue _operationQueue;
         private readonly GitExecutablePresenter _gitExecutablePresenter;
+        private readonly GitRemoteSettingsPresenter _remoteSettingsPresenter;
         private readonly RemoteAutoFetchSettingsPresenter _autoFetchPresenter;
         private readonly ObservableCollection<GitRemote> _remotes;
         private readonly ObservableCollection<GitHubRemoteAccountItem> _gitHubRemotes;
@@ -73,6 +74,7 @@ namespace Bough.App.ViewModels
             _languagePresenter = languagePresenter;
             _operationQueue = operationQueue;
             _gitExecutablePresenter = new GitExecutablePresenter(settingsService);
+            _remoteSettingsPresenter = new GitRemoteSettingsPresenter(gitHubAccountService, operationQueue);
             _autoFetchPresenter = autoFetchPresenter;
             _appearanceTheme.ThemeChanged += OnAppearanceThemeChanged;
             _settingsService.DefaultPullStrategyChanged += OnDefaultPullStrategyChanged;
@@ -557,6 +559,76 @@ namespace Bough.App.ViewModels
             _remoteOperationBusy = busy;
             OnPropertyChanged(nameof(IsRemoteOperationBusy));
             UpdateAccountAvailability();
+        }
+
+        public Task RemovePushUrlAsync(GitRepository repository, GitHubRemoteAccountItem item)
+        {
+            if (ReferenceEquals(repository, _repository) == false)
+            {
+                return Task.CompletedTask;
+            }
+            if (_gitHubRemotes.Contains(item) == false)
+            {
+                ShowDisplayResult(GitSettingsDisplayTarget.Status, "GitRemotePushUrlRemovalChanged");
+                return Task.CompletedTask;
+            }
+            if (item.CanRemovePushUrl == false)
+            {
+                return Task.CompletedTask;
+            }
+            return _remoteSettingsPresenter.RemovePushUrlAsync(this, repository, item.RemoteName, item.PushUrlSettings, item.RemovePushUrlText);
+        }
+
+        internal void ShowPushUrlRemovalError(GitRepository repository, Exception exception)
+        {
+            if (ReferenceEquals(repository, _repository) == false)
+            {
+                return;
+            }
+            if (exception is GitException gitException)
+            {
+                if (gitException.ErrorCode == "GitRemotePushUrlRemovalChanged")
+                {
+                    ShowDisplayResult(GitSettingsDisplayTarget.Status, gitException.ErrorCode);
+                    return;
+                }
+            }
+            ShowDisplayResult(GitSettingsDisplayTarget.Status, "GitRemotePushUrlRemovalFailed");
+        }
+
+        internal async Task RefreshAfterPushUrlRemovalAsync(GitRepository repository, string remoteName, CancellationToken cancellationToken)
+        {
+            if (ReferenceEquals(repository, _repository) == false)
+            {
+                return;
+            }
+            _accountCancellation?.Cancel();
+            int request = ++_requestVersion;
+            bool refreshed = false;
+            try
+            {
+                await RefreshAccountsAsync(repository, request, string.Empty, string.Empty, cancellationToken, true);
+                refreshed = FindAccountRemote(remoteName)?.PushUrlSettings?.IsReadable == true;
+            }
+            catch (Exception)
+            {
+                // Git config was already changed. These reads may contain sensitive URL diagnostics.
+            }
+            if (request != _requestVersion)
+            {
+                return;
+            }
+            if (ReferenceEquals(repository, _repository) == false)
+            {
+                return;
+            }
+            if (refreshed == false)
+            {
+                DisplayResult = new GitSettingsDisplayResult(GitSettingsDisplayTarget.Status, "GitRemotePushUrlRemoved", new object[] { remoteName }, null, null, new GitException("GitRemotePushUrlRefreshFailed", null, Array.Empty<object>()));
+                ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, "GitRemotePushUrlRefreshFailed");
+                return;
+            }
+            ShowDisplayResult(GitSettingsDisplayTarget.Status, "GitRemotePushUrlRemoved", remoteName);
         }
 
         public async Task SelectAccountAsync(GitHubRemoteAccountItem item, string userName)

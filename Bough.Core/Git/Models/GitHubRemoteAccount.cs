@@ -20,5 +20,6 @@ namespace Bough.Core.Git.Models
         public bool IsRepositorySelection { get; }
         public bool CanSelect { get; }
         public string UnavailableReasonCode { get; }
+        public GitRemotePushUrlSettings PushUrlSettings { get; internal set; }
     }
 }

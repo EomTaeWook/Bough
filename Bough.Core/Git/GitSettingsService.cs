@@ -119,15 +119,11 @@ namespace Bough.Core.Git
             GitCommandResult remoteResult = await _runner.RunAsync(repository.RootPath, _remoteArguments, false, cancellationToken);
             foreach (string name in remoteResult.Output.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
             {
-                GitCommandResult urlResult = await _runner.RunAsync(repository.RootPath, new string[] { "remote", "get-url", name }, true, cancellationToken);
+                GitCommandResult urlResult = await _runner.RunAsync(repository.RootPath, new string[] { "remote", "get-url", "--", name }, true, cancellationToken);
                 string url = string.Empty;
                 if (urlResult.ExitCode == 0)
                 {
-                    url = GitReferenceService.SanitizeUrl(urlResult.Output.Trim());
-                }
-                else
-                {
-                    throw new GitException("GitSettingsRemoteUrlReadFailed", null, name, urlResult.Error.Trim());
+                    url = GitHubAccountService.MaskUrl(urlResult.Output.TrimEnd('\n', '\r')) ?? string.Empty;
                 }
                 remotes.Add(new GitRemote(name, url, Array.Empty<GitRemoteBranch>()));
             }

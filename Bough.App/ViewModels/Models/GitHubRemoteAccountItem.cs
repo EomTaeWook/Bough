@@ -10,6 +10,8 @@ namespace Bough.App.ViewModels.Models
         private string _statusText = string.Empty;
         private string _fetchUrlText = string.Empty;
         private string _pushUrlText = string.Empty;
+        private string _pushUrlSourceText = string.Empty;
+        private string _removePushUrlText = string.Empty;
         private string _selectedAccountText = string.Empty;
         private string _unavailableReason = string.Empty;
         private string _selectionPreviewText = string.Empty;
@@ -26,6 +28,7 @@ namespace Bough.App.ViewModels.Models
             RemoteName = remote.RemoteName;
             FetchUrl = remote.FetchUrl;
             PushUrl = remote.PushUrl;
+            PushUrlSettings = remote.PushUrlSettings;
             SelectedUserName = remote.SelectedUserName;
             IsRepositorySelection = remote.IsRepositorySelection;
             IsSupported = remote.CanSelect;
@@ -42,6 +45,8 @@ namespace Bough.App.ViewModels.Models
         public string RemoteName { get; }
         public string FetchUrl { get; }
         public string PushUrl { get; }
+        public GitRemotePushUrlSettings PushUrlSettings { get; }
+        public bool CanRemovePushUrl { get { return PushUrlSettings?.PushUrlAfterRemoval != null; } }
         public string SelectedUserName { get; }
         public bool IsRepositorySelection { get; }
         public bool IsSupported { get; }
@@ -49,6 +54,8 @@ namespace Bough.App.ViewModels.Models
         public IReadOnlyList<string> KnownAccounts { get; }
         public string FetchUrlText { get { return _fetchUrlText; } set { SetProperty(ref _fetchUrlText, value); } }
         public string PushUrlText { get { return _pushUrlText; } set { SetProperty(ref _pushUrlText, value); } }
+        public string PushUrlSourceText { get { return _pushUrlSourceText; } set { SetProperty(ref _pushUrlSourceText, value); } }
+        public string RemovePushUrlText { get { return _removePushUrlText; } set { SetProperty(ref _removePushUrlText, value); } }
         public string SelectedAccountText { get { return _selectedAccountText; } set { SetProperty(ref _selectedAccountText, value); } }
         public string UnavailableReason
         {

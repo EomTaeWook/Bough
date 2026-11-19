@@ -7198,5 +7198,89 @@
     "Name": "ConflictBatchRemoveAndStageMessage",
     "Kor": "모든 충돌 파일({0}개)의 미선택 구간에서 양쪽 내용을 제거하고 즉시 저장·스테이징합니다. 삭제/수정 충돌에서는 실제 작업 파일이 삭제될 수 있습니다. 기존 선택은 유지하고 분리할 수 없는 직접 편집은 제외합니다.",
     "Eng": "This removes both sides from unselected sections in all {0} conflicted files, then immediately saves and stages them. A delete/modify conflict may cause a working file to be deleted. Existing choices are kept and inseparable manual edits are excluded."
+  },
+  {
+    "Id": 3300,
+    "Name": "GitRemotePushSourceUnknown",
+    "Kor": "푸시 주소 출처를 확정할 수 없습니다.",
+    "Eng": "The push URL source could not be confirmed."
+  },
+  {
+    "Id": 3301,
+    "Name": "GitRemotePushSourceExplicit",
+    "Kor": "푸시 주소는 별도 pushurl 설정을 사용합니다.",
+    "Eng": "The push URL comes from an explicit pushurl setting."
+  },
+  {
+    "Id": 3302,
+    "Name": "GitRemotePushSourceFetch",
+    "Kor": "푸시 주소는 원격의 기본 URL을 사용합니다.",
+    "Eng": "The push URL uses the remote's default URL."
+  },
+  {
+    "Id": 3303,
+    "Name": "GitRemotePushNoExplicitUrl",
+    "Kor": "별도 pushurl 설정이 없습니다.",
+    "Eng": "No explicit pushurl is configured."
+  },
+  {
+    "Id": 3304,
+    "Name": "GitRemotePushConfiguredUrl",
+    "Kor": "pushurl 설정 · {0} · {1} · {2}",
+    "Eng": "Configured pushurl · {0} · {1} · {2}"
+  },
+  {
+    "Id": 3305,
+    "Name": "GitRemoteUrlConfiguredEmpty",
+    "Kor": "빈 값 (목록 초기화)",
+    "Eng": "Empty value (resets the list)"
+  },
+  {
+    "Id": 3306,
+    "Name": "GitRemoteFetchUrlRewrite",
+    "Kor": "Fetch 재작성 · {0} · {1} · {2}",
+    "Eng": "Fetch rewrite · {0} · {1} · {2}"
+  },
+  {
+    "Id": 3307,
+    "Name": "GitRemotePushUrlRewrite",
+    "Kor": "Push 재작성 · {0} · {1} · {2}",
+    "Eng": "Push rewrite · {0} · {1} · {2}"
+  },
+  {
+    "Id": 3308,
+    "Name": "GitRemoteRemovePushUrl",
+    "Kor": "별도 푸시 주소 제거",
+    "Eng": "Remove separate push URL"
+  },
+  {
+    "Id": 3309,
+    "Name": "GitRemoteRemovePushUrlConfirm",
+    "Kor": "저장소 {0}\n원격 {1}\n현재 푸시 주소 {2}\n이 작업 트리의 제거 후 푸시 주소 {3}\n공용 설정 파일 {4}\n변경은 이 저장소의 연결 작업 트리에도 적용됩니다.",
+    "Eng": "Repository {0}\nRemote {1}\nCurrent push URL {2}\nPush URL for this worktree after removal {3}\nShared config file {4}\nThe change also applies to linked worktrees of this repository."
+  },
+  {
+    "Id": 3310,
+    "Name": "GitRemotePushUrlRemovalChanged",
+    "Kor": "푸시 주소나 설정 출처가 바뀌었습니다. 새로 고친 뒤 다시 확인하세요.",
+    "Eng": "The push URL or config source changed. Refresh and review it again."
+  },
+  {
+    "Id": 3311,
+    "Name": "GitRemotePushUrlRemovalFailed",
+    "Kor": "공용 설정에서 별도 푸시 주소를 제거하지 못했습니다.",
+    "Eng": "Could not remove the separate push URL from the shared config."
+  },
+  {
+    "Id": 3312,
+    "Name": "GitRemotePushUrlRemoved",
+    "Kor": "{0}의 별도 푸시 주소를 제거했습니다.",
+    "Eng": "Removed the separate push URL for {0}."
+  },
+  {
+    "Id": 3313,
+    "Name": "GitRemotePushUrlRefreshFailed",
+    "Kor": "제거 후 원격 주소를 다시 확인하지 못했습니다. Git 설정을 새로 고치세요.",
+    "Eng": "Could not refresh the remote URLs after removal. Refresh Git Settings."
   }
 ]
