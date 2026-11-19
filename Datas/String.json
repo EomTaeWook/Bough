@@ -7288,5 +7288,23 @@
     "Name": "GitRemoteUrlDetails",
     "Kor": "원격 주소 상세",
     "Eng": "Remote URL details"
+  },
+  {
+    "Id": 3315,
+    "Name": "GitSettingsGeneralTab",
+    "Kor": "일반",
+    "Eng": "General"
+  },
+  {
+    "Id": 3316,
+    "Name": "GitSettingsGitTab",
+    "Kor": "Git",
+    "Eng": "Git"
+  },
+  {
+    "Id": 3317,
+    "Name": "GitRemotePushConfiguredSource",
+    "Kor": "pushurl 설정 · {0} · {1}",
+    "Eng": "Configured pushurl · {0} · {1}"
   }
 ]

@@ -32,7 +32,7 @@ namespace Bough.App.ViewModels
         private readonly GitExecutablePresenter _gitExecutablePresenter;
         private readonly GitRemoteSettingsPresenter _remoteSettingsPresenter;
         private readonly RemoteAutoFetchSettingsPresenter _autoFetchPresenter;
-        private readonly ObservableCollection<GitRemote> _remotes;
+        private readonly Dictionary<string, GitRemote> _remotes = new(StringComparer.Ordinal);
         private readonly ObservableCollection<GitHubRemoteAccountItem> _gitHubRemotes;
         private readonly Dictionary<string, string> _displayLabels = new();
         private GitRepository _repository;
@@ -86,9 +86,7 @@ namespace Bough.App.ViewModels
             _globalEmail = string.Empty;
             _authorStatus = string.Empty;
             _statusMessage = string.Empty;
-            _remotes = [];
             _gitHubRemotes = [];
-            Remotes = new ReadOnlyObservableCollection<GitRemote>(_remotes);
             GitHubRemotes = new ReadOnlyObservableCollection<GitHubRemoteAccountItem>(_gitHubRemotes);
             TestGitCommand = new AsyncRelayCommand(TestGitAsync, CanRun);
             SaveGitPathCommand = new AsyncRelayCommand(SaveGitPathAsync, CanRun);
@@ -97,7 +95,6 @@ namespace Bough.App.ViewModels
             SaveGlobalAuthorCommand = new QueuedAsyncRelayCommand(SaveGlobalAuthorAsync, CanQueueRepositoryMutation, exception => ShowDisplayError(GitSettingsDisplayTarget.Status, exception));
         }
 
-        public ReadOnlyObservableCollection<GitRemote> Remotes { get; }
         public AppUpdateViewModel AppUpdate { get; }
         public GitRepository CurrentRepository { get { return _repository; } }
         public string AccountRepositoryText { get { return _accountRepositoryText; } }
@@ -146,7 +143,10 @@ namespace Bough.App.ViewModels
         public string AccountsDescription { get { return GetDisplayLabel(nameof(AccountsDescription)); } }
         public string AccountsPurpose { get { return GetDisplayLabel(nameof(AccountsPurpose)); } }
         public string AccountsQueueHint { get { return GetDisplayLabel(nameof(AccountsQueueHint)); } }
-        public string RemoteUrlsHeading { get { return GetDisplayLabel(nameof(RemoteUrlsHeading)); } }
+        public string GeneralTabLabel { get { return GetDisplayLabel(nameof(GeneralTabLabel)); } }
+        public string GitTabLabel { get { return GetDisplayLabel(nameof(GitTabLabel)); } }
+        public string RemoteTabLabel { get { return GetDisplayLabel(nameof(RemoteTabLabel)); } }
+        public string AppUpdateTabLabel { get { return GetDisplayLabel(nameof(AppUpdateTabLabel)); } }
 
         private string GetDisplayLabel(string propertyName)
         {
@@ -881,7 +881,10 @@ namespace Bough.App.ViewModels
                     }
                 }
                 _remotes.Clear();
-                foreach (GitRemote remote in snapshot.Remotes) { _remotes.Add(remote); }
+                foreach (GitRemote remote in snapshot.Remotes)
+                {
+                    _remotes[remote.Name] = remote;
+                }
                 if (reportSuccess)
                 {
                     ShowDisplayResult(GitSettingsDisplayTarget.Status, "GitSettingsRefreshed");
@@ -959,6 +962,10 @@ namespace Bough.App.ViewModels
         private async Task RefreshAccountsAsync(GitRepository repository, int request, string preserveRemote, string preserveCandidate, CancellationToken cancellationToken, bool propagateReadError = false)
         {
             _gitHubRemotes.Clear();
+            foreach (GitRemote remote in _remotes.Values)
+            {
+                _gitHubRemotes.Add(new GitHubRemoteAccountItem(remote));
+            }
             ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, "GitHubAccountsLoading");
             try
             {
@@ -988,15 +995,26 @@ namespace Bough.App.ViewModels
                         urlCounts.Add(remote.FetchUrl, 1);
                     }
                 }
+                _gitHubRemotes.Clear();
+                HashSet<string> accountRemoteNames = new(StringComparer.Ordinal);
                 foreach (GitHubRemoteAccount remote in snapshot.Remotes)
                 {
                     bool sharedUrl = urlCounts.TryGetValue(remote.FetchUrl, out int count) && count > 1;
-                    GitHubRemoteAccountItem item = new(remote, snapshot.KnownAccounts, sharedUrl);
+                    _remotes.TryGetValue(remote.RemoteName, out GitRemote fallbackRemote);
+                    GitHubRemoteAccountItem item = new(remote, snapshot.KnownAccounts, sharedUrl, fallbackRemote?.Url);
                     if (remote.RemoteName == preserveRemote && preserveCandidate.Length > 0)
                     {
                         item.CandidateName = preserveCandidate;
                     }
                     _gitHubRemotes.Add(item);
+                    accountRemoteNames.Add(remote.RemoteName);
+                }
+                foreach (GitRemote remote in _remotes.Values)
+                {
+                    if (accountRemoteNames.Contains(remote.Name) == false)
+                    {
+                        _gitHubRemotes.Add(new GitHubRemoteAccountItem(remote));
+                    }
                 }
                 UpdateAccountAvailability();
                 if (snapshot.IsGcmAvailable == false)
@@ -1007,7 +1025,7 @@ namespace Bough.App.ViewModels
                 {
                     ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, snapshot.AccountListErrorCode);
                 }
-                else if (snapshot.Remotes.Count == 0)
+                else if (_gitHubRemotes.Count == 0)
                 {
                     ShowDisplayResult(GitSettingsDisplayTarget.AccountSummary, "GitHubNoRemotes");
                 }
@@ -1054,6 +1072,10 @@ namespace Bough.App.ViewModels
         {
             foreach (GitHubRemoteAccountItem item in _gitHubRemotes)
             {
+                if (item.HasAccountData == false)
+                {
+                    continue;
+                }
                 if (item.RemoteName == remoteName)
                 {
                     return item;

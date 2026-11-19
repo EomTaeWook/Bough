@@ -25,11 +25,24 @@ namespace Bough.App.ViewModels.Models
         private bool _canChange;
         private bool _canLogin;
 
-        public GitHubRemoteAccountItem(GitHubRemoteAccount remote, IReadOnlyList<string> knownAccounts, bool sharedUrl)
+        public GitHubRemoteAccountItem(GitRemote remote)
+        {
+            RemoteName = remote.Name;
+            FetchUrl = remote.Url;
+            FallbackFetchUrl = remote.Url;
+            PushUrl = string.Empty;
+            SelectedUserName = string.Empty;
+            UnavailableReasonCode = string.Empty;
+            KnownAccounts = Array.Empty<string>();
+        }
+
+        public GitHubRemoteAccountItem(GitHubRemoteAccount remote, IReadOnlyList<string> knownAccounts, bool sharedUrl, string fallbackFetchUrl)
         {
             RemoteName = remote.RemoteName;
             FetchUrl = remote.FetchUrl;
             PushUrl = remote.PushUrl;
+            FallbackFetchUrl = fallbackFetchUrl;
+            HasAccountData = true;
             PushUrlSettings = remote.PushUrlSettings;
             SelectedUserName = remote.SelectedUserName;
             IsRepositorySelection = remote.IsRepositorySelection;
@@ -47,6 +60,8 @@ namespace Bough.App.ViewModels.Models
         public string RemoteName { get; }
         public string FetchUrl { get; }
         public string PushUrl { get; }
+        public string FallbackFetchUrl { get; }
+        public bool HasAccountData { get; }
         public GitRemotePushUrlSettings PushUrlSettings { get; }
         public bool CanRemovePushUrl { get { return PushUrlSettings?.PushUrlAfterRemoval != null; } }
         public string SelectedUserName { get; }
@@ -67,7 +82,28 @@ namespace Bough.App.ViewModels.Models
             }
         }
         public bool HasPushUrlSummary { get { return PushUrlText.Length > 0; } }
-        public string RemoteUrlDetailsText { get { return _remoteUrlDetailsText; } set { SetProperty(ref _remoteUrlDetailsText, value); } }
+        public string RemoteUrlDetailsText
+        {
+            get { return _remoteUrlDetailsText; }
+            set
+            {
+                if (SetProperty(ref _remoteUrlDetailsText, value))
+                {
+                    OnPropertyChanged(nameof(HasRemoteUrlDetails));
+                }
+            }
+        }
+        public bool HasRemoteUrlDetails
+        {
+            get
+            {
+                if (CanRemovePushUrl)
+                {
+                    return true;
+                }
+                return RemoteUrlDetailsText.Length > 0;
+            }
+        }
         public string RemoteUrlDetailsLabel { get { return _remoteUrlDetailsLabel; } set { SetProperty(ref _remoteUrlDetailsLabel, value); } }
         public bool IsRemoteUrlDetailsExpanded { get { return _isRemoteUrlDetailsExpanded; } set { SetProperty(ref _isRemoteUrlDetailsExpanded, value); } }
         public string RemovePushUrlText { get { return _removePushUrlText; } set { SetProperty(ref _removePushUrlText, value); } }

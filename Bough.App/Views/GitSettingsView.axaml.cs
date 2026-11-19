@@ -61,7 +61,10 @@ namespace Bough.App.Views
             (nameof(GitSettingsViewModel.AccountsDescription), "GitHubAccountsDescription"),
             (nameof(GitSettingsViewModel.AccountsPurpose), "GitHubAccountsPurpose"),
             (nameof(GitSettingsViewModel.AccountsQueueHint), "GitHubAccountsQueueHint"),
-            (nameof(GitSettingsViewModel.RemoteUrlsHeading), "RemoteUrlsHeading")
+            (nameof(GitSettingsViewModel.GeneralTabLabel), "GitSettingsGeneralTab"),
+            (nameof(GitSettingsViewModel.GitTabLabel), "GitSettingsGitTab"),
+            (nameof(GitSettingsViewModel.RemoteTabLabel), "RemoteRemoteLabel"),
+            (nameof(GitSettingsViewModel.AppUpdateTabLabel), "AppUpdateHeading")
         };
         private GitSettingsViewModel _boundViewModel;
         private readonly HashSet<GitHubRemoteAccountItem> _boundAccounts = new();
@@ -280,6 +283,10 @@ namespace Bough.App.Views
         private static void ShowAccountItem(GitSettingsViewModel viewModel, GitHubRemoteAccountItem item)
         {
             ShowRemoteUrls(viewModel.Strings, item);
+            if (item.HasAccountData == false)
+            {
+                return;
+            }
             item.UnavailableReason = string.Empty;
             if (item.UnavailableReasonCode.Length > 0)
             {
@@ -311,84 +318,77 @@ namespace Bough.App.Views
             IReadOnlyList<string> fetchUrls = settings?.FetchUrls ?? Array.Empty<string>();
             IReadOnlyList<string> pushUrls = settings?.PushUrls ?? Array.Empty<string>();
             string primaryFetchUrl = fetchUrls.FirstOrDefault();
-            bool knownDifferent = item.UnavailableReasonCode == "GitHubRemoteFetchPushMismatch";
-            bool commonUrls = false;
-            if (knownDifferent == false)
+            if (primaryFetchUrl == null)
             {
-                if (fetchUrls.Count > 0)
+                if (string.IsNullOrEmpty(item.FallbackFetchUrl) == false)
                 {
-                    commonUrls = fetchUrls.SequenceEqual(pushUrls, StringComparer.Ordinal);
+                    primaryFetchUrl = item.FallbackFetchUrl;
+                }
+            }
+            string primaryPushUrl = pushUrls.FirstOrDefault(url => url != primaryFetchUrl);
+            if (primaryPushUrl == null)
+            {
+                if (item.UnavailableReasonCode == "GitHubRemoteFetchPushMismatch")
+                {
+                    primaryPushUrl = pushUrls.FirstOrDefault();
                 }
             }
 
+            item.FetchUrlText = FormatRemoteUrl(strings, primaryFetchUrl);
+            item.PushUrlText = string.Empty;
+            if (primaryPushUrl != null)
+            {
+                item.FetchUrlText = strings.Format("GitHubFetchUrlLabel", item.FetchUrlText);
+                item.PushUrlText = strings.Format("GitHubPushUrlLabel", FormatRemoteUrl(strings, primaryPushUrl));
+            }
+            if (settings == null)
+            {
+                return;
+            }
             item.RemoteUrlDetailsLabel = strings.GetString("GitRemoteUrlDetails");
             item.RemovePushUrlText = strings.GetString("GitRemoteRemovePushUrl");
             List<string> lines = [];
-            string pushSummary = string.Empty;
-            if (commonUrls)
+            HashSet<string> displayedUrls = new(StringComparer.Ordinal) { primaryFetchUrl, primaryPushUrl };
+            string[] extraFetchUrls = fetchUrls.Where(displayedUrls.Add).Select(url => FormatRemoteUrl(strings, url)).ToArray();
+            if (extraFetchUrls.Length > 0)
             {
-                item.FetchUrlText = FormatRemoteUrl(strings, primaryFetchUrl);
-                lines.Add(FormatRemoteUrls(strings, fetchUrls));
+                lines.Add(strings.Format("GitHubFetchUrlLabel", string.Join(Environment.NewLine, extraFetchUrls)));
             }
-            else
+            string[] extraPushUrls = pushUrls.Where(displayedUrls.Add).Select(url => FormatRemoteUrl(strings, url)).ToArray();
+            if (extraPushUrls.Length > 0)
             {
-                item.FetchUrlText = strings.Format("GitHubFetchUrlLabel", FormatRemoteUrl(strings, primaryFetchUrl));
-                lines.Add(strings.Format("GitHubFetchUrlLabel", FormatRemoteUrls(strings, fetchUrls)));
-                lines.Add(strings.Format("GitHubPushUrlLabel", FormatRemoteUrls(strings, pushUrls)));
-                if (pushUrls.Count > 0)
-                {
-                    string summaryUrl = pushUrls.FirstOrDefault(url => url != primaryFetchUrl) ?? pushUrls[0];
-                    pushSummary = strings.Format("GitHubPushUrlLabel", FormatRemoteUrl(strings, summaryUrl));
-                }
+                lines.Add(strings.Format("GitHubPushUrlLabel", string.Join(Environment.NewLine, extraPushUrls)));
             }
-            item.PushUrlText = pushSummary;
-            string sourceCode = "GitRemotePushSourceUnknown";
-            if (settings != null)
+            if (settings.PushSourceCode == "GitRemotePushSourceUnknown")
             {
-                sourceCode = settings.PushSourceCode;
+                lines.Add(strings.GetString(settings.PushSourceCode));
             }
-            if (sourceCode != null)
+            if (settings.ExplicitPushUrls != null)
             {
-                lines.Add(strings.GetString(sourceCode));
-            }
-            if (settings?.ExplicitPushUrls != null)
-            {
-                if (settings.ExplicitPushUrls.Count == 0)
-                {
-                    lines.Add(strings.GetString("GitRemotePushNoExplicitUrl"));
-                }
                 foreach ((string scope, string origin, string url) in settings.ExplicitPushUrls)
                 {
-                    lines.Add(strings.Format("GitRemotePushConfiguredUrl", scope, origin, FormatRemoteUrl(strings, url)));
+                    if (displayedUrls.Add(url))
+                    {
+                        lines.Add(strings.Format("GitRemotePushConfiguredUrl", scope, origin, FormatRemoteUrl(strings, url)));
+                    }
+                    else
+                    {
+                        lines.Add(strings.Format("GitRemotePushConfiguredSource", scope, origin));
+                    }
                 }
             }
-            if (settings?.FetchRewrite is { } fetchRewrite)
+            if (settings.FetchRewrite is { } fetchRewrite)
             {
                 lines.Add(strings.Format("GitRemoteFetchUrlRewrite", fetchRewrite.Rule, fetchRewrite.Scope, fetchRewrite.Origin));
             }
-            if (settings?.PushRewrite is { } pushRewrite)
+            if (settings.PushRewrite is { } pushRewrite)
             {
-                lines.Add(strings.Format("GitRemotePushUrlRewrite", pushRewrite.Rule, pushRewrite.Scope, pushRewrite.Origin));
+                if (settings.PushRewrite != settings.FetchRewrite)
+                {
+                    lines.Add(strings.Format("GitRemotePushUrlRewrite", pushRewrite.Rule, pushRewrite.Scope, pushRewrite.Origin));
+                }
             }
             item.RemoteUrlDetailsText = string.Join(Environment.NewLine, lines);
-        }
-
-        private static string FormatRemoteUrls(StringHelper strings, IReadOnlyList<string> urls)
-        {
-            if (urls == null)
-            {
-                return strings.GetString("GitHubRemoteUrlNeedsReview");
-            }
-            if (urls.Count == 0)
-            {
-                return strings.GetString("GitHubRemoteUrlNeedsReview");
-            }
-            List<string> values = [];
-            foreach (string url in urls)
-            {
-                values.Add(FormatRemoteUrl(strings, url));
-            }
-            return string.Join(Environment.NewLine, values);
         }
 
         private static string FormatRemoteUrl(StringHelper strings, string url)
