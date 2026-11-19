@@ -140,7 +140,7 @@ namespace Bough.Core.Git
                     Share = FileShare.None,
                     Options = FileOptions.Asynchronous
                 };
-                if (OperatingSystem.IsWindows() == false)
+                if (!OperatingSystem.IsWindows())
                 {
                     lockOptions.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
                 }
@@ -180,7 +180,7 @@ namespace Bough.Core.Git
                 {
                     throw new GitException("GitRemotePushUrlRemovalChanged", null, Array.Empty<object>());
                 }
-                if (OperatingSystem.IsWindows() == false)
+                if (!OperatingSystem.IsWindows())
                 {
                     File.SetUnixFileMode(lockPath, File.GetUnixFileMode(sharedConfigPath));
                 }
