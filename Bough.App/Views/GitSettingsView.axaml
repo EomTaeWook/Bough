@@ -76,7 +76,6 @@
       </TabControl.ItemsPanel>
       <TabItem x:Name="GeneralSettingsTab" Header="{Binding GeneralTabLabel}" />
       <TabItem x:Name="GitSettingsTab" Header="{Binding GitTabLabel}" />
-      <TabItem x:Name="RemoteSettingsTab" Header="{Binding RemoteTabLabel}" />
       <TabItem x:Name="AppUpdateSettingsTab" Header="{Binding AppUpdateTabLabel}" />
     </TabControl>
 
@@ -201,11 +200,9 @@
             <TextBox Text="{Binding GlobalEmail, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="user.email" />
             <Button Content="{Binding SaveGlobalAuthorLabel}" Command="{Binding SaveGlobalAuthorCommand}" HorizontalAlignment="Left" />
           </StackPanel>
-        </StackPanel>
-      </ScrollViewer>
 
-      <ScrollViewer IsVisible="{Binding #RemoteSettingsTab.IsSelected}" VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="16" Spacing="8" MaxWidth="700" HorizontalAlignment="Left">
+          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
+
           <StackPanel Spacing="8">
             <TextBlock Text="{Binding AccountsHeading}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
             <TextBlock Text="{Binding AccountsDescription}"

@@ -145,7 +145,6 @@ namespace Bough.App.ViewModels
         public string AccountsQueueHint { get { return GetDisplayLabel(nameof(AccountsQueueHint)); } }
         public string GeneralTabLabel { get { return GetDisplayLabel(nameof(GeneralTabLabel)); } }
         public string GitTabLabel { get { return GetDisplayLabel(nameof(GitTabLabel)); } }
-        public string RemoteTabLabel { get { return GetDisplayLabel(nameof(RemoteTabLabel)); } }
         public string AppUpdateTabLabel { get { return GetDisplayLabel(nameof(AppUpdateTabLabel)); } }
 
         private string GetDisplayLabel(string propertyName)

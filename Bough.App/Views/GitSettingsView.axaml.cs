@@ -62,7 +62,6 @@ namespace Bough.App.Views
             (nameof(GitSettingsViewModel.AccountsQueueHint), "GitHubAccountsQueueHint"),
             (nameof(GitSettingsViewModel.GeneralTabLabel), "GitSettingsGeneralTab"),
             (nameof(GitSettingsViewModel.GitTabLabel), "GitSettingsGitTab"),
-            (nameof(GitSettingsViewModel.RemoteTabLabel), "RemoteRemoteLabel"),
             (nameof(GitSettingsViewModel.AppUpdateTabLabel), "AppUpdateHeading")
         };
         private GitSettingsViewModel _boundViewModel;

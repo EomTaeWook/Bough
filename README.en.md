@@ -42,7 +42,7 @@ If you closed the conflict window, reopen it from the conflicted file list in **
 
 - Use **Fetch**, **Pull**, and **Push** at the top. Open the arrow menus to choose a different target or Pull strategy. If an operation fails, its popup shows the details.
 - Set the default Pull behavior and enable automatic remote checks under **Settings → General**. Remote checks report incoming commits. Run Pull to update your working files.
-- Open **Settings → Remote** to see URLs and authentication for each remote. Bough shows separate fetch and push URLs when they differ. Expand **Remote URL details** to inspect a separate push URL setting or a URL rewrite.
+- Open **Accounts and authentication** in Settings to see URLs and authentication for each remote. Bough shows separate fetch and push URLs when they differ. Expand **Remote URL details** to inspect a separate push URL setting or a URL rewrite.
 - Manage branches, tags, and stashes under **Git references** in the sidebar. To push a tag on its own, right-click it and choose the remote. To work inside a submodule, right-click it and choose **Open repository**.
 
 ## Application updates
