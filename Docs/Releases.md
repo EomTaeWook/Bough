@@ -2,20 +2,20 @@
 
 ## v1.0.11 정식 릴리스 게시 완료
 
-- 최초 게시 2026-11-20 (KST), 배포 파일 갱신 2026-11-20 (KST)
+- 게시일 2026-11-20 (KST)
 - 태그 커밋 `8cd92c1e5af926d35cef35f8bc74cffeb4208837`
-- 현재 배포 파일 소스 `2b61f7e1c69b7bec696df9d501a4a94a3a53fa89`
+- 배포 파일 소스 `82ceb68f5ed413f7204e967b7c307a7f6e004835`
 - Windows x64 자체 포함 EXE, macOS Apple Silicon·Intel 자체 포함 앱 ZIP
 - [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.11)
-- [Bough-v1.0.11-win-x64.exe](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · 103986741바이트 · GitHub digest `sha256:83fdf21a7529ecf9a794d947e1ee9344ef580a5d975639284fd86344575b080b`
-- [Bough-v1.0.11-osx-arm64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · 44362822바이트 · GitHub digest `sha256:0f57c8fdd46d7eba538664a998d3dbb871bf3d0134d60b09cf2bcdd9afb258db`
-- [Bough-v1.0.11-osx-x64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · 46359901바이트 · GitHub digest `sha256:2f8ea6619bd200672bcb9d81b677bd1f3b65ef4a5ec7481dbff9065df74b84b0`
+- [Bough-v1.0.11-win-x64.exe](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · 103986741바이트 · GitHub digest `sha256:266b3fbd49319b83ed9fdd35c113735462455bd600837db0edad7f6d94ed91da`
+- [Bough-v1.0.11-osx-arm64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · 44362419바이트 · GitHub digest `sha256:e789998a85484c84f3b6a1358e5ce1ff290568eb1a5ca8670ce12625f1bc769a`
+- [Bough-v1.0.11-osx-x64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · 46359553바이트 · GitHub digest `sha256:8cc49a04e0d483ad0f64f822f12c48d76429c10f0f961f2518ea74596a426107`
 
-설정을 일반·Git·원격·앱 업데이트 탭으로 나눴다. 기본 Pull 방식과 원격 자동 확인은 일반 탭에 배치했다. 원격 탭은 주소와 인증 계정을 원격마다 한 카드에 모아 공통 주소를 한 번만 보여 준다.
+설정은 일반·Git·앱 업데이트 세 탭으로 구성한다. 기본 Pull과 원격 변경 자동 확인은 일반에 있다. Git 탭에서 실행 파일, 커밋 작성자, 원격 주소와 인증을 한 화면에서 볼 수 있다.
 
-별도 pushurl과 URL 재작성 출처는 원격 주소 상세에 표시한다. 공용 Git 설정에 직접 정의된 단일 pushurl은 제거 후 푸시 대상을 확정할 수 있을 때 변경 전후를 확인하고 제거할 수 있다.
+원격 카드에 공통 주소를 한 번 표시한다. 별도 pushurl과 재작성 출처가 있으면 원격 주소 상세에서 확인할 수 있다. 공용 Git 설정에 직접 지정된 단일 pushurl은 제거 후 대상이 확실할 때 변경 전후를 확인하고 제거할 수 있다.
 
-이미 v1.0.11을 설치했다면 현재 파일을 다시 내려받아 설치할 수 있다. 세 플랫폼의 배포 파일을 제작했으며 별도 테스트·앱 실행·자동 업데이트 설치 확인은 미실시다. macOS 파일은 Developer ID 서명·Apple 공증 없이 게시했다.
+세 플랫폼의 배포 파일을 제작했다. 별도 테스트·앱 실행·자동 업데이트 설치 확인은 미실시다. macOS 파일은 Developer ID 서명·Apple 공증 없이 게시했다.
 
 ## v1.0.10 정식 릴리스 게시 완료
 
