@@ -108,7 +108,7 @@ namespace Bough.App.Presenters
             }
             if (request.Kind == RemoteOperationKind.Pull)
             {
-                return await PullAsync(request.PullStrategy, request.Remote, request.RemoteBranch);
+                return await PullAsync(request.PullStrategy, request.Remote, request.RemoteBranch, request.IncludeSubmodules);
             }
 
             if (await PrepareUpstreamPushAsync(request.Remote, request.RemoteBranch) == false)
@@ -327,16 +327,84 @@ namespace Bough.App.Presenters
             await _service.ValidatePushTargetAsync(repository, state, remote, branch);
         }
 
-        public async Task<bool> PullAsync(GitPullStrategy strategy, string remote, string branch)
+        public async Task<bool> PullAsync(GitPullStrategy strategy, string remote, string branch, bool includeSubmodules = false, CancellationToken cancellationToken = default)
         {
             int request = _requestVersion + 1;
             IProgress<GitPullProgress> progress = new Progress<GitPullProgress>(update => ApplyPullProgress(request, update));
             return await RunAsync(_strings.Format("RemotePullingFrom", remote, branch), async (repository, state, token) =>
             {
-                await _service.PullWithProgressAsync(repository, state, remote, branch, strategy, progress, token);
-                LocalizedText resultText = new("RemotePullCompleted", FormatStrategy(strategy), remote, branch);
-                return new OperationExecutionResult(resultText, RemoteOperationOutcome.Succeeded);
-            });
+                LocalizedText parentCompletion = new("RemotePullCompleted", FormatStrategy(strategy), remote, branch);
+                if (includeSubmodules == false)
+                {
+                    await _service.PullWithProgressAsync(repository, state, remote, branch, strategy, progress, token);
+                    return new OperationExecutionResult(parentCompletion, RemoteOperationOutcome.Succeeded);
+                }
+
+                string operationName = _strings.GetString("RemotePullScopeSubmodules");
+                GitPullResult result = await Task.Run(() => _service.PullWithProgressAsync(repository, state, remote, branch, strategy, progress, token, includeSubmodules: true, operationName: operationName), token);
+                List<LocalizedText> lines = new();
+                List<string> diagnostics = new();
+                int updated = 0;
+                int alreadyCurrent = 0;
+                int skipped = 0;
+                int failed = 0;
+                foreach (GitPullSubmoduleResult submodule in result.Submodules)
+                {
+                    switch (submodule.Outcome)
+                    {
+                        case GitPullSubmoduleOutcome.Updated:
+                            updated++;
+                            lines.Add(new LocalizedText("RemotePullSubmoduleUpdated", submodule.Path));
+                            break;
+                        case GitPullSubmoduleOutcome.AlreadyCurrent:
+                            alreadyCurrent++;
+                            lines.Add(new LocalizedText("RemotePullSubmoduleCurrent", submodule.Path));
+                            break;
+                        case GitPullSubmoduleOutcome.Skipped:
+                            skipped++;
+                            lines.Add(new LocalizedText("RemotePullSubmoduleSkipped", submodule.Path, new LocalizedText(submodule.Error)));
+                            break;
+                        case GitPullSubmoduleOutcome.Failed:
+                            failed++;
+                            lines.Add(new LocalizedText("RemotePullSubmoduleFailed", submodule.Path, new LocalizedText(submodule.Error)));
+                            break;
+                        case GitPullSubmoduleOutcome.Canceled:
+                            lines.Add(new LocalizedText("RemotePullSubmoduleCanceled", submodule.Path));
+                            break;
+                    }
+                    if (submodule.Error is GitRemoteOperationException remoteError)
+                    {
+                        if (remoteError.Details.Length > 0)
+                        {
+                            diagnostics.Add(submodule.Path + Environment.NewLine + remoteError.Details);
+                        }
+                    }
+                }
+                LocalizedText summary = new("RemotePullSubmodulesSummary", parentCompletion, updated, alreadyCurrent, skipped, failed);
+                RemoteOperationOutcome outcome = RemoteOperationOutcome.Succeeded;
+                if (skipped + failed > 0)
+                {
+                    outcome = RemoteOperationOutcome.PartiallySucceeded;
+                }
+                if (result.SubmoduleError != null)
+                {
+                    summary = new LocalizedText("RemotePullSubmodulesFailed", summary, new LocalizedText(result.SubmoduleError));
+                    outcome = RemoteOperationOutcome.PartiallySucceeded;
+                    if (result.SubmoduleError is GitRemoteOperationException remoteError)
+                    {
+                        if (remoteError.Details.Length > 0)
+                        {
+                            diagnostics.Add(remoteError.Details);
+                        }
+                    }
+                }
+                if (result.SubmodulesCanceled)
+                {
+                    summary = new LocalizedText("RemotePullSubmodulesCanceled", summary);
+                    outcome = RemoteOperationOutcome.PartiallySucceeded;
+                }
+                return new OperationExecutionResult(summary, outcome, string.Join(Environment.NewLine + Environment.NewLine, diagnostics), lines, result.SubmodulesCanceled);
+            }, cancellationToken);
         }
 
         public async Task<bool> PushAsync(string remote, string branch, bool targetConfirmed)
@@ -519,13 +587,18 @@ namespace Bough.App.Presenters
             {
                 _model.SetLocalizedOperationStageText(new LocalizedText("RemoteStageApplying"));
             }
+            if (progress.Stage == GitPullStage.UpdatingSubmodules)
+            {
+                _model.SetLocalizedOperationStageText(new LocalizedText("RemotePullSubmodulesUpdating"));
+                _model.TransferStatusText = string.Empty;
+            }
             if (progress.TransferStatus != null)
             {
                 _model.SetLocalizedTransferStatusText(new LocalizedText(progress.TransferStatus.Key, progress.TransferStatus.Arguments.ToArray()));
             }
         }
 
-        private async Task<bool> RunAsync(string progressText, Func<GitRepository, GitRemoteState, CancellationToken, Task<OperationExecutionResult>> operation)
+        private async Task<bool> RunAsync(string progressText, Func<GitRepository, GitRemoteState, CancellationToken, Task<OperationExecutionResult>> operation, CancellationToken cancellationToken = default)
         {
             GitRepository repository = _model.CurrentRepository;
             GitRemoteState state = _model.RemoteState;
@@ -545,7 +618,7 @@ namespace Bough.App.Presenters
             _model.IsLoading = false;
             int request = ++_requestVersion;
             _model.LatestOperationStateSnapshot = null;
-            using CancellationTokenSource cancellation = new();
+            using CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _cancellation = cancellation;
             _model.IsBusy = true;
             _model.StatusText = progressText;
@@ -565,12 +638,13 @@ namespace Bough.App.Presenters
                 {
                     return false;
                 }
-                _model.OperationDetailsText = completedResult.Details;
+                _model.SetOperationDetails(completedResult.Details, completedResult.DetailLines);
                 if (_model.OperationStageText.Length > 0)
                 {
                     _model.SetLocalizedOperationStageText(new LocalizedText("RemoteStageCheckingState"));
                 }
-                GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, cancellation.Token);
+                CancellationToken refreshToken = completedResult.SubmoduleWorkCanceled ? CancellationToken.None : cancellation.Token;
+                GitRepository updated = await _repositoryService.OpenAsync(repository.RootPath, refreshToken);
                 if (request != _requestVersion)
                 {
                     return false;
@@ -579,7 +653,7 @@ namespace Bough.App.Presenters
                 {
                     return false;
                 }
-                GitRemoteState updatedState = await _service.GetStateAsync(updated, cancellation.Token);
+                GitRemoteState updatedState = await _service.GetStateAsync(updated, refreshToken);
                 if (request != _requestVersion)
                 {
                     return false;
@@ -679,12 +753,12 @@ namespace Bough.App.Presenters
                         return false;
                     }
                     _model.SetLocalizedStatusText(new LocalizedText(exception));
-                    if (exception is GitRemoteOperationException remoteException)
-                    {
-                        _model.OperationDetailsText = remoteException.Details;
-                    }
                     if (completedResult == null)
                     {
+                        if (exception is GitRemoteOperationException remoteException)
+                        {
+                            _model.OperationDetailsText = remoteException.Details;
+                        }
                         _model.LastOperationOutcome = RemoteOperationOutcome.Failed;
                     }
                     else
@@ -799,16 +873,20 @@ namespace Bough.App.Presenters
 
         private class OperationExecutionResult
         {
-            public OperationExecutionResult(LocalizedText message, RemoteOperationOutcome outcome, string details = "")
+            public OperationExecutionResult(LocalizedText message, RemoteOperationOutcome outcome, string details = "", IReadOnlyList<LocalizedText> detailLines = null, bool submoduleWorkCanceled = false)
             {
                 Message = message;
                 Outcome = outcome;
                 Details = details;
+                DetailLines = detailLines;
+                SubmoduleWorkCanceled = submoduleWorkCanceled;
             }
 
             public LocalizedText Message { get; }
             public RemoteOperationOutcome Outcome { get; }
             public string Details { get; }
+            public IReadOnlyList<LocalizedText> DetailLines { get; }
+            public bool SubmoduleWorkCanceled { get; }
         }
     }
 }

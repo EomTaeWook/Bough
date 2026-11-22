@@ -63,6 +63,7 @@ namespace Bough.App.Views
             ToolTip.SetTip(TransferStatusBlock, _strings.GetString("RemoteTransferStatusTip"));
             AutomationProperties.SetName(ResultText, _strings.GetString("RemoteResultAutomation"));
             DetailsExpander.Header = _strings.GetString("RemoteOperationDetails");
+            _viewModel?.NotifyOperationDetailsChanged();
             StopButton.Content = _strings.GetString("RemoteStopAction");
             ToolTip.SetTip(StopButton, _strings.GetString("RemoteStopTip"));
             AutomationProperties.SetName(StopButton, _strings.GetString("RemoteStopAutomation"));

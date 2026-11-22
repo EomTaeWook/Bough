@@ -56,6 +56,7 @@ namespace Bough.App.ViewModels
         private string _operationStageText;
         private string _transferStatusText;
         private string _operationDetailsText = string.Empty;
+        private IReadOnlyList<LocalizedText> _operationDetailLines;
         private bool _isBusy;
         private bool _isLoading;
         private bool _prune;
@@ -369,16 +370,35 @@ namespace Bough.App.ViewModels
         }
         public string OperationDetailsText
         {
-            get { return _operationDetailsText; }
-            internal set
+            get
             {
-                if (SetProperty(ref _operationDetailsText, value))
+                if (_operationDetailLines == null)
                 {
-                    OnPropertyChanged(nameof(HasOperationDiagnostic));
+                    return _operationDetailsText;
                 }
+                string lines = string.Join(Environment.NewLine, _operationDetailLines.Select(line => line.GetText(_strings)));
+                if (_operationDetailsText.Length == 0)
+                {
+                    return lines;
+                }
+                return lines + Environment.NewLine + Environment.NewLine + _operationDetailsText;
             }
+            internal set { SetOperationDetails(value); }
         }
         public bool HasOperationDiagnostic { get { return OperationDetailsText.Length > 0; } }
+
+        internal void SetOperationDetails(string details, IReadOnlyList<LocalizedText> lines = null)
+        {
+            _operationDetailsText = details;
+            _operationDetailLines = lines;
+            NotifyOperationDetailsChanged();
+        }
+
+        internal void NotifyOperationDetailsChanged()
+        {
+            OnPropertyChanged(nameof(OperationDetailsText));
+            OnPropertyChanged(nameof(HasOperationDiagnostic));
+        }
         public string SelectedRemote
         {
             get { return _selectedRemote; }
@@ -478,9 +498,9 @@ namespace Bough.App.ViewModels
             return _executionPresenter.ValidatePushTargetAsync(remote, branch);
         }
 
-        public Task<bool> PullAsync(GitPullStrategy strategy, string remote, string branch)
+        public Task<bool> PullAsync(GitPullStrategy strategy, string remote, string branch, bool includeSubmodules = false, CancellationToken cancellationToken = default)
         {
-            return _executionPresenter.PullAsync(strategy, remote, branch);
+            return _executionPresenter.PullAsync(strategy, remote, branch, includeSubmodules, cancellationToken);
         }
 
         public Task<bool> PushAsync(string remote, string branch, bool targetConfirmed)

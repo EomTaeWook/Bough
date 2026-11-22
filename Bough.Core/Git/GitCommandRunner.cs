@@ -41,7 +41,12 @@ namespace Bough.Core.Git
             return RunCoreAsync(_executableSettings.ExecutablePath, workingDirectory, arguments, null, true, cancellationToken, null, nonInteractive: true, useDefaultSshBatchMode: useDefaultSshBatchMode);
         }
 
-        private async Task<GitCommandResult> RunCoreAsync(string executablePath, string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure, CancellationToken cancellationToken, Action processStarted, string standardInput = null, bool nonInteractive = false, bool useDefaultSshBatchMode = false)
+        internal Task<GitCommandResult> RunWithoutRemoteAccessAsync(string workingDirectory, IEnumerable<string> arguments, CancellationToken cancellationToken)
+        {
+            return RunCoreAsync(_executableSettings.ExecutablePath, workingDirectory, arguments, null, true, cancellationToken, null, disableRemoteAccess: true);
+        }
+
+        private async Task<GitCommandResult> RunCoreAsync(string executablePath, string workingDirectory, IEnumerable<string> arguments, IProgress<string> standardErrorProgress, bool allowFailure, CancellationToken cancellationToken, Action processStarted, string standardInput = null, bool nonInteractive = false, bool useDefaultSshBatchMode = false, bool disableRemoteAccess = false)
         {
             ProcessStartInfo startInfo = new()
             {
@@ -55,6 +60,12 @@ namespace Bough.Core.Git
                 CreateNoWindow = true
             };
 
+            if (disableRemoteAccess)
+            {
+                startInfo.Environment["GIT_NO_LAZY_FETCH"] = "1";
+                // Older Git can ignore GIT_NO_LAZY_FETCH. A list of empty entries permits no transport.
+                startInfo.Environment["GIT_ALLOW_PROTOCOL"] = ":";
+            }
             if (nonInteractive == true)
             {
                 startInfo.RedirectStandardInput = true;

@@ -9,7 +9,7 @@ namespace Bough.App.ViewModels.Models
     public class RemoteOperationRequest
     {
         private RemoteOperationRequest(RemoteOperationKind kind, GitRepository repository, string localBranch,
-            string remote, string remoteBranch, bool fetchAll, bool prune, GitPullStrategy pullStrategy, bool pushTargetConfirmed)
+            string remote, string remoteBranch, bool fetchAll, bool prune, GitPullStrategy pullStrategy, bool pushTargetConfirmed, bool includeSubmodules = false)
         {
             ArgumentNullException.ThrowIfNull(repository);
             Kind = kind;
@@ -20,6 +20,7 @@ namespace Bough.App.ViewModels.Models
             FetchAll = fetchAll;
             Prune = prune;
             PullStrategy = pullStrategy;
+            IncludeSubmodules = includeSubmodules;
             PushTargetConfirmed = pushTargetConfirmed;
         }
 
@@ -31,6 +32,7 @@ namespace Bough.App.ViewModels.Models
         public bool FetchAll { get; }
         public bool Prune { get; }
         public GitPullStrategy PullStrategy { get; }
+        public bool IncludeSubmodules { get; }
         public bool PushTargetConfirmed { get; }
 
         public static RemoteOperationRequest ForFetch(GitRepository repository, string remote, bool fetchAll, bool prune)
@@ -39,14 +41,13 @@ namespace Bough.App.ViewModels.Models
                 remote, string.Empty, fetchAll, prune, default, false);
         }
 
-        public static RemoteOperationRequest ForPull(GitRepository repository, string localBranch, string remote,
-            string remoteBranch, GitPullStrategy strategy)
+        public static RemoteOperationRequest ForPull(GitRepository repository, string localBranch, string remote, string remoteBranch, GitPullStrategy strategy, bool includeSubmodules = false)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(localBranch);
             ArgumentException.ThrowIfNullOrWhiteSpace(remote);
             ArgumentException.ThrowIfNullOrWhiteSpace(remoteBranch);
             return new RemoteOperationRequest(RemoteOperationKind.Pull, repository, localBranch,
-                remote, remoteBranch, false, false, strategy, false);
+                remote, remoteBranch, false, false, strategy, false, includeSubmodules);
         }
 
         public static RemoteOperationRequest ForPush(GitRepository repository, string localBranch, string remote,

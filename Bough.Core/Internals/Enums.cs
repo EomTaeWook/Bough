@@ -41,7 +41,17 @@ namespace Bough.Core.Internals
     {
         Fetching,
         Inspecting,
-        Applying
+        Applying,
+        UpdatingSubmodules
+    }
+
+    public enum GitPullSubmoduleOutcome
+    {
+        Updated,
+        AlreadyCurrent,
+        Skipped,
+        Failed,
+        Canceled
     }
 
     public enum GitIgnoreLocation

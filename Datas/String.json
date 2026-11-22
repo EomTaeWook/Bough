@@ -7306,5 +7306,131 @@
     "Name": "GitRemotePushConfiguredSource",
     "Kor": "pushurl 설정 · {0} · {1}",
     "Eng": "Configured pushurl · {0} · {1}"
+  },
+  {
+    "Id": 3318,
+    "Name": "RemotePullScopeRepository",
+    "Kor": "현재 저장소만",
+    "Eng": "Current repository only"
+  },
+  {
+    "Id": 3319,
+    "Name": "RemotePullScopeSubmodules",
+    "Kor": "서브모듈까지",
+    "Eng": "Include submodules"
+  },
+  {
+    "Id": 3320,
+    "Name": "RemotePullScopedTitle",
+    "Kor": "{0} · {1}",
+    "Eng": "{0} · {1}"
+  },
+  {
+    "Id": 3321,
+    "Name": "RemotePullSubmodulesUpdating",
+    "Kor": "서브모듈 확인 및 갱신 중",
+    "Eng": "Checking and updating submodules"
+  },
+  {
+    "Id": 3322,
+    "Name": "RemotePullSubmodulesSummary",
+    "Kor": "{0} 서브모듈: 갱신 {1}, 이미 일치 {2}, 건너뜀 {3}, 실패 {4}.",
+    "Eng": "{0} Submodules: {1} updated, {2} already current, {3} skipped, {4} failed."
+  },
+  {
+    "Id": 3323,
+    "Name": "RemotePullSubmodulesCanceled",
+    "Kor": "{0} 나머지 서브모듈 처리가 중단되었습니다.",
+    "Eng": "{0} The remaining submodule work was canceled."
+  },
+  {
+    "Id": 3324,
+    "Name": "RemotePullSubmodulesFailed",
+    "Kor": "{0} 서브모듈 처리를 끝내지 못했습니다. {1}",
+    "Eng": "{0} Submodule processing could not finish. {1}"
+  },
+  {
+    "Id": 3325,
+    "Name": "RemotePullSubmoduleUpdated",
+    "Kor": "{0}: 기록된 커밋으로 갱신했습니다.",
+    "Eng": "{0}: updated to the recorded commit."
+  },
+  {
+    "Id": 3326,
+    "Name": "RemotePullSubmoduleCurrent",
+    "Kor": "{0}: 이미 기록된 커밋입니다.",
+    "Eng": "{0}: already at the recorded commit."
+  },
+  {
+    "Id": 3327,
+    "Name": "RemotePullSubmoduleSkipped",
+    "Kor": "{0}: 건너뜀. {1}",
+    "Eng": "{0}: skipped. {1}"
+  },
+  {
+    "Id": 3328,
+    "Name": "RemotePullSubmoduleFailed",
+    "Kor": "{0}: 실패. {1}",
+    "Eng": "{0}: failed. {1}"
+  },
+  {
+    "Id": 3329,
+    "Name": "RemotePullSubmoduleCanceled",
+    "Kor": "{0}: 중단됨. 현재 상태를 새로 고침해 확인하세요.",
+    "Eng": "{0}: interrupted. Refresh to check its current state."
+  },
+  {
+    "Id": 3330,
+    "Name": "RemotePullSubmoduleParentChanged",
+    "Kor": "상위 저장소가 바뀌었거나 해결 중이어서 고정한 대상을 적용할 수 없습니다.",
+    "Eng": "The parent repository changed or has an operation in progress. The recorded target could not be applied."
+  },
+  {
+    "Id": 3331,
+    "Name": "RemotePullSubmoduleBusy",
+    "Kor": "이 서브모듈에 실행 중이거나 대기 중인 Git 작업이 있습니다.",
+    "Eng": "This submodule has a running or queued Git operation."
+  },
+  {
+    "Id": 3332,
+    "Name": "RemotePullSubmoduleDirty",
+    "Kor": "충돌, 로컬 변경, 미추적 파일 또는 진행 중인 작업이 있습니다.",
+    "Eng": "The submodule has conflicts, local changes, untracked files, or an operation in progress."
+  },
+  {
+    "Id": 3333,
+    "Name": "RemotePullSubmoduleUncertain",
+    "Kor": "하위 저장소의 현재 체크아웃을 안전하게 변경할 수 있는지 확인하지 못했습니다.",
+    "Eng": "It was not possible to confirm that the current submodule checkout could be changed safely."
+  },
+  {
+    "Id": 3334,
+    "Name": "RemotePullSubmoduleCommitUnavailable",
+    "Kor": "지정된 커밋을 하위 저장소에서 확인할 수 없습니다.",
+    "Eng": "The recorded commit could not be found in the submodule repository."
+  },
+  {
+    "Id": 3335,
+    "Name": "RemotePullSubmoduleReadFailed",
+    "Kor": "서브모듈의 상태를 확인하지 못했습니다(Git 종료 코드 {0}).",
+    "Eng": "Could not read the submodule state (Git exit code {0})."
+  },
+  {
+    "Id": 3336,
+    "Name": "RemotePullSubmoduleCheckoutFailed",
+    "Kor": "지정된 커밋으로 체크아웃하지 못했습니다(Git 종료 코드 {0}).",
+    "Eng": "Could not check out the recorded commit (Git exit code {0})."
+  },
+  {
+    "Id": 3337,
+    "Name": "RemotePullSubmoduleUnexpected",
+    "Kor": "서브모듈 작업을 완료하지 못했습니다.",
+    "Eng": "Could not complete the submodule operation."
+  },
+  {
+    "Id": 3338,
+    "Name": "RemotePullSubmoduleFetchFailed",
+    "Kor": "지정된 커밋을 가져오지 못했습니다(Git 종료 코드 {0}).",
+    "Eng": "Could not fetch the recorded commit (Git exit code {0})."
   }
 ]

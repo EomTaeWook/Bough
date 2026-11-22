@@ -212,7 +212,8 @@ namespace Bough.App.Views
             }
 
             string strategyName = GetPullStrategyName(GetDefaultPullStrategy());
-            AutomationProperties.SetName(PullButton, StringHelper.Format("RemotePullConfiguredDefaultAutomation", strategyName));
+            string defaultAction = StringHelper.Format("RemotePullConfiguredDefaultAutomation", strategyName);
+            AutomationProperties.SetName(PullButton, StringHelper.Format("RemotePullScopedTitle", defaultAction, GetPullScopeName(false)));
             AutomationProperties.SetName(PullMenuButton, StringHelper.Format("RemotePullStrategyMenuAutomation", strategyName));
         }
 
@@ -312,21 +313,65 @@ namespace Bough.App.Views
                 return;
             }
 
+            if (DataContext is not RemoteOperationsViewModel viewModel)
+            {
+                return;
+            }
+            if (viewModel.CanPull == false)
+            {
+                return;
+            }
+            if (GetRepositoryRequestVersion == null)
+            {
+                return;
+            }
+
+            GitRepository repository = viewModel.CurrentRepository;
+            int repositoryRequestVersion = GetRepositoryRequestVersion();
+            string localBranch = viewModel.CurrentBranchText;
             ContextMenu menu = new();
-            MenuItem pullFrom = new() { Header = StringHelper.GetString("RemotePullChooseBranch") };
-            pullFrom.Click += PullFromClicked;
-            menu.Items.Add(pullFrom);
-            menu.Items.Add(new Separator());
-            MenuItem fastForward = new() { Header = GetPullStrategyMenuLabel("RemotePullFastForwardAction", "RemotePullFastForwardAutomation", GitPullStrategy.FastForwardOnly) };
-            fastForward.Click += FastForwardClicked;
-            menu.Items.Add(fastForward);
-            MenuItem merge = new() { Header = GetPullStrategyMenuLabel("RemotePullMergeAction", "RemoteStrategyMerge", GitPullStrategy.Merge) };
-            merge.Click += MergeClicked;
-            menu.Items.Add(merge);
-            MenuItem rebase = new() { Header = GetPullStrategyMenuLabel("RemotePullRebaseAction", "RemoteStrategyRebase", GitPullStrategy.Rebase) };
-            rebase.Click += RebaseClicked;
-            menu.Items.Add(rebase);
+            menu.Items.Add(CreateScope(false));
+            menu.Items.Add(CreateScope(true));
             OpenMenu(button, menu);
+
+            MenuItem CreateScope(bool includeSubmodules)
+            {
+                string label = GetPullScopeName(includeSubmodules);
+                if (includeSubmodules == false)
+                {
+                    label += StringHelper.GetString("RemotePullDefaultSuffix");
+                }
+                MenuItem scope = new() { Header = label };
+                AddAction(StringHelper.GetString("RemotePullChooseBranch"), GetDefaultPullStrategy(), true);
+                scope.Items.Add(new Separator());
+                AddAction(GetPullStrategyMenuLabel("RemotePullFastForwardAction", "RemotePullFastForwardAutomation", GitPullStrategy.FastForwardOnly), GitPullStrategy.FastForwardOnly, false);
+                AddAction(GetPullStrategyMenuLabel("RemotePullMergeAction", "RemoteStrategyMerge", GitPullStrategy.Merge), GitPullStrategy.Merge, false);
+                AddAction(GetPullStrategyMenuLabel("RemotePullRebaseAction", "RemoteStrategyRebase", GitPullStrategy.Rebase), GitPullStrategy.Rebase, false);
+                return scope;
+
+                void AddAction(string actionLabel, GitPullStrategy strategy, bool chooseTarget)
+                {
+                    MenuItem action = new() { Header = actionLabel };
+                    AutomationProperties.SetName(action, StringHelper.Format("RemotePullScopedTitle", actionLabel, label));
+                    action.Click += async delegate
+                    {
+                        if (IsCurrentOperationRequest(viewModel, repository, repositoryRequestVersion) == false)
+                        {
+                            return;
+                        }
+                        if (viewModel.CurrentBranchText != localBranch)
+                        {
+                            return;
+                        }
+                        if (viewModel.CanPull == false)
+                        {
+                            return;
+                        }
+                        await RunPullAsync(viewModel, strategy, chooseTarget, includeSubmodules);
+                    };
+                    scope.Items.Add(action);
+                }
+            }
         }
 
         private void PushMenuClicked(object sender, RoutedEventArgs eventArgs)
@@ -397,57 +442,6 @@ namespace Bough.App.Views
             await RunPullAsync(viewModel, GetDefaultPullStrategy(), false);
         }
 
-        private async void PullFromClicked(object sender, RoutedEventArgs eventArgs)
-        {
-            if (DataContext is not RemoteOperationsViewModel viewModel)
-            {
-                return;
-            }
-            if (viewModel.CanPull == false)
-            {
-                return;
-            }
-            await RunPullAsync(viewModel, GetDefaultPullStrategy(), true);
-        }
-
-        private async void FastForwardClicked(object sender, RoutedEventArgs eventArgs)
-        {
-            if (DataContext is not RemoteOperationsViewModel viewModel)
-            {
-                return;
-            }
-            if (viewModel.CanPull == false)
-            {
-                return;
-            }
-            await RunPullAsync(viewModel, GitPullStrategy.FastForwardOnly, false);
-        }
-
-        private async void MergeClicked(object sender, RoutedEventArgs eventArgs)
-        {
-            if (DataContext is not RemoteOperationsViewModel viewModel)
-            {
-                return;
-            }
-            if (viewModel.CanPull == false)
-            {
-                return;
-            }
-            await RunPullAsync(viewModel, GitPullStrategy.Merge, false);
-        }
-
-        private async void RebaseClicked(object sender, RoutedEventArgs eventArgs)
-        {
-            if (DataContext is not RemoteOperationsViewModel viewModel)
-            {
-                return;
-            }
-            if (viewModel.CanPull == false)
-            {
-                return;
-            }
-            await RunPullAsync(viewModel, GitPullStrategy.Rebase, false);
-        }
 
         private async void PushClicked(object sender, RoutedEventArgs eventArgs)
         {
@@ -475,18 +469,26 @@ namespace Bough.App.Views
             await RunPushAsync(viewModel, true);
         }
 
-        private async Task RunPullAsync(RemoteOperationsViewModel viewModel, GitPullStrategy strategy, bool chooseTarget)
+        private string GetPullScopeName(bool includeSubmodules)
+        {
+            return StringHelper.GetString(includeSubmodules ? "RemotePullScopeSubmodules" : "RemotePullScopeRepository");
+        }
+
+        private async Task RunPullAsync(RemoteOperationsViewModel viewModel, GitPullStrategy strategy, bool chooseTarget, bool includeSubmodules = false)
         {
             GitRepository repository = viewModel.CurrentRepository;
-            string strategyName = StringHelper.GetString("RemoteStrategyFastForward");
-            if (strategy == GitPullStrategy.Merge)
+            if (repository == null)
             {
-                strategyName = StringHelper.GetString("RemoteStrategyMerge");
+                return;
             }
-            if (strategy == GitPullStrategy.Rebase)
+            if (GetRepositoryRequestVersion == null)
             {
-                strategyName = StringHelper.GetString("RemoteStrategyRebase");
+                return;
             }
+            int repositoryRequestVersion = GetRepositoryRequestVersion();
+            string localBranch = viewModel.CurrentBranchText;
+            string strategyName = GetPullStrategyName(strategy);
+            string operationName = StringHelper.Format("RemotePullScopedTitle", StringHelper.Format("RemotePullOperationTitle", strategyName), GetPullScopeName(includeSubmodules));
             RemoteOperationTarget target;
             bool needsTarget = chooseTarget;
             if (viewModel.HasUpstream == false)
@@ -502,7 +504,7 @@ namespace Bough.App.Views
                 InternalDialogOpening?.Invoke();
                 try
                 {
-                    target = await RemoteTargetDialogs.SelectPullAsync(owner, viewModel, strategyName, StringHelper, ErrorLocalizer);
+                    target = await RemoteTargetDialogs.SelectPullAsync(owner, viewModel, operationName, StringHelper, ErrorLocalizer);
                 }
                 finally
                 {
@@ -517,7 +519,11 @@ namespace Bough.App.Views
             {
                 target = new RemoteOperationTarget(viewModel.UpstreamRemote, viewModel.UpstreamBranch);
             }
-            if (viewModel.CurrentRepository != repository)
+            if (IsCurrentOperationRequest(viewModel, repository, repositoryRequestVersion) == false)
+            {
+                return;
+            }
+            if (viewModel.CurrentBranchText != localBranch)
             {
                 return;
             }
@@ -525,9 +531,8 @@ namespace Bough.App.Views
             {
                 return;
             }
-            await ShowOperationAsync(viewModel, RemoteOperationKind.Pull, false, StringHelper.Format("RemotePullOperationTitle", strategyName),
-                $"{target.Remote}/{target.Branch} → {viewModel.CurrentBranchText}",
-                (session, token) => session.PullAsync(strategy, target.Remote, target.Branch), true, true);
+            RemoteOperationRequest request = RemoteOperationRequest.ForPull(repository, localBranch, target.Remote, target.Branch, strategy, includeSubmodules);
+            await ShowOperationAsync(viewModel, request.Kind, false, operationName, $"{request.Remote}/{request.RemoteBranch} → {request.LocalBranch}", (session, token) => session.PullAsync(request.PullStrategy, request.Remote, request.RemoteBranch, request.IncludeSubmodules, token), request.IncludeSubmodules == false, true);
         }
 
         private async Task RunPushAsync(RemoteOperationsViewModel viewModel, bool chooseTarget)
@@ -582,7 +587,7 @@ namespace Bough.App.Views
             {
                 target = new RemoteOperationTarget(viewModel.UpstreamRemote, viewModel.UpstreamBranch);
             }
-            if (IsCurrentPushRequest(viewModel, repository, repositoryRequestVersion) == false)
+            if (IsCurrentOperationRequest(viewModel, repository, repositoryRequestVersion) == false)
             {
                 return;
             }
@@ -601,7 +606,7 @@ namespace Bough.App.Views
                 {
                     if (await viewModel.PrepareUpstreamPushAsync(target.Remote, target.Branch) == false)
                     {
-                        if (IsCurrentPushRequest(viewModel, repository, repositoryRequestVersion) == false)
+                        if (IsCurrentOperationRequest(viewModel, repository, repositoryRequestVersion) == false)
                         {
                             return;
                         }
@@ -619,7 +624,7 @@ namespace Bough.App.Views
                     }
                 }
             }
-            if (IsCurrentPushRequest(viewModel, repository, repositoryRequestVersion) == false)
+            if (IsCurrentOperationRequest(viewModel, repository, repositoryRequestVersion) == false)
             {
                 return;
             }
@@ -645,7 +650,7 @@ namespace Bough.App.Views
                 return;
             }
             GitRepository completedRepository = completedSession.CurrentRepository;
-            if (IsCurrentPushRequest(viewModel, completedRepository, repositoryRequestVersion) == false)
+            if (IsCurrentOperationRequest(viewModel, completedRepository, repositoryRequestVersion) == false)
             {
                 return;
             }
@@ -655,7 +660,7 @@ namespace Bough.App.Views
             }
         }
 
-        private bool IsCurrentPushRequest(RemoteOperationsViewModel viewModel, GitRepository repository, int repositoryRequestVersion)
+        private bool IsCurrentOperationRequest(RemoteOperationsViewModel viewModel, GitRepository repository, int repositoryRequestVersion)
         {
             if (_attached == false)
             {
@@ -736,7 +741,7 @@ namespace Bough.App.Views
                         {
                             feedbackRepository = requestedRepository;
                         }
-                        if (IsCurrentPushRequest(viewModel, feedbackRepository, repositoryRequestVersion) == true)
+                        if (IsCurrentOperationRequest(viewModel, feedbackRepository, repositoryRequestVersion) == true)
                         {
                             viewModel.ApplyOperationFeedback(session, kind);
                         }

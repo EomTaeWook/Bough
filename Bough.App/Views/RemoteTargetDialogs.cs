@@ -27,7 +27,7 @@ namespace Bough.App.Views
 
     public class RemoteTargetDialogs
     {
-        public static async Task<RemoteOperationTarget> SelectPullAsync(Window owner, RemoteOperationsViewModel viewModel, string strategy, StringHelper strings, GitErrorLocalizer errorLocalizer)
+        public static async Task<RemoteOperationTarget> SelectPullAsync(Window owner, RemoteOperationsViewModel viewModel, string operationName, StringHelper strings, GitErrorLocalizer errorLocalizer)
         {
             GitRepository repository = viewModel.CurrentRepository;
             string currentBranch = viewModel.CurrentBranchText;
@@ -41,7 +41,7 @@ namespace Bough.App.Views
             TextBlock summary = new() { TextWrapping = TextWrapping.Wrap };
             TextBlock error = CreateError();
             Button cancel = new() { Content = strings.GetString("Cancel"), IsCancel = true };
-            Button confirm = new() { Content = strings.Format("RemotePullOperationTitle", strategy), IsDefault = true, IsEnabled = false };
+            Button confirm = new() { Content = operationName, IsDefault = true, IsEnabled = false };
             int selectionRequest = 0;
 
             bool IsContextCurrent()
