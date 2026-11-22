@@ -11,6 +11,7 @@ namespace Bough.Core.Git
         private readonly object _saveLock = new();
         private string _configuredPath;
         private GitPullStrategy _defaultPullStrategy;
+        private bool _defaultPullIncludesSubmodules;
         private bool _autoFetchEnabled;
         private int _autoFetchIntervalMinutes;
 
@@ -27,12 +28,14 @@ namespace Bough.Core.Git
             GitExecutableState state = LoadState();
             _configuredPath = state.Path ?? string.Empty;
             _defaultPullStrategy = NormalizePullStrategy(state.DefaultPullStrategy);
+            _defaultPullIncludesSubmodules = state.DefaultPullIncludesSubmodules;
             _autoFetchEnabled = state.AutoFetchEnabled;
             _autoFetchIntervalMinutes = NormalizeAutoFetchInterval(state.AutoFetchIntervalMinutes);
         }
 
         public string ConfiguredPath { get { return _configuredPath; } }
         public GitPullStrategy DefaultPullStrategy { get { return _defaultPullStrategy; } }
+        public bool DefaultPullIncludesSubmodules { get { return _defaultPullIncludesSubmodules; } }
         public bool AutoFetchEnabled
         {
             get
@@ -77,7 +80,7 @@ namespace Bough.Core.Git
 
             lock (_saveLock)
             {
-                SaveState(directory, selectedPath, _defaultPullStrategy, _autoFetchEnabled, _autoFetchIntervalMinutes);
+                SaveState(directory, selectedPath, _defaultPullStrategy, _defaultPullIncludesSubmodules, _autoFetchEnabled, _autoFetchIntervalMinutes);
                 _configuredPath = selectedPath;
             }
         }
@@ -97,8 +100,29 @@ namespace Bough.Core.Git
 
             lock (_saveLock)
             {
-                SaveState(directory, _configuredPath, strategy, _autoFetchEnabled, _autoFetchIntervalMinutes);
+                SaveState(directory, _configuredPath, strategy, _defaultPullIncludesSubmodules, _autoFetchEnabled, _autoFetchIntervalMinutes);
                 _defaultPullStrategy = strategy;
+            }
+        }
+
+        internal bool SaveDefaultPullIncludesSubmodules(bool includeSubmodules)
+        {
+            lock (_saveLock)
+            {
+                if (_defaultPullIncludesSubmodules == includeSubmodules)
+                {
+                    return false;
+                }
+
+                string directory = Path.GetDirectoryName(_filePath);
+                if (directory == null)
+                {
+                    throw new GitException("GitExecutableSettingsPathInvalid", null, _filePath);
+                }
+
+                SaveState(directory, _configuredPath, _defaultPullStrategy, includeSubmodules, _autoFetchEnabled, _autoFetchIntervalMinutes);
+                _defaultPullIncludesSubmodules = includeSubmodules;
+                return true;
             }
         }
 
@@ -116,7 +140,7 @@ namespace Bough.Core.Git
             }
             lock (_saveLock)
             {
-                SaveState(directory, _configuredPath, _defaultPullStrategy, enabled, intervalMinutes);
+                SaveState(directory, _configuredPath, _defaultPullStrategy, _defaultPullIncludesSubmodules, enabled, intervalMinutes);
                 _autoFetchEnabled = enabled;
                 _autoFetchIntervalMinutes = intervalMinutes;
             }
@@ -162,13 +186,14 @@ namespace Bough.Core.Git
             }
         }
 
-        private void SaveState(string directory, string path, GitPullStrategy strategy, bool autoFetchEnabled, int autoFetchIntervalMinutes)
+        private void SaveState(string directory, string path, GitPullStrategy strategy, bool includeSubmodules, bool autoFetchEnabled, int autoFetchIntervalMinutes)
         {
             Directory.CreateDirectory(directory);
             GitExecutableState state = new()
             {
                 Path = path,
                 DefaultPullStrategy = strategy,
+                DefaultPullIncludesSubmodules = includeSubmodules,
                 AutoFetchEnabled = autoFetchEnabled,
                 AutoFetchIntervalMinutes = autoFetchIntervalMinutes
             };
@@ -189,6 +214,7 @@ namespace Bough.Core.Git
         {
             public string Path { get; set; }
             public GitPullStrategy DefaultPullStrategy { get; set; }
+            public bool DefaultPullIncludesSubmodules { get; set; }
             public bool AutoFetchEnabled { get; set; }
             public int AutoFetchIntervalMinutes { get; set; }
         }

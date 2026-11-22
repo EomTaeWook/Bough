@@ -145,6 +145,21 @@
           <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
 
           <StackPanel Spacing="8">
+            <TextBlock Text="{Binding DefaultPullScopeHeading}" FontSize="16" FontWeight="SemiBold"
+                       Foreground="{DynamicResource BoughBrushText}" />
+            <WrapPanel Orientation="Horizontal">
+              <RadioButton x:Name="DefaultPullRepositoryRadioButton" Content="{Binding DefaultPullRepositoryLabel}" GroupName="DefaultPullScope"
+                           IsChecked="{Binding IsDefaultPullRepositoryOnly, Mode=OneWay}" Click="DefaultPullScopeClicked"
+                           AutomationProperties.Name="{Binding DefaultPullRepositoryLabel}" Margin="0,0,8,0" />
+              <RadioButton x:Name="DefaultPullSubmodulesRadioButton" Content="{Binding DefaultPullSubmodulesLabel}" GroupName="DefaultPullScope"
+                           IsChecked="{Binding DefaultPullIncludesSubmodules, Mode=OneWay}" Click="DefaultPullScopeClicked"
+                           AutomationProperties.Name="{Binding DefaultPullSubmodulesLabel}" />
+            </WrapPanel>
+          </StackPanel>
+
+          <Border BorderBrush="{DynamicResource BoughBrushBorder}" BorderThickness="0,1,0,0" />
+
+          <StackPanel Spacing="8">
             <TextBlock Text="{Binding AutoFetchHeading}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource BoughBrushText}" />
             <TextBlock Text="{Binding AutoFetchDescription}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource BoughBrushTextSubtle}" />
             <CheckBox Content="{Binding AutoFetchEnabledLabel}" IsChecked="{Binding AutoFetchEnabled, Mode=OneWay}"

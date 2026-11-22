@@ -31,6 +31,8 @@ namespace Bough.Core.Git
         public string ConfiguredGitPath { get { return _executableSettings.ConfiguredPath; } }
         public GitPullStrategy DefaultPullStrategy { get { return _executableSettings.DefaultPullStrategy; } }
         public event Action<GitPullStrategy> DefaultPullStrategyChanged;
+        public bool DefaultPullIncludesSubmodules { get { return _executableSettings.DefaultPullIncludesSubmodules; } }
+        public event Action<bool> DefaultPullIncludesSubmodulesChanged;
         public bool AutoFetchEnabled
         {
             get
@@ -67,6 +69,16 @@ namespace Bough.Core.Git
 
             _executableSettings.SaveDefaultPullStrategy(strategy);
             DefaultPullStrategyChanged?.Invoke(strategy);
+        }
+
+        public void SaveDefaultPullIncludesSubmodules(bool includeSubmodules)
+        {
+            if (_executableSettings.SaveDefaultPullIncludesSubmodules(includeSubmodules) == false)
+            {
+                return;
+            }
+
+            DefaultPullIncludesSubmodulesChanged?.Invoke(includeSubmodules);
         }
 
         public async Task<string> TestGitAsync(string candidatePath, CancellationToken cancellationToken = default)

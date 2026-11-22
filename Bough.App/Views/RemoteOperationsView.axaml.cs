@@ -49,6 +49,7 @@ namespace Bough.App.Views
                 if (_settingsService != null)
                 {
                     _settingsService.DefaultPullStrategyChanged -= OnDefaultPullStrategyChanged;
+                    _settingsService.DefaultPullIncludesSubmodulesChanged -= OnDefaultPullIncludesSubmodulesChanged;
                 }
                 _settingsService = value;
                 if (_attached == true)
@@ -56,9 +57,10 @@ namespace Bough.App.Views
                     if (_settingsService != null)
                     {
                         _settingsService.DefaultPullStrategyChanged += OnDefaultPullStrategyChanged;
+                        _settingsService.DefaultPullIncludesSubmodulesChanged += OnDefaultPullIncludesSubmodulesChanged;
                     }
                 }
-                UpdatePullStrategyPresentation();
+                UpdatePullDefaultsPresentation();
             }
         }
         public GitErrorLocalizer ErrorLocalizer { get; set; }
@@ -86,9 +88,10 @@ namespace Bough.App.Views
             if (_settingsService != null)
             {
                 _settingsService.DefaultPullStrategyChanged += OnDefaultPullStrategyChanged;
+                _settingsService.DefaultPullIncludesSubmodulesChanged += OnDefaultPullIncludesSubmodulesChanged;
             }
             BindIncomingModel();
-            UpdatePullStrategyPresentation();
+            UpdatePullDefaultsPresentation();
         }
 
         private void OnIncomingViewDetached(object sender, VisualTreeAttachmentEventArgs eventArgs)
@@ -98,6 +101,7 @@ namespace Bough.App.Views
             if (_settingsService != null)
             {
                 _settingsService.DefaultPullStrategyChanged -= OnDefaultPullStrategyChanged;
+                _settingsService.DefaultPullIncludesSubmodulesChanged -= OnDefaultPullIncludesSubmodulesChanged;
             }
             BindIncomingModel();
         }
@@ -185,26 +189,36 @@ namespace Bough.App.Views
             AutomationProperties.SetName(PushButton, _stringHelper.GetString("RemotePushAction"));
             AutomationProperties.SetName(FetchMenuButton, _stringHelper.GetString("RemoteFetchMenuAutomation"));
             AutomationProperties.SetName(PushMenuButton, _stringHelper.GetString("RemotePushMenuAutomation"));
-            UpdatePullStrategyPresentation();
+            UpdatePullDefaultsPresentation();
             UpdateIncomingPresentation();
             UpdateIncomingPresentation();
         }
 
         private void OnDefaultPullStrategyChanged(GitPullStrategy strategy)
         {
+            OnPullDefaultsChanged();
+        }
+
+        private void OnDefaultPullIncludesSubmodulesChanged(bool includeSubmodules)
+        {
+            OnPullDefaultsChanged();
+        }
+
+        private void OnPullDefaultsChanged()
+        {
+            if (Dispatcher.UIThread.CheckAccess() == false)
+            {
+                Dispatcher.UIThread.Post(OnPullDefaultsChanged);
+                return;
+            }
             if (_attached == false)
             {
                 return;
             }
-            if (Dispatcher.UIThread.CheckAccess() == true)
-            {
-                UpdatePullStrategyPresentation();
-                return;
-            }
-            Dispatcher.UIThread.Post(() => OnDefaultPullStrategyChanged(strategy));
+            UpdatePullDefaultsPresentation();
         }
 
-        private void UpdatePullStrategyPresentation()
+        private void UpdatePullDefaultsPresentation()
         {
             if (StringHelper == null)
             {
@@ -212,9 +226,11 @@ namespace Bough.App.Views
             }
 
             string strategyName = GetPullStrategyName(GetDefaultPullStrategy());
+            string scopeName = GetPullScopeName(GetDefaultPullIncludesSubmodules());
             string defaultAction = StringHelper.Format("RemotePullConfiguredDefaultAutomation", strategyName);
-            AutomationProperties.SetName(PullButton, StringHelper.Format("RemotePullScopedTitle", defaultAction, GetPullScopeName(false)));
-            AutomationProperties.SetName(PullMenuButton, StringHelper.Format("RemotePullStrategyMenuAutomation", strategyName));
+            string menuDefaults = StringHelper.Format("RemotePullScopedTitle", strategyName, scopeName);
+            AutomationProperties.SetName(PullButton, StringHelper.Format("RemotePullScopedTitle", defaultAction, scopeName));
+            AutomationProperties.SetName(PullMenuButton, StringHelper.Format("RemotePullStrategyMenuAutomation", menuDefaults));
         }
 
         private GitPullStrategy GetDefaultPullStrategy()
@@ -224,6 +240,11 @@ namespace Bough.App.Views
                 return GitPullStrategy.FastForwardOnly;
             }
             return SettingsService.DefaultPullStrategy;
+        }
+
+        private bool GetDefaultPullIncludesSubmodules()
+        {
+            return _settingsService?.DefaultPullIncludesSubmodules ?? false;
         }
 
         private string GetPullStrategyName(GitPullStrategy strategy)
@@ -329,6 +350,7 @@ namespace Bough.App.Views
             GitRepository repository = viewModel.CurrentRepository;
             int repositoryRequestVersion = GetRepositoryRequestVersion();
             string localBranch = viewModel.CurrentBranchText;
+            bool defaultIncludesSubmodules = GetDefaultPullIncludesSubmodules();
             ContextMenu menu = new();
             menu.Items.Add(CreateScope(false));
             menu.Items.Add(CreateScope(true));
@@ -337,7 +359,7 @@ namespace Bough.App.Views
             MenuItem CreateScope(bool includeSubmodules)
             {
                 string label = GetPullScopeName(includeSubmodules);
-                if (includeSubmodules == false)
+                if (includeSubmodules == defaultIncludesSubmodules)
                 {
                     label += StringHelper.GetString("RemotePullDefaultSuffix");
                 }
@@ -439,7 +461,7 @@ namespace Bough.App.Views
             {
                 return;
             }
-            await RunPullAsync(viewModel, GetDefaultPullStrategy(), false);
+            await RunPullAsync(viewModel, GetDefaultPullStrategy(), chooseTarget: false, includeSubmodules: GetDefaultPullIncludesSubmodules());
         }
 
 
@@ -474,7 +496,7 @@ namespace Bough.App.Views
             return StringHelper.GetString(includeSubmodules ? "RemotePullScopeSubmodules" : "RemotePullScopeRepository");
         }
 
-        private async Task RunPullAsync(RemoteOperationsViewModel viewModel, GitPullStrategy strategy, bool chooseTarget, bool includeSubmodules = false)
+        private async Task RunPullAsync(RemoteOperationsViewModel viewModel, GitPullStrategy strategy, bool chooseTarget, bool includeSubmodules)
         {
             GitRepository repository = viewModel.CurrentRepository;
             if (repository == null)

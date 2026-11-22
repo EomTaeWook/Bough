@@ -32,6 +32,9 @@ namespace Bough.App.Views
             (nameof(GitSettingsViewModel.AppearanceSystemLabel), "AppearanceSystem"),
             (nameof(GitSettingsViewModel.DefaultPullStrategyHeading), "DefaultPullStrategyHeading"),
             (nameof(GitSettingsViewModel.DefaultPullStrategyDescription), "DefaultPullStrategyDescription"),
+            (nameof(GitSettingsViewModel.DefaultPullScopeHeading), "DefaultPullScopeHeading"),
+            (nameof(GitSettingsViewModel.DefaultPullRepositoryLabel), "RemotePullScopeRepository"),
+            (nameof(GitSettingsViewModel.DefaultPullSubmodulesLabel), "RemotePullScopeSubmodules"),
             (nameof(GitSettingsViewModel.AutoFetchHeading), "AutoFetchHeading"),
             (nameof(GitSettingsViewModel.AutoFetchDescription), "AutoFetchDescription"),
             (nameof(GitSettingsViewModel.AutoFetchEnabledLabel), "AutoFetchEnabledLabel"),
@@ -537,6 +540,16 @@ namespace Bough.App.Views
                     }
                     message = viewModel.Strings.Format(result.Code, viewModel.Strings.GetString(labelCode));
                 }
+                else if (result.Code == "DefaultPullScopeSaved")
+                {
+                    bool includeSubmodules = (bool)result.Arguments[0];
+                    string scopeLabel = viewModel.DefaultPullRepositoryLabel;
+                    if (includeSubmodules)
+                    {
+                        scopeLabel = viewModel.DefaultPullSubmodulesLabel;
+                    }
+                    message = viewModel.Strings.Format(result.Code, scopeLabel);
+                }
                 else if (result.Code != "GitHubAccountScopeHint")
                 {
                     message = viewModel.Strings.Format(result.Code, result.Arguments);
@@ -637,6 +650,27 @@ namespace Bough.App.Views
             }
 
             viewModel.SelectDefaultPullStrategy(GitPullStrategy.Rebase);
+        }
+
+        private void DefaultPullScopeClicked(object sender, RoutedEventArgs eventArgs)
+        {
+            if (DataContext is not GitSettingsViewModel viewModel)
+            {
+                return;
+            }
+
+            bool includeSubmodules = ReferenceEquals(sender, DefaultPullSubmodulesRadioButton);
+            if (viewModel.SelectDefaultPullScope(includeSubmodules))
+            {
+                return;
+            }
+
+            RadioButton savedSelection = DefaultPullRepositoryRadioButton;
+            if (viewModel.DefaultPullIncludesSubmodules)
+            {
+                savedSelection = DefaultPullSubmodulesRadioButton;
+            }
+            savedSelection.SetCurrentValue(RadioButton.IsCheckedProperty, true);
         }
 
         private async void RemovePushUrlClicked(object sender, RoutedEventArgs eventArgs)

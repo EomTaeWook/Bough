@@ -114,6 +114,9 @@ namespace Bough.App.ViewModels
         public string AppearanceSystemLabel { get { return GetDisplayLabel(nameof(AppearanceSystemLabel)); } }
         public string DefaultPullStrategyHeading { get { return GetDisplayLabel(nameof(DefaultPullStrategyHeading)); } }
         public string DefaultPullStrategyDescription { get { return GetDisplayLabel(nameof(DefaultPullStrategyDescription)); } }
+        public string DefaultPullScopeHeading { get { return GetDisplayLabel(nameof(DefaultPullScopeHeading)); } }
+        public string DefaultPullRepositoryLabel { get { return GetDisplayLabel(nameof(DefaultPullRepositoryLabel)); } }
+        public string DefaultPullSubmodulesLabel { get { return GetDisplayLabel(nameof(DefaultPullSubmodulesLabel)); } }
         public string AutoFetchHeading { get { return GetDisplayLabel(nameof(AutoFetchHeading)); } }
         public string AutoFetchDescription { get { return GetDisplayLabel(nameof(AutoFetchDescription)); } }
         public string AutoFetchEnabledLabel { get { return GetDisplayLabel(nameof(AutoFetchEnabledLabel)); } }
@@ -176,6 +179,8 @@ namespace Bough.App.ViewModels
         public bool IsFastForwardOnlyPull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.FastForwardOnly; } }
         public bool IsMergePull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.Merge; } }
         public bool IsRebasePull { get { return _settingsService.DefaultPullStrategy == GitPullStrategy.Rebase; } }
+        public bool IsDefaultPullRepositoryOnly { get { return DefaultPullIncludesSubmodules == false; } }
+        public bool DefaultPullIncludesSubmodules { get { return _settingsService.DefaultPullIncludesSubmodules; } }
         public bool AutoFetchEnabled
         {
             get
@@ -282,6 +287,29 @@ namespace Bough.App.ViewModels
             {
                 ShowDisplayError(GitSettingsDisplayTarget.Status, exception);
             }
+        }
+
+        public bool SelectDefaultPullScope(bool includeSubmodules)
+        {
+            if (DefaultPullIncludesSubmodules == includeSubmodules)
+            {
+                return true;
+            }
+
+            try
+            {
+                _settingsService.SaveDefaultPullIncludesSubmodules(includeSubmodules);
+            }
+            catch (Exception exception)
+            {
+                ShowDisplayError(GitSettingsDisplayTarget.Status, exception);
+                return false;
+            }
+
+            OnPropertyChanged(nameof(IsDefaultPullRepositoryOnly));
+            OnPropertyChanged(nameof(DefaultPullIncludesSubmodules));
+            ShowDisplayResult(GitSettingsDisplayTarget.Status, "DefaultPullScopeSaved", includeSubmodules);
+            return true;
         }
 
         public Task SelectAutoFetchSettingsAsync(bool enabled, int intervalMinutes)

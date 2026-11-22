@@ -7432,5 +7432,17 @@
     "Name": "RemotePullSubmoduleFetchFailed",
     "Kor": "지정된 커밋을 가져오지 못했습니다(Git 종료 코드 {0}).",
     "Eng": "Could not fetch the recorded commit (Git exit code {0})."
+  },
+  {
+    "Id": 3339,
+    "Name": "DefaultPullScopeHeading",
+    "Kor": "기본 Pull 범위",
+    "Eng": "Default Pull scope"
+  },
+  {
+    "Id": 3340,
+    "Name": "DefaultPullScopeSaved",
+    "Kor": "기본 Pull 범위 저장: {0}",
+    "Eng": "Default Pull scope saved: {0}"
   }
 ]
