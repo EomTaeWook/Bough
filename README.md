@@ -8,7 +8,7 @@ Bough는 로컬 변경과 커밋 이력을 살펴보고 병합 충돌을 해결�
 
 [GitHub Releases](https://github.com/EomTaeWook/Bough/releases)에서 운영체제에 맞는 정식 배포 파일을 받으세요. Git은 별도로 설치해야 하며, .NET 런타임은 배포 파일에 포함되어 있습니다.
 
-최신 정식 릴리스 **v1.0.11** · [Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.11)
+최신 정식 릴리스 **v1.0.12** · [Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-osx-x64.app.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.12)
 
 | 운영체제 | 실행 방법 |
 | --- | --- |
@@ -17,8 +17,6 @@ Bough는 로컬 변경과 커밋 이력을 살펴보고 병합 충돌을 해결�
 | macOS Intel | `osx-x64.app.zip` 압축을 풀고 같은 방법으로 실행합니다. |
 
 Mac 배포 파일은 macOS 14 이상을 대상으로 합니다. Developer ID 서명과 Apple 공증이 없어 macOS 보안 정책에 따라 실행이 차단될 수 있습니다.
-
-교체 전 v1.0.11을 설치했다면 위 링크에서 배포 파일을 다시 내려받으세요.
 
 ## 처음 사용하기
 
@@ -41,7 +39,7 @@ Mac 배포 파일은 macOS 14 이상을 대상으로 합니다. Developer ID 서
 ## 원격 작업과 참조
 
 - 상단의 **Fetch**, **Pull**, **Push**를 사용합니다. 다른 대상이나 Pull 방식을 고르려면 각 버튼의 화살표 메뉴를 엽니다. 오류의 상세 내용은 해당 작업 팝업에서 확인할 수 있습니다.
-- **설정 → 일반**에서 기본 Pull 방식을 고르고 원격 변경 자동 확인을 켤 수 있습니다. 자동 확인은 받을 커밋을 알려 주며, 작업 파일을 바꾸려면 Pull을 직접 실행합니다.
+- **설정 → 일반**에서 기본 Pull 방식과 범위를 고르고 원격 변경 자동 확인을 켤 수 있습니다. 자동 확인은 받을 커밋을 알려 주며, 작업 파일을 바꾸려면 Pull을 직접 실행합니다.
 - 설정의 **계정 및 인증**에서 원격별 주소와 인증 계정을 확인합니다. 가져오기와 푸시 주소가 다르면 각각 표시합니다. 별도 푸시 주소나 URL 재작성 정보가 있으면 **원격 주소 상세**를 펼쳐 확인할 수 있습니다.
 - 왼쪽 **Git 참조**에서 브랜치, 태그, Stash를 관리합니다. 태그만 보내려면 태그를 우클릭해 보낼 원격을 고릅니다. 서브모듈은 해당 항목을 우클릭해 **저장소 열기**를 선택한 뒤 그 저장소에서 작업합니다.
 

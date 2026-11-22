@@ -8,7 +8,7 @@ Bough is a desktop Git client for reviewing local changes, browsing commit histo
 
 Get the stable release for your operating system from [GitHub Releases](https://github.com/EomTaeWook/Bough/releases). Install Git separately. The release includes the .NET runtime.
 
-Latest stable release **v1.0.11** · [Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.11/Bough-v1.0.11-osx-x64.app.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.11)
+Latest stable release **v1.0.12** · [Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-osx-x64.app.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.12)
 
 | Operating system | How to run |
 | --- | --- |
@@ -17,8 +17,6 @@ Latest stable release **v1.0.11** · [Windows x64](https://github.com/EomTaeWook
 | macOS Intel | Extract `osx-x64.app.zip` and follow the same steps. |
 
 Mac releases target macOS 14 or later. They are not signed with Developer ID or notarized by Apple, so macOS may block them from opening.
-
-If you installed v1.0.11 before the packages were replaced, download the current package from the links above.
 
 ## Get started
 
@@ -41,7 +39,7 @@ If you closed the conflict window, reopen it from the conflicted file list in **
 ## Remotes and references
 
 - Use **Fetch**, **Pull**, and **Push** at the top. Open the arrow menus to choose a different target or Pull strategy. If an operation fails, its popup shows the details.
-- Set the default Pull behavior and enable automatic remote checks under **Settings → General**. Remote checks report incoming commits. Run Pull to update your working files.
+- Set the default Pull strategy and scope, and enable automatic remote checks under **Settings → General**. Remote checks report incoming commits. Run Pull to update your working files.
 - Open **Accounts and authentication** in Settings to see URLs and authentication for each remote. Bough shows separate fetch and push URLs when they differ. Expand **Remote URL details** to inspect a separate push URL setting or a URL rewrite.
 - Manage branches, tags, and stashes under **Git references** in the sidebar. To push a tag on its own, right-click it and choose the remote. To work inside a submodule, right-click it and choose **Open repository**.
 

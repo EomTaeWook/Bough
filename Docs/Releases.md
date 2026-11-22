@@ -1,5 +1,19 @@
 # 릴리스
 
+## v1.0.12 정식 릴리스 게시 완료
+
+- 게시일 2026-11-22 (KST)
+- 태그 및 배포 소스 `bd3b952805211e1eed1928cf3e8177bdccfee36f`
+- Windows x64 자체 포함 EXE, macOS Apple Silicon·Intel 자체 포함 앱 ZIP
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.12)
+- [Bough-v1.0.12-win-x64.exe](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-win-x64.exe) · 104027701바이트 · GitHub digest `sha256:a7295b74648e4cca74551ce684d5c8fc3948a4d2306644d47bbbc0ca6a20db4d`
+- [Bough-v1.0.12-osx-arm64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-osx-arm64.app.zip) · 44377497바이트 · GitHub digest `sha256:12e9d2501566fb4cfb996fc805f1d613f4ca824dd14d9d9b342eae2b6bfd0b51`
+- [Bough-v1.0.12-osx-x64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-osx-x64.app.zip) · 46381964바이트 · GitHub digest `sha256:e0dabc8b2e5dde0f92356d7bf5e063c9955acbfef16b745495151d2ac2221ab2`
+
+설정의 일반 탭에 기본 Pull 범위를 추가했다. Pull 버튼은 저장한 방식과 범위로 실행하고, 메뉴에서 이번 작업의 범위와 방식을 고를 수 있다. 서브모듈을 포함하면 상위 Pull 뒤 지정 커밋으로 맞출 수 있는 초기화된 서브모듈을 갱신하고, 건너뛴 항목과 실패를 결과에 표시한다.
+
+세 플랫폼의 배포 파일을 제작했다. 별도 테스트·앱 실행·실제 Pull·업데이트 설치 확인은 미실시다. macOS 파일은 Developer ID 서명·Apple 공증 없이 게시했다.
+
 ## v1.0.11 정식 릴리스 게시 완료
 
 - 게시일 2026-11-20 (KST)
