@@ -8,7 +8,7 @@ Bough는 로컬 변경과 커밋 이력을 살펴보고 병합 충돌을 해결�
 
 [GitHub Releases](https://github.com/EomTaeWook/Bough/releases)에서 운영체제에 맞는 정식 배포 파일을 받으세요. Git은 별도로 설치해야 하며, .NET 런타임은 배포 파일에 포함되어 있습니다.
 
-최신 정식 릴리스 **v1.0.12** · [Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-osx-x64.app.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.12)
+최신 정식 릴리스 **v1.0.13** · [Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.13/Bough-v1.0.13-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.13/Bough-v1.0.13-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.13/Bough-v1.0.13-osx-x64.app.zip) · [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.13)
 
 | 운영체제 | 실행 방법 |
 | --- | --- |
@@ -23,7 +23,7 @@ Mac 배포 파일은 macOS 14 이상을 대상으로 합니다. Developer ID 서
 1. Bough가 Git을 찾지 못하면 **설정 → Git**에서 실행 파일 경로를 지정합니다. **설정 → 일반**에서 언어와 테마를 바꿀 수 있습니다.
 2. 상단 **+ → 저장소 열기**에서 로컬 저장소 폴더를 고릅니다. 새로 복제하려면 **+ → 복제**에서 원격 URL 또는 로컬 원본 경로를 입력하고, 새 경로나 빈 폴더를 대상으로 지정합니다.
 3. 왼쪽 **로컬 변경**에서 파일과 diff를 확인하고, 커밋에 포함할 변경을 스테이징한 뒤 메시지를 입력해 커밋합니다. 추적 중인 일반 텍스트 파일은 diff에서 변경 줄을 골라 부분 스테이징하거나 해제할 수 있습니다.
-4. 왼쪽 **히스토리**에서 커밋 그래프와 변경 내용을 봅니다. 변경 파일을 우클릭하면 파일별 커밋과 이름 변경 이력도 살펴볼 수 있습니다. 다른 저장소로 바꾸려면 상단의 저장소 이름을 누릅니다.
+4. 왼쪽 **히스토리**에서 커밋을 고른 뒤 상세에서 변경 파일을 검색하고 diff를 펼쳐 봅니다. 변경 파일을 우클릭하면 파일별 커밋과 이름 변경 이력도 살펴볼 수 있습니다. 다른 저장소로 바꾸려면 상단의 저장소 이름을 누릅니다.
 
 ## 충돌 해결
 

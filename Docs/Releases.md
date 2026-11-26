@@ -1,5 +1,19 @@
 # 릴리스
 
+## v1.0.13 정식 릴리스 게시 완료
+
+- 게시일 2026-11-27 (KST)
+- 태그 및 배포 소스 `b072a9ead7d700f45f59f86d8cd3ce2f41d031f3`
+- Windows x64 자체 포함 EXE, macOS Apple Silicon·Intel 자체 포함 앱 ZIP
+- [릴리스 정보](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.13)
+- [Bough-v1.0.13-win-x64.exe](https://github.com/EomTaeWook/Bough/releases/download/v1.0.13/Bough-v1.0.13-win-x64.exe) · 104336437바이트 · GitHub digest `sha256:01491e01987e5933423d3c8102fbf7ee1e5ee7876a36b48f6f5d0c2a2dc5f75b`
+- [Bough-v1.0.13-osx-arm64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.13/Bough-v1.0.13-osx-arm64.app.zip) · 44711054바이트 · GitHub digest `sha256:01941c430d0a70b1651135e9ef2802b8b99bed96956508cbf7782645eff6eeb0`
+- [Bough-v1.0.13-osx-x64.app.zip](https://github.com/EomTaeWook/Bough/releases/download/v1.0.13/Bough-v1.0.13-osx-x64.app.zip) · 46690678바이트 · GitHub digest `sha256:ca5d365f428e8932963fced46e961e802fcad80190a22c7e13eedebc8c3805c6`
+
+히스토리의 커밋 정보와 변경 파일을 하나의 상세 화면에 배치했다. 현재 경로와 이름 변경 전 경로로 파일을 검색한다. 파일별 diff와 파일 메뉴는 같은 목록에서 열고, 전체 펼치기와 접기는 현재 검색 결과에 적용한다.
+
+세 플랫폼의 배포 파일은 커밋 내용을 별도 소스 폴더에 풀어 제작했다. 별도 테스트·앱 실행·업데이트 설치 확인은 미실시다. macOS 파일은 Developer ID 서명·Apple 공증 없이 게시했다.
+
 ## v1.0.12 정식 릴리스 게시 완료
 
 - 게시일 2026-11-22 (KST)

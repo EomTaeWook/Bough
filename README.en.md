@@ -8,7 +8,7 @@ Bough is a desktop Git client for reviewing local changes, browsing commit histo
 
 Get the stable release for your operating system from [GitHub Releases](https://github.com/EomTaeWook/Bough/releases). Install Git separately. The release includes the .NET runtime.
 
-Latest stable release **v1.0.12** · [Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.12/Bough-v1.0.12-osx-x64.app.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.12)
+Latest stable release **v1.0.13** · [Windows x64](https://github.com/EomTaeWook/Bough/releases/download/v1.0.13/Bough-v1.0.13-win-x64.exe) · [Mac Apple Silicon](https://github.com/EomTaeWook/Bough/releases/download/v1.0.13/Bough-v1.0.13-osx-arm64.app.zip) · [Mac Intel](https://github.com/EomTaeWook/Bough/releases/download/v1.0.13/Bough-v1.0.13-osx-x64.app.zip) · [Release notes](https://github.com/EomTaeWook/Bough/releases/tag/v1.0.13)
 
 | Operating system | How to run |
 | --- | --- |
@@ -23,7 +23,7 @@ Mac releases target macOS 14 or later. They are not signed with Developer ID or 
 1. If Bough cannot find Git, choose its executable under **Settings → Git**. Change the language and theme under **Settings → General**.
 2. At the top, select **+ → Open repository** and choose a local repository folder. To clone a repository, select **+ → Clone**, enter a remote URL or local source path, and choose a new destination or an empty folder.
 3. Open **Local Changes** in the left sidebar. Review the files and diffs, stage the changes you want, and enter a commit message. For tracked plain-text files, you can stage or unstage selected lines in the diff.
-4. Open **History** to browse the commit graph and inspect changes. Right-click a changed file to view its commits and renames. To switch repositories, click the repository name at the top.
+4. Open **History** and select a commit. Search its changed files in the details pane and expand a file to see its diff. Right-click a changed file to view its commits and renames. To switch repositories, click the repository name at the top.
 
 ## Resolve conflicts
 
