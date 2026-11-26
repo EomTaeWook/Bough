@@ -9,9 +9,7 @@ namespace Bough.App.ViewModels.Models
             IsClear = true;
         }
 
-        public HistoryPreviewRequest(GitRepository repository, GitCommitInspection inspection, int inspectionVersion,
-            string parent, string path, bool deleted, bool explicitPreview,
-            HistoryInspectionFileItem selection, HistoryTreeItem treeSelection)
+        public HistoryPreviewRequest(GitRepository repository, GitCommitInspection inspection, int inspectionVersion, string parent, string path, bool deleted, HistoryTreeItem treeSelection)
         {
             Repository = repository;
             Inspection = inspection;
@@ -23,8 +21,6 @@ namespace Bough.App.ViewModels.Models
             {
                 Revision = parent;
             }
-            IsExplicit = explicitPreview;
-            Selection = selection;
             TreeSelection = treeSelection;
         }
 
@@ -35,8 +31,6 @@ namespace Bough.App.ViewModels.Models
         public string Parent { get; }
         public string Path { get; }
         public string Revision { get; }
-        public bool IsExplicit { get; }
-        public HistoryInspectionFileItem Selection { get; }
         public HistoryTreeItem TreeSelection { get; }
     }
 }

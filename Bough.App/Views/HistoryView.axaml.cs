@@ -36,8 +36,6 @@ namespace Bough.App.Views
         private bool _commitListHeightUpdateQueued;
         private readonly HashSet<ContextMenu> _openFileMenus = [];
         private TaskCompletionSource<bool> _previewMenusClosed;
-        private bool _previewRightClickPending;
-        private int _previewPointerVersion;
         private int _clipboardRequestVersion;
 
         public HistoryView()
@@ -45,8 +43,6 @@ namespace Bough.App.Views
             InitializeComponent();
             LanguageChangeBinding.Bind(this, () => (DataContext as HistoryViewModel)?.Strings);
             AddHandler(TreeViewItem.ExpandedEvent, TreeExpanded);
-            HistoryChangedFiles.AddHandler(InputElement.PointerPressedEvent, PreviewPointerPressed, RoutingStrategies.Tunnel, true);
-            HistoryChangedFiles.AddHandler(InputElement.PointerReleasedEvent, PreviewPointerReleased, RoutingStrategies.Bubble, true);
             HistoryCommitList.TemplateApplied += (_, _) => AttachCommitScrollViewer();
             DataContextChanged += (_, _) =>
             {
@@ -799,35 +795,6 @@ namespace Bough.App.Views
             catch (Exception exception) { viewModel.ReportActionError(exception); }
         }
 
-        private void PreviewPointerPressed(object sender, PointerPressedEventArgs eventArgs)
-        {
-            if (eventArgs.GetCurrentPoint(HistoryChangedFiles).Properties.IsRightButtonPressed == false)
-            {
-                return;
-            }
-            _previewRightClickPending = true;
-            _previewPointerVersion++;
-            EnsurePreviewMenuGate();
-        }
-
-        private void PreviewPointerReleased(object sender, PointerReleasedEventArgs eventArgs)
-        {
-            if (_previewRightClickPending == false)
-            {
-                return;
-            }
-            int version = _previewPointerVersion;
-            Dispatcher.UIThread.Post(() =>
-            {
-                if (version != _previewPointerVersion)
-                {
-                    return;
-                }
-                _previewRightClickPending = false;
-                ReleasePreviewMenuGate();
-            }, DispatcherPriority.Background);
-        }
-
         private void EnsurePreviewMenuGate()
         {
             if (_previewMenusClosed == null)
@@ -838,10 +805,6 @@ namespace Bough.App.Views
 
         private void ReleasePreviewMenuGate()
         {
-            if (_previewRightClickPending)
-            {
-                return;
-            }
             if (_openFileMenus.Count > 0)
             {
                 return;
@@ -853,8 +816,6 @@ namespace Bough.App.Views
 
         private void ResetPreviewMenuGate()
         {
-            _previewPointerVersion++;
-            _previewRightClickPending = false;
             _openFileMenus.Clear();
             ReleasePreviewMenuGate();
         }
@@ -872,10 +833,6 @@ namespace Bough.App.Views
                 bool applied = false;
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    if (_previewRightClickPending)
-                    {
-                        return;
-                    }
                     if (_openFileMenus.Count > 0)
                     {
                         return;
@@ -915,7 +872,6 @@ namespace Bough.App.Views
             {
                 return;
             }
-            _previewRightClickPending = false;
             _openFileMenus.Add(menu);
             EnsurePreviewMenuGate();
             DisableFileMenu(menu);

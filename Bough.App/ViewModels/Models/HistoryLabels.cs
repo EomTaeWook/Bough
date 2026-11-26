@@ -31,14 +31,13 @@ namespace Bough.App.ViewModels.Models
         public string Retry { get { return _strings.GetString("HistoryRetry"); } }
         public string ResizeHistory { get { return _strings.GetString("HistoryResizeHistory"); } }
         public string SelectCommit { get { return _strings.GetString("HistorySelectCommit"); } }
-        public string TabCommit { get { return _strings.GetString("HistoryTabCommit"); } }
-        public string TabChanges { get { return _strings.GetString("HistoryTabChanges"); } }
         public string TabFileTree { get { return _strings.GetString("HistoryTabFileTree"); } }
         public string ParentTooltip { get { return _strings.GetString("HistoryParentTooltip"); } }
         public string Copy { get { return _strings.GetString("HistoryCopy"); } }
         public string ExpandAll { get { return _strings.GetString("HistoryExpandAll"); } }
         public string CollapseAll { get { return _strings.GetString("HistoryCollapseAll"); } }
         public string NoChanges { get { return _strings.GetString("HistoryNoChanges"); } }
+        public string NoMatchingChangedFiles { get { return _strings.GetString("HistoryNoMatchingChangedFiles"); } }
         public string LoadingChanges { get { return _strings.GetString("HistoryLoadingChanges"); } }
         public string Open { get { return _strings.GetString("HistoryOpen"); } }
         public string ShowExplorer { get { return _strings.GetString("HistoryShowExplorer"); } }
@@ -47,7 +46,6 @@ namespace Bough.App.ViewModels.Models
         public string CopyPath { get { return _strings.GetString("HistoryCopyPath"); } }
         public string LoadingDiff { get { return _strings.GetString("HistoryLoadingDiff"); } }
         public string SearchChangedPaths { get { return _strings.GetString("HistorySearchChangedPaths"); } }
-        public string ResizeChanges { get { return _strings.GetString("HistoryResizeChanges"); } }
         public string SearchSnapshotPaths { get { return _strings.GetString("HistorySearchSnapshotPaths"); } }
         public string ResizeTree { get { return _strings.GetString("HistoryResizeTree"); } }
         public string CloseAuxiliary { get { return _strings.GetString("HistoryCloseAuxiliary"); } }

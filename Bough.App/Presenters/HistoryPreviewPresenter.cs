@@ -86,18 +86,6 @@ namespace Bough.App.Presenters
             _ = RequestAsync(new HistoryPreviewRequest());
         }
 
-        public void ClearChangedSelection()
-        {
-            if (_latestRequest != null)
-            {
-                if (_latestRequest.IsExplicit)
-                {
-                    return;
-                }
-            }
-            Clear();
-        }
-
         public void ClearTreeSelection()
         {
             if (_latestRequest == null)
@@ -239,13 +227,6 @@ namespace Bough.App.Presenters
             if (request.Parent != _model.SelectedParent)
             {
                 return false;
-            }
-            if (request.IsExplicit == false)
-            {
-                if (ReferenceEquals(request.Selection, _model.SelectedChangedFile) == false)
-                {
-                    return false;
-                }
             }
             if (request.TreeSelection != null)
             {

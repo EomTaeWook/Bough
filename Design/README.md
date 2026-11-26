@@ -10,7 +10,7 @@
 | [커밋·브랜치 우클릭 동작](CommitActions.md) | 체크아웃, 브랜치 생성·초기화, 커밋 Revert와 계속·중단 |
 | [태그 삭제](TagDeletion.md) | 로컬·원격 태그 삭제의 확인, 작업 큐, 변경된 대상 보호 |
 | [브랜치·태그 이름 변경](ReferenceRename.md) | 로컬 참조 이름 변경, 주석·서명 보존과 작업 큐 |
-| [커밋 상세와 파일 탐색](CommitInspection.md) | Commit·Changes 탭, diff와 파일 메뉴, UI 진입이 제거된 내부 File Tree |
+| [커밋 상세와 파일 탐색](CommitInspection.md) | 커밋 상세의 변경 파일 검색·diff·파일 메뉴, 내부 File Tree |
 | [파일 히스토리](FileHistory.md) | 파일별 커밋 목록·날짜·이름 변경 이력, 당시 경로와 줄 번호 diff |
 | [충돌 해결 창 진입](ConflictEntry.md) | 실제 충돌 시 해결 창 자동 열기와 Local Changes에서 다시 열기 |
 | [원격 작업과 Stash](RemoteAndStash.md) | Fetch, Pull, Push, Stash의 화면·실행·갱신 흐름 |

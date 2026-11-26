@@ -7444,5 +7444,11 @@
     "Name": "DefaultPullScopeSaved",
     "Kor": "기본 Pull 범위 저장: {0}",
     "Eng": "Default Pull scope saved: {0}"
+  },
+  {
+    "Id": 3341,
+    "Name": "HistoryNoMatchingChangedFiles",
+    "Kor": "검색에 일치하는 변경 파일이 없습니다.",
+    "Eng": "No changed files match your search."
   }
 ]

@@ -79,7 +79,6 @@ namespace Bough.App.ViewModels
         private string _previewPath;
         private string _previewText;
         private string _previewReason;
-        private int _selectedTab;
         private bool _isFileTreeView;
         private Task _inspectionLoadTask = Task.CompletedTask;
         private int _inspectionRequest;
@@ -91,7 +90,6 @@ namespace Bough.App.ViewModels
         private Exception _historyLoadError;
         private Exception _pageLoadError;
         private LocalizedText _navigationMessage;
-        private HistoryInspectionFileItem _selectedChangedFile;
         private HistoryTreeItem _selectedTreeFile;
 
         public HistoryViewModel(GitHistoryService historyService, GitCommitActionService actionService, GitCommitInspectionService inspectionService, GitCommitMessageService commitMessageService, GitCommitFileActionService fileActionService, GitOperationQueue operationQueue, StringHelper stringHelper)
@@ -249,11 +247,6 @@ namespace Bough.App.ViewModels
                 _previewReasonLocalization = null; SetProperty(ref _previewReason, value);
             }
         }
-        public int SelectedTab
-        {
-            get { return _selectedTab; }
-            set { SetProperty(ref _selectedTab, value); }
-        }
         public bool IsFileTreeView
         {
             get { return _isFileTreeView; }
@@ -266,23 +259,6 @@ namespace Bough.App.ViewModels
             }
         }
         public bool IsCommitDetailView { get { return HasSelection && IsFileTreeView == false; } }
-        public HistoryInspectionFileItem SelectedChangedFile
-        {
-            get { return _selectedChangedFile; }
-            set
-            {
-                if (SetProperty(ref _selectedChangedFile, value) == false)
-                {
-                    return;
-                }
-                if (value == null)
-                {
-                    _previewPresenter.ClearChangedSelection();
-                    return;
-                }
-                _ = OpenSelectedFileAsync(value);
-            }
-        }
         public HistoryTreeItem SelectedTreeFile
         {
             get { return _selectedTreeFile; }
@@ -377,8 +353,34 @@ namespace Bough.App.ViewModels
                 return ChangedFiles.Count == 0;
             }
         }
-        public string ChangesSummary { get { if (_inspection == null) return string.Empty; return $"{_inspection.AuthorName}  ·  {_inspection.Hash.Substring(0, 8)}  ·  {_inspection.AuthoredAt:yyyy-MM-dd HH:mm zzz}"; } }
-        public string MessageFirstLine { get { return GitCommitMessageService.GetFirstLine(SelectedMessage); } }
+        public bool HasVisibleChangedFiles
+        {
+            get { return VisibleChangedFiles.Count > 0; }
+        }
+
+        public bool HasNoMatchingChangedFiles
+        {
+            get
+            {
+                if (_hasLoadedChanges == false)
+                {
+                    return false;
+                }
+                if (IsLoadingDetails == true)
+                {
+                    return false;
+                }
+                if (HasDetailError == true)
+                {
+                    return false;
+                }
+                if (ChangedFiles.Count == 0)
+                {
+                    return false;
+                }
+                return VisibleChangedFiles.Count == 0;
+            }
+        }
 
         public bool HasMore
         {
@@ -433,10 +435,7 @@ namespace Bough.App.ViewModels
             get { return _selectedMessage; }
             private set
             {
-                if (SetProperty(ref _selectedMessage, value) == true)
-                {
-                    OnPropertyChanged(nameof(MessageFirstLine));
-                }
+                SetProperty(ref _selectedMessage, value);
             }
         }
 
@@ -1386,14 +1385,11 @@ namespace Bough.App.ViewModels
             OnPropertyChanged(nameof(AuthorDescription));
             OnPropertyChanged(nameof(AuthoredAtText));
             OnPropertyChanged(nameof(ReferencesText));
-            _selectedChangedFile = null;
-            OnPropertyChanged(nameof(SelectedChangedFile));
             _selectedTreeFile = null;
             OnPropertyChanged(nameof(SelectedTreeFile));
             OnPropertyChanged(nameof(HasNoChangedFiles));
             OnPropertyChanged(nameof(HasParents));
             OnPropertyChanged(nameof(HasMultipleParents));
-            OnPropertyChanged(nameof(ChangesSummary));
             _selectedParent = string.Empty;
             OnPropertyChanged(nameof(SelectedParent));
             ChangedFiles.Clear();
@@ -1419,6 +1415,8 @@ namespace Bough.App.ViewModels
         {
             OnPropertyChanged(nameof(IsLoadingDetails));
             OnPropertyChanged(nameof(HasNoChangedFiles));
+            OnPropertyChanged(nameof(HasVisibleChangedFiles));
+            OnPropertyChanged(nameof(HasNoMatchingChangedFiles));
         }
 
         private async Task LoadInspectionAsync(HistoryCommitItem selected)
@@ -1463,7 +1461,6 @@ namespace Bough.App.ViewModels
                 OnPropertyChanged(nameof(ReferencesText));
                 OnPropertyChanged(nameof(HasParents));
                 OnPropertyChanged(nameof(HasMultipleParents));
-                OnPropertyChanged(nameof(ChangesSummary));
                 SelectedMessage = result.Message;
                 if (details.Parents.Count > 0)
                 {
@@ -1617,14 +1614,23 @@ namespace Bough.App.ViewModels
 
         private void FilterChangedFiles()
         {
+            _expandRequest++;
             VisibleChangedFiles.Clear();
             foreach (HistoryInspectionFileItem file in ChangedFiles)
             {
-                if (file.Path.Contains(FileSearch, StringComparison.OrdinalIgnoreCase) == true || file.PreviousPath.Contains(FileSearch, StringComparison.OrdinalIgnoreCase) == true)
+                if (file.Path.Contains(FileSearch, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    VisibleChangedFiles.Add(file);
+                    continue;
+                }
+
+                if (file.PreviousPath.Contains(FileSearch, StringComparison.OrdinalIgnoreCase) == true)
                 {
                     VisibleChangedFiles.Add(file);
                 }
             }
+            OnPropertyChanged(nameof(HasVisibleChangedFiles));
+            OnPropertyChanged(nameof(HasNoMatchingChangedFiles));
         }
 
         public async Task ExpandFileAsync(HistoryInspectionFileItem file)
@@ -1711,7 +1717,7 @@ namespace Bough.App.ViewModels
         public async Task ExpandAllAsync()
         {
             int request = ++_expandRequest;
-            HistoryInspectionFileItem[] files = ChangedFiles.ToArray();
+            HistoryInspectionFileItem[] files = VisibleChangedFiles.ToArray();
             foreach (HistoryInspectionFileItem file in files)
             {
                 if (request != _expandRequest)
@@ -1725,7 +1731,10 @@ namespace Bough.App.ViewModels
         public void CollapseAll()
         {
             _expandRequest++;
-            foreach (HistoryInspectionFileItem file in ChangedFiles) file.IsExpanded = false;
+            foreach (HistoryInspectionFileItem file in VisibleChangedFiles)
+            {
+                file.IsExpanded = false;
+            }
         }
 
         public async Task BrowseCommitFilesAsync(string repositoryRoot, string commitHash)
@@ -1781,20 +1790,11 @@ namespace Bough.App.ViewModels
             await LoadTreeAsync();
         }
 
-        public async Task CloseFileTreeAsync()
+        public Task CloseFileTreeAsync()
         {
             IsFileTreeView = false;
             _previewPresenter.Clear();
-            if (SelectedTab != 1)
-            {
-                return;
-            }
-            HistoryInspectionFileItem selected = SelectedChangedFile;
-            if (selected == null)
-            {
-                return;
-            }
-            await OpenSelectedFileAsync(selected);
+            return Task.CompletedTask;
         }
 
         public async Task LoadTreeAsync()
@@ -1960,12 +1960,7 @@ namespace Bough.App.ViewModels
                 catch (Exception exception) { SetLocalizedErrorText(new LocalizedText(exception)); }
                 return;
             }
-            await RequestPreviewAsync(item.Path, false, true, null, item);
-        }
-
-        private Task OpenSelectedFileAsync(HistoryInspectionFileItem selected)
-        {
-            return RequestPreviewAsync(selected.Path, selected.IsDeleted, false, selected, null);
+            await RequestPreviewAsync(item.Path, false, item);
         }
 
         public Task OpenFileAsync(string repositoryRoot, string commitHash, string path, bool deleted)
@@ -1976,11 +1971,10 @@ namespace Bough.App.ViewModels
 
         public Task OpenFileAsync(string path, bool deleted)
         {
-            return RequestPreviewAsync(path, deleted, true, null, null);
+            return RequestPreviewAsync(path, deleted, null);
         }
 
-        private Task RequestPreviewAsync(string path, bool deleted, bool explicitPreview,
-            HistoryInspectionFileItem selection, HistoryTreeItem treeSelection)
+        private Task RequestPreviewAsync(string path, bool deleted, HistoryTreeItem treeSelection)
         {
             if (_repository == null)
             {
@@ -1990,8 +1984,7 @@ namespace Bough.App.ViewModels
             {
                 return Task.CompletedTask;
             }
-            HistoryPreviewRequest request = new(_repository, _inspection, _inspectionRequest, SelectedParent,
-                path, deleted, explicitPreview, selection, treeSelection);
+            HistoryPreviewRequest request = new(_repository, _inspection, _inspectionRequest, SelectedParent, path, deleted, treeSelection);
             return _previewPresenter.RequestAsync(request);
         }
 
